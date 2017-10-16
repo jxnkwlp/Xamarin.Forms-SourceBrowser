@@ -1,0 +1,1381 @@
+﻿<!DOCTYPE html>
+<html><head><title>TemplatedItemsList.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(1372);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/TemplatedItemsList.cs" target="_top">TemplatedItemsList.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Cadenza</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>
+{
+ 
+	[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+	<b>public sealed class</b> <a id="1bbf66e01c80bd54" href="R/1bbf66e01c80bd54.html" target="n" data-glyph="0,0" class="t t">TemplatedItemsList</a>&lt;<span id="r0 rd t" class="r0 r t">TView</span>, <span id="r1 rd t" class="r1 r t">TItem</span>&gt; : <a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>, <a href="ITemplatedItemsList.cs.html#5fafd275375b1472" class="t t">ITemplatedItemsList</a>&lt;<span class="r1 r t">TItem</span>&gt;, <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>, <a href="@1@System.Runtime/A.html#1f55292c3174123d" class="t t">IDisposable</a>
+												<b>where</b> <span class="r0 r t">TView</span> : <a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>, <a href="IItemsView.cs.html#735b36eea3436bc6" class="t t">IItemsView</a>&lt;<span class="r1 r t">TItem</span>&gt;
+												<b>where</b> <span class="r1 r t">TItem</span> : <a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>
+	{
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="8ac2fe3bdbe88c86" href="R/8ac2fe3bdbe88c86.html" target="n" data-glyph="42,1" class="i field">NameProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;Name&quot;</span>, <b>typeof</b>(<b>string</b>), <b>typeof</b>(<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;), <b>null</b>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="bbd07f9a7f5771d8" href="R/bbd07f9a7f5771d8.html" target="n" data-glyph="42,1" class="i field">ShortNameProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;ShortName&quot;</span>, <b>typeof</b>(<b>string</b>), <b>typeof</b>(<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;), <b>null</b>);
+ 
+		<b>static readonly</b> <a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <a id="7a8f2a1ed6f00c22" href="R/7a8f2a1ed6f00c22.html" target="n" data-glyph="46,1" class="i field">HeaderContentPropertyKey</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#59da471949b1603c" class="i method">CreateReadOnly</a>(<span class="s">&quot;HeaderContent&quot;</span>, <b>typeof</b>(<span class="r1 r t">TItem</span>), <b>typeof</b>(<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;), <b>null</b>);
+ 
+		<b>internal static readonly</b> <a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <a id="0f968db96a1bc84e" href="R/0f968db96a1bc84e.html" target="n" data-glyph="44,1" class="i field">ListProxyPropertyKey</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#59da471949b1603c" class="i method">CreateReadOnly</a>(<span class="s">&quot;ListProxy&quot;</span>, <b>typeof</b>(<a href="ListProxy.cs.html#6ab833c687aa0814" class="t t">ListProxy</a>), <b>typeof</b>(<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;), <b>null</b>,
+			<span class="r2 r">propertyChanged</span>: <a href="#f859443f2b38c48c" class="i method">OnListProxyChanged</a>);
+ 
+		<b>static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="49c67ad07aa1e7a2" href="R/49c67ad07aa1e7a2.html" target="n" data-glyph="46,1" class="i field">GroupProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;Group&quot;</span>, <b>typeof</b>(<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;), <b>typeof</b>(<span class="r1 r t">TItem</span>), <b>null</b>);
+ 
+		<b>static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="7bfa422dffee2118" href="R/7bfa422dffee2118.html" target="n" data-glyph="46,1" class="i field">IndexProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;Index&quot;</span>, <b>typeof</b>(<b>int</b>), <b>typeof</b>(<span class="r1 r t">TItem</span>), -1);
+ 
+		<b>static readonly</b> <a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <a id="a408b2f6641a8551" href="R/a408b2f6641a8551.html" target="n" data-glyph="46,1" class="i field">IsGroupHeaderPropertyKey</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#a6dd64302b8e6a3b" class="i method">CreateAttachedReadOnly</a>(<span class="s">&quot;IsGroupHeader&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="Cells/Cell.cs.html#7706486019503b22" class="t t">Cell</a>), <b>false</b>);
+ 
+		<b>readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="72d9cebcdefcf884" href="R/72d9cebcdefcf884.html" target="n" data-glyph="46,1" class="i field">_itemSourceProperty</a>;
+		<b>readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="b81f012112418567" href="R/b81f012112418567.html" target="n" data-glyph="46,1" class="i field">_itemTemplateProperty</a>;
+ 
+		<b>readonly</b> <span class="r0 r t">TView</span> <a id="622124dbd0b0f044" href="R/622124dbd0b0f044.html" target="n" data-glyph="46,1" class="i field">_itemsView</a>;
+ 
+		<b>readonly</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<span class="r1 r t">TItem</span>&gt; <a id="292fd55bee2b34b1" href="R/292fd55bee2b34b1.html" target="n" data-glyph="46,1" class="i field">_templatedObjects</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="r1 r t">TItem</span>&gt;();
+ 
+		<b>bool</b> <a id="f350c6081fc0063b" href="R/f350c6081fc0063b.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+		<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <a id="703938a865fcf314" href="R/703938a865fcf314.html" target="n" data-glyph="46,1" class="i field">_groupDisplayBinding</a>;
+		<a href="OrderedDictionary.cs.html#c61296e013b8b395" class="t t">OrderedDictionary</a>&lt;<b>object</b>, <a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt; <a id="9df57e21005894b9" href="R/9df57e21005894b9.html" target="n" data-glyph="46,1" class="i field">_groupedItems</a>;
+		<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="b6fa1f6fe9e2c84f" href="R/b6fa1f6fe9e2c84f.html" target="n" data-glyph="46,1" class="i field">_groupHeaderTemplate</a>;
+		<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <a id="e68c5d7b8abfdd49" href="R/e68c5d7b8abfdd49.html" target="n" data-glyph="46,1" class="i field">_groupShortNameBinding</a>;
+		<a href="#8d1dbcd47664ceaf" class="t t">ShortNamesProxy</a> <a id="a360600e9e71be62" href="R/a360600e9e71be62.html" target="n" data-glyph="46,1" class="i field">_shortNames</a>;
+ 
+		<b>internal</b> <a id="2394ea7dc04ae0ce" href="R/2394ea7dc04ae0ce.html" target="n" data-glyph="74,1" class="i constructor">TemplatedItemsList</a>(<span class="r0 r t">TView</span> <span id="r3 rd" class="r3 r">itemsView</span>, <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r4 rd" class="r4 r">itemSourceProperty</span>, <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r5 rd" class="r5 r">itemTemplateProperty</span>)
+		{
+			<b>if</b> (<span class="r3 r">itemsView</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;itemsView&quot;</span>);
+			<b>if</b> (<span class="r4 r">itemSourceProperty</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;itemSourceProperty&quot;</span>);
+			<b>if</b> (<span class="r5 r">itemTemplateProperty</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;itemTemplateProperty&quot;</span>);
+ 
+			<a href="#622124dbd0b0f044" class="i field">_itemsView</a> = <span class="r3 r">itemsView</span>;
+			<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#bb2e64331954d710" class="i method">BindableOnPropertyChanged</a>;
+ 
+			<a href="#72d9cebcdefcf884" class="i field">_itemSourceProperty</a> = <span class="r4 r">itemSourceProperty</span>;
+			<a href="#b81f012112418567" class="i field">_itemTemplateProperty</a> = <span class="r5 r">itemTemplateProperty</span>;
+ 
+			<a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a> <span id="r6 rd" class="r6 r">source</span> = <a href="#f88c1ed36838426b" class="i method">GetItemsViewSource</a>();
+			<b>if</b> (<span class="r6 r">source</span> != <b>null</b>)
+				<a href="#4de785bf3103388c" class="i property">ListProxy</a> = <b>new</b> <a href="ListProxy.cs.html#75e74a4f1b974a3a" class="t constructor">ListProxy</a>(<span class="r6 r">source</span>);
+			<b>else</b>
+				<a href="#4de785bf3103388c" class="i property">ListProxy</a> = <b>new</b> <a href="ListProxy.cs.html#75e74a4f1b974a3a" class="t constructor">ListProxy</a>(<b>new</b> <b>object</b>[0]);
+		}
+ 
+		<b>internal</b> <a id="bc4a8a6a7cca1bf5" href="R/bc4a8a6a7cca1bf5.html" target="n" data-glyph="74,1" class="i constructor">TemplatedItemsList</a>(<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r7 rd" class="r7 r">parent</span>, <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a> <span id="r8 rd" class="r8 r">itemSource</span>, <span class="r0 r t">TView</span> <span id="r9 rd" class="r9 r">itemsView</span>, <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r10 rd" class="r10 r">itemTemplateProperty</span>, <b>int</b> <span id="r11 rd" class="r11 r">windowSize</span> = <b>int</b>.<a href="@1@System.Runtime/A.html#c45153c0501d7122" class="i field">MaxValue</a>)
+		{
+			<b>if</b> (<span class="r9 r">itemsView</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;itemsView&quot;</span>);
+			<b>if</b> (<span class="r10 r">itemTemplateProperty</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;itemTemplateProperty&quot;</span>);
+ 
+			<a href="#385799608463c36e" class="i property">Parent</a> = <span class="r7 r">parent</span>;
+ 
+			<a href="#622124dbd0b0f044" class="i field">_itemsView</a> = <span class="r9 r">itemsView</span>;
+			<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#bb2e64331954d710" class="i method">BindableOnPropertyChanged</a>;
+			<a href="#b81f012112418567" class="i field">_itemTemplateProperty</a> = <span class="r10 r">itemTemplateProperty</span>;
+ 
+			<b>if</b> (<span class="r8 r">itemSource</span> != <b>null</b>)
+			{
+				<a href="#4de785bf3103388c" class="i property">ListProxy</a> = <b>new</b> <a href="ListProxy.cs.html#75e74a4f1b974a3a" class="t constructor">ListProxy</a>(<span class="r8 r">itemSource</span>, <span class="r11 r">windowSize</span>);
+				<a href="#4de785bf3103388c" class="i property">ListProxy</a>.<a href="IListProxy.cs.html#5fb25465ae2f0eca" class="i">CollectionChanged</a> += <a href="#654dbf94e061c801" class="i method">OnProxyCollectionChanged</a>;
+			}
+			<b>else</b>
+				<a href="#4de785bf3103388c" class="i property">ListProxy</a> = <b>new</b> <a href="ListProxy.cs.html#75e74a4f1b974a3a" class="t constructor">ListProxy</a>(<b>new</b> <b>object</b>[0]);
+		}
+ 
+		<b>event</b> <span class="t t">PropertyChangedEventHandler</span> <a href="ITemplatedItemsList.cs.html#5fafd275375b1472" class="t t">ITemplatedItemsList</a>&lt;<span class="r1 r t">TItem</span>&gt;.<a href="ITemplatedItemsList.cs.html#8dcc10d134b7cc15" class="i">PropertyChanged</a>
+		{
+			<b>add</b> { <a href="BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <b>value</b>; }
+			<b>remove</b> { <a href="BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <b>value</b>; }
+		}
+ 
+		<b>public</b> <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <a id="779692dd57ead3df" href="R/779692dd57ead3df.html" target="n" data-glyph="102,1" class="i property">GroupDisplayBinding</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#703938a865fcf314" class="i field">_groupDisplayBinding</a>; }
+			<b>set</b>
+			{
+				<a href="#703938a865fcf314" class="i field">_groupDisplayBinding</a> = <b>value</b>;
+				<a href="#3378fade52ad8271" class="i method">OnHeaderTemplateChanged</a>();
+			}
+		}
+ 
+		<b>public</b> <a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="e74a990ce6574f9c" href="R/e74a990ce6574f9c.html" target="n" data-glyph="102,1" class="i property">GroupHeaderTemplate</a>
+		{
+			<b>get</b>
+			{
+				<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <span id="r12 rd" class="r12 r">groupHeader</span> = <b>null</b>;
+				<b>if</b> (<a href="#80fd4872906f6548" class="i property">GroupHeaderTemplateProperty</a> != <b>null</b>)
+					<span class="r12 r">groupHeader</span> = (<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a>)<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#80fd4872906f6548" class="i property">GroupHeaderTemplateProperty</a>);
+ 
+				<b>return</b> <span class="r12 r">groupHeader</span> ?? <a href="#b6fa1f6fe9e2c84f" class="i field">_groupHeaderTemplate</a>;
+			}
+ 
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#b6fa1f6fe9e2c84f" class="i field">_groupHeaderTemplate</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<a href="#b6fa1f6fe9e2c84f" class="i field">_groupHeaderTemplate</a> = <b>value</b>;
+				<a href="#3378fade52ad8271" class="i method">OnHeaderTemplateChanged</a>();
+			}
+		}
+ 
+		<b>public</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="80fd4872906f6548" href="R/80fd4872906f6548.html" target="n" data-glyph="102,1" class="i property">GroupHeaderTemplateProperty</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public</b> <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <a id="11ab8ee6f14d1749" href="R/11ab8ee6f14d1749.html" target="n" data-glyph="102,1" class="i property">GroupShortNameBinding</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#e68c5d7b8abfdd49" class="i field">_groupShortNameBinding</a>; }
+			<b>set</b>
+			{
+				<a href="#e68c5d7b8abfdd49" class="i field">_groupShortNameBinding</a> = <b>value</b>;
+				<a href="#eabbbad1fc93ae47" class="i method">OnShortNameBindingChanged</a>();
+			}
+		}
+ 
+		<b>public</b> <span class="r1 r t">TItem</span> <a id="2f539e9ba4cca042" href="R/2f539e9ba4cca042.html" target="n" data-glyph="102,1" class="i property">HeaderContent</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="r1 r t">TItem</span>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#7a8f2a1ed6f00c22" class="i field">HeaderContentPropertyKey</a>.<a href="BindablePropertyKey.cs.html#80ee7a7d9c6b4d14" class="i property">BindableProperty</a>); }
+			<b>private set</b> { <a href="BindableObject.cs.html#da429b392302767c" class="i method">SetValue</a>(<a href="#7a8f2a1ed6f00c22" class="i field">HeaderContentPropertyKey</a>, <b>value</b>); }
+		}
+ 
+		<b>public bool</b> <a id="0d96f3ba6380dea0" href="R/0d96f3ba6380dea0.html" target="n" data-glyph="102,1" class="i property">IsGroupingEnabled</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="#7ba75e6c637df5f3" class="i property">IsGroupingEnabledProperty</a> != <b>null</b>) &amp;&amp; (<b>bool</b>)<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#7ba75e6c637df5f3" class="i property">IsGroupingEnabledProperty</a>); }
+		}
+ 
+		<b>public</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="7ba75e6c637df5f3" href="R/7ba75e6c637df5f3.html" target="n" data-glyph="102,1" class="i property">IsGroupingEnabledProperty</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a> <a id="9b666964322a7be7" href="R/9b666964322a7be7.html" target="n" data-glyph="102,1" class="i property">ItemsSource</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#4de785bf3103388c" class="i property">ListProxy</a>.<a href="IListProxy.cs.html#2a97343604d30bce" class="i property">ProxiedEnumerable</a>; }
+		}
+ 
+		<b>public string</b> <a id="8ef70a3aa39b8a90" href="R/8ef70a3aa39b8a90.html" target="n" data-glyph="102,1" class="i property">Name</a>
+		{
+			<b>get</b> { <b>return</b> (<b>string</b>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#8ac2fe3bdbe88c86" class="i field">NameProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#8ac2fe3bdbe88c86" class="i field">NameProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <a id="385799608463c36e" href="R/385799608463c36e.html" target="n" data-glyph="102,1" class="i property">Parent</a> { <b>get</b>; }
+ 
+		<b>public</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="d490eebf95ac2842" href="R/d490eebf95ac2842.html" target="n" data-glyph="102,1" class="i property">ProgressiveLoadingProperty</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public string</b> <a id="c7353a358cfca0ff" href="R/c7353a358cfca0ff.html" target="n" data-glyph="102,1" class="i property">ShortName</a>
+		{
+			<b>get</b> { <b>return</b> (<b>string</b>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#bbd07f9a7f5771d8" class="i field">ShortNameProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#bbd07f9a7f5771d8" class="i field">ShortNameProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<b>string</b>&gt; <a id="543d9b3abd292677" href="R/543d9b3abd292677.html" target="n" data-glyph="102,1" class="i property">ShortNames</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#a360600e9e71be62" class="i field">_shortNames</a>; }
+		}
+ 
+		<b>internal</b> <a href="ListViewCachingStrategy.cs.html#7325a6e87ebf132d" class="t t">ListViewCachingStrategy</a> <a id="d47853347567ea6b" href="R/d47853347567ea6b.html" target="n" data-glyph="104,1" class="i property">CachingStrategy</a>
+		{
+			<b>get</b>
+			{
+				<a href="ListView.cs.html#bde8d740ed7039c7" class="k">var</a> <span id="r13 rd" class="r13 r">listView</span> = <a href="#622124dbd0b0f044" class="i field">_itemsView</a> <b>as</b> <a href="ListView.cs.html#bde8d740ed7039c7" class="t t">ListView</a>;
+				<b>if</b> (<span class="r13 r">listView</span> == <b>null</b>)
+					<b>return</b> <a href="ListViewCachingStrategy.cs.html#7325a6e87ebf132d" class="t t">ListViewCachingStrategy</a>.<a href="ListViewCachingStrategy.cs.html#4e662ce81571ed35" class="i field">RetainElement</a>;
+ 
+				<b>return</b> <span class="r13 r">listView</span>.<a href="ListView.cs.html#853e43c3430ca1d5" class="i property">CachingStrategy</a>;
+			}
+		}
+ 
+		<b>internal</b> <a href="IListProxy.cs.html#bb08d2d17017b22f" class="t t">IListProxy</a> <a id="4de785bf3103388c" href="R/4de785bf3103388c.html" target="n" data-glyph="104,1" class="i property">ListProxy</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="IListProxy.cs.html#bb08d2d17017b22f" class="t t">IListProxy</a>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#0f968db96a1bc84e" class="i field">ListProxyPropertyKey</a>.<a href="BindablePropertyKey.cs.html#80ee7a7d9c6b4d14" class="i property">BindableProperty</a>); }
+			<b>private set</b> { <a href="BindableObject.cs.html#da429b392302767c" class="i method">SetValue</a>(<a href="#0f968db96a1bc84e" class="i field">ListProxyPropertyKey</a>, <b>value</b>); }
+		}
+ 
+		<a href="IListProxy.cs.html#bb08d2d17017b22f" class="t t">IListProxy</a> <a href="ITemplatedItemsList.cs.html#5fafd275375b1472" class="t t">ITemplatedItemsList</a>&lt;<span class="r1 r t">TItem</span>&gt;.<a href="ITemplatedItemsList.cs.html#95cf81e423c7f190" class="i property">ListProxy</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#4de785bf3103388c" class="i property">ListProxy</a>; }
+		}
+ 
+		<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="836dfca4ebb83991" href="R/836dfca4ebb83991.html" target="n" data-glyph="106,1" class="i property">ItemTemplate</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a>)<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#b81f012112418567" class="i field">_itemTemplateProperty</a>); }
+		}
+ 
+		<b>bool</b> <a id="6ba97562d7e1a87d" href="R/../../0000000000.html" target="n" data-glyph="106,1" class="i property">ProgressiveLoading</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="#d490eebf95ac2842" class="i property">ProgressiveLoadingProperty</a> != <b>null</b>) &amp;&amp; (<b>bool</b>)<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#d490eebf95ac2842" class="i property">ProgressiveLoadingProperty</a>); }
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#cde8022b6e680e40" class="t t">ICollection</a>.<a href="@1@System.Runtime/A.html#39497d2d50b3f663" class="i method">CopyTo</a>(<a href="@1@System.Runtime/A.html#156e066ecc4ccedf" class="t t">Array</a> <span id="r14 rd" class="r14 r">array</span>, <b>int</b> <span id="r15 rd" class="r15 r">arrayIndex</span>)
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#085d4139ffb78d13" class="t constructor">NotImplementedException</a>();
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#cde8022b6e680e40" class="t t">ICollection</a>.<a href="@1@System.Runtime/A.html#99438469a9a77b4f" class="i property">IsSynchronized</a>
+		{
+			<b>get</b> { <b>return false</b>; }
+		}
+ 
+		<b>object</b> <a href="@1@System.Runtime/A.html#cde8022b6e680e40" class="t t">ICollection</a>.<a href="@1@System.Runtime/A.html#67322104fb933552" class="i property">SyncRoot</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#1bbf66e01c80bd54" class="k">this</a>; }
+		}
+ 
+		<b>public void</b> <a id="bc56980372bed4ac" href="R/bc56980372bed4ac.html" target="n" data-glyph="72,1" class="i method">Dispose</a>()
+		{
+			<b>if</b> (<a href="#f350c6081fc0063b" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#bb2e64331954d710" class="i method">BindableOnPropertyChanged</a>;
+ 
+			<span class="r1 r t">TItem</span> <span id="r16 rd" class="r16 r">header</span> = <a href="#2f539e9ba4cca042" class="i property">HeaderContent</a>;
+			<b>if</b> (<span class="r16 r">header</span> != <b>null</b>)
+				<a href="#d4a323e8b23bd43f" class="i method">UnhookItem</a>(<span class="r16 r">header</span>);
+ 
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r17 rd" class="r17 r">i</span> = 0; <span class="r17 r">i</span> &lt; <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r17 r">i</span>++)
+			{
+				<span class="r1 r t">TItem</span> <span id="r18 rd" class="r18 r">item</span> = <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r17 r">i</span>];
+				<b>if</b> (<span class="r18 r">item</span> != <b>null</b>)
+					<a href="#d4a323e8b23bd43f" class="i method">UnhookItem</a>(<span class="r18 r">item</span>);
+			}
+ 
+			<a href="#f350c6081fc0063b" class="i field">_disposed</a> = <b>true</b>;
+		}
+ 
+		<a href="@1@System.Runtime/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>.<a href="@1@System.Runtime/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>()
+		{
+			<b>if</b> (<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a>)
+				<b>return</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#51968358479fdb4d" class="i property">Values</a>.<a href="@1@System.Runtime/A.html#a242475701b655b2" class="i method">GetEnumerator</a>();
+ 
+			<b>return</b> <a href="#974a04d14325e720" class="i method">GetEnumerator</a>();
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<span class="r1 r t">TItem</span>&gt; <a id="974a04d14325e720" href="R/974a04d14325e720.html" target="n" data-glyph="72,1" class="i method">GetEnumerator</a>()
+		{
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r19 rd" class="r19 r">i</span> = 0;
+			<b>foreach</b> (<b>object</b> <span id="r20 rd" class="r20 r">item</span> <b>in</b> <a href="#4de785bf3103388c" class="i property">ListProxy</a>)
+				<b>yield return</b> <a href="#12508fa43bca1e39" class="i method">GetOrCreateContent</a>(<span class="r19 r">i</span>++, <span class="r20 r">item</span>);
+		}
+ 
+		<b>int</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#bded9f03433a53d4" class="i method">Add</a>(<b>object</b> <span id="r21 rd" class="r21 r">item</span>)
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#11fee9febe020c7c" class="i method">Clear</a>()
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#ffcdcc091fb8c1ef" class="i method">Contains</a>(<b>object</b> <span id="r22 rd" class="r22 r">item</span>)
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#085d4139ffb78d13" class="t constructor">NotImplementedException</a>();
+		}
+ 
+		<b>int</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#de5de69de55c396f" class="i method">IndexOf</a>(<b>object</b> <span id="r23 rd" class="r23 r">item</span>)
+		{
+			<b>if</b> (<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a>)
+			{
+				<a href="#1bbf66e01c80bd54" class="k">var</a> <span id="r24 rd" class="r24 r">til</span> = <span class="r23 r">item</span> <b>as</b> <a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;;
+				<b>if</b> (<span class="r24 r">til</span> != <b>null</b>)
+					<b>return</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#51968358479fdb4d" class="i property">Values</a>.<a href="EnumerableExtensions.cs.html#ae78fe906aea45a9" class="i method">IndexOf</a>(<span class="r24 r">til</span>);
+			}
+ 
+			<b>return</b> <a href="#facfa57c4960db32" class="i method">IndexOf</a>((<span class="r1 r t">TItem</span>)<span class="r23 r">item</span>);
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#11f7bb96fc6ac350" class="i method">Insert</a>(<b>int</b> <span id="r25 rd" class="r25 r">index</span>, <b>object</b> <span id="r26 rd" class="r26 r">item</span>)
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#62b7ec4ff8eabfbc" class="i property">IsFixedSize</a>
+		{
+			<b>get</b> { <b>return false</b>; }
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#0cbac8352fc2d8c4" class="i property">IsReadOnly</a>
+		{
+			<b>get</b> { <b>return true</b>; }
+		}
+ 
+		<b>object</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#32c1ca862ea365e7" class="k">this</a>[<b>int</b> <span id="r27 rd" class="r27 r">index</span>]
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a>)
+					<b>return</b> <a href="#47d6e238c357f9c8" class="i method">GetGroup</a>(<span class="r27 r">index</span>);
+ 
+				<b>return</b> <a href="#1bbf66e01c80bd54" class="k">this</a><a href="#9c6aabc35cfce440">[</a><span class="r27 r">index</span>];
+			}
+			<b>set</b> { <b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>(); }
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#36e262a0820371fd" class="i method">Remove</a>(<b>object</b> <span id="r28 rd" class="r28 r">item</span>)
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#1c03bac1b91e9406" class="i method">RemoveAt</a>(<b>int</b> <span id="r29 rd" class="r29 r">index</span>)
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+		}
+ 
+		<b>public event</b> <span class="t t">NotifyCollectionChangedEventHandler</span> <a id="5e68117683d977a6" href="R/5e68117683d977a6.html" target="n" data-glyph="30,1" class="i">CollectionChanged</a>;
+ 
+		<b>public int</b> <a id="7971f33f8275cc5b" href="R/7971f33f8275cc5b.html" target="n" data-glyph="102,1" class="i property">Count</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#4de785bf3103388c" class="i property">ListProxy</a>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; }
+		}
+ 
+		<b>public</b> <span class="r1 r t">TItem</span> <a id="9c6aabc35cfce440" href="R/9c6aabc35cfce440.html" target="n" data-glyph="102,1" class="k">this</a>[<b>int</b> <span id="r30 rd" class="r30 r">index</span>]
+		{
+			<b>get</b> { <b>return</b> <a href="#12508fa43bca1e39" class="i method">GetOrCreateContent</a>(<span class="r30 r">index</span>, <a href="#4de785bf3103388c" class="i property">ListProxy</a><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r30 r">index</span>]); }
+		}
+ 
+		<b>public int</b> <a id="2412604d2a51ec21" href="R/2412604d2a51ec21.html" target="n" data-glyph="72,1" class="i method">GetDescendantCount</a>()
+		{
+			<b>if</b> (!<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a>)
+				<b>return</b> <a href="#7971f33f8275cc5b" class="i property">Count</a>;
+ 
+			<b>if</b> (<a href="#9df57e21005894b9" class="i field">_groupedItems</a> == <b>null</b>)
+				<b>return</b> 0;
+ 
+			<b>int</b> <span id="r31 rd" class="r31 r">count</span> = <a href="#7971f33f8275cc5b" class="i property">Count</a>;
+			<b>foreach</b> (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r32 rd" class="r32 r">group</span> <b>in</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#51968358479fdb4d" class="i property">Values</a>)
+				<span class="r31 r">count</span> += <span class="r32 r">group</span>.<a href="#2412604d2a51ec21" class="i method">GetDescendantCount</a>();
+ 
+			<b>return</b> <span class="r31 r">count</span>;
+		}
+ 
+		<b>public int</b> <a id="af958444056cb526" href="R/af958444056cb526.html" target="n" data-glyph="72,1" class="i method">GetGlobalIndexForGroup</a>(<a href="ITemplatedItemsList.cs.html#5fafd275375b1472" class="t t">ITemplatedItemsList</a>&lt;<span class="r1 r t">TItem</span>&gt; <span id="r33 rd" class="r33 r">group</span>)
+		{
+			<b>if</b> (<span class="r33 r">group</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;group&quot;</span>);
+ 
+			<b>int</b> <span id="r34 rd" class="r34 r">groupIndex</span> = <a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#51968358479fdb4d" class="i property">Values</a>.<a href="EnumerableExtensions.cs.html#ae78fe906aea45a9" class="i method">IndexOf</a>(<span class="r33 r">group</span>);
+ 
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r35 rd" class="r35 r">index</span> = 0;
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r36 rd" class="r36 r">i</span> = 0; <span class="r36 r">i</span> &lt; <span class="r34 r">groupIndex</span>; <span class="r36 r">i</span>++)
+				<span class="r35 r">index</span> += <a href="#9df57e21005894b9" class="i field">_groupedItems</a><a href="OrderedDictionary.cs.html#e24f4eeedbf6ce8e">[</a><span class="r36 r">i</span>].<a href="#2412604d2a51ec21" class="i method">GetDescendantCount</a>() + 1;
+ 
+			<b>return</b> <span class="r35 r">index</span>;
+		}
+ 
+		<b>public int</b> <a id="51e3a446b904d788" href="R/51e3a446b904d788.html" target="n" data-glyph="72,1" class="i method">GetGlobalIndexOfGroup</a>(<b>object</b> <span id="r37 rd" class="r37 r">item</span>)
+		{
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r38 rd" class="r38 r">count</span> = 0;
+			<b>if</b> (<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a> &amp;&amp; <a href="#9df57e21005894b9" class="i field">_groupedItems</a> != <b>null</b>)
+			{
+				<b>foreach</b> (<b>object</b> <span id="r39 rd" class="r39 r">group</span> <b>in</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#7a5c49f494e2dd1b" class="i property">Keys</a>)
+				{
+					<b>if</b> (<span class="r39 r">group</span> == <span class="r37 r">item</span>)
+						<b>return</b> <span class="r38 r">count</span>;
+					<span class="r38 r">count</span>++;
+				}
+			}
+ 
+			<b>return</b> -1;
+		}
+ 
+		<b>public int</b> <a id="b640228213ba97b3" href="R/b640228213ba97b3.html" target="n" data-glyph="72,1" class="i method">GetGlobalIndexOfItem</a>(<b>object</b> <span id="r40 rd" class="r40 r">item</span>)
+		{
+			<b>if</b> (!<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a>)
+				<b>return</b> <a href="#4de785bf3103388c" class="i property">ListProxy</a>.<a href="@1@System.Runtime/A.html#de5de69de55c396f" class="i method">IndexOf</a>(<span class="r40 r">item</span>);
+ 
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r41 rd" class="r41 r">count</span> = 0;
+			<b>if</b> (<a href="#9df57e21005894b9" class="i field">_groupedItems</a> != <b>null</b>)
+			{
+				<b>foreach</b> (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r42 rd" class="r42 r">children</span> <b>in</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#51968358479fdb4d" class="i property">Values</a>)
+				{
+					<span class="r41 r">count</span>++;
+ 
+					<b>int</b> <span id="r43 rd" class="r43 r">index</span> = <span class="r42 r">children</span>.<a href="#b640228213ba97b3" class="i method">GetGlobalIndexOfItem</a>(<span class="r40 r">item</span>);
+					<b>if</b> (<span class="r43 r">index</span> != -1)
+						<b>return</b> <span class="r41 r">count</span> + <span class="r43 r">index</span>;
+ 
+					<span class="r41 r">count</span> += <span class="r42 r">children</span>.<a href="#2412604d2a51ec21" class="i method">GetDescendantCount</a>();
+				}
+			}
+ 
+			<b>return</b> -1;
+		}
+ 
+		<b>public int</b> <a id="a0403bd794bada99" href="R/a0403bd794bada99.html" target="n" data-glyph="72,1" class="i method">GetGlobalIndexOfItem</a>(<b>object</b> <span id="r44 rd" class="r44 r">group</span>, <b>object</b> <span id="r45 rd" class="r45 r">item</span>)
+		{
+			<b>if</b> (!<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a>)
+				<b>return</b> <a href="#4de785bf3103388c" class="i property">ListProxy</a>.<a href="@1@System.Runtime/A.html#de5de69de55c396f" class="i method">IndexOf</a>(<span class="r45 r">item</span>);
+ 
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r46 rd" class="r46 r">count</span> = 0;
+			<b>if</b> (<a href="#9df57e21005894b9" class="i field">_groupedItems</a> != <b>null</b>)
+			{
+				<b>foreach</b> (<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>object</b>, <a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt; <span id="r47 rd" class="r47 r">kvp</span> <b>in</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a>)
+				{
+					<span class="r46 r">count</span>++;
+ 
+					<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r44 r">group</span>, <span class="r47 r">kvp</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>))
+					{
+						<b>int</b> <span id="r48 rd" class="r48 r">index</span> = <span class="r47 r">kvp</span>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>.<a href="#b640228213ba97b3" class="i method">GetGlobalIndexOfItem</a>(<span class="r45 r">item</span>);
+						<b>if</b> (<span class="r48 r">index</span> != -1)
+							<b>return</b> <span class="r46 r">count</span> + <span class="r48 r">index</span>;
+					}
+ 
+					<span class="r46 r">count</span> += <span class="r47 r">kvp</span>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>.<a href="#2412604d2a51ec21" class="i method">GetDescendantCount</a>();
+				}
+			}
+ 
+			<b>return</b> -1;
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#1806cf6634f5a371" class="t t">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt; <a id="d7de209492c6a201" href="R/d7de209492c6a201.html" target="n" data-glyph="72,1" class="i method">GetGroupAndIndexOfItem</a>(<b>object</b> <span id="r49 rd" class="r49 r">item</span>)
+		{
+			<b>if</b> (<span class="r49 r">item</span> == <b>null</b>)
+				<b>return</b> <b>new</b> <a href="@1@System.Runtime/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt;(-1, -1);
+			<b>if</b> (!<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a>)
+				<b>return</b> <b>new</b> <a href="@1@System.Runtime/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt;(0, <a href="#b640228213ba97b3" class="i method">GetGlobalIndexOfItem</a>(<span class="r49 r">item</span>));
+ 
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r50 rd" class="r50 r">group</span> = 0;
+			<b>if</b> (<a href="#9df57e21005894b9" class="i field">_groupedItems</a> != <b>null</b>)
+			{
+				<b>foreach</b> (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r51 rd" class="r51 r">children</span> <b>in</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#51968358479fdb4d" class="i property">Values</a>)
+				{
+					<b>int</b> <span id="r52 rd" class="r52 r">index</span> = <span class="r51 r">children</span>.<a href="#b640228213ba97b3" class="i method">GetGlobalIndexOfItem</a>(<span class="r49 r">item</span>);
+					<b>if</b> (<span class="r52 r">index</span> != -1)
+						<b>return</b> <b>new</b> <a href="@1@System.Runtime/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt;(<span class="r50 r">group</span>, <span class="r52 r">index</span>);
+ 
+					<span class="r50 r">group</span>++;
+				}
+			}
+ 
+			<b>return</b> <b>new</b> <a href="@1@System.Runtime/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt;(-1, -1);
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#1806cf6634f5a371" class="t t">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt; <a id="318a68f062eaf0d0" href="R/318a68f062eaf0d0.html" target="n" data-glyph="72,1" class="i method">GetGroupAndIndexOfItem</a>(<b>object</b> <span id="r53 rd" class="r53 r">group</span>, <b>object</b> <span id="r54 rd" class="r54 r">item</span>)
+		{
+			<b>if</b> (!<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a>)
+				<b>return</b> <b>new</b> <a href="@1@System.Runtime/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt;(0, <a href="#b640228213ba97b3" class="i method">GetGlobalIndexOfItem</a>(<span class="r54 r">item</span>));
+			<b>if</b> (<a href="#9df57e21005894b9" class="i field">_groupedItems</a> == <b>null</b>)
+				<b>return</b> <b>new</b> <a href="@1@System.Runtime/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt;(-1, -1);
+ 
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r55 rd" class="r55 r">groupIndex</span> = 0;
+			<b>foreach</b> (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r56 rd" class="r56 r">children</span> <b>in</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#51968358479fdb4d" class="i property">Values</a>)
+			{
+				<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r56 r">children</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>, <span class="r53 r">group</span>) || <span class="r53 r">group</span> == <b>null</b>)
+				{
+					<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r57 rd" class="r57 r">i</span> = 0; <span class="r57 r">i</span> &lt; <span class="r56 r">children</span>.<a href="#7971f33f8275cc5b" class="i property">Count</a>; <span class="r57 r">i</span>++)
+					{
+						<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r56 r">children</span><a href="#9c6aabc35cfce440">[</a><span class="r57 r">i</span>].<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>, <span class="r54 r">item</span>))
+							<b>return</b> <b>new</b> <a href="@1@System.Runtime/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt;(<span class="r55 r">groupIndex</span>, <span class="r57 r">i</span>);
+					}
+ 
+					<b>if</b> (<span class="r53 r">group</span> != <b>null</b>)
+						<b>return</b> <b>new</b> <a href="@1@System.Runtime/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt;(<span class="r55 r">groupIndex</span>, -1);
+				}
+ 
+				<span class="r55 r">groupIndex</span>++;
+			}
+ 
+			<b>return</b> <b>new</b> <a href="@1@System.Runtime/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt;(-1, -1);
+		}
+ 
+		<b>public int</b> <a id="c4ca2a1ed948e259" href="R/c4ca2a1ed948e259.html" target="n" data-glyph="72,1" class="i method">GetGroupIndexFromGlobal</a>(<b>int</b> <span id="r58 rd" class="r58 r">globalIndex</span>, <b>out int</b> <span id="r59 rd" class="r59 r">leftOver</span>)
+		{
+			<span class="r59 r">leftOver</span> = 0;
+ 
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r60 rd" class="r60 r">index</span> = 0;
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r61 rd" class="r61 r">i</span> = 0; <span class="r61 r">i</span> &lt; <a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#8d6327406a273614" class="i property">Count</a>; <span class="r61 r">i</span>++)
+			{
+				<b>if</b> (<span class="r60 r">index</span> == <span class="r58 r">globalIndex</span>)
+					<b>return</b> <span class="r61 r">i</span>;
+ 
+				<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r62 rd" class="r62 r">group</span> = <a href="#9df57e21005894b9" class="i field">_groupedItems</a><a href="OrderedDictionary.cs.html#e24f4eeedbf6ce8e">[</a><span class="r61 r">i</span>];
+				<b>int</b> <span id="r63 rd" class="r63 r">count</span> = <span class="r62 r">group</span>.<a href="#2412604d2a51ec21" class="i method">GetDescendantCount</a>();
+ 
+				<b>if</b> (<span class="r60 r">index</span> + <span class="r63 r">count</span> &gt;= <span class="r58 r">globalIndex</span>)
+				{
+					<span class="r59 r">leftOver</span> = <span class="r58 r">globalIndex</span> - <span class="r60 r">index</span>;
+					<b>return</b> <span class="r61 r">i</span>;
+				}
+ 
+				<span class="r60 r">index</span> += <span class="r63 r">count</span> + 1;
+			}
+ 
+			<b>return</b> -1;
+		}
+ 
+		<b>public event</b> <span class="t t">NotifyCollectionChangedEventHandler</span> <a id="ac0769e4fc17c62c" href="R/ac0769e4fc17c62c.html" target="n" data-glyph="30,1" class="i">GroupedCollectionChanged</a>;
+		<b>event</b> <span class="t t">NotifyCollectionChangedEventHandler</span> <a href="ITemplatedItemsList.cs.html#5fafd275375b1472" class="t t">ITemplatedItemsList</a>&lt;<span class="r1 r t">TItem</span>&gt;.<a href="ITemplatedItemsList.cs.html#8b023baeda1bdf2a" class="i">GroupedCollectionChanged</a>
+		{
+			<b>add</b> { <a href="#ac0769e4fc17c62c" class="i">GroupedCollectionChanged</a> += <b>value</b>; }
+			<b>remove</b> { <a href="#ac0769e4fc17c62c" class="i">GroupedCollectionChanged</a> -= <b>value</b>; }
+		}
+ 
+		<b>public int</b> <a id="facfa57c4960db32" href="R/facfa57c4960db32.html" target="n" data-glyph="72,1" class="i method">IndexOf</a>(<span class="r1 r t">TItem</span> <span id="r64 rd" class="r64 r">item</span>)
+		{
+			<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r65 rd" class="r65 r">group</span> = <a href="#54f3b021d6955e13" class="i method">GetGroup</a>(<span class="r64 r">item</span>);
+			<b>if</b> (<span class="r65 r">group</span> != <b>null</b> &amp;&amp; <span class="r65 r">group</span> != <a href="#1bbf66e01c80bd54" class="k">this</a>)
+				<b>return</b> -1;
+ 
+			<b>return</b> <a href="#677bb805a9d20ebe" class="i method">GetIndex</a>(<span class="r64 r">item</span>);
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public</b> <a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="a5e9a2a821a53e9a" href="R/a5e9a2a821a53e9a.html" target="n" data-glyph="72,1" class="i method">SelectDataTemplate</a>(<b>object</b> <span id="r66 rd" class="r66 r">item</span>)
+		{
+			<b>return</b> <a href="#836dfca4ebb83991" class="i property">ItemTemplate</a>.<a href="DataTemplateExtensions.cs.html#7260f9a915501a71" class="i method">SelectDataTemplate</a>(<span class="r66 r">item</span>, <a href="#622124dbd0b0f044" class="i field">_itemsView</a>);
+		}
+ 
+		<b>public</b> <span class="r1 r t">TItem</span> <a id="5a7fe434dfd3e572" href="R/5a7fe434dfd3e572.html" target="n" data-glyph="72,1" class="i method">CreateContent</a>(<b>int</b> <span id="r67 rd" class="r67 r">index</span>, <b>object</b> <span id="r68 rd" class="r68 r">item</span>, <b>bool</b> <span id="r69 rd" class="r69 r">insert</span> = <b>false</b>)
+		{
+			<span class="r1 r t">TItem</span> <span id="r70 rd" class="r70 r">content</span> = <a href="#836dfca4ebb83991" class="i property">ItemTemplate</a> != <b>null</b> ? (<span class="r1 r t">TItem</span>)<a href="#836dfca4ebb83991" class="i property">ItemTemplate</a>.<a href="DataTemplateExtensions.cs.html#ce294591fa1c5226" class="i method">CreateContent</a>(<span class="r68 r">item</span>, <a href="#622124dbd0b0f044" class="i field">_itemsView</a>) : <a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="IItemsView.cs.html#02339fb456476c5b" class="i method">CreateDefault</a>(<span class="r68 r">item</span>);
+ 
+			<span class="r70 r">content</span> = <a href="#9b330461215e8a62" class="i method">UpdateContent</a>(<span class="r70 r">content</span>, <span class="r67 r">index</span>, <span class="r68 r">item</span>);
+ 
+			<b>if</b> ((<a href="#d47853347567ea6b" class="i property">CachingStrategy</a> &amp; <a href="ListViewCachingStrategy.cs.html#7325a6e87ebf132d" class="t t">ListViewCachingStrategy</a>.<a href="ListViewCachingStrategy.cs.html#791a8ea6a96061a0" class="i field">RecycleElement</a>) != 0)
+				<b>return</b> <span class="r70 r">content</span>;
+ 
+			<b>for</b> (<b>int</b> <span id="r71 rd" class="r71 r">i</span> = <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r71 r">i</span> &lt;= <span class="r67 r">index</span>; <span class="r71 r">i</span>++)
+				<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<b>null</b>);
+ 
+			<b>if</b> (!<span class="r69 r">insert</span>)
+				<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r67 r">index</span>] = <span class="r70 r">content</span>;
+			<b>else</b>
+				<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#49c519bce0cdbd82" class="i method">Insert</a>(<span class="r67 r">index</span>, <span class="r70 r">content</span>);
+ 
+			<b>return</b> <span class="r70 r">content</span>;
+		}
+ 
+		<b>internal void</b> <a id="feda21519ab16b9e" href="R/../../0000000000.html" target="n" data-glyph="74,1" class="i method">ForceUpdate</a>()
+		{
+			<a href="#4de785bf3103388c" class="i property">ListProxy</a>.<a href="@1@System.Runtime/A.html#11fee9febe020c7c" class="i method">Clear</a>();
+		}
+ 
+		<b>internal</b> <a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <a id="47d6e238c357f9c8" href="R/47d6e238c357f9c8.html" target="n" data-glyph="74,1" class="i method">GetGroup</a>(<b>int</b> <span id="r72 rd" class="r72 r">index</span>)
+		{
+			<b>if</b> (!<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a>)
+				<b>return</b> <a href="#1bbf66e01c80bd54" class="k">this</a>;
+ 
+			<b>return</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a><a href="OrderedDictionary.cs.html#e24f4eeedbf6ce8e">[</a><span class="r72 r">index</span>];
+		}
+ 
+		<a href="ITemplatedItemsList.cs.html#5fafd275375b1472" class="t t">ITemplatedItemsList</a>&lt;<span class="r1 r t">TItem</span>&gt; <a href="ITemplatedItemsList.cs.html#5fafd275375b1472" class="t t">ITemplatedItemsList</a>&lt;<span class="r1 r t">TItem</span>&gt;.<a href="ITemplatedItemsList.cs.html#1f8bfb2d10c25677" class="i method">GetGroup</a>(<b>int</b> <span id="r73 rd" class="r73 r">index</span>)
+		{
+			<b>return</b> <a href="#47d6e238c357f9c8" class="i method">GetGroup</a>(<span class="r73 r">index</span>);
+		}
+ 
+		<b>internal static</b> <a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <a id="54f3b021d6955e13" href="R/54f3b021d6955e13.html" target="n" data-glyph="74,1" class="i method">GetGroup</a>(<span class="r1 r t">TItem</span> <span id="r74 rd" class="r74 r">item</span>)
+		{
+			<b>if</b> (<span class="r74 r">item</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;item&quot;</span>);
+ 
+			<b>return</b> (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;)<span class="r74 r">item</span>.<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#49c67ad07aa1e7a2" class="i field">GroupProperty</a>);
+		}
+ 
+		<b>internal static int</b> <a id="677bb805a9d20ebe" href="R/677bb805a9d20ebe.html" target="n" data-glyph="74,1" class="i method">GetIndex</a>(<span class="r1 r t">TItem</span> <span id="r75 rd" class="r75 r">item</span>)
+		{
+			<b>if</b> (<span class="r75 r">item</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;item&quot;</span>);
+ 
+			<b>return</b> (<b>int</b>)<span class="r75 r">item</span>.<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#7bfa422dffee2118" class="i field">IndexProperty</a>);
+		}
+ 
+		<b>internal static bool</b> <a id="5ccd78e349f41e96" href="R/5ccd78e349f41e96.html" target="n" data-glyph="74,1" class="i method">GetIsGroupHeader</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r76 rd" class="r76 r">bindable</span>)
+		{
+			<b>return</b> (<b>bool</b>)<span class="r76 r">bindable</span>.<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#a408b2f6641a8551" class="i field">IsGroupHeaderPropertyKey</a>.<a href="BindablePropertyKey.cs.html#80ee7a7d9c6b4d14" class="i property">BindableProperty</a>);
+		}
+ 
+		<b>internal</b> <span class="r1 r t">TItem</span> <a id="12508fa43bca1e39" href="R/12508fa43bca1e39.html" target="n" data-glyph="74,1" class="i method">GetOrCreateContent</a>(<b>int</b> <span id="r77 rd" class="r77 r">index</span>, <b>object</b> <span id="r78 rd" class="r78 r">item</span>)
+		{
+			<span class="r1 r t">TItem</span> <span id="r79 rd" class="r79 r">content</span>;
+			<b>if</b> (<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> &lt;= <span class="r77 r">index</span> || (<span class="r79 r">content</span> = <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r77 r">index</span>]) == <b>null</b>)
+				<span class="r79 r">content</span> = <a href="#5a7fe434dfd3e572" class="i method">CreateContent</a>(<span class="r77 r">index</span>, <span class="r78 r">item</span>);
+ 
+			<b>return</b> <span class="r79 r">content</span>;
+		}
+ 
+		<b>internal static void</b> <a id="dd7be8af532b7be7" href="R/dd7be8af532b7be7.html" target="n" data-glyph="74,1" class="i method">SetIsGroupHeader</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r80 rd" class="r80 r">bindable</span>, <b>bool</b> <span id="r81 rd" class="r81 r">value</span>)
+		{
+			<span class="r80 r">bindable</span>.<a href="BindableObject.cs.html#da429b392302767c" class="i method">SetValue</a>(<a href="#a408b2f6641a8551" class="i field">IsGroupHeaderPropertyKey</a>, <span class="r81 r">value</span>);
+		}
+ 
+		<b>internal</b> <span class="r1 r t">TItem</span> <a id="9b330461215e8a62" href="R/9b330461215e8a62.html" target="n" data-glyph="74,1" class="i method">UpdateContent</a>(<span class="r1 r t">TItem</span> <span id="r82 rd" class="r82 r">content</span>, <b>int</b> <span id="r83 rd" class="r83 r">index</span>, <b>object</b> <span id="r84 rd" class="r84 r">item</span>)
+		{
+			<span class="r82 r">content</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <span class="r84 r">item</span>;
+ 
+			<b>if</b> (<a href="#385799608463c36e" class="i property">Parent</a> != <b>null</b>)
+				<a href="#f6af9f6776903504" class="i method">SetGroup</a>(<span class="r82 r">content</span>, <a href="#1bbf66e01c80bd54" class="k">this</a>);
+ 
+			<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<span class="r82 r">content</span>, <span class="r83 r">index</span>);
+ 
+			<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="IItemsView.cs.html#c7a024bdc927dd27" class="i method">SetupContent</a>(<span class="r82 r">content</span>, <span class="r83 r">index</span>);
+ 
+			<b>return</b> <span class="r82 r">content</span>;
+		}
+ 
+		<b>internal</b> <span class="r1 r t">TItem</span> <a id="da673f7be7ed27f1" href="R/da673f7be7ed27f1.html" target="n" data-glyph="74,1" class="i method">UpdateContent</a>(<span class="r1 r t">TItem</span> <span id="r85 rd" class="r85 r">content</span>, <b>int</b> <span id="r86 rd" class="r86 r">index</span>)
+		{
+			<b>object</b> <span id="r87 rd" class="r87 r">item</span> = <a href="#4de785bf3103388c" class="i property">ListProxy</a><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r86 r">index</span>];
+			<b>return</b> <a href="#9b330461215e8a62" class="i method">UpdateContent</a>(<span class="r85 r">content</span>, <span class="r86 r">index</span>, <span class="r87 r">item</span>);
+		}
+		<span class="r1 r t">TItem</span> <a href="ITemplatedItemsList.cs.html#5fafd275375b1472" class="t t">ITemplatedItemsList</a>&lt;<span class="r1 r t">TItem</span>&gt;.<a href="ITemplatedItemsList.cs.html#84aaab52bb3c68a9" class="i method">UpdateContent</a>(<span class="r1 r t">TItem</span> <span id="r88 rd" class="r88 r">content</span>, <b>int</b> <span id="r89 rd" class="r89 r">index</span>)
+		{
+			<b>return</b> <a href="#da673f7be7ed27f1" class="i method">UpdateContent</a>(<span class="r88 r">content</span>, <span class="r89 r">index</span>);
+		}
+ 
+		<b>internal</b> <span class="r1 r t">TItem</span> <a id="8c5c956f4424dafe" href="R/8c5c956f4424dafe.html" target="n" data-glyph="74,1" class="i method">UpdateHeader</a>(<span class="r1 r t">TItem</span> <span id="r90 rd" class="r90 r">content</span>, <b>int</b> <span id="r91 rd" class="r91 r">groupIndex</span>)
+		{
+			<b>if</b> (<a href="#385799608463c36e" class="i property">Parent</a> != <b>null</b> &amp;&amp; <a href="#385799608463c36e" class="i property">Parent</a>.<a href="#e74a990ce6574f9c" class="i property">GroupHeaderTemplate</a> == <b>null</b>)
+			{
+				<span class="r90 r">content</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <a href="#1bbf66e01c80bd54" class="k">this</a>;
+			}
+			<b>else</b>
+			{
+				<span class="r90 r">content</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <a href="#4de785bf3103388c" class="i property">ListProxy</a>.<a href="IListProxy.cs.html#2a97343604d30bce" class="i property">ProxiedEnumerable</a>;
+			}
+ 
+			<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<span class="r90 r">content</span>, <span class="r91 r">groupIndex</span>);
+ 
+			<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="IItemsView.cs.html#c7a024bdc927dd27" class="i method">SetupContent</a>(<span class="r90 r">content</span>, <span class="r91 r">groupIndex</span>);
+ 
+			<b>return</b> <span class="r90 r">content</span>;
+		}
+		<span class="r1 r t">TItem</span> <a href="ITemplatedItemsList.cs.html#5fafd275375b1472" class="t t">ITemplatedItemsList</a>&lt;<span class="r1 r t">TItem</span>&gt;.<a href="ITemplatedItemsList.cs.html#777ecfaeff5aa5a7" class="i method">UpdateHeader</a>(<span class="r1 r t">TItem</span> <span id="r92 rd" class="r92 r">content</span>, <b>int</b> <span id="r93 rd" class="r93 r">groupIndex</span>)
+		{
+			<b>return</b> <a href="#8c5c956f4424dafe" class="i method">UpdateHeader</a>(<span class="r92 r">content</span>, <span class="r93 r">groupIndex</span>);
+		}
+ 
+		<b>void</b> <a id="bb2e64331954d710" href="R/bb2e64331954d710.html" target="n" data-glyph="76,1" class="i method">BindableOnPropertyChanged</a>(<b>object</b> <span id="r94 rd" class="r94 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r95 rd" class="r95 r">e</span>)
+		{
+			<b>if</b> (<a href="#72d9cebcdefcf884" class="i field">_itemSourceProperty</a> != <b>null</b> &amp;&amp; <span class="r95 r">e</span>.<span class="i property">PropertyName</span> == <a href="#72d9cebcdefcf884" class="i field">_itemSourceProperty</a>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#919cd4027106f95d" class="i method">OnItemsSourceChanged</a>();
+			<b>else if</b> (<span class="r95 r">e</span>.<span class="i property">PropertyName</span> == <a href="#b81f012112418567" class="i field">_itemTemplateProperty</a>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#0cf7ee3d6b50e0ff" class="i method">OnItemTemplateChanged</a>();
+			<b>else if</b> (<a href="#d490eebf95ac2842" class="i property">ProgressiveLoadingProperty</a> != <b>null</b> &amp;&amp; <span class="r95 r">e</span>.<span class="i property">PropertyName</span> == <a href="#d490eebf95ac2842" class="i property">ProgressiveLoadingProperty</a>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#6b8ddf85537ac87d" class="i method">OnInfiniteScrollingChanged</a>();
+			<b>else if</b> (<a href="#80fd4872906f6548" class="i property">GroupHeaderTemplateProperty</a> != <b>null</b> &amp;&amp; <span class="r95 r">e</span>.<span class="i property">PropertyName</span> == <a href="#80fd4872906f6548" class="i property">GroupHeaderTemplateProperty</a>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#3378fade52ad8271" class="i method">OnHeaderTemplateChanged</a>();
+			<b>else if</b> (<a href="#7ba75e6c637df5f3" class="i property">IsGroupingEnabledProperty</a> != <b>null</b> &amp;&amp; <span class="r95 r">e</span>.<span class="i property">PropertyName</span> == <a href="#7ba75e6c637df5f3" class="i property">IsGroupingEnabledProperty</a>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#653383ed6ec44b72" class="i method">OnGroupingEnabledChanged</a>();
+		}
+ 
+		<a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a> <a id="505de5db5fea1c4d" href="R/505de5db5fea1c4d.html" target="n" data-glyph="76,1" class="i method">ConvertContent</a>(<b>int</b> <span id="r96 rd" class="r96 r">startingIndex</span>, <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a> <span id="r97 rd" class="r97 r">items</span>, <b>bool</b> <span id="r98 rd" class="r98 r">forceCreate</span> = <b>false</b>, <b>bool</b> <span id="r99 rd" class="r99 r">setIndex</span> = <b>false</b>)
+		{
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r100 rd" class="r100 r">contentItems</span> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<span class="r1 r t">TItem</span>&gt;(<span class="r97 r">items</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r101 rd" class="r101 r">i</span> = 0; <span class="r101 r">i</span> &lt; <span class="r97 r">items</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r101 r">i</span>++)
+			{
+				<b>int</b> <span id="r102 rd" class="r102 r">index</span> = <span class="r101 r">i</span> + <span class="r96 r">startingIndex</span>;
+				<span class="r1 r t">TItem</span> <span id="r103 rd" class="r103 r">content</span> = !<span class="r98 r">forceCreate</span> ? <a href="#12508fa43bca1e39" class="i method">GetOrCreateContent</a>(<span class="r102 r">index</span>, <span class="r97 r">items</span><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r101 r">i</span>]) : <a href="#5a7fe434dfd3e572" class="i method">CreateContent</a>(<span class="r102 r">index</span>, <span class="r97 r">items</span><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r101 r">i</span>]);
+				<b>if</b> (<span class="r99 r">setIndex</span>)
+					<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<span class="r103 r">content</span>, <span class="r102 r">index</span>);
+ 
+				<span class="r100 r">contentItems</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r103 r">content</span>);
+			}
+ 
+			<b>return</b> <span class="r100 r">contentItems</span>;
+		}
+ 
+		<a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a> <a id="f88c1ed36838426b" href="R/f88c1ed36838426b.html" target="n" data-glyph="76,1" class="i method">GetItemsViewSource</a>()
+		{
+			<b>return</b> (<a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>)<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#72d9cebcdefcf884" class="i field">_itemSourceProperty</a>);
+		}
+ 
+		<b>object</b> <a href="ITemplatedItemsList.cs.html#5fafd275375b1472" class="t t">ITemplatedItemsList</a>&lt;<span class="r1 r t">TItem</span>&gt;.<a href="ITemplatedItemsList.cs.html#869b68f6b9bde14f" class="i property">BindingContext</a>
+		{
+			<b>get</b>
+			{
+				<b>return</b> <a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>;
+			}
+		}
+ 
+		<b>void</b> <a id="7b95ae0135ea54e7" href="R/7b95ae0135ea54e7.html" target="n" data-glyph="76,1" class="i method">GroupedReset</a>()
+		{
+			<b>if</b> (<a href="#9df57e21005894b9" class="i field">_groupedItems</a> != <b>null</b>)
+			{
+				<b>foreach</b> (<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>object</b>, <a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt; <span id="r104 rd" class="r104 r">group</span> <b>in</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a>)
+				{
+					<span class="r104 r">group</span>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>.<a href="#5e68117683d977a6" class="i">CollectionChanged</a> -= <a href="#563df76f316c541f" class="i method">OnInnerCollectionChanged</a>;
+					<span class="r104 r">group</span>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>.<a href="#bc56980372bed4ac" class="i method">Dispose</a>();
+				}
+				<a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#ffbd106a08eac510" class="i method">Clear</a>();
+			}
+ 
+			<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#ca7bce81a50b0aeb" class="i method">Clear</a>();
+ 
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r105 rd" class="r105 r">i</span> = 0;
+			<b>foreach</b> (<b>object</b> <span id="r106 rd" class="r106 r">item</span> <b>in</b> <a href="#4de785bf3103388c" class="i property">ListProxy</a>)
+				<a href="#dbdb3cb86925d268" class="i method">InsertGrouped</a>(<span class="r106 r">item</span>, <span class="r105 r">i</span>++);
+ 
+			<a href="#a16da636b1f2a045" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>));
+		}
+ 
+		<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <a id="dbdb3cb86925d268" href="R/dbdb3cb86925d268.html" target="n" data-glyph="76,1" class="i method">InsertGrouped</a>(<b>object</b> <span id="r107 rd" class="r107 r">item</span>, <b>int</b> <span id="r108 rd" class="r108 r">index</span>)
+		{
+			<a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="k">var</a> <span id="r109 rd" class="r109 r">children</span> = <span class="r107 r">item</span> <b>as</b> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>;
+ 
+			<a href="#1bbf66e01c80bd54" class="k">var</a> <span id="r110 rd" class="r110 r">groupProxy</span> = <b>new</b> <a href="#bc4a8a6a7cca1bf5" class="t constructor">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;(<a href="#1bbf66e01c80bd54" class="k">this</a>, <span class="r109 r">children</span>, <a href="#622124dbd0b0f044" class="i field">_itemsView</a>, <a href="#b81f012112418567" class="i field">_itemTemplateProperty</a>);
+			<b>if</b> (<a href="#779692dd57ead3df" class="i property">GroupDisplayBinding</a> != <b>null</b>)
+				<span class="r110 r">groupProxy</span>.<a href="BindableObject.cs.html#d05c3999b6e90555" class="i method">SetBinding</a>(<a href="#8ac2fe3bdbe88c86" class="i field">NameProperty</a>, <a href="#779692dd57ead3df" class="i property">GroupDisplayBinding</a>.<a href="BindingBase.cs.html#2b0df917cb015060" class="i method">Clone</a>());
+			<b>else if</b> (<a href="#e74a990ce6574f9c" class="i property">GroupHeaderTemplate</a> == <b>null</b> &amp;&amp; <span class="r107 r">item</span> != <b>null</b>)
+				<span class="r110 r">groupProxy</span>.<a href="#8ef70a3aa39b8a90" class="i property">Name</a> = <span class="r107 r">item</span>.<a href="@1@System.Runtime/A.html#ff31a6bf27c58f89" class="i method">ToString</a>();
+ 
+			<b>if</b> (<a href="#11ab8ee6f14d1749" class="i property">GroupShortNameBinding</a> != <b>null</b>)
+				<span class="r110 r">groupProxy</span>.<a href="BindableObject.cs.html#d05c3999b6e90555" class="i method">SetBinding</a>(<a href="#bbd07f9a7f5771d8" class="i field">ShortNameProperty</a>, <a href="#11ab8ee6f14d1749" class="i property">GroupShortNameBinding</a>.<a href="BindingBase.cs.html#2b0df917cb015060" class="i method">Clone</a>());
+ 
+			<span class="r110 r">groupProxy</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <span class="r107 r">item</span>;
+ 
+			<b>if</b> (<a href="#e74a990ce6574f9c" class="i property">GroupHeaderTemplate</a> != <b>null</b>)
+			{
+				<span class="r110 r">groupProxy</span>.<a href="#2f539e9ba4cca042" class="i property">HeaderContent</a> = (<span class="r1 r t">TItem</span>)<a href="#e74a990ce6574f9c" class="i property">GroupHeaderTemplate</a>.<a href="DataTemplateExtensions.cs.html#ce294591fa1c5226" class="i method">CreateContent</a>(<span class="r110 r">groupProxy</span>.<a href="#9b666964322a7be7" class="i property">ItemsSource</a>, <a href="#622124dbd0b0f044" class="i field">_itemsView</a>);
+				<span class="r110 r">groupProxy</span>.<a href="#2f539e9ba4cca042" class="i property">HeaderContent</a>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <span class="r110 r">groupProxy</span>.<a href="#9b666964322a7be7" class="i property">ItemsSource</a>;
+				<span class="c">//groupProxy.HeaderContent.BindingContext = groupProxy;</span>
+				<span class="c">//groupProxy.HeaderContent.SetBinding (BindingContextProperty, &quot;ItemsSource&quot;);</span>
+			}
+			<b>else</b>
+			{
+				<span class="c">// HACK: TemplatedItemsList shouldn&#39;t assume what the default is, but it needs</span>
+				<span class="c">// to be able to setup bindings. Needs some internal-API tweaking there isn&#39;t</span>
+				<span class="c">// time for right now.</span>
+				<span class="r110 r">groupProxy</span>.<a href="#2f539e9ba4cca042" class="i property">HeaderContent</a> = <a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="IItemsView.cs.html#02339fb456476c5b" class="i method">CreateDefault</a>(<a href="#4de785bf3103388c" class="i property">ListProxy</a>.<a href="IListProxy.cs.html#2a97343604d30bce" class="i property">ProxiedEnumerable</a>);
+				<span class="r110 r">groupProxy</span>.<a href="#2f539e9ba4cca042" class="i property">HeaderContent</a>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <span class="r110 r">groupProxy</span>;
+				<span class="r110 r">groupProxy</span>.<a href="#2f539e9ba4cca042" class="i property">HeaderContent</a>.<a href="BindableObjectExtensions.cs.html#6da00f516fa898d7" class="i method">SetBinding</a>(<a href="Cells/TextCell.cs.html#ba9b70b0224a44cd" class="t t">TextCell</a>.<a href="Cells/TextCell.cs.html#90f39da3bd0f1868" class="i field">TextProperty</a>, <span class="s">&quot;Name&quot;</span>);
+			}
+ 
+			<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<span class="r110 r">groupProxy</span>.<a href="#2f539e9ba4cca042" class="i property">HeaderContent</a>, <span class="r108 r">index</span>);
+			<a href="#dd7be8af532b7be7" class="i method">SetIsGroupHeader</a>(<span class="r110 r">groupProxy</span>.<a href="#2f539e9ba4cca042" class="i property">HeaderContent</a>, <b>true</b>);
+ 
+			<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="IItemsView.cs.html#c7a024bdc927dd27" class="i method">SetupContent</a>(<span class="r110 r">groupProxy</span>.<a href="#2f539e9ba4cca042" class="i property">HeaderContent</a>, <span class="r108 r">index</span>);
+ 
+			<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#49c519bce0cdbd82" class="i method">Insert</a>(<span class="r108 r">index</span>, <span class="r110 r">groupProxy</span>.<a href="#2f539e9ba4cca042" class="i property">HeaderContent</a>);
+			<a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#2a0381c5cbbffde7" class="i method">Insert</a>(<span class="r108 r">index</span>, <span class="r107 r">item</span>, <span class="r110 r">groupProxy</span>);
+ 
+			<span class="r110 r">groupProxy</span>.<a href="#5e68117683d977a6" class="i">CollectionChanged</a> += <a href="#563df76f316c541f" class="i method">OnInnerCollectionChanged</a>;
+ 
+			<b>return</b> <span class="r110 r">groupProxy</span>;
+		}
+ 
+		<b>void</b> <a id="a16da636b1f2a045" href="R/a16da636b1f2a045.html" target="n" data-glyph="76,1" class="i method">OnCollectionChanged</a>(<span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r111 rd" class="r111 r">e</span>)
+		{
+			<span class="t t">NotifyCollectionChangedEventHandler</span> <span id="r112 rd" class="r112 r">changed</span> = <a href="#5e68117683d977a6" class="i">CollectionChanged</a>;
+			<b>if</b> (<span class="r112 r">changed</span> != <b>null</b>)
+				<span class="r112 r">changed</span>(<a href="#1bbf66e01c80bd54" class="k">this</a>, <span class="r111 r">e</span>);
+		}
+ 
+		<b>void</b> <a id="a048c4f15e5abf1f" href="R/a048c4f15e5abf1f.html" target="n" data-glyph="76,1" class="i method">OnCollectionChangedGrouped</a>(<span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r113 rd" class="r113 r">e</span>)
+		{
+			<b>if</b> (<a href="#9df57e21005894b9" class="i field">_groupedItems</a> == <b>null</b>)
+				<a href="#9df57e21005894b9" class="i field">_groupedItems</a> = <b>new</b> <a href="OrderedDictionary.cs.html#45818dbc22be61e9" class="t constructor">OrderedDictionary</a>&lt;<b>object</b>, <a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt;();
+ 
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt; <span id="r114 rd" class="r114 r">newItems</span> = <b>null</b>, <span id="r115 rd" class="r115 r">oldItems</span> = <b>null</b>;
+ 
+			<b>switch</b> (<span class="r113 r">e</span>.<span class="i property">Action</span>)
+			{
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>:
+					<b>if</b> (<span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span> == -1)
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+ 
+					<b>for</b> (<b>int</b> <span id="r116 rd" class="r116 r">i</span> = <span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span>; <span class="r116 r">i</span> &lt; <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r116 r">i</span>++)
+						<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r116 r">i</span>], <span class="r116 r">i</span> + <span class="r113 r">e</span>.<span class="i property">NewItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+ 
+					<span class="r114 r">newItems</span> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt;(<span class="r113 r">e</span>.<span class="i property">NewItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+ 
+					<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r117 rd" class="r117 r">i</span> = 0; <span class="r117 r">i</span> &lt; <span class="r113 r">e</span>.<span class="i property">NewItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r117 r">i</span>++)
+					{
+						<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r118 rd" class="r118 r">converted</span> = <a href="#dbdb3cb86925d268" class="i method">InsertGrouped</a>(<span class="r113 r">e</span>.<span class="i property">NewItems</span><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r117 r">i</span>], <span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span> + <span class="r117 r">i</span>);
+						<span class="r114 r">newItems</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r118 r">converted</span>);
+					}
+ 
+					<a href="#a16da636b1f2a045" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>, <span class="r114 r">newItems</span>, <span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span>));
+ 
+					<b>break</b>;
+ 
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>:
+					<b>if</b> (<span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span> == -1)
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+ 
+					<b>int</b> <span id="r119 rd" class="r119 r">removeIndex</span> = <span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span>;
+					<b>for</b> (<b>int</b> <span id="r120 rd" class="r120 r">i</span> = <span class="r119 r">removeIndex</span> + <span class="r113 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r120 r">i</span> &lt; <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r120 r">i</span>++)
+						<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r120 r">i</span>], <span class="r119 r">removeIndex</span>++);
+ 
+					<span class="r115 r">oldItems</span> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt;(<span class="r113 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+					<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r121 rd" class="r121 r">i</span> = 0; <span class="r121 r">i</span> &lt; <span class="r113 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r121 r">i</span>++)
+					{
+						<b>int</b> <span id="r122 rd" class="r122 r">index</span> = <span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span> + <span class="r121 r">i</span>;
+						<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r123 rd" class="r123 r">til</span> = <a href="#9df57e21005894b9" class="i field">_groupedItems</a><a href="OrderedDictionary.cs.html#e24f4eeedbf6ce8e">[</a><span class="r122 r">index</span>];
+						<span class="r123 r">til</span>.<a href="#5e68117683d977a6" class="i">CollectionChanged</a> -= <a href="#563df76f316c541f" class="i method">OnInnerCollectionChanged</a>;
+						<span class="r115 r">oldItems</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r123 r">til</span>);
+						<a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#4f4d2fd343e44803" class="i method">RemoveAt</a>(<span class="r122 r">index</span>);
+						<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#3d46113cc199059a" class="i method">RemoveAt</a>(<span class="r122 r">index</span>);
+						<span class="r123 r">til</span>.<a href="#bc56980372bed4ac" class="i method">Dispose</a>();
+					}
+ 
+					<a href="#a16da636b1f2a045" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>, <span class="r115 r">oldItems</span>, <span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span>));
+ 
+					<b>break</b>;
+ 
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>:
+					<b>if</b> (<span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span> == -1)
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+ 
+					<span class="r115 r">oldItems</span> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt;(<span class="r113 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+					<span class="r114 r">newItems</span> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt;(<span class="r113 r">e</span>.<span class="i property">NewItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+ 
+					<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r124 rd" class="r124 r">i</span> = 0; <span class="r124 r">i</span> &lt; <span class="r113 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r124 r">i</span>++)
+					{
+						<b>int</b> <span id="r125 rd" class="r125 r">index</span> = <span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span> + <span class="r124 r">i</span>;
+ 
+						<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r126 rd" class="r126 r">til</span> = <a href="#9df57e21005894b9" class="i field">_groupedItems</a><a href="OrderedDictionary.cs.html#e24f4eeedbf6ce8e">[</a><span class="r125 r">index</span>];
+						<span class="r126 r">til</span>.<a href="#5e68117683d977a6" class="i">CollectionChanged</a> -= <a href="#563df76f316c541f" class="i method">OnInnerCollectionChanged</a>;
+						<span class="r115 r">oldItems</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r126 r">til</span>);
+ 
+						<a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#4f4d2fd343e44803" class="i method">RemoveAt</a>(<span class="r125 r">index</span>);
+						<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#3d46113cc199059a" class="i method">RemoveAt</a>(<span class="r125 r">index</span>);
+ 
+						<span class="r114 r">newItems</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<a href="#dbdb3cb86925d268" class="i method">InsertGrouped</a>(<span class="r113 r">e</span>.<span class="i property">NewItems</span><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r124 r">i</span>], <span class="r125 r">index</span>));
+						<span class="r126 r">til</span>.<a href="#bc56980372bed4ac" class="i method">Dispose</a>();
+					}
+ 
+					<a href="#a16da636b1f2a045" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>, <span class="r114 r">newItems</span>, <span class="r115 r">oldItems</span>, <span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span>));
+ 
+					<b>break</b>;
+ 
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Move</span>:
+					<b>if</b> (<span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span> == -1 || <span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span> == -1)
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+ 
+					<b>bool</b> <span id="r127 rd" class="r127 r">movingForward</span> = <span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span> &lt; <span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span>;
+ 
+					<b>if</b> (<span class="r127 r">movingForward</span>)
+					{
+						<b>int</b> <span id="r128 rd" class="r128 r">moveIndex</span> = <span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span>;
+						<b>for</b> (<b>int</b> <span id="r129 rd" class="r129 r">i</span> = <span class="r128 r">moveIndex</span> + <span class="r113 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r129 r">i</span> &lt;= <span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span>; <span class="r129 r">i</span>++)
+							<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r129 r">i</span>], <span class="r128 r">moveIndex</span>++);
+					}
+					<b>else</b>
+					{
+						<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r130 rd" class="r130 r">i</span> = 0; <span class="r130 r">i</span> &lt; <span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span> - <span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span>; <span class="r130 r">i</span>++)
+						{
+							<span class="r1 r t">TItem</span> <span id="r131 rd" class="r131 r">item</span> = <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r130 r">i</span> + <span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span>];
+							<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<span class="r131 r">item</span>, <a href="#677bb805a9d20ebe" class="i method">GetIndex</a>(<span class="r131 r">item</span>) + <span class="r113 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+						}
+					}
+ 
+					<span class="r115 r">oldItems</span> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt;(<span class="r113 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+ 
+					<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r132 rd" class="r132 r">i</span> = 0; <span class="r132 r">i</span> &lt; <span class="r113 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r132 r">i</span>++)
+					{
+						<span class="r115 r">oldItems</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<a href="#9df57e21005894b9" class="i field">_groupedItems</a><a href="OrderedDictionary.cs.html#e24f4eeedbf6ce8e">[</a><span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span>]);
+ 
+						<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#3d46113cc199059a" class="i method">RemoveAt</a>(<span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span>);
+						<a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#4f4d2fd343e44803" class="i method">RemoveAt</a>(<span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span>);
+					}
+ 
+					<b>int</b> <span id="r133 rd" class="r133 r">insertIndex</span> = <span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span>;
+					<b>if</b> (<span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span> &lt; <span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span>)
+						<span class="r133 r">insertIndex</span> -= <span class="r113 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a> - 1;
+ 
+					<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r134 rd" class="r134 r">i</span> = 0; <span class="r134 r">i</span> &lt; <span class="r115 r">oldItems</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r134 r">i</span>++)
+					{
+						<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r135 rd" class="r135 r">til</span> = <span class="r115 r">oldItems</span><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r134 r">i</span>];
+						<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#49c519bce0cdbd82" class="i method">Insert</a>(<span class="r133 r">insertIndex</span> + <span class="r134 r">i</span>, <span class="r135 r">til</span>.<a href="#2f539e9ba4cca042" class="i property">HeaderContent</a>);
+						<a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#2a0381c5cbbffde7" class="i method">Insert</a>(<span class="r133 r">insertIndex</span> + <span class="r134 r">i</span>, <span class="r135 r">til</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>, <span class="r135 r">til</span>);
+						<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<span class="r135 r">til</span>.<a href="#2f539e9ba4cca042" class="i property">HeaderContent</a>, <span class="r133 r">insertIndex</span> + <span class="r134 r">i</span>);
+					}
+ 
+					<a href="#a16da636b1f2a045" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Move</span>, <span class="r115 r">oldItems</span>, <span class="r113 r">e</span>.<span class="i property">OldStartingIndex</span>, <span class="r113 r">e</span>.<span class="i property">NewStartingIndex</span>));
+ 
+					<b>break</b>;
+ 
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>:
+					<a href="#7b95ae0135ea54e7" class="i method">GroupedReset</a>();
+					<b>break</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="653383ed6ec44b72" href="R/653383ed6ec44b72.html" target="n" data-glyph="76,1" class="i method">OnGroupingEnabledChanged</a>()
+		{
+			<b>if</b> ((<a href="#d47853347567ea6b" class="i property">CachingStrategy</a> &amp; <a href="ListViewCachingStrategy.cs.html#7325a6e87ebf132d" class="t t">ListViewCachingStrategy</a>.<a href="ListViewCachingStrategy.cs.html#791a8ea6a96061a0" class="i field">RecycleElement</a>) != 0)
+				<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#ca7bce81a50b0aeb" class="i method">Clear</a>();
+ 
+			<a href="#919cd4027106f95d" class="i method">OnItemsSourceChanged</a>(<b>true</b>);
+ 
+			<b>if</b> (!<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a> &amp;&amp; <a href="#a360600e9e71be62" class="i field">_shortNames</a> != <b>null</b>)
+			{
+				<a href="#a360600e9e71be62" class="i field">_shortNames</a>.<a href="#f2fba701525f1472" class="i method">Dispose</a>();
+				<a href="#a360600e9e71be62" class="i field">_shortNames</a> = <b>null</b>;
+			}
+			<b>else</b>
+				<a href="#eabbbad1fc93ae47" class="i method">OnShortNameBindingChanged</a>();
+		}
+ 
+		<b>void</b> <a id="3378fade52ad8271" href="R/3378fade52ad8271.html" target="n" data-glyph="76,1" class="i method">OnHeaderTemplateChanged</a>()
+		{
+			<a href="#0cf7ee3d6b50e0ff" class="i method">OnItemTemplateChanged</a>();
+		}
+ 
+		<b>void</b> <a id="6b8ddf85537ac87d" href="R/6b8ddf85537ac87d.html" target="n" data-glyph="76,1" class="i method">OnInfiniteScrollingChanged</a>()
+		{
+			<a href="#919cd4027106f95d" class="i method">OnItemsSourceChanged</a>();
+		}
+ 
+		<b>void</b> <a id="563df76f316c541f" href="R/563df76f316c541f.html" target="n" data-glyph="76,1" class="i method">OnInnerCollectionChanged</a>(<b>object</b> <span id="r136 rd" class="r136 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r137 rd" class="r137 r">e</span>)
+		{
+			<span class="t t">NotifyCollectionChangedEventHandler</span> <span id="r138 rd" class="r138 r">handler</span> = <a href="#ac0769e4fc17c62c" class="i">GroupedCollectionChanged</a>;
+			<b>if</b> (<span class="r138 r">handler</span> != <b>null</b>)
+				<span class="r138 r">handler</span>(<span class="r136 r">sender</span>, <span class="r137 r">e</span>);
+		}
+ 
+		<b>void</b> <a id="919cd4027106f95d" href="R/919cd4027106f95d.html" target="n" data-glyph="76,1" class="i method">OnItemsSourceChanged</a>(<b>bool</b> <span id="r139 rd" class="r139 r">fromGrouping</span> = <b>false</b>)
+		{
+			<a href="#4de785bf3103388c" class="i property">ListProxy</a>.<a href="IListProxy.cs.html#5fb25465ae2f0eca" class="i">CollectionChanged</a> -= <a href="#654dbf94e061c801" class="i method">OnProxyCollectionChanged</a>;
+ 
+			<a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a> <span id="r140 rd" class="r140 r">itemSource</span> = <a href="#f88c1ed36838426b" class="i method">GetItemsViewSource</a>();
+			<b>if</b> (<span class="r140 r">itemSource</span> == <b>null</b>)
+				<a href="#4de785bf3103388c" class="i property">ListProxy</a> = <b>new</b> <a href="ListProxy.cs.html#75e74a4f1b974a3a" class="t constructor">ListProxy</a>(<b>new</b> <b>object</b>[0]);
+			<b>else</b>
+				<a href="#4de785bf3103388c" class="i property">ListProxy</a> = <b>new</b> <a href="ListProxy.cs.html#75e74a4f1b974a3a" class="t constructor">ListProxy</a>(<span class="r140 r">itemSource</span>);
+ 
+			<a href="#4de785bf3103388c" class="i property">ListProxy</a>.<a href="IListProxy.cs.html#5fb25465ae2f0eca" class="i">CollectionChanged</a> += <a href="#654dbf94e061c801" class="i method">OnProxyCollectionChanged</a>;
+			<a href="#654dbf94e061c801" class="i method">OnProxyCollectionChanged</a>(<a href="#1bbf66e01c80bd54" class="k">this</a>, <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>));
+		}
+ 
+		<b>void</b> <a id="0cf7ee3d6b50e0ff" href="R/0cf7ee3d6b50e0ff.html" target="n" data-glyph="76,1" class="i method">OnItemTemplateChanged</a>()
+		{
+			<b>if</b> (<a href="#4de785bf3103388c" class="i property">ListProxy</a>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a> == 0)
+				<b>return</b>;
+ 
+			<a href="#654dbf94e061c801" class="i method">OnProxyCollectionChanged</a>(<a href="#1bbf66e01c80bd54" class="k">this</a>, <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>));
+		}
+ 
+		<b>static void</b> <a id="f859443f2b38c48c" href="R/f859443f2b38c48c.html" target="n" data-glyph="76,1" class="i method">OnListProxyChanged</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r141 rd" class="r141 r">bindable</span>, <b>object</b> <span id="r142 rd" class="r142 r">oldValue</span>, <b>object</b> <span id="r143 rd" class="r143 r">newValue</span>)
+		{
+			<a href="#1bbf66e01c80bd54" class="k">var</a> <span id="r144 rd" class="r144 r">til</span> = (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;)<span class="r141 r">bindable</span>;
+			<span class="r144 r">til</span>.<a href="BindableObject.cs.html#d700e2f209d59b08" class="i method">OnPropertyChanged</a>(<span class="s">&quot;ItemsSource&quot;</span>);
+		}
+ 
+		<b>void</b> <a id="654dbf94e061c801" href="R/654dbf94e061c801.html" target="n" data-glyph="76,1" class="i method">OnProxyCollectionChanged</a>(<b>object</b> <span id="r145 rd" class="r145 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r146 rd" class="r146 r">e</span>)
+		{
+			<a href="#9fd17387ba671b68" class="i method">OnProxyCollectionChanged</a>(<span class="r145 r">sender</span>, <span class="r146 r">e</span>, <b>true</b>);
+		}
+ 
+		<b>void</b> <a id="9fd17387ba671b68" href="R/9fd17387ba671b68.html" target="n" data-glyph="76,1" class="i method">OnProxyCollectionChanged</a>(<b>object</b> <span id="r147 rd" class="r147 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r148 rd" class="r148 r">e</span>, <b>bool</b> <span id="r149 rd" class="r149 r">fixWindows</span> = <b>true</b>)
+		{
+			<b>if</b> (<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a>)
+			{
+				<a href="#a048c4f15e5abf1f" class="i method">OnCollectionChangedGrouped</a>(<span class="r148 r">e</span>);
+				<b>return</b>;
+			}
+ 
+			<b>if</b> ((<a href="#d47853347567ea6b" class="i property">CachingStrategy</a> &amp; <a href="ListViewCachingStrategy.cs.html#7325a6e87ebf132d" class="t t">ListViewCachingStrategy</a>.<a href="ListViewCachingStrategy.cs.html#791a8ea6a96061a0" class="i field">RecycleElement</a>) != 0)
+			{
+				<a href="#a16da636b1f2a045" class="i method">OnCollectionChanged</a>(<span class="r148 r">e</span>);
+				<b>return</b>;
+			}
+ 
+			<span class="c">/* HACKAHACKHACK: LongListSelector on WP SL has a bug in that it completely fails to deal with
+			 * INCC notifications that include more than 1 item. */</span>
+			<b>if</b> (<span class="r149 r">fixWindows</span> &amp;&amp; <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#fcdc6f21b1b1d3b3" class="i property">RuntimePlatform</a> == <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#6bd4f3b9d8015291" class="i field">WinPhone</a>)
+			{
+				<a href="#ee4997e8e74b0dd7" class="i method">SplitCollectionChangedItems</a>(<span class="r148 r">e</span>);
+				<b>return</b>;
+			}
+ 
+			<b>int</b> <span id="r150 rd" class="r150 r">count</span> = <a href="#7971f33f8275cc5b" class="i property">Count</a>;
+			<a href="Internals/NotifyCollectionChangedEventArgsEx.cs.html#c54a9836638205b1" class="k">var</a> <span id="r151 rd" class="r151 r">ex</span> = <span class="r148 r">e</span> <b>as</b> <a href="Internals/NotifyCollectionChangedEventArgsEx.cs.html#c54a9836638205b1" class="t t">NotifyCollectionChangedEventArgsEx</a>;
+			<b>if</b> (<span class="r151 r">ex</span> != <b>null</b>)
+				<span class="r150 r">count</span> = <span class="r151 r">ex</span>.<a href="Internals/NotifyCollectionChangedEventArgsEx.cs.html#8d7e56391014106a" class="i property">Count</a>;
+ 
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r152 rd" class="r152 r">maxindex</span> = 0;
+			<b>if</b> (<span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span> &gt;= 0 &amp;&amp; <span class="r148 r">e</span>.<span class="i property">NewItems</span> != <b>null</b>)
+				<span class="r152 r">maxindex</span> = <span class="t t">Math</span>.<span class="i method">Max</span>(<span class="r152 r">maxindex</span>, <span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span> + <span class="r148 r">e</span>.<span class="i property">NewItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+			<b>if</b> (<span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span> &gt;= 0 &amp;&amp; <span class="r148 r">e</span>.<span class="i property">OldItems</span> != <b>null</b>)
+				<span class="r152 r">maxindex</span> = <span class="t t">Math</span>.<span class="i method">Max</span>(<span class="r152 r">maxindex</span>, <span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span> + <span class="r148 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+			<b>if</b> (<span class="r152 r">maxindex</span> &gt; <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>)
+				<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#79de3e39e69a4811" class="i method">InsertRange</a>(<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>, <span class="t t">Enumerable</span>.<span class="i method">Repeat</span>&lt;<span class="r1 r t">TItem</span>&gt;(<b>null</b>, <span class="r152 r">maxindex</span> - <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>));
+ 
+			<b>switch</b> (<span class="r148 r">e</span>.<span class="i property">Action</span>)
+			{
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>:
+					<b>if</b> (<span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span> &gt;= 0)
+					{
+						<b>for</b> (<b>int</b> <span id="r153 rd" class="r153 r">i</span> = <span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>; <span class="r153 r">i</span> &lt; <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r153 r">i</span>++)
+							<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r153 r">i</span>], <span class="r153 r">i</span> + <span class="r148 r">e</span>.<span class="i property">NewItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+ 
+						<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#79de3e39e69a4811" class="i method">InsertRange</a>(<span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>, <span class="t t">Enumerable</span>.<span class="i method">Repeat</span>&lt;<span class="r1 r t">TItem</span>&gt;(<b>null</b>, <span class="r148 r">e</span>.<span class="i property">NewItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>));
+ 
+						<a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a> <span id="r154 rd" class="r154 r">items</span> = <a href="#505de5db5fea1c4d" class="i method">ConvertContent</a>(<span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>, <span class="r148 r">e</span>.<span class="i property">NewItems</span>, <b>true</b>, <b>true</b>);
+						<span class="r148 r">e</span> = <b>new</b> <a href="Internals/NotifyCollectionChangedEventArgsEx.cs.html#28f3473629c85505" class="t constructor">NotifyCollectionChangedEventArgsEx</a>(<span class="r150 r">count</span>, <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>, <span class="r154 r">items</span>, <span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>);
+					}
+					<b>else</b>
+					{
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+					}
+ 
+					<b>break</b>;
+ 
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Move</span>:
+					<b>if</b> (<span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span> &lt; 0 || <span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span> &lt; 0)
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+ 
+					<b>bool</b> <span id="r155 rd" class="r155 r">movingForward</span> = <span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span> &lt; <span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>;
+ 
+					<b>if</b> (<span class="r155 r">movingForward</span>)
+					{
+						<b>int</b> <span id="r156 rd" class="r156 r">moveIndex</span> = <span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span>;
+						<b>for</b> (<b>int</b> <span id="r157 rd" class="r157 r">i</span> = <span class="r156 r">moveIndex</span> + <span class="r148 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r157 r">i</span> &lt;= <span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>; <span class="r157 r">i</span>++)
+							<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r157 r">i</span>], <span class="r156 r">moveIndex</span>++);
+					}
+					<b>else</b>
+					{
+						<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r158 rd" class="r158 r">i</span> = 0; <span class="r158 r">i</span> &lt; <span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span> - <span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>; <span class="r158 r">i</span>++)
+						{
+							<span class="r1 r t">TItem</span> <span id="r159 rd" class="r159 r">item</span> = <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r158 r">i</span> + <span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>];
+							<b>if</b> (<span class="r159 r">item</span> != <b>null</b>)
+								<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<span class="r159 r">item</span>, <a href="#677bb805a9d20ebe" class="i method">GetIndex</a>(<span class="r159 r">item</span>) + <span class="r148 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+						}
+					}
+ 
+					<span class="r1 r t">TItem</span>[] <span id="r160 rd" class="r160 r">itemsToMove</span> = <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<span class="i method">Skip</span>(<span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span>).<span class="i method">Take</span>(<span class="r148 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>).<span class="i method">ToArray</span>();
+ 
+					<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#1f0a5b4e108afc08" class="i method">RemoveRange</a>(<span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span>, <span class="r148 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+					<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#79de3e39e69a4811" class="i method">InsertRange</a>(<span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>, <span class="r160 r">itemsToMove</span>);
+					<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r161 rd" class="r161 r">i</span> = 0; <span class="r161 r">i</span> &lt; <span class="r160 r">itemsToMove</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a>; <span class="r161 r">i</span>++)
+						<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<span class="r160 r">itemsToMove</span>[<span class="r161 r">i</span>], <span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span> + <span class="r161 r">i</span>);
+ 
+					<span class="r148 r">e</span> = <b>new</b> <a href="Internals/NotifyCollectionChangedEventArgsEx.cs.html#9f6f198ce59ddce7" class="t constructor">NotifyCollectionChangedEventArgsEx</a>(<span class="r150 r">count</span>, <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Move</span>, <span class="r160 r">itemsToMove</span>, <span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>, <span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span>);
+					<b>break</b>;
+ 
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>:
+					<b>if</b> (<span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span> &gt;= 0)
+					{
+						<b>int</b> <span id="r162 rd" class="r162 r">removeIndex</span> = <span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span>;
+						<b>for</b> (<b>int</b> <span id="r163 rd" class="r163 r">i</span> = <span class="r162 r">removeIndex</span> + <span class="r148 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r163 r">i</span> &lt; <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r163 r">i</span>++)
+							<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r163 r">i</span>], <span class="r162 r">removeIndex</span>++);
+ 
+						<b>var</b> <span id="r164 rd" class="r164 r">items</span> = <b>new</b> <span class="r1 r t">TItem</span>[<span class="r148 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>];
+						<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r165 rd" class="r165 r">i</span> = 0; <span class="r165 r">i</span> &lt; <span class="r164 r">items</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a>; <span class="r165 r">i</span>++)
+						{
+							<span class="r1 r t">TItem</span> <span id="r166 rd" class="r166 r">item</span> = <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span> + <span class="r165 r">i</span>];
+							<b>if</b> (<span class="r166 r">item</span> == <b>null</b>)
+								<b>continue</b>;
+ 
+							<a href="#d4a323e8b23bd43f" class="i method">UnhookItem</a>(<span class="r166 r">item</span>);
+							<span class="r164 r">items</span>[<span class="r165 r">i</span>] = <span class="r166 r">item</span>;
+						}
+ 
+						<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#1f0a5b4e108afc08" class="i method">RemoveRange</a>(<span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span>, <span class="r148 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+						<span class="r148 r">e</span> = <b>new</b> <a href="Internals/NotifyCollectionChangedEventArgsEx.cs.html#28f3473629c85505" class="t constructor">NotifyCollectionChangedEventArgsEx</a>(<span class="r150 r">count</span>, <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>, <span class="r164 r">items</span>, <span class="r148 r">e</span>.<span class="i property">OldStartingIndex</span>);
+					}
+					<b>else</b>
+					{
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+					}
+					<b>break</b>;
+ 
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>:
+					<b>if</b> (<span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span> &gt;= 0)
+					{
+						<a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a> <span id="r167 rd" class="r167 r">oldItems</span> = <a href="#505de5db5fea1c4d" class="i method">ConvertContent</a>(<span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>, <span class="r148 r">e</span>.<span class="i property">OldItems</span>);
+						<a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a> <span id="r168 rd" class="r168 r">newItems</span> = <a href="#505de5db5fea1c4d" class="i method">ConvertContent</a>(<span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>, <span class="r148 r">e</span>.<span class="i property">NewItems</span>, <b>true</b>, <b>true</b>);
+ 
+						<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r169 rd" class="r169 r">i</span> = 0; <span class="r169 r">i</span> &lt; <span class="r167 r">oldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r169 r">i</span>++)
+						{
+							<a href="#d4a323e8b23bd43f" class="i method">UnhookItem</a>((<span class="r1 r t">TItem</span>)<span class="r167 r">oldItems</span><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r169 r">i</span>]);
+						}
+ 
+						<span class="r148 r">e</span> = <b>new</b> <a href="Internals/NotifyCollectionChangedEventArgsEx.cs.html#24ac7da6bdad23eb" class="t constructor">NotifyCollectionChangedEventArgsEx</a>(<span class="r150 r">count</span>, <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>, <span class="r168 r">newItems</span>, <span class="r167 r">oldItems</span>, <span class="r148 r">e</span>.<span class="i property">NewStartingIndex</span>);
+					}
+					<b>else</b>
+					{
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+					}
+ 
+					<b>break</b>;
+ 
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>:
+					<span class="r148 r">e</span> = <b>new</b> <a href="Internals/NotifyCollectionChangedEventArgsEx.cs.html#db915fa35eb22a18" class="t constructor">NotifyCollectionChangedEventArgsEx</a>(<span class="r150 r">count</span>, <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>);
+					<a href="#61611576ea86c50b" class="i method">UnhookAndClear</a>();
+					<b>break</b>;
+ 
+				<b>default</b>:
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#337b690f0704f510" class="t constructor">ArgumentOutOfRangeException</a>();
+			}
+ 
+			<a href="#a16da636b1f2a045" class="i method">OnCollectionChanged</a>(<span class="r148 r">e</span>);
+		}
+ 
+		<b>void</b> <a id="eabbbad1fc93ae47" href="R/eabbbad1fc93ae47.html" target="n" data-glyph="76,1" class="i method">OnShortNameBindingChanged</a>()
+		{
+			<b>if</b> (!<a href="#0d96f3ba6380dea0" class="i property">IsGroupingEnabled</a>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#11ab8ee6f14d1749" class="i property">GroupShortNameBinding</a> != <b>null</b> &amp;&amp; <a href="#a360600e9e71be62" class="i field">_shortNames</a> == <b>null</b>)
+				<a href="#a360600e9e71be62" class="i field">_shortNames</a> = <b>new</b> <a href="#d4f8d8d195dba4eb" class="t constructor">ShortNamesProxy</a>(<a href="#1bbf66e01c80bd54" class="k">this</a>);
+			<b>else if</b> (<a href="#11ab8ee6f14d1749" class="i property">GroupShortNameBinding</a> == <b>null</b> &amp;&amp; <a href="#a360600e9e71be62" class="i field">_shortNames</a> != <b>null</b>)
+			{
+				<a href="#a360600e9e71be62" class="i field">_shortNames</a>.<a href="#f2fba701525f1472" class="i method">Dispose</a>();
+				<a href="#a360600e9e71be62" class="i field">_shortNames</a> = <b>null</b>;
+			}
+ 
+			<b>if</b> (<a href="#9df57e21005894b9" class="i field">_groupedItems</a> != <b>null</b>)
+			{
+				<b>if</b> (<a href="#11ab8ee6f14d1749" class="i property">GroupShortNameBinding</a> == <b>null</b>)
+				{
+					<b>foreach</b> (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r170 rd" class="r170 r">list</span> <b>in</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#51968358479fdb4d" class="i property">Values</a>)
+						<span class="r170 r">list</span>.<a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#bbd07f9a7f5771d8" class="i field">ShortNameProperty</a>, <b>null</b>);
+ 
+					<b>return</b>;
+				}
+ 
+				<b>foreach</b> (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r171 rd" class="r171 r">list</span> <b>in</b> <a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#51968358479fdb4d" class="i property">Values</a>)
+					<span class="r171 r">list</span>.<a href="BindableObject.cs.html#d05c3999b6e90555" class="i method">SetBinding</a>(<a href="#bbd07f9a7f5771d8" class="i field">ShortNameProperty</a>, <a href="#11ab8ee6f14d1749" class="i property">GroupShortNameBinding</a>.<a href="BindingBase.cs.html#2b0df917cb015060" class="i method">Clone</a>());
+			}
+ 
+			<b>if</b> (<a href="#a360600e9e71be62" class="i field">_shortNames</a> != <b>null</b>)
+				<a href="#a360600e9e71be62" class="i field">_shortNames</a>.<a href="#1bdf521ae91e7246" class="i method">Reset</a>();
+		}
+ 
+		<b>static void</b> <a id="f6af9f6776903504" href="R/f6af9f6776903504.html" target="n" data-glyph="76,1" class="i method">SetGroup</a>(<span class="r1 r t">TItem</span> <span id="r172 rd" class="r172 r">item</span>, <a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r173 rd" class="r173 r">group</span>)
+		{
+			<b>if</b> (<span class="r172 r">item</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;item&quot;</span>);
+ 
+			<span class="r172 r">item</span>.<a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#49c67ad07aa1e7a2" class="i field">GroupProperty</a>, <span class="r173 r">group</span>);
+		}
+ 
+		<b>static void</b> <a id="85b6728b60a889b5" href="R/85b6728b60a889b5.html" target="n" data-glyph="76,1" class="i method">SetIndex</a>(<span class="r1 r t">TItem</span> <span id="r174 rd" class="r174 r">item</span>, <b>int</b> <span id="r175 rd" class="r175 r">index</span>)
+		{
+			<b>if</b> (<span class="r174 r">item</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<span class="r174 r">item</span>.<a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#7bfa422dffee2118" class="i field">IndexProperty</a>, <span class="r175 r">index</span>);
+		}
+ 
+		<b>void</b> <a id="ee4997e8e74b0dd7" href="R/ee4997e8e74b0dd7.html" target="n" data-glyph="76,1" class="i method">SplitCollectionChangedItems</a>(<span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r176 rd" class="r176 r">e</span>)
+		{
+			<b>switch</b> (<span class="r176 r">e</span>.<span class="i property">Action</span>)
+			{
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>:
+					<b>if</b> (<span class="r176 r">e</span>.<span class="i property">NewStartingIndex</span> &lt; 0)
+						<b>goto default</b>;
+ 
+					<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r177 rd" class="r177 r">i</span> = 0; <span class="r177 r">i</span> &lt; <span class="r176 r">e</span>.<span class="i property">NewItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r177 r">i</span>++)
+						<a href="#9fd17387ba671b68" class="i method">OnProxyCollectionChanged</a>(<a href="#1bbf66e01c80bd54" class="k">this</a>, <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>, <span class="r176 r">e</span>.<span class="i property">NewItems</span><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r177 r">i</span>], <span class="r176 r">e</span>.<span class="i property">NewStartingIndex</span> + <span class="r177 r">i</span>), <b>false</b>);
+ 
+					<b>break</b>;
+ 
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>:
+					<b>if</b> (<span class="r176 r">e</span>.<span class="i property">OldStartingIndex</span> &lt; 0)
+						<b>goto default</b>;
+ 
+					<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r178 rd" class="r178 r">i</span> = 0; <span class="r178 r">i</span> &lt; <span class="r176 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r178 r">i</span>++)
+						<a href="#9fd17387ba671b68" class="i method">OnProxyCollectionChanged</a>(<a href="#1bbf66e01c80bd54" class="k">this</a>, <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>, <span class="r176 r">e</span>.<span class="i property">OldItems</span><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r178 r">i</span>], <span class="r176 r">e</span>.<span class="i property">OldStartingIndex</span> + <span class="r178 r">i</span>), <b>false</b>);
+ 
+					<b>break</b>;
+ 
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>:
+					<b>if</b> (<span class="r176 r">e</span>.<span class="i property">OldStartingIndex</span> &lt; 0)
+						<b>goto default</b>;
+ 
+					<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r179 rd" class="r179 r">i</span> = 0; <span class="r179 r">i</span> &lt; <span class="r176 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r179 r">i</span>++)
+						<a href="#9fd17387ba671b68" class="i method">OnProxyCollectionChanged</a>(<a href="#1bbf66e01c80bd54" class="k">this</a>, <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>, <span class="r176 r">e</span>.<span class="i property">NewItems</span><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r179 r">i</span>], <span class="r176 r">e</span>.<span class="i property">OldItems</span><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r179 r">i</span>], <span class="r176 r">e</span>.<span class="i property">OldStartingIndex</span> + <span class="r179 r">i</span>), <b>false</b>);
+ 
+					<b>break</b>;
+ 
+				<b>default</b>:
+					<a href="#9fd17387ba671b68" class="i method">OnProxyCollectionChanged</a>(<a href="#1bbf66e01c80bd54" class="k">this</a>, <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>), <b>false</b>);
+					<b>break</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="61611576ea86c50b" href="R/61611576ea86c50b.html" target="n" data-glyph="76,1" class="i method">UnhookAndClear</a>()
+		{
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r180 rd" class="r180 r">i</span> = 0; <span class="r180 r">i</span> &lt; <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r180 r">i</span>++)
+			{
+				<span class="r1 r t">TItem</span> <span id="r181 rd" class="r181 r">item</span> = <a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r180 r">i</span>];
+				<b>if</b> (<span class="r181 r">item</span> == <b>null</b>)
+					<b>continue</b>;
+ 
+				<a href="#d4a323e8b23bd43f" class="i method">UnhookItem</a>(<span class="r181 r">item</span>);
+			}
+ 
+			<a href="#292fd55bee2b34b1" class="i field">_templatedObjects</a>.<a href="@1@System.Collections/A.html#ca7bce81a50b0aeb" class="i method">Clear</a>();
+		}
+ 
+		<b>async void</b> <a id="d4a323e8b23bd43f" href="R/d4a323e8b23bd43f.html" target="n" data-glyph="76,1" class="i method">UnhookItem</a>(<span class="r1 r t">TItem</span> <span id="r182 rd" class="r182 r">item</span>)
+		{
+			<a href="#85b6728b60a889b5" class="i method">SetIndex</a>(<span class="r182 r">item</span>, -1);
+			<a href="#622124dbd0b0f044" class="i field">_itemsView</a>.<a href="IItemsView.cs.html#4cec811bbfac9a44" class="i method">UnhookContent</a>(<span class="r182 r">item</span>);
+ 
+			<span class="c">//Hack: the cell could still be visible on iOS because the cells are reloaded after this unhook </span>
+			<span class="c">//this causes some visual updates caused by a null datacontext and default values like IsVisible</span>
+			<b>if</b> (<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#fcdc6f21b1b1d3b3" class="i property">RuntimePlatform</a> == <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#0cbde22b5a22a79f" class="i field">iOS</a> &amp;&amp; <a href="#d47853347567ea6b" class="i property">CachingStrategy</a> == <a href="ListViewCachingStrategy.cs.html#7325a6e87ebf132d" class="t t">ListViewCachingStrategy</a>.<a href="ListViewCachingStrategy.cs.html#4e662ce81571ed35" class="i field">RetainElement</a>)
+				<b>await</b> <span class="t t">Task</span>.<span class="i method">Delay</span>(100);
+			<span class="r182 r">item</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <b>null</b>;
+		}
+ 
+		<b>class</b> <a id="8d1dbcd47664ceaf" href="R/8d1dbcd47664ceaf.html" target="n" data-glyph="4,1" class="t t">ShortNamesProxy</a> : <a href="@1@System.Runtime/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<b>string</b>&gt;, <span class="t t">INotifyCollectionChanged</span>, <a href="@1@System.Runtime/A.html#1f55292c3174123d" class="t t">IDisposable</a>
+		{
+			<b>readonly</b> <a href="@1@System.Collections/A.html#2d265edc718b158b" class="t t">HashSet</a>&lt;<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt; <a id="8aed1b479cccee92" href="R/8aed1b479cccee92.html" target="n" data-glyph="46,2" class="i field">_attachedItems</a> = <b>new</b> <a href="@1@System.Collections/A.html#eca9ea30fa3b2c28" class="t constructor">HashSet</a>&lt;<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt;();
+			<b>readonly</b> <a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <a id="3f8f8cf923102510" href="R/3f8f8cf923102510.html" target="n" data-glyph="46,2" class="i field">_itemsList</a>;
+ 
+			<b>readonly</b> <a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;, <b>string</b>&gt; <a id="b5f9d278357ae67f" href="R/b5f9d278357ae67f.html" target="n" data-glyph="46,2" class="i field">_oldNames</a> = <b>new</b> <a href="@1@System.Collections/A.html#bf6849e410b43c4c" class="t constructor">Dictionary</a>&lt;<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;, <b>string</b>&gt;();
+ 
+			<b>bool</b> <a id="61b86e2f6dd8ab2b" href="R/61b86e2f6dd8ab2b.html" target="n" data-glyph="46,2" class="i field">_disposed</a>;
+ 
+			<b>internal</b> <a id="d4f8d8d195dba4eb" href="R/d4f8d8d195dba4eb.html" target="n" data-glyph="74,2" class="i constructor">ShortNamesProxy</a>(<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r183 rd" class="r183 r">itemsList</span>)
+			{
+				<a href="#3f8f8cf923102510" class="i field">_itemsList</a> = <span class="r183 r">itemsList</span>;
+				<a href="#3f8f8cf923102510" class="i field">_itemsList</a>.<a href="#5e68117683d977a6" class="i">CollectionChanged</a> += <a href="#153ca27e3f851f5e" class="i method">OnItemsListCollectionChanged</a>;
+			}
+ 
+			<b>public void</b> <a id="f2fba701525f1472" href="R/f2fba701525f1472.html" target="n" data-glyph="72,2" class="i method">Dispose</a>()
+			{
+				<b>if</b> (<a href="#61b86e2f6dd8ab2b" class="i field">_disposed</a>)
+					<b>return</b>;
+				<a href="#61b86e2f6dd8ab2b" class="i field">_disposed</a> = <b>true</b>;
+ 
+				<a href="#3f8f8cf923102510" class="i field">_itemsList</a>.<a href="#5e68117683d977a6" class="i">CollectionChanged</a> -= <a href="#153ca27e3f851f5e" class="i method">OnItemsListCollectionChanged</a>;
+ 
+				<a href="#e7239ece490e4edc" class="i method">ResetCore</a>(<b>false</b>);
+			}
+ 
+			<a href="@1@System.Runtime/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>.<a href="@1@System.Runtime/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>()
+			{
+				<b>return</b> <a href="#2c9b1011093eeae4" class="i method">GetEnumerator</a>();
+			}
+ 
+			<b>public</b> <a href="@1@System.Runtime/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<b>string</b>&gt; <a id="2c9b1011093eeae4" href="R/2c9b1011093eeae4.html" target="n" data-glyph="72,2" class="i method">GetEnumerator</a>()
+			{
+				<b>if</b> (<a href="#3f8f8cf923102510" class="i field">_itemsList</a>.<a href="#9df57e21005894b9" class="i field">_groupedItems</a> == <b>null</b>)
+					<b>yield break</b>;
+ 
+				<b>foreach</b> (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r184 rd" class="r184 r">item</span> <b>in</b> <a href="#3f8f8cf923102510" class="i field">_itemsList</a>.<a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#51968358479fdb4d" class="i property">Values</a>)
+				{
+					<a href="#ac8ddb01eea5ed0f" class="i method">AttachList</a>(<span class="r184 r">item</span>);
+					<b>yield return</b> <span class="r184 r">item</span>.<a href="#c7353a358cfca0ff" class="i property">ShortName</a>;
+				}
+			}
+ 
+			<b>public event</b> <span class="t t">NotifyCollectionChangedEventHandler</span> <a id="e2b1c9c316f5bcc8" href="R/e2b1c9c316f5bcc8.html" target="n" data-glyph="30,2" class="i">CollectionChanged</a>;
+ 
+			<b>public int</b> <a id="57111438320c9fb8" href="R/57111438320c9fb8.html" target="n" data-glyph="102,2" class="i property">Count</a>
+			{
+				<b>get</b> { <b>return</b> <a href="#3f8f8cf923102510" class="i field">_itemsList</a>.<a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#8d6327406a273614" class="i property">Count</a>; }
+			}
+ 
+			<b>public string</b> <a id="abd6ff7cdfc816e7" href="R/abd6ff7cdfc816e7.html" target="n" data-glyph="102,2" class="k">this</a>[<b>int</b> <span id="r185 rd" class="r185 r">index</span>]
+			{
+				<b>get</b>
+				{
+					<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r186 rd" class="r186 r">list</span> = <a href="#3f8f8cf923102510" class="i field">_itemsList</a>.<a href="#9df57e21005894b9" class="i field">_groupedItems</a><a href="OrderedDictionary.cs.html#e24f4eeedbf6ce8e">[</a><span class="r185 r">index</span>];
+					<a href="#ac8ddb01eea5ed0f" class="i method">AttachList</a>(<span class="r186 r">list</span>);
+ 
+					<b>return</b> <span class="r186 r">list</span>.<a href="#c7353a358cfca0ff" class="i property">ShortName</a>;
+				}
+			}
+ 
+			<b>public void</b> <a id="1bdf521ae91e7246" href="R/1bdf521ae91e7246.html" target="n" data-glyph="72,2" class="i method">Reset</a>()
+			{
+				<a href="#e7239ece490e4edc" class="i method">ResetCore</a>(<b>true</b>);
+			}
+ 
+			<b>void</b> <a id="ac8ddb01eea5ed0f" href="R/ac8ddb01eea5ed0f.html" target="n" data-glyph="76,2" class="i method">AttachList</a>(<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r187 rd" class="r187 r">list</span>)
+			{
+				<b>if</b> (<a href="#8aed1b479cccee92" class="i field">_attachedItems</a>.<a href="@1@System.Collections/A.html#06d905a0ac76e4f5" class="i method">Contains</a>(<span class="r187 r">list</span>))
+					<b>return</b>;
+ 
+				<span class="r187 r">list</span>.<a href="BindableObject.cs.html#5da2d9db45bb399f" class="i">PropertyChanging</a> += <a href="#1725c36349c3ffff" class="i method">OnChildListPropertyChanging</a>;
+				<span class="r187 r">list</span>.<a href="BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#3f555c635cec4911" class="i method">OnChildListPropertyChanged</a>;
+				<a href="#8aed1b479cccee92" class="i field">_attachedItems</a>.<a href="@1@System.Collections/A.html#43a2b651926474a7" class="i method">Add</a>(<span class="r187 r">list</span>);
+			}
+ 
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>string</b>&gt; <a id="277ae76943c80e16" href="R/277ae76943c80e16.html" target="n" data-glyph="76,2" class="i method">ConvertItems</a>(<a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a> <span id="r188 rd" class="r188 r">list</span>)
+			{
+				<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r189 rd" class="r189 r">newList</span> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<b>string</b>&gt;(<span class="r188 r">list</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>);
+				<span class="r189 r">newList</span>.<a href="@1@System.Collections/A.html#e569d850a66a1771" class="i method">AddRange</a>(<span class="r188 r">list</span>.<span class="i method">Cast</span>&lt;<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;&gt;().<span class="i method">Select</span>(<span id="r190 rd" class="r190 r">tl</span> =&gt; <span class="r190 r">tl</span>.<a href="#c7353a358cfca0ff" class="i property">ShortName</a>));
+				<b>return</b> <span class="r189 r">newList</span>;
+			}
+ 
+			<b>void</b> <a id="3f555c635cec4911" href="R/3f555c635cec4911.html" target="n" data-glyph="76,2" class="i method">OnChildListPropertyChanged</a>(<b>object</b> <span id="r191 rd" class="r191 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r192 rd" class="r192 r">e</span>)
+			{
+				<b>if</b> (<span class="r192 r">e</span>.<span class="i property">PropertyName</span> != <a href="#bbd07f9a7f5771d8" class="i field">ShortNameProperty</a>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+					<b>return</b>;
+ 
+				<a href="#1bbf66e01c80bd54" class="k">var</a> <span id="r193 rd" class="r193 r">list</span> = (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;)<span class="r191 r">sender</span>;
+				<b>string</b> <span id="r194 rd" class="r194 r">old</span> = <a href="#b5f9d278357ae67f" class="i field">_oldNames</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r193 r">list</span>];
+				<a href="#b5f9d278357ae67f" class="i field">_oldNames</a>.<a href="@1@System.Collections/A.html#a6db5ffdec557169" class="i method">Remove</a>(<span class="r193 r">list</span>);
+ 
+				<b>int</b> <span id="r195 rd" class="r195 r">index</span> = <a href="#3f8f8cf923102510" class="i field">_itemsList</a>.<a href="#9df57e21005894b9" class="i field">_groupedItems</a>.<a href="OrderedDictionary.cs.html#51968358479fdb4d" class="i property">Values</a>.<a href="EnumerableExtensions.cs.html#ae78fe906aea45a9" class="i method">IndexOf</a>(<span class="r193 r">list</span>);
+ 
+				<a href="#48b5da868c135450" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>, <span class="r193 r">list</span>.<a href="#c7353a358cfca0ff" class="i property">ShortName</a>, <span class="r194 r">old</span>, <span class="r195 r">index</span>));
+			}
+ 
+			<b>void</b> <a id="1725c36349c3ffff" href="R/1725c36349c3ffff.html" target="n" data-glyph="76,2" class="i method">OnChildListPropertyChanging</a>(<b>object</b> <span id="r196 rd" class="r196 r">sender</span>, <a href="PropertyChangingEventArgs.cs.html#93f853bd01f998f1" class="t t">PropertyChangingEventArgs</a> <span id="r197 rd" class="r197 r">e</span>)
+			{
+				<b>if</b> (<span class="r197 r">e</span>.<a href="PropertyChangingEventArgs.cs.html#c528626f60218b0c" class="i property">PropertyName</a> != <a href="#bbd07f9a7f5771d8" class="i field">ShortNameProperty</a>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+					<b>return</b>;
+ 
+				<a href="#1bbf66e01c80bd54" class="k">var</a> <span id="r198 rd" class="r198 r">list</span> = (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt;)<span class="r196 r">sender</span>;
+				<a href="#b5f9d278357ae67f" class="i field">_oldNames</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r198 r">list</span>] = <span class="r198 r">list</span>.<a href="#c7353a358cfca0ff" class="i property">ShortName</a>;
+			}
+ 
+			<b>void</b> <a id="48b5da868c135450" href="R/48b5da868c135450.html" target="n" data-glyph="76,2" class="i method">OnCollectionChanged</a>(<span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r199 rd" class="r199 r">e</span>)
+			{
+				<span class="t t">NotifyCollectionChangedEventHandler</span> <span id="r200 rd" class="r200 r">changed</span> = <a href="#e2b1c9c316f5bcc8" class="i">CollectionChanged</a>;
+				<b>if</b> (<span class="r200 r">changed</span> != <b>null</b>)
+					<span class="r200 r">changed</span>(<a href="#8d1dbcd47664ceaf" class="k">this</a>, <span class="r199 r">e</span>);
+			}
+ 
+			<b>void</b> <a id="153ca27e3f851f5e" href="R/153ca27e3f851f5e.html" target="n" data-glyph="76,2" class="i method">OnItemsListCollectionChanged</a>(<b>object</b> <span id="r201 rd" class="r201 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r202 rd" class="r202 r">e</span>)
+			{
+				<b>switch</b> (<span class="r202 r">e</span>.<span class="i property">Action</span>)
+				{
+					<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>:
+						<span class="r202 r">e</span> = <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>, <a href="#277ae76943c80e16" class="i method">ConvertItems</a>(<span class="r202 r">e</span>.<span class="i property">NewItems</span>), <span class="r202 r">e</span>.<span class="i property">NewStartingIndex</span>);
+						<b>break</b>;
+ 
+					<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Move</span>:
+						<span class="r202 r">e</span> = <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Move</span>, <a href="#277ae76943c80e16" class="i method">ConvertItems</a>(<span class="r202 r">e</span>.<span class="i property">OldItems</span>), <span class="r202 r">e</span>.<span class="i property">NewStartingIndex</span>, <span class="r202 r">e</span>.<span class="i property">OldStartingIndex</span>);
+						<b>break</b>;
+ 
+					<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>:
+						<span class="r202 r">e</span> = <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>, <a href="#277ae76943c80e16" class="i method">ConvertItems</a>(<span class="r202 r">e</span>.<span class="i property">OldItems</span>), <span class="r202 r">e</span>.<span class="i property">OldStartingIndex</span>);
+						<b>break</b>;
+ 
+					<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>:
+						<span class="r202 r">e</span> = <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>, <a href="#277ae76943c80e16" class="i method">ConvertItems</a>(<span class="r202 r">e</span>.<span class="i property">NewItems</span>), <a href="#277ae76943c80e16" class="i method">ConvertItems</a>(<span class="r202 r">e</span>.<span class="i property">OldItems</span>), <span class="r202 r">e</span>.<span class="i property">OldStartingIndex</span>);
+						<b>break</b>;
+				}
+ 
+				<a href="#48b5da868c135450" class="i method">OnCollectionChanged</a>(<span class="r202 r">e</span>);
+			}
+ 
+			<b>void</b> <a id="e7239ece490e4edc" href="R/e7239ece490e4edc.html" target="n" data-glyph="76,2" class="i method">ResetCore</a>(<b>bool</b> <span id="r203 rd" class="r203 r">raiseReset</span>)
+			{
+				<b>foreach</b> (<a href="#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<span class="r0 r t">TView</span>, <span class="r1 r t">TItem</span>&gt; <span id="r204 rd" class="r204 r">list</span> <b>in</b> <a href="#8aed1b479cccee92" class="i field">_attachedItems</a>)
+				{
+					<span class="r204 r">list</span>.<a href="BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#3f555c635cec4911" class="i method">OnChildListPropertyChanged</a>;
+					<span class="r204 r">list</span>.<a href="BindableObject.cs.html#5da2d9db45bb399f" class="i">PropertyChanging</a> -= <a href="#1725c36349c3ffff" class="i method">OnChildListPropertyChanging</a>;
+				}
+ 
+				<a href="#8aed1b479cccee92" class="i field">_attachedItems</a>.<a href="@1@System.Collections/A.html#f090852f4e10b06f" class="i method">Clear</a>();
+ 
+				<b>if</b> (<span class="r203 r">raiseReset</span>)
+					<a href="#48b5da868c135450" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>));
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

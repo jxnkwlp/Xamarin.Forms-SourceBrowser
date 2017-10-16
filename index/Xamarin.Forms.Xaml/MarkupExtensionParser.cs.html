@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html><head><title>MarkupExtensionParser.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(80);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Xaml/MarkupExtensionParser.cs" target="_top">MarkupExtensionParser.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Xaml" target="_top">Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj</a> (Xamarin.Forms.Xaml)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>
+{
+	<b>internal sealed class</b> <a id="adcbbc89f874e233" href="R/adcbbc89f874e233.html" target="n" data-glyph="2,0" class="t t"><span id="c15e144077d7b2a6">MarkupExtensionParser</span></a> : <a href="MarkupExpressionParser.cs.html#ede638ca290763d2" class="t t">MarkupExpressionParser</a>, <a href="IExpressionParser.cs.html#c5d658d22bbdb3d4" class="t t">IExpressionParser</a>&lt;<b>object</b>&gt;
+	{
+		<a href="/Xamarin.Forms.Core/A.html#dc3b63a88853ac8b" class="t t">IMarkupExtension</a> <a id="743bc92e941645bd" href="R/743bc92e941645bd.html" target="n" data-glyph="46,1" class="i field">markupExtension</a>;
+ 
+		<b>public object</b> <a id="48cb7bdf00427f1c" href="R/48cb7bdf00427f1c.html" target="n" data-glyph="72,1" class="i method">Parse</a>(<b>string</b> <span id="r0 rd" class="r0 r">match</span>, <b>ref string</b> <span id="r1 rd" class="r1 r">remaining</span>, <span class="t t">IServiceProvider</span> <span id="r2 rd" class="r2 r">serviceProvider</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#d05cb618ccf24dce" class="k">var</a> <span id="r3 rd" class="r3 r">typeResolver</span> = <span class="r2 r">serviceProvider</span>.<span class="i method">GetService</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#d05cb618ccf24dce" class="t t">IXamlTypeResolver</a>)) <b>as</b> <a href="/Xamarin.Forms.Core/A.html#d05cb618ccf24dce" class="t t">IXamlTypeResolver</a>;
+ 
+			<span class="c">//shortcut for Binding and StaticResource, to avoid too many reflection calls.</span>
+			<b>if</b> (<span class="r0 r">match</span> == <span class="s">&quot;Binding&quot;</span>)
+				<a href="#743bc92e941645bd" class="i field">markupExtension</a> = <b>new</b> <a href="MarkupExtensions/BindingExtension.cs.html#0e904b2a3bdbaeae" class="t constructor">BindingExtension</a>();
+			<b>else if</b> (<span class="r0 r">match</span> == <span class="s">&quot;TemplateBinding&quot;</span>)
+				<a href="#743bc92e941645bd" class="i field">markupExtension</a> = <b>new</b> <a href="MarkupExtensions/TemplateBindingExtension.cs.html#bb90b1e78d20b2af" class="t constructor">TemplateBindingExtension</a>();
+			<b>else if</b> (<span class="r0 r">match</span> == <span class="s">&quot;StaticResource&quot;</span>)
+				<a href="#743bc92e941645bd" class="i field">markupExtension</a> = <b>new</b> <a href="MarkupExtensions/StaticResourceExtension.cs.html#38f3e11b9a2d3d03" class="t constructor">StaticResourceExtension</a>();
+			<b>else</b>
+			{
+				<b>if</b> (<span class="r3 r">typeResolver</span> == <b>null</b>)
+					<b>return null</b>;
+				<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r4 rd" class="r4 r">type</span>;
+ 
+				<span class="c">//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.</span>
+				<b>if</b> (!<span class="r3 r">typeResolver</span>.<a href="/Xamarin.Forms.Core/A.html#0c3fe2005c0f104b" class="i method">TryResolve</a>(<span class="r0 r">match</span> + <span class="s">&quot;Extension&quot;</span>, <b>out</b> <span class="r4 r">type</span>) &amp;&amp; !<span class="r3 r">typeResolver</span>.<a href="/Xamarin.Forms.Core/A.html#0c3fe2005c0f104b" class="i method">TryResolve</a>(<span class="r0 r">match</span>, <b>out</b> <span class="r4 r">type</span>))
+				{
+					<a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="k">var</a> <span id="r5 rd" class="r5 r">lineInfoProvider</span> = <span class="r2 r">serviceProvider</span>.<span class="i method">GetService</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="t t">IXmlLineInfoProvider</a>)) <b>as</b> <a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="t t">IXmlLineInfoProvider</a>;
+					<b>var</b> <span id="r6 rd" class="r6 r">lineInfo</span> = (<span class="r5 r">lineInfoProvider</span> != <b>null</b>) ? <span class="r5 r">lineInfoProvider</span>.<a href="/Xamarin.Forms.Core/A.html#33daa4514b972f6e" class="i property">XmlLineInfo</a> : <b>new</b> <a href="/Xamarin.Forms.Core/A.html#6bd51fe48cf6e68a" class="t constructor">XmlLineInfo</a>();
+					<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="t t">String</a>.<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;MarkupExtension not found for {0}&quot;</span>, <span class="r0 r">match</span>), <span class="r6 r">lineInfo</span>);
+				}
+				<a href="#743bc92e941645bd" class="i field">markupExtension</a> = <a href="@1@System.Runtime/A.html#955a7437554c8efc" class="t t">Activator</a>.<a href="@1@System.Runtime/A.html#4c7b92371a93f246" class="i method">CreateInstance</a>(<span class="r4 r">type</span>) <b>as</b> <a href="/Xamarin.Forms.Core/A.html#dc3b63a88853ac8b" class="t t">IMarkupExtension</a>;
+			}
+ 
+			<b>if</b> (<a href="#743bc92e941645bd" class="i field">markupExtension</a> == <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="k">var</a> <span id="r7 rd" class="r7 r">lineInfoProvider</span> = <span class="r2 r">serviceProvider</span>.<span class="i method">GetService</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="t t">IXmlLineInfoProvider</a>)) <b>as</b> <a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="t t">IXmlLineInfoProvider</a>;
+				<b>var</b> <span id="r8 rd" class="r8 r">lineInfo</span> = (<span class="r7 r">lineInfoProvider</span> != <b>null</b>) ? <span class="r7 r">lineInfoProvider</span>.<a href="/Xamarin.Forms.Core/A.html#33daa4514b972f6e" class="i property">XmlLineInfo</a> : <b>new</b> <a href="/Xamarin.Forms.Core/A.html#6bd51fe48cf6e68a" class="t constructor">XmlLineInfo</a>();
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="t t">String</a>.<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;Missing public default constructor for MarkupExtension {0}&quot;</span>, <span class="r0 r">match</span>),
+					<span class="r8 r">lineInfo</span>);
+			}
+ 
+			<b>char</b> <span id="r9 rd" class="r9 r">next</span>;
+			<b>if</b> (<span class="r1 r">remaining</span> == <span class="s">&quot;}&quot;</span>)
+				<b>return</b> <a href="#743bc92e941645bd" class="i field">markupExtension</a>.<a href="/Xamarin.Forms.Core/A.html#8111528a12164a21" class="i method">ProvideValue</a>(<span class="r2 r">serviceProvider</span>);
+ 
+			<b>string</b> <span id="r10 rd" class="r10 r">piece</span>;
+			<b>while</b> ((<span class="r10 r">piece</span> = <a href="MarkupExpressionParser.cs.html#2e63e57ed89db678" class="i method">GetNextPiece</a>(<b>ref</b> <span class="r1 r">remaining</span>, <b>out</b> <span class="r9 r">next</span>)) != <b>null</b>)
+				<a href="MarkupExpressionParser.cs.html#a7e5527a5364e337" class="i method">HandleProperty</a>(<span class="r10 r">piece</span>, <span class="r2 r">serviceProvider</span>, <b>ref</b> <span class="r1 r">remaining</span>, <span class="r9 r">next</span> != <span class="s">&#39;=&#39;</span>);
+ 
+			<b>return</b> <a href="#743bc92e941645bd" class="i field">markupExtension</a>.<a href="/Xamarin.Forms.Core/A.html#8111528a12164a21" class="i method">ProvideValue</a>(<span class="r2 r">serviceProvider</span>);
+		}
+ 
+		<b>protected override void</b> <a id="bdac0b6bb1ddabca" href="R/bdac0b6bb1ddabca.html" target="n" data-glyph="75,1" class="i method">SetPropertyValue</a>(<b>string</b> <span id="r11 rd" class="r11 r">prop</span>, <b>string</b> <span id="r12 rd" class="r12 r">strValue</span>, <b>object</b> <span id="r13 rd" class="r13 r">value</span>, <span class="t t">IServiceProvider</span> <span id="r14 rd" class="r14 r">serviceProvider</span>)
+		{
+			<span class="t t">MethodInfo</span> <span id="r15 rd" class="r15 r">setter</span>;
+			<b>if</b> (<span class="r11 r">prop</span> == <b>null</b>)
+			{
+				<span class="c">//implicit property</span>
+				<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r16 rd" class="r16 r">t</span> = <a href="#743bc92e941645bd" class="i field">markupExtension</a>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+				<span class="r11 r">prop</span> = <a href="ApplyPropertiesVisitor.cs.html#515768b28c4a51c5" class="t t">ApplyPropertiesVisitor</a>.<a href="ApplyPropertiesVisitor.cs.html#7179ea07c970ea61" class="i method">GetContentPropertyName</a>(<span class="r16 r">t</span>.<span class="i method">GetTypeInfo</span>());
+				<b>if</b> (<span class="r11 r">prop</span> == <b>null</b>)
+					<b>return</b>;
+				<span class="r15 r">setter</span> = <span class="r16 r">t</span>.<span class="i method">GetRuntimeProperty</span>(<span class="r11 r">prop</span>).<span class="i property">SetMethod</span>;
+			}
+			<b>else</b>
+				<span class="r15 r">setter</span> = <a href="#743bc92e941645bd" class="i field">markupExtension</a>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetRuntimeProperty</span>(<span class="r11 r">prop</span>).<span class="i property">SetMethod</span>;
+ 
+			<b>if</b> (<span class="r13 r">value</span> == <b>null</b> &amp;&amp; <span class="r12 r">strValue</span> != <b>null</b>)
+			{
+				<span class="r13 r">value</span> = <span class="r12 r">strValue</span>.<a href="/Xamarin.Forms.Core/A.html#6dd8d100a436d8ba" class="i method">ConvertTo</a>(<a href="#743bc92e941645bd" class="i field">markupExtension</a>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetRuntimeProperty</span>(<span class="r11 r">prop</span>).<span class="i property">PropertyType</span>,
+					(<a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<a href="/Xamarin.Forms.Core/A.html#07b618880a109e92" class="t t">TypeConverter</a>&gt;)<b>null</b>, <span class="r14 r">serviceProvider</span>);
+			}
+ 
+			<span class="r15 r">setter</span>.<span class="i method">Invoke</span>(<a href="#743bc92e941645bd" class="i field">markupExtension</a>, <b>new</b>[] { <span class="r13 r">value</span> });
+		}
+	}
+}</pre></td></tr></table></div></body></html>

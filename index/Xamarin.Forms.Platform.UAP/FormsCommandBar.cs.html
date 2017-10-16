@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html>
+<html><head><title>FormsCommandBar.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(152);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/FormsCommandBar.cs" target="_top">FormsCommandBar.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Data</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+{
+	<b>public class</b> <a id="efa4b9171e8b0bdf" href="R/efa4b9171e8b0bdf.html" target="n" data-glyph="0,0" class="t t">FormsCommandBar</a> : <span class="t t">CommandBar</span>
+	{
+		<span class="c">// TODO Once 10.0.14393.0 is available (and we don&#39;t have to support lower versions), enable dynamic overflow: https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.xaml.controls.commandbar.isdynamicoverflowenabled.aspx </span>
+ 
+		<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Button</span> <a id="f02b8360dcfac88b" href="R/f02b8360dcfac88b.html" target="n" data-glyph="46,1" class="i field">_moreButton</a>;
+		<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">ItemsControl</span> <a id="820c32716f5c5c21" href="R/820c32716f5c5c21.html" target="n" data-glyph="46,1" class="i field">_primaryItemsControl</a>;
+		<b>bool</b> <a id="9bc6408c4da0fa97" href="R/9bc6408c4da0fa97.html" target="n" data-glyph="46,1" class="i field">_isInValidLocation</a>;
+ 
+		<b>public</b> <a id="b7947b16f1303cd4" href="R/b7947b16f1303cd4.html" target="n" data-glyph="72,1" class="i constructor">FormsCommandBar</a>()
+		{
+			<span class="i property">PrimaryCommands</span>.<span class="i">VectorChanged</span> += <span class="i">OnCommandsChanged</span>;
+			<span class="i property">SecondaryCommands</span>.<span class="i">VectorChanged</span> += <span class="i">OnCommandsChanged</span>;
+			<a href="#1a4ae9bebd72d2b1" class="i method">UpdateVisibility</a>();
+			<a href="#6c8e772331be1c0b" class="i method">WatchForContentChanges</a>();
+		}
+ 
+		<span class="c">// Set by the container if the container is a valid place to show a toolbar.</span>
+		<span class="c">// This exists to provide consistency with the other platforms; we&#39;ve got </span>
+		<span class="c">// rules in place that limit toolbars to Navigation Page and to Tabbed </span>
+		<span class="c">// and Master-Detail Pages when they&#39;re currently displaying a Navigation Page</span>
+		<b>public bool</b> <a id="419ad52abfcdd1f2" href="R/419ad52abfcdd1f2.html" target="n" data-glyph="102,1" class="i property">IsInValidLocation</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#9bc6408c4da0fa97" class="i field">_isInValidLocation</a>; }
+			<b>set</b>
+			{
+				<a href="#9bc6408c4da0fa97" class="i field">_isInValidLocation</a> = <b>value</b>;
+				<a href="#1a4ae9bebd72d2b1" class="i method">UpdateVisibility</a>();
+			}
+		}
+ 
+		<b>protected override void</b> <a id="abc35dcac88f14a7" href="R/abc35dcac88f14a7.html" target="n" data-glyph="75,1" class="i method">OnApplyTemplate</a>()
+		{
+			<b>base</b>.<span class="i">OnApplyTemplate</span>();
+ 
+			<a href="#f02b8360dcfac88b" class="i field">_moreButton</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;MoreButton&quot;</span>) <b>as</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Button</span>;
+			<a href="#820c32716f5c5c21" class="i field">_primaryItemsControl</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;PrimaryItemsControl&quot;</span>) <b>as</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">ItemsControl</span>;
+		}
+ 
+		<b>void</b> <a id="a9c1c433383e8750" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnCommandsChanged</a>(<span class="t t">IObservableVector</span>&lt;<span class="t t">ICommandBarElement</span>&gt; <span id="r0 rd" class="r0 r">sender</span>, <span class="t t">IVectorChangedEventArgs</span> <span id="r1 rd" class="r1 r">args</span>)
+		{
+			<a href="#1a4ae9bebd72d2b1" class="i method">UpdateVisibility</a>();
+		}
+ 
+		<b>void</b> <a id="1a4ae9bebd72d2b1" href="R/1a4ae9bebd72d2b1.html" target="n" data-glyph="76,1" class="i method">UpdateVisibility</a>()
+		{
+			<span class="c">// Determine whether we have a title (or some other content) inside this command bar</span>
+			<b>var</b> <span id="r2 rd" class="r2 r">frameworkElement</span> = <span class="i property">Content</span> <b>as</b> <span class="t t">FrameworkElement</span>;
+ 
+			<span class="c">// Apply the rules for consistency with other platforms</span>
+ 
+			<span class="c">// Not in one of the acceptable toolbar locations from the other platforms</span>
+			<b>if</b> (!<a href="#419ad52abfcdd1f2" class="i property">IsInValidLocation</a>)
+			{
+				<span class="c">// If there&#39;s no title to display (e.g., toolbarplacement is set to bottom)</span>
+				<span class="c">// or the title is collapsed (e.g., because it&#39;s empty)</span>
+				<b>if</b> (<span class="r2 r">frameworkElement</span> == <b>null</b> || <span class="r2 r">frameworkElement</span>.<span class="i property">Visibility</span> != <span class="t t">Visibility</span>.<span class="i field">Visible</span>)
+				{
+					<span class="c">// Just collapse the whole thing</span>
+					<span class="i property">Visibility</span> = <span class="t t">Visibility</span>.<span class="i field">Collapsed</span>;
+					<b>return</b>;
+				}
+			
+				<span class="c">// The title needs to be visible, but we&#39;re not allowed to show a toolbar</span>
+				<span class="c">// So we need to hide the toolbar items</span>
+ 
+				<span class="i property">Visibility</span> = <span class="t t">Visibility</span>.<span class="i field">Visible</span>;
+ 
+				<b>if</b> (<a href="#f02b8360dcfac88b" class="i field">_moreButton</a> != <b>null</b>)
+				{
+					<a href="#f02b8360dcfac88b" class="i field">_moreButton</a>.<span class="i property">Visibility</span> = <span class="t t">Visibility</span>.<span class="i field">Collapsed</span>;
+				}
+ 
+				<b>if</b> (<a href="#820c32716f5c5c21" class="i field">_primaryItemsControl</a> != <b>null</b>)
+				{
+					<a href="#820c32716f5c5c21" class="i field">_primaryItemsControl</a>.<span class="i property">Visibility</span> = <span class="t t">Visibility</span>.<span class="i field">Collapsed</span>;
+				}
+ 
+				<b>return</b>;
+			}
+ 
+			<span class="c">// We&#39;re in one of the acceptable toolbar locations from the other platforms so the normal rules apply</span>
+ 
+			<b>if</b> (<a href="#820c32716f5c5c21" class="i field">_primaryItemsControl</a> != <b>null</b>)
+			{
+				<span class="c">// This is normally visible by default, but it might have been collapsed by the toolbar consistency rules above</span>
+				<a href="#820c32716f5c5c21" class="i field">_primaryItemsControl</a>.<span class="i property">Visibility</span> = <span class="t t">Visibility</span>.<span class="i field">Visible</span>;
+			}
+ 
+			<span class="c">// Are there any commands to display?</span>
+			<b>var</b> <span id="r3 rd" class="r3 r">visibility</span> = <span class="i property">PrimaryCommands</span>.<span class="i">Count</span> + <span class="i property">SecondaryCommands</span>.<span class="i">Count</span> &gt; 0 ? <span class="t t">Visibility</span>.<span class="i field">Visible</span> : <span class="t t">Visibility</span>.<span class="i field">Collapsed</span>;
+ 
+			<b>if</b> (<a href="#f02b8360dcfac88b" class="i field">_moreButton</a> != <b>null</b>)
+			{
+				<span class="c">// The &quot;...&quot; button should only be visible if we have commands to display</span>
+				<a href="#f02b8360dcfac88b" class="i field">_moreButton</a>.<span class="i property">Visibility</span> = <span class="r3 r">visibility</span>;
+ 
+				<span class="c">// There *is* an OverflowButtonVisibility property that does more or less the same thing, </span>
+				<span class="c">// but it became available in 10.0.14393.0 and we have to support 10.0.10240</span>
+			}
+			
+			<b>if</b> (<span class="r2 r">frameworkElement</span> != <b>null</b> &amp;&amp; <span class="r2 r">frameworkElement</span>.<span class="i property">Visibility</span> != <span class="t t">Visibility</span>.<span class="i field">Collapsed</span>)
+			{
+				<span class="c">// If there&#39;s a title to display, we have to be visible whether or not we have commands</span>
+				<span class="i property">Visibility</span> = <span class="t t">Visibility</span>.<span class="i field">Visible</span>;
+			}
+			<b>else</b>
+			{
+				<span class="c">// Otherwise, visibility depends on whether we have commands</span>
+				<span class="i property">Visibility</span> = <span class="r3 r">visibility</span>;
+			}
+		}
+ 
+		<b>void</b> <a id="6c8e772331be1c0b" href="R/6c8e772331be1c0b.html" target="n" data-glyph="76,1" class="i method">WatchForContentChanges</a>()
+		{
+			<span class="c">// If the content of the command bar changes while it&#39;s collapsed, we need to </span>
+			<span class="c">// react and update the visibility (e.g., if the bar is placed at the bottom and</span>
+			<span class="c">// has no commands, then is moved to the top and now includes the title)</span>
+ 
+			<span class="c">// There&#39;s no event on CommandBar when the content changes, so we&#39;ll bind our own</span>
+			<span class="c">// dependency property to Content and update our visibility when it changes</span>
+			<b>var</b> <span id="r4 rd" class="r4 r">binding</span> = <b>new</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Data</span>.<span class="t">Binding</span>
+			{
+				<span class="i property">Source</span> = <a href="#efa4b9171e8b0bdf" class="k">this</a>,
+				<span class="i">Path</span> = <b>new</b> <span class="t">PropertyPath</span>(<b>nameof</b>(<span class="i property">Content</span>)),
+				<span class="i property">Mode</span> = <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Data</span>.<span class="t">BindingMode</span>.<span class="i">OneWay</span>
+			};
+ 
+			<span class="t t">BindingOperations</span>.<span class="i">SetBinding</span>(<a href="#efa4b9171e8b0bdf" class="k">this</a>, <a href="#ef4baf0f0763ef95" class="i field">s_contentChangeWatcher</a>, <span class="r4 r">binding</span>);
+		}
+ 
+		<b>static readonly</b> <span class="t t">DependencyProperty</span> <a id="ef4baf0f0763ef95" href="R/ef4baf0f0763ef95.html" target="n" data-glyph="46,1" class="i field">s_contentChangeWatcher</a> =
+			<span class="t t">DependencyProperty</span>.<span class="i">Register</span>(
+				<span class="s">&quot;ContentChangeWatcher&quot;</span>,
+				<b>typeof</b>(<b>object</b>),
+				<b>typeof</b>(<b>object</b>),
+				<b>new</b> <span class="t">PropertyMetadata</span>(<b>null</b>, <span class="i">ContentChanged</span>));
+ 
+		<b>static void</b> <a id="b2b1a9557bbc7d13" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">ContentChanged</a>(<span class="t t">DependencyObject</span> <span id="r5 rd" class="r5 r">d</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r6 rd" class="r6 r">e</span>)
+		{
+			(<span class="r5 r">d</span> <b>as</b> <a href="#efa4b9171e8b0bdf" class="t t">FormsCommandBar</a>)?.<a href="#1a4ae9bebd72d2b1" class="i method">UpdateVisibility</a>();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

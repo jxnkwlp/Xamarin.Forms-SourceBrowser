@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html><head><title>WebView.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(157);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/WebView.cs" target="_top">WebView.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	[<a href="RenderWithAttribute.cs.html#8ff553ce7d183a1d" class="t constructor">RenderWith</a>(<b>typeof</b>(<a href="/Xamarin.Forms.Platform/A.html#6a46332e11d06ad0" class="t t">_WebViewRenderer</a>))]
+	<b>public class</b> <a id="52d8a16d29ea5696" href="R/52d8a16d29ea5696.html" target="n" data-glyph="0,0" class="t t">WebView</a> : <a href="View.cs.html#60f54d5b73cefedd" class="t t">View</a>, <a href="IWebViewController.cs.html#07275dd4e74d2bcf" class="t t">IWebViewController</a>, <a href="IElementConfiguration.cs.html#b6508bb742556e66" class="t t">IElementConfiguration</a>&lt;<a href="#52d8a16d29ea5696" class="t t">WebView</a>&gt;
+	{
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="45ee39e401e73d89" href="R/45ee39e401e73d89.html" target="n" data-glyph="42,1" class="i field">SourceProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;Source&quot;</span>, <b>typeof</b>(<a href="WebViewSource.cs.html#02e5cad5a7548170" class="t t">WebViewSource</a>), <b>typeof</b>(<a href="#52d8a16d29ea5696" class="t t">WebView</a>), <b>default</b>(<a href="WebViewSource.cs.html#02e5cad5a7548170" class="t t">WebViewSource</a>),
+			<span class="r0 r">propertyChanging</span>: (<span id="r1 rd" class="r1 r">bindable</span>, <span id="r2 rd" class="r2 r">oldvalue</span>, <span id="r3 rd" class="r3 r">newvalue</span>) =&gt;
+			{
+				<a href="WebViewSource.cs.html#02e5cad5a7548170" class="k">var</a> <span id="r4 rd" class="r4 r">source</span> = <span class="r2 r">oldvalue</span> <b>as</b> <a href="WebViewSource.cs.html#02e5cad5a7548170" class="t t">WebViewSource</a>;
+				<b>if</b> (<span class="r4 r">source</span> != <b>null</b>)
+					<span class="r4 r">source</span>.<a href="WebViewSource.cs.html#2795c926d4db9b08" class="i">SourceChanged</a> -= ((<a href="#52d8a16d29ea5696" class="t t">WebView</a>)<span class="r1 r">bindable</span>).<a href="#cfb4d99b83a5a907" class="i method">OnSourceChanged</a>;
+			}, <span class="r5 r">propertyChanged</span>: (<span id="r6 rd" class="r6 r">bindable</span>, <span id="r7 rd" class="r7 r">oldvalue</span>, <span id="r8 rd" class="r8 r">newvalue</span>) =&gt;
+			{
+				<a href="WebViewSource.cs.html#02e5cad5a7548170" class="k">var</a> <span id="r9 rd" class="r9 r">source</span> = <span class="r8 r">newvalue</span> <b>as</b> <a href="WebViewSource.cs.html#02e5cad5a7548170" class="t t">WebViewSource</a>;
+				<a href="#52d8a16d29ea5696" class="k">var</a> <span id="r10 rd" class="r10 r">webview</span> = (<a href="#52d8a16d29ea5696" class="t t">WebView</a>)<span class="r6 r">bindable</span>;
+				<b>if</b> (<span class="r9 r">source</span> != <b>null</b>)
+				{
+					<span class="r9 r">source</span>.<a href="WebViewSource.cs.html#2795c926d4db9b08" class="i">SourceChanged</a> += <span class="r10 r">webview</span>.<a href="#cfb4d99b83a5a907" class="i method">OnSourceChanged</a>;
+					<a href="BindableObject.cs.html#530fa4630449540e" class="i method">SetInheritedBindingContext</a>(<span class="r9 r">source</span>, <span class="r10 r">webview</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>);
+				}
+			});
+ 
+		<b>static readonly</b> <a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <a id="de2239ce47640144" href="R/de2239ce47640144.html" target="n" data-glyph="46,1" class="i field">CanGoBackPropertyKey</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#59da471949b1603c" class="i method">CreateReadOnly</a>(<span class="s">&quot;CanGoBack&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#52d8a16d29ea5696" class="t t">WebView</a>), <b>false</b>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="924f1619d688d673" href="R/924f1619d688d673.html" target="n" data-glyph="42,1" class="i field">CanGoBackProperty</a> = <a href="#de2239ce47640144" class="i field">CanGoBackPropertyKey</a>.<a href="BindablePropertyKey.cs.html#80ee7a7d9c6b4d14" class="i property">BindableProperty</a>;
+ 
+		<b>static readonly</b> <a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <a id="b85de683ff864b27" href="R/b85de683ff864b27.html" target="n" data-glyph="46,1" class="i field">CanGoForwardPropertyKey</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#59da471949b1603c" class="i method">CreateReadOnly</a>(<span class="s">&quot;CanGoForward&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#52d8a16d29ea5696" class="t t">WebView</a>), <b>false</b>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="6ab6f0f38639ade9" href="R/6ab6f0f38639ade9.html" target="n" data-glyph="42,1" class="i field">CanGoForwardProperty</a> = <a href="#b85de683ff864b27" class="i field">CanGoForwardPropertyKey</a>.<a href="BindablePropertyKey.cs.html#80ee7a7d9c6b4d14" class="i property">BindableProperty</a>;
+ 
+		<b>readonly</b> <a href="@1@System.Runtime/A.html#8b99c1f377873554" class="t t">Lazy</a>&lt;<a href="PlatformConfigurationRegistry.cs.html#df79e68c227d9ebc" class="t t">PlatformConfigurationRegistry</a>&lt;<a href="#52d8a16d29ea5696" class="t t">WebView</a>&gt;&gt; <a id="8037cf795d8cb950" href="R/8037cf795d8cb950.html" target="n" data-glyph="46,1" class="i field">_platformConfigurationRegistry</a>;
+ 
+		<b>public</b> <a id="0cad0eb150f76411" href="R/0cad0eb150f76411.html" target="n" data-glyph="72,1" class="i constructor">WebView</a>()
+		{
+			<a href="#8037cf795d8cb950" class="i field">_platformConfigurationRegistry</a> = <b>new</b> <a href="@1@System.Runtime/A.html#c0f7b98bacad370a" class="t constructor">Lazy</a>&lt;<a href="PlatformConfigurationRegistry.cs.html#df79e68c227d9ebc" class="t t">PlatformConfigurationRegistry</a>&lt;<a href="#52d8a16d29ea5696" class="t t">WebView</a>&gt;&gt;(() =&gt; <b>new</b> <a href="PlatformConfigurationRegistry.cs.html#095e8c13a6ebb3e6" class="t constructor">PlatformConfigurationRegistry</a>&lt;<a href="#52d8a16d29ea5696" class="t t">WebView</a>&gt;(<a href="#52d8a16d29ea5696" class="k">this</a>));
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>bool</b> <a href="IWebViewController.cs.html#07275dd4e74d2bcf" class="t t">IWebViewController</a>.<a href="IWebViewController.cs.html#2d98d691b05c471a" class="i property">CanGoBack</a> 
+		{
+			<b>get</b> { <b>return</b> <a href="#fab2e26854db7dec" class="i property">CanGoBack</a>; }
+			<b>set</b> { <a href="BindableObject.cs.html#da429b392302767c" class="i method">SetValue</a>(<a href="#de2239ce47640144" class="i field">CanGoBackPropertyKey</a>, <b>value</b>); }
+		}
+ 
+		<b>public bool</b> <a id="fab2e26854db7dec" href="R/fab2e26854db7dec.html" target="n" data-glyph="102,1" class="i property">CanGoBack</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#924f1619d688d673" class="i field">CanGoBackProperty</a>); }
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>bool</b> <a href="IWebViewController.cs.html#07275dd4e74d2bcf" class="t t">IWebViewController</a>.<a href="IWebViewController.cs.html#e15f939979d3a22d" class="i property">CanGoForward</a> 
+		{
+			<b>get</b> { <b>return</b> <a href="#b203b3546a15571f" class="i property">CanGoForward</a>; }
+			<b>set</b> { <a href="BindableObject.cs.html#da429b392302767c" class="i method">SetValue</a>(<a href="#b85de683ff864b27" class="i field">CanGoForwardPropertyKey</a>, <b>value</b>); }
+		}
+ 
+		<b>public bool</b> <a id="b203b3546a15571f" href="R/b203b3546a15571f.html" target="n" data-glyph="102,1" class="i property">CanGoForward</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#6ab6f0f38639ade9" class="i field">CanGoForwardProperty</a>); }
+		}
+ 
+		[<a href="TypeConverterAttribute.cs.html#ba9bf382c7a66e7b" class="t constructor">TypeConverter</a>(<b>typeof</b>(<a href="WebViewSourceTypeConverter.cs.html#c8eec01e5edc829b" class="t t">WebViewSourceTypeConverter</a>))]
+		<b>public</b> <a href="WebViewSource.cs.html#02e5cad5a7548170" class="t t">WebViewSource</a> <a id="9f375fc5a4f1da28" href="R/9f375fc5a4f1da28.html" target="n" data-glyph="102,1" class="i property">Source</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="WebViewSource.cs.html#02e5cad5a7548170" class="t t">WebViewSource</a>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#45ee39e401e73d89" class="i field">SourceProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#45ee39e401e73d89" class="i field">SourceProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public void</b> <a id="213735f84fb5558c" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Eval</a>(<b>string</b> <span id="r11 rd" class="r11 r">script</span>)
+		{
+			<a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="Internals/EvalRequested.cs.html#7644c0604c5807d4" class="t t">EvalRequested</a>&gt; <span id="r12 rd" class="r12 r">handler</span> = <a href="#65684c4180e11f4f" class="i">EvalRequested</a>;
+			<span class="r12 r">handler</span>?.<a href="@1@System.Runtime/A.html#48225ee7c18a0e20" class="i method">Invoke</a>(<a href="#52d8a16d29ea5696" class="k">this</a>, <b>new</b> <a href="Internals/EvalRequested.cs.html#8bdb312df03e004d" class="t constructor">EvalRequested</a>(<span class="r11 r">script</span>));
+		}
+ 
+		<b>public void</b> <a id="d52c89f3b194938e" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GoBack</a>()
+		{
+			<a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <span id="r13 rd" class="r13 r">handler</span> = <a href="#8c478c799efaa317" class="i">GoBackRequested</a>;
+			<b>if</b> (<span class="r13 r">handler</span> != <b>null</b>)
+				<span class="r13 r">handler</span>(<a href="#52d8a16d29ea5696" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+ 
+		<b>public void</b> <a id="541898e72d306cc3" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GoForward</a>()
+		{
+			<a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <span id="r14 rd" class="r14 r">handler</span> = <a href="#9b872867a6a09d60" class="i">GoForwardRequested</a>;
+			<b>if</b> (<span class="r14 r">handler</span> != <b>null</b>)
+				<span class="r14 r">handler</span>(<a href="#52d8a16d29ea5696" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="WebNavigatedEventArgs.cs.html#a5ec52a6d54f28ec" class="t t">WebNavigatedEventArgs</a>&gt; <a id="d57c7f31014b2c36" href="R/d57c7f31014b2c36.html" target="n" data-glyph="30,1" class="i">Navigated</a>;
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="WebNavigatingEventArgs.cs.html#a0f096828a23a6cf" class="t t">WebNavigatingEventArgs</a>&gt; <a id="bd9b39795bf55096" href="R/bd9b39795bf55096.html" target="n" data-glyph="30,1" class="i">Navigating</a>;
+ 
+		<b>protected override void</b> <a id="92ef007b4f101f5c" href="R/92ef007b4f101f5c.html" target="n" data-glyph="75,1" class="i method">OnBindingContextChanged</a>()
+		{
+			<a href="View.cs.html#60f54d5b73cefedd" class="k">base</a>.<a href="View.cs.html#1bf19b91892c31ff" class="i method">OnBindingContextChanged</a>();
+ 
+			<a href="WebViewSource.cs.html#02e5cad5a7548170" class="t t">WebViewSource</a> <span id="r15 rd" class="r15 r">source</span> = <a href="#9f375fc5a4f1da28" class="i property">Source</a>;
+			<b>if</b> (<span class="r15 r">source</span> != <b>null</b>)
+			{
+				<a href="BindableObject.cs.html#530fa4630449540e" class="i method">SetInheritedBindingContext</a>(<span class="r15 r">source</span>, <a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>);
+			}
+		}
+ 
+		<b>protected override void</b> <a id="7122cfb7be16e036" href="R/7122cfb7be16e036.html" target="n" data-glyph="75,1" class="i method">OnPropertyChanged</a>(<b>string</b> <span id="r16 rd" class="r16 r">propertyName</span>)
+		{
+			<b>if</b> (<span class="r16 r">propertyName</span> == <span class="s">&quot;BindingContext&quot;</span>)
+			{
+				<a href="WebViewSource.cs.html#02e5cad5a7548170" class="t t">WebViewSource</a> <span id="r17 rd" class="r17 r">source</span> = <a href="#9f375fc5a4f1da28" class="i property">Source</a>;
+				<b>if</b> (<span class="r17 r">source</span> != <b>null</b>)
+					<a href="BindableObject.cs.html#530fa4630449540e" class="i method">SetInheritedBindingContext</a>(<span class="r17 r">source</span>, <a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>);
+			}
+ 
+			<a href="View.cs.html#60f54d5b73cefedd" class="k">base</a>.<a href="Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>(<span class="r16 r">propertyName</span>);
+		}
+ 
+		<b>protected void</b> <a id="cfb4d99b83a5a907" href="R/cfb4d99b83a5a907.html" target="n" data-glyph="75,1" class="i method">OnSourceChanged</a>(<b>object</b> <span id="r18 rd" class="r18 r">sender</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r19 rd" class="r19 r">e</span>)
+		{
+			<a href="#7122cfb7be16e036" class="i method">OnPropertyChanged</a>(<a href="#45ee39e401e73d89" class="i field">SourceProperty</a>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>);
+		}
+ 
+		<b>event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="Internals/EvalRequested.cs.html#7644c0604c5807d4" class="t t">EvalRequested</a>&gt; <a href="IWebViewController.cs.html#07275dd4e74d2bcf" class="t t">IWebViewController</a>.<a href="IWebViewController.cs.html#09841c38f52a1465" class="i">EvalRequested</a> {
+			<b>add</b> { <a href="#65684c4180e11f4f" class="i">EvalRequested</a> += <b>value</b>; }
+			<b>remove</b> { <a href="#65684c4180e11f4f" class="i">EvalRequested</a> -= <b>value</b>; }
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="Internals/EvalRequested.cs.html#7644c0604c5807d4" class="t t">EvalRequested</a>&gt; <a id="65684c4180e11f4f" href="R/65684c4180e11f4f.html" target="n" data-glyph="30,1" class="i">EvalRequested</a>;
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="8c478c799efaa317" href="R/8c478c799efaa317.html" target="n" data-glyph="30,1" class="i">GoBackRequested</a>;
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="9b872867a6a09d60" href="R/9b872867a6a09d60.html" target="n" data-glyph="30,1" class="i">GoForwardRequested</a>;
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public void</b> <a id="a46eb98f13e5b3cb" href="R/a46eb98f13e5b3cb.html" target="n" data-glyph="72,1" class="i method">SendNavigated</a>(<a href="WebNavigatedEventArgs.cs.html#a5ec52a6d54f28ec" class="t t">WebNavigatedEventArgs</a> <span id="r20 rd" class="r20 r">args</span>)
+		{
+			<a href="#d57c7f31014b2c36" class="i">Navigated</a>?.<a href="@1@System.Runtime/A.html#48225ee7c18a0e20" class="i method">Invoke</a>(<a href="#52d8a16d29ea5696" class="k">this</a>, <span class="r20 r">args</span>);
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public void</b> <a id="cca38d29ce67fe41" href="R/cca38d29ce67fe41.html" target="n" data-glyph="72,1" class="i method">SendNavigating</a>(<a href="WebNavigatingEventArgs.cs.html#a0f096828a23a6cf" class="t t">WebNavigatingEventArgs</a> <span id="r21 rd" class="r21 r">args</span>)
+		{
+			<a href="#bd9b39795bf55096" class="i">Navigating</a>?.<a href="@1@System.Runtime/A.html#48225ee7c18a0e20" class="i method">Invoke</a>(<a href="#52d8a16d29ea5696" class="k">this</a>, <span class="r21 r">args</span>);
+		}
+ 
+		<b>public</b> <a href="IPlatformElementConfiguration.cs.html#5af49100a0dfae3b" class="t t">IPlatformElementConfiguration</a>&lt;<span class="r22 r t">T</span>, <a href="#52d8a16d29ea5696" class="t t">WebView</a>&gt; <a id="b39625cad6fd8e16" href="R/b39625cad6fd8e16.html" target="n" data-glyph="72,1" class="i method">On</a>&lt;<span id="r22 rd t" class="r22 r t">T</span>&gt;() <b>where</b> <span class="r22 r t">T</span> : <a href="IConfigPlatform.cs.html#aac422aa0d58ffc2" class="t t">IConfigPlatform</a>
+		{
+			<b>return</b> <a href="#8037cf795d8cb950" class="i field">_platformConfigurationRegistry</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>.<a href="PlatformConfigurationRegistry.cs.html#20b776526edc7ead" class="i method">On</a>&lt;<span class="r22 r t">T</span>&gt;();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

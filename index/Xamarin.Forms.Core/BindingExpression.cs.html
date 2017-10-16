@@ -1,0 +1,591 @@
+﻿<!DOCTYPE html>
+<html><head><title>BindingExpression.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(582);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/BindingExpression.cs" target="_top">BindingExpression.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Globalization</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>internal class</b> <a id="2aec715b3c2631f3" href="R/2aec715b3c2631f3.html" target="n" data-glyph="2,0" class="t t">BindingExpression</a>
+	{
+		<b>internal const string</b> <a id="b5ea5816d73a9e61" href="R/b5ea5816d73a9e61.html" target="n" data-glyph="8,1" class="i field">PropertyNotFoundErrorMessage</a> = <span class="s">&quot;&#39;{0}&#39; property not found on &#39;{1}&#39;, target property: &#39;{2}.{3}&#39;&quot;</span>;
+ 
+		<b>readonly</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a>&gt; <a id="8d3a2d18462f8b0e" href="R/8d3a2d18462f8b0e.html" target="n" data-glyph="46,1" class="i field">_parts</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a>&gt;();
+ 
+		<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="bc63556efd3dab41" href="R/bc63556efd3dab41.html" target="n" data-glyph="46,1" class="i field">_targetProperty</a>;
+		<a href="@1@System.Runtime/A.html#809df5135c2bec67" class="t t">WeakReference</a>&lt;<b>object</b>&gt; <a id="8a6b8e146d140941" href="R/8a6b8e146d140941.html" target="n" data-glyph="46,1" class="i field">_weakSource</a>;
+		<a href="@1@System.Runtime/A.html#809df5135c2bec67" class="t t">WeakReference</a>&lt;<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>&gt; <a id="dd966b814ce9bf10" href="R/dd966b814ce9bf10.html" target="n" data-glyph="46,1" class="i field">_weakTarget</a>;
+ 
+		<b>internal</b> <a id="a5970f494188a215" href="R/a5970f494188a215.html" target="n" data-glyph="74,1" class="i constructor">BindingExpression</a>(<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r0 rd" class="r0 r">binding</span>, <b>string</b> <span id="r1 rd" class="r1 r">path</span>)
+		{
+			<b>if</b> (<span class="r0 r">binding</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;binding&quot;</span>);
+			<b>if</b> (<span class="r1 r">path</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;path&quot;</span>);
+ 
+			<a href="#eb7e5b942a77b88f" class="i property">Binding</a> = <span class="r0 r">binding</span>;
+			<a href="#7007a35e86c2eaa1" class="i property">Path</a> = <span class="r1 r">path</span>;
+ 
+			<a href="#6e1c167cf6b71dbc" class="i method">ParsePath</a>();
+		}
+ 
+		<b>internal</b> <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <a id="eb7e5b942a77b88f" href="R/eb7e5b942a77b88f.html" target="n" data-glyph="104,1" class="i property">Binding</a> { <b>get</b>; }
+ 
+		<b>internal string</b> <a id="7007a35e86c2eaa1" href="R/7007a35e86c2eaa1.html" target="n" data-glyph="104,1" class="i property">Path</a> { <b>get</b>; }
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Applies the binding expression to a previously set source and target.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>internal void</b> <a id="dd79f5ec1efc8f89" href="R/dd79f5ec1efc8f89.html" target="n" data-glyph="74,1" class="i method">Apply</a>(<b>bool</b> <span id="r2 rd" class="r2 r">fromTarget</span> = <b>false</b>)
+		{
+			<b>if</b> (<a href="#8a6b8e146d140941" class="i field">_weakSource</a> == <b>null</b> || <a href="#dd966b814ce9bf10" class="i field">_weakTarget</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r3 rd" class="r3 r">target</span>;
+			<b>if</b> (!<a href="#dd966b814ce9bf10" class="i field">_weakTarget</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r3 r">target</span>))
+			{
+				<a href="#f5a4604d4d3d6f25" class="i method">Unapply</a>();
+				<b>return</b>;
+			}
+ 
+			<b>object</b> <span id="r4 rd" class="r4 r">source</span>;
+			<b>if</b> (<a href="#8a6b8e146d140941" class="i field">_weakSource</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r4 r">source</span>) &amp;&amp; <a href="#bc63556efd3dab41" class="i field">_targetProperty</a> != <b>null</b>)
+				<a href="#f5dc52720bf517ae" class="i method">ApplyCore</a>(<span class="r4 r">source</span>, <span class="r3 r">target</span>, <a href="#bc63556efd3dab41" class="i field">_targetProperty</a>, <span class="r2 r">fromTarget</span>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Applies the binding expression to a new source or target.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>internal void</b> <a id="7d9b4ea22c1ab17d" href="R/7d9b4ea22c1ab17d.html" target="n" data-glyph="74,1" class="i method">Apply</a>(<b>object</b> <span id="r5 rd" class="r5 r">sourceObject</span>, <a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r6 rd" class="r6 r">target</span>, <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r7 rd" class="r7 r">property</span>)
+		{
+			<a href="#bc63556efd3dab41" class="i field">_targetProperty</a> = <span class="r7 r">property</span>;
+ 
+			<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r8 rd" class="r8 r">prevTarget</span>;
+			<b>if</b> (<a href="#dd966b814ce9bf10" class="i field">_weakTarget</a> != <b>null</b> &amp;&amp; <a href="#dd966b814ce9bf10" class="i field">_weakTarget</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r8 r">prevTarget</span>) &amp;&amp; !<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r8 r">prevTarget</span>, <span class="r6 r">target</span>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;Binding instances can not be reused&quot;</span>);
+ 
+			<b>object</b> <span id="r9 rd" class="r9 r">previousSource</span>;
+			<b>if</b> (<a href="#8a6b8e146d140941" class="i field">_weakSource</a> != <b>null</b> &amp;&amp; <a href="#8a6b8e146d140941" class="i field">_weakSource</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r9 r">previousSource</span>) &amp;&amp; !<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r9 r">previousSource</span>, <span class="r5 r">sourceObject</span>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;Binding instances can not be reused&quot;</span>);
+ 
+			<a href="#8a6b8e146d140941" class="i field">_weakSource</a> = <b>new</b> <a href="@1@System.Runtime/A.html#0bcc5ece65ea67eb" class="t constructor">WeakReference</a>&lt;<b>object</b>&gt;(<span class="r5 r">sourceObject</span>);
+			<a href="#dd966b814ce9bf10" class="i field">_weakTarget</a> = <b>new</b> <a href="@1@System.Runtime/A.html#0bcc5ece65ea67eb" class="t constructor">WeakReference</a>&lt;<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>&gt;(<span class="r6 r">target</span>);
+ 
+			<a href="#f5dc52720bf517ae" class="i method">ApplyCore</a>(<span class="r5 r">sourceObject</span>, <span class="r6 r">target</span>, <span class="r7 r">property</span>);
+		}
+ 
+		<b>internal void</b> <a id="f5a4604d4d3d6f25" href="R/f5a4604d4d3d6f25.html" target="n" data-glyph="74,1" class="i method">Unapply</a>()
+		{
+			<b>object</b> <span id="r10 rd" class="r10 r">sourceObject</span>;
+			<b>if</b> (<a href="#8a6b8e146d140941" class="i field">_weakSource</a> != <b>null</b> &amp;&amp; <a href="#8a6b8e146d140941" class="i field">_weakSource</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r10 r">sourceObject</span>))
+			{
+				<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r11 rd" class="r11 r">i</span> = 0; <span class="r11 r">i</span> &lt; <a href="#8d3a2d18462f8b0e" class="i field">_parts</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> - 1; <span class="r11 r">i</span>++)
+				{
+					<a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a> <span id="r12 rd" class="r12 r">part</span> = <a href="#8d3a2d18462f8b0e" class="i field">_parts</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r11 r">i</span>];
+ 
+					<b>if</b> (!<span class="r12 r">part</span>.<a href="#7199b2c6c103bb30" class="i property">IsSelf</a>)
+					{
+						<span class="r12 r">part</span>.<a href="#814985d8db8efa79" class="i method">TryGetValue</a>(<span class="r10 r">sourceObject</span>, <b>out</b> <span class="r10 r">sourceObject</span>);
+					}
+ 
+					<span class="r12 r">part</span>.<a href="#685e4de9c592a586" class="i method">Unsubscribe</a>();
+				}
+			}
+ 
+			<a href="#8a6b8e146d140941" class="i field">_weakSource</a> = <b>null</b>;
+			<a href="#dd966b814ce9bf10" class="i field">_weakTarget</a> = <b>null</b>;
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Applies the binding expression to a previously set source or target.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>void</b> <a id="f5dc52720bf517ae" href="R/f5dc52720bf517ae.html" target="n" data-glyph="76,1" class="i method">ApplyCore</a>(<b>object</b> <span id="r13 rd" class="r13 r">sourceObject</span>, <a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r14 rd" class="r14 r">target</span>, <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r15 rd" class="r15 r">property</span>, <b>bool</b> <span id="r16 rd" class="r16 r">fromTarget</span> = <b>false</b>)
+		{
+			<a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r17 rd" class="r17 r">mode</span> = <a href="#eb7e5b942a77b88f" class="i property">Binding</a>.<a href="BindingBaseExtensions.cs.html#a7773b8e58e2cdaa" class="i method">GetRealizedMode</a>(<a href="#bc63556efd3dab41" class="i field">_targetProperty</a>);
+			<b>if</b> (<span class="r17 r">mode</span> == <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a> &amp;&amp; <span class="r16 r">fromTarget</span>)
+				<b>return</b>;
+ 
+			<b>bool</b> <span id="r18 rd" class="r18 r">needsGetter</span> = (<span class="r17 r">mode</span> == <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5b5de329b5adbce9" class="i field">TwoWay</a> &amp;&amp; !<span class="r16 r">fromTarget</span>) || <span class="r17 r">mode</span> == <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a>;
+			<b>bool</b> <span id="r19 rd" class="r19 r">needsSetter</span> = !<span class="r18 r">needsGetter</span> &amp;&amp; ((<span class="r17 r">mode</span> == <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5b5de329b5adbce9" class="i field">TwoWay</a> &amp;&amp; <span class="r16 r">fromTarget</span>) || <span class="r17 r">mode</span> == <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5827e0a716ae341d" class="i field">OneWayToSource</a>);
+ 
+			<b>object</b> <span id="r20 rd" class="r20 r">current</span> = <span class="r13 r">sourceObject</span>;
+			<b>object</b> <span id="r21 rd" class="r21 r">previous</span> = <b>null</b>;
+			<a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a> <span id="r22 rd" class="r22 r">part</span> = <b>null</b>;
+ 
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r23 rd" class="r23 r">i</span> = 0; <span class="r23 r">i</span> &lt; <a href="#8d3a2d18462f8b0e" class="i field">_parts</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r23 r">i</span>++)
+			{
+				<span class="r22 r">part</span> = <a href="#8d3a2d18462f8b0e" class="i field">_parts</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r23 r">i</span>];
+				<b>bool</b> <span id="r24 rd" class="r24 r">isLast</span> = <span class="r23 r">i</span> + 1 == <a href="#8d3a2d18462f8b0e" class="i field">_parts</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>;
+ 
+				<b>if</b> (!<span class="r22 r">part</span>.<a href="#7199b2c6c103bb30" class="i property">IsSelf</a> &amp;&amp; <span class="r20 r">current</span> != <b>null</b>)
+				{
+					<span class="c">// Allow the object instance itself to provide its own TypeInfo </span>
+					<b>var</b> <span id="r25 rd" class="r25 r">reflectable</span> = <span class="r20 r">current</span> <b>as</b> <span class="t t">IReflectableType</span>;
+					<span class="t t">TypeInfo</span> <span id="r26 rd" class="r26 r">currentType</span> = <span class="r25 r">reflectable</span> != <b>null</b> ? <span class="r25 r">reflectable</span>.<span class="i method">GetTypeInfo</span>() : <span class="r20 r">current</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetTypeInfo</span>();
+					<b>if</b> (<span class="r22 r">part</span>.<a href="#8e5e720101208413" class="i property">LastGetter</a> == <b>null</b> || !<span class="r22 r">part</span>.<a href="#8e5e720101208413" class="i property">LastGetter</a>.<span class="i property">DeclaringType</span>.<span class="i method">GetTypeInfo</span>().<span class="i method">IsAssignableFrom</span>(<span class="r26 r">currentType</span>))
+						<a href="#2b514b557a1e7436" class="i method">SetupPart</a>(<span class="r26 r">currentType</span>, <span class="r22 r">part</span>);
+ 
+					<b>if</b> (!<span class="r24 r">isLast</span>)
+						<span class="r22 r">part</span>.<a href="#814985d8db8efa79" class="i method">TryGetValue</a>(<span class="r20 r">current</span>, <b>out</b> <span class="r20 r">current</span>);
+				}
+ 
+				<b>if</b> (!<span class="r22 r">part</span>.<a href="#7199b2c6c103bb30" class="i property">IsSelf</a> &amp;&amp; <span class="r20 r">current</span> != <b>null</b>)
+				{
+					<b>if</b> ((<span class="r18 r">needsGetter</span> &amp;&amp; <span class="r22 r">part</span>.<a href="#8e5e720101208413" class="i property">LastGetter</a> == <b>null</b>) || (<span class="r19 r">needsSetter</span> &amp;&amp; <span class="r22 r">part</span>.<a href="#ea930639a54b21a8" class="i property">NextPart</a> == <b>null</b> &amp;&amp; <span class="r22 r">part</span>.<a href="#79a3a3a84cbdb1c8" class="i property">LastSetter</a> == <b>null</b>))
+					{
+						<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#1776263ebad4afea" class="i method">Warning</a>(<span class="s">&quot;Binding&quot;</span>, <a href="#b5ea5816d73a9e61" class="i field">PropertyNotFoundErrorMessage</a>, <span class="r22 r">part</span>.<a href="#c731566dcee67890" class="i property">Content</a>, <span class="r20 r">current</span>, <span class="r14 r">target</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>(), <span class="r15 r">property</span>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>);
+						<b>break</b>;
+					}
+				}
+ 
+				<b>if</b> (<span class="r17 r">mode</span> == <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a> || <span class="r17 r">mode</span> == <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5b5de329b5adbce9" class="i field">TwoWay</a>)
+				{
+					<b>var</b> <span id="r27 rd" class="r27 r">inpc</span> = <span class="r20 r">current</span> <b>as</b> <span class="t t">INotifyPropertyChanged</span>;
+					<b>if</b> (<span class="r27 r">inpc</span> != <b>null</b> &amp;&amp; !<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r20 r">current</span>, <span class="r21 r">previous</span>))
+					{
+						<span class="r22 r">part</span>.<a href="#6a8b0d0f201e6220" class="i method">Subscribe</a>(<span class="r27 r">inpc</span>);
+					}
+				}
+ 
+				<span class="r21 r">previous</span> = <span class="r20 r">current</span>;
+			}
+ 
+			<span class="t t">Debug</span>.<span class="i method">Assert</span>(<span class="r22 r">part</span> != <b>null</b>, <span class="s">&quot;There should always be at least the self part in the expression.&quot;</span>);
+ 
+			<b>if</b> (<span class="r18 r">needsGetter</span>)
+			{
+				<b>object</b> <span id="r28 rd" class="r28 r">value</span> = <span class="r15 r">property</span>.<a href="BindableProperty.cs.html#b20da29b32c9aaff" class="i property">DefaultValue</a>;
+				<b>if</b> (<span class="r22 r">part</span>.<a href="#814985d8db8efa79" class="i method">TryGetValue</a>(<span class="r20 r">current</span>, <b>out</b> <span class="r28 r">value</span>) || <span class="r22 r">part</span>.<a href="#7199b2c6c103bb30" class="i property">IsSelf</a>)
+				{
+					<span class="r28 r">value</span> = <a href="#eb7e5b942a77b88f" class="i property">Binding</a>.<a href="BindingBase.cs.html#c7c5f480e9a869aa" class="i method">GetSourceValue</a>(<span class="r28 r">value</span>, <span class="r15 r">property</span>.<a href="BindableProperty.cs.html#3a88e13a70e1553a" class="i property">ReturnType</a>);
+				}
+				<b>else</b>
+					<span class="r28 r">value</span> = <span class="r15 r">property</span>.<a href="BindableProperty.cs.html#b20da29b32c9aaff" class="i property">DefaultValue</a>;
+ 
+				<b>if</b> (!<a href="#316f74462cd056ef" class="i method">TryConvert</a>(<span class="r22 r">part</span>, <b>ref</b> <span class="r28 r">value</span>, <span class="r15 r">property</span>.<a href="BindableProperty.cs.html#3a88e13a70e1553a" class="i property">ReturnType</a>, <b>true</b>))
+				{
+					<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#1776263ebad4afea" class="i method">Warning</a>(<span class="s">&quot;Binding&quot;</span>, <span class="s">&quot;{0} can not be converted to type &#39;{1}&#39;&quot;</span>, <span class="r28 r">value</span>, <span class="r15 r">property</span>.<a href="BindableProperty.cs.html#3a88e13a70e1553a" class="i property">ReturnType</a>);
+					<b>return</b>;
+				}
+ 
+				<span class="r14 r">target</span>.<a href="BindableObject.cs.html#cdda2e5893c76fb1" class="i method">SetValueCore</a>(<span class="r15 r">property</span>, <span class="r28 r">value</span>, <a href="BindableObject.cs.html#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="BindableObject.cs.html#f96104604fccfe26" class="i field">ClearDynamicResource</a>, <a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>.<a href="BindableObject.cs.html#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="BindableObject.cs.html#8eb48006e0d48d47" class="i field">Default</a> | <a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>.<a href="BindableObject.cs.html#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="BindableObject.cs.html#a9b94e4dc44be024" class="i field">Converted</a>);
+			}
+			<b>else if</b> (<span class="r19 r">needsSetter</span> &amp;&amp; <span class="r22 r">part</span>.<a href="#79a3a3a84cbdb1c8" class="i property">LastSetter</a> != <b>null</b> &amp;&amp; <span class="r20 r">current</span> != <b>null</b>)
+			{
+				<b>object</b> <span id="r29 rd" class="r29 r">value</span> = <a href="#eb7e5b942a77b88f" class="i property">Binding</a>.<a href="BindingBase.cs.html#928f054402b65903" class="i method">GetTargetValue</a>(<span class="r14 r">target</span>.<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<span class="r15 r">property</span>), <span class="r22 r">part</span>.<a href="#dc7ccd96c6aacfe2" class="i property">SetterType</a>);
+ 
+				<b>if</b> (!<a href="#316f74462cd056ef" class="i method">TryConvert</a>(<span class="r22 r">part</span>, <b>ref</b> <span class="r29 r">value</span>, <span class="r22 r">part</span>.<a href="#dc7ccd96c6aacfe2" class="i property">SetterType</a>, <b>false</b>))
+				{
+					<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#1776263ebad4afea" class="i method">Warning</a>(<span class="s">&quot;Binding&quot;</span>, <span class="s">&quot;{0} can not be converted to type &#39;{1}&#39;&quot;</span>, <span class="r29 r">value</span>, <span class="r22 r">part</span>.<a href="#dc7ccd96c6aacfe2" class="i property">SetterType</a>);
+					<b>return</b>;
+				}
+ 
+				<b>object</b>[] <span id="r30 rd" class="r30 r">args</span>;
+				<b>if</b> (<span class="r22 r">part</span>.<a href="#5d7da3ed78b5b9d4" class="i property">IsIndexer</a>)
+				{
+					<span class="r30 r">args</span> = <b>new</b> <b>object</b>[<span class="r22 r">part</span>.<a href="#a19d8dfab7e5b098" class="i property">Arguments</a>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> + 1];
+					<span class="r22 r">part</span>.<a href="#a19d8dfab7e5b098" class="i property">Arguments</a>.<a href="@1@System.Runtime/A.html#d3c9a3da4e5d9327" class="i method">CopyTo</a>(<span class="r30 r">args</span>, 0);
+					<span class="r30 r">args</span>[<span class="r30 r">args</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> - 1] = <span class="r29 r">value</span>;
+				}
+				<b>else if</b> (<span class="r22 r">part</span>.<a href="#bb7bfb644d851906" class="i property">IsBindablePropertySetter</a>)
+				{
+					<span class="r30 r">args</span> = <b>new</b>[] { <span class="r22 r">part</span>.<a href="#14692230ac486462" class="i property">BindablePropertyField</a>, <span class="r29 r">value</span> };
+				}
+				<b>else</b>
+				{
+					<span class="r30 r">args</span> = <b>new</b>[] { <span class="r29 r">value</span> };
+				}
+ 
+				<span class="r22 r">part</span>.<a href="#79a3a3a84cbdb1c8" class="i property">LastSetter</a>.<span class="i method">Invoke</span>(<span class="r20 r">current</span>, <span class="r30 r">args</span>);
+			}
+		}
+ 
+		<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a>&gt; <a id="f650f80c17c087b5" href="R/f650f80c17c087b5.html" target="n" data-glyph="76,1" class="i method">GetPart</a>(<b>string</b> <span id="r31 rd" class="r31 r">part</span>)
+		{
+			<span class="r31 r">part</span> = <span class="r31 r">part</span>.<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+			<b>if</b> (<span class="r31 r">part</span> == <b>string</b>.<a href="@1@System.Runtime/A.html#c9f70a27facb27cf" class="i field">Empty</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#172972c225b16e44" class="t constructor">FormatException</a>(<span class="s">&quot;Path contains an empty part&quot;</span>);
+ 
+			<a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a> <span id="r32 rd" class="r32 r">indexer</span> = <b>null</b>;
+ 
+			<b>int</b> <span id="r33 rd" class="r33 r">lbIndex</span> = <span class="r31 r">part</span>.<a href="@1@System.Runtime/A.html#eb06d6d166f6a3d9" class="i method">IndexOf</a>(<span class="s">&#39;[&#39;</span>);
+			<b>if</b> (<span class="r33 r">lbIndex</span> != -1)
+			{
+				<b>int</b> <span id="r34 rd" class="r34 r">rbIndex</span> = <span class="r31 r">part</span>.<a href="@1@System.Runtime/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;]&#39;</span>);
+				<b>if</b> (<span class="r34 r">rbIndex</span> == -1)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#172972c225b16e44" class="t constructor">FormatException</a>(<span class="s">&quot;Indexer did not contain closing bracket&quot;</span>);
+ 
+				<b>int</b> <span id="r35 rd" class="r35 r">argLength</span> = <span class="r34 r">rbIndex</span> - <span class="r33 r">lbIndex</span> - 1;
+				<b>if</b> (<span class="r35 r">argLength</span> == 0)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#172972c225b16e44" class="t constructor">FormatException</a>(<span class="s">&quot;Indexer did not contain arguments&quot;</span>);
+ 
+				<b>string</b> <span id="r36 rd" class="r36 r">argString</span> = <span class="r31 r">part</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(<span class="r33 r">lbIndex</span> + 1, <span class="r35 r">argLength</span>);
+				<span class="r32 r">indexer</span> = <b>new</b> <a href="#b898d2a60f01150d" class="t constructor">BindingExpressionPart</a>(<a href="#2aec715b3c2631f3" class="k">this</a>, <span class="r36 r">argString</span>, <b>true</b>);
+ 
+				<span class="r31 r">part</span> = <span class="r31 r">part</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(0, <span class="r33 r">lbIndex</span>);
+				<span class="r31 r">part</span> = <span class="r31 r">part</span>.<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+			}
+ 
+			<b>if</b> (<span class="r31 r">part</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> &gt; 0)
+				<b>yield return</b> <b>new</b> <a href="#b898d2a60f01150d" class="t constructor">BindingExpressionPart</a>(<a href="#2aec715b3c2631f3" class="k">this</a>, <span class="r31 r">part</span>);
+			<b>if</b> (<span class="r32 r">indexer</span> != <b>null</b>)
+				<b>yield return</b> <span class="r32 r">indexer</span>;
+		}
+ 
+		<b>void</b> <a id="6e1c167cf6b71dbc" href="R/6e1c167cf6b71dbc.html" target="n" data-glyph="76,1" class="i method">ParsePath</a>()
+		{
+			<b>string</b> <span id="r37 rd" class="r37 r">p</span> = <a href="#7007a35e86c2eaa1" class="i property">Path</a>.<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+ 
+			<a href="#df951ece49e06b15" class="k">var</a> <span id="r38 rd" class="r38 r">last</span> = <b>new</b> <a href="#b898d2a60f01150d" class="t constructor">BindingExpressionPart</a>(<a href="#2aec715b3c2631f3" class="k">this</a>, <span class="s">&quot;.&quot;</span>);
+			<a href="#8d3a2d18462f8b0e" class="i field">_parts</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r38 r">last</span>);
+ 
+			<b>if</b> (<span class="r37 r">p</span>[0] == <span class="s">&#39;.&#39;</span>)
+			{
+				<b>if</b> (<span class="r37 r">p</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> == 1)
+					<b>return</b>;
+ 
+				<span class="r37 r">p</span> = <span class="r37 r">p</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(1);
+			}
+ 
+			<b>string</b>[] <span id="r39 rd" class="r39 r">pathParts</span> = <span class="r37 r">p</span>.<a href="@1@System.Runtime/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;.&#39;</span>);
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r40 rd" class="r40 r">i</span> = 0; <span class="r40 r">i</span> &lt; <span class="r39 r">pathParts</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a>; <span class="r40 r">i</span>++)
+			{
+				<b>foreach</b> (<a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a> <span id="r41 rd" class="r41 r">part</span> <b>in</b> <a href="#f650f80c17c087b5" class="i method">GetPart</a>(<span class="r39 r">pathParts</span>[<span class="r40 r">i</span>]))
+				{
+					<span class="r38 r">last</span>.<a href="#ea930639a54b21a8" class="i property">NextPart</a> = <span class="r41 r">part</span>;
+					<a href="#8d3a2d18462f8b0e" class="i field">_parts</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r41 r">part</span>);
+					<span class="r38 r">last</span> = <span class="r41 r">part</span>;
+				}
+			}
+		}
+ 
+		<b>void</b> <a id="2b514b557a1e7436" href="R/2b514b557a1e7436.html" target="n" data-glyph="76,1" class="i method">SetupPart</a>(<span class="t t">TypeInfo</span> <span id="r42 rd" class="r42 r">sourceType</span>, <a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a> <span id="r43 rd" class="r43 r">part</span>)
+		{
+			<span class="r43 r">part</span>.<a href="#a19d8dfab7e5b098" class="i property">Arguments</a> = <b>null</b>;
+			<span class="r43 r">part</span>.<a href="#8e5e720101208413" class="i property">LastGetter</a> = <b>null</b>;
+			<span class="r43 r">part</span>.<a href="#79a3a3a84cbdb1c8" class="i property">LastSetter</a> = <b>null</b>;
+ 
+			<span class="t t">PropertyInfo</span> <span id="r44 rd" class="r44 r">property</span> = <b>null</b>;
+			<b>if</b> (<span class="r43 r">part</span>.<a href="#5d7da3ed78b5b9d4" class="i property">IsIndexer</a>)
+			{
+				<b>if</b> (<span class="r42 r">sourceType</span>.<span class="i property">IsArray</span>)
+				{
+					<b>int</b> <span id="r45 rd" class="r45 r">index</span>;
+					<b>if</b> (!<b>int</b>.<a href="@1@System.Runtime/A.html#325507e509229dbc" class="i method">TryParse</a>(<span class="r43 r">part</span>.<a href="#c731566dcee67890" class="i property">Content</a>, <b>out</b> <span class="r45 r">index</span>))
+						<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#1776263ebad4afea" class="i method">Warning</a>(<span class="s">&quot;Binding&quot;</span>, <span class="s">&quot;{0} could not be parsed as an index for a {1}&quot;</span>, <span class="r43 r">part</span>.<a href="#c731566dcee67890" class="i property">Content</a>, <span class="r42 r">sourceType</span>);
+					<b>else</b>
+						<span class="r43 r">part</span>.<a href="#a19d8dfab7e5b098" class="i property">Arguments</a> = <b>new</b> <b>object</b>[] { <span class="r45 r">index</span> };
+ 
+					<span class="r43 r">part</span>.<a href="#8e5e720101208413" class="i property">LastGetter</a> = <span class="r42 r">sourceType</span>.<span class="i method">GetDeclaredMethod</span>(<span class="s">&quot;Get&quot;</span>);
+					<span class="r43 r">part</span>.<a href="#79a3a3a84cbdb1c8" class="i property">LastSetter</a> = <span class="r42 r">sourceType</span>.<span class="i method">GetDeclaredMethod</span>(<span class="s">&quot;Set&quot;</span>);
+					<span class="r43 r">part</span>.<a href="#dc7ccd96c6aacfe2" class="i property">SetterType</a> = <span class="r42 r">sourceType</span>.<span class="i method">GetElementType</span>();
+				}
+ 
+				<a href="@1@System.Runtime/A.html#d73c83d205a57372" class="t t">DefaultMemberAttribute</a> <span id="r46 rd" class="r46 r">defaultMember</span> = <span class="r42 r">sourceType</span>.<span class="i method">GetCustomAttributes</span>(<b>typeof</b>(<a href="@1@System.Runtime/A.html#d73c83d205a57372" class="t t">DefaultMemberAttribute</a>), <b>true</b>).<span class="i method">OfType</span>&lt;<a href="@1@System.Runtime/A.html#d73c83d205a57372" class="t t">DefaultMemberAttribute</a>&gt;().<span class="i method">FirstOrDefault</span>();
+				<b>string</b> <span id="r47 rd" class="r47 r">indexerName</span> = <span class="r46 r">defaultMember</span> != <b>null</b> ? <span class="r46 r">defaultMember</span>.<a href="@1@System.Runtime/A.html#cfc08d1ce96a090c" class="i property">MemberName</a> : <span class="s">&quot;Item&quot;</span>;
+ 
+				<span class="r43 r">part</span>.<a href="#4ceaa3314d7c5f0a" class="i property">IndexerName</a> = <span class="r47 r">indexerName</span>;
+ 
+				<span class="r44 r">property</span> = <span class="r42 r">sourceType</span>.<span class="i method">GetDeclaredProperty</span>(<span class="r47 r">indexerName</span>);
+				<b>if</b> (<span class="r44 r">property</span> == <b>null</b>)
+					<span class="r44 r">property</span> = <span class="r42 r">sourceType</span>.<span class="i property">BaseType</span>.<a href="ReflectionExtensions.cs.html#34261bccf4104215" class="i method">GetProperty</a>(<span class="r47 r">indexerName</span>);
+ 
+				<b>if</b> (<span class="r44 r">property</span> != <b>null</b>)
+				{
+					<span class="t t">ParameterInfo</span> <span id="r48 rd" class="r48 r">parameter</span> = <span class="r44 r">property</span>.<span class="i method">GetIndexParameters</span>().<span class="i method">FirstOrDefault</span>();
+					<b>if</b> (<span class="r48 r">parameter</span> != <b>null</b>)
+					{
+						<b>try</b>
+						{
+							<b>object</b> <span id="r49 rd" class="r49 r">arg</span> = <span class="t t">Convert</span>.<span class="i method">ChangeType</span>(<span class="r43 r">part</span>.<a href="#c731566dcee67890" class="i property">Content</a>, <span class="r48 r">parameter</span>.<span class="i property">ParameterType</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+							<span class="r43 r">part</span>.<a href="#a19d8dfab7e5b098" class="i property">Arguments</a> = <b>new</b>[] { <span class="r49 r">arg</span> };
+						}
+						<b>catch</b> (<a href="@1@System.Runtime/A.html#80a470d64a9b80ef" class="t t">FormatException</a>)
+						{
+						}
+						<b>catch</b> (<a href="@1@System.Runtime/A.html#e9f84ee35463e2da" class="t t">InvalidCastException</a>)
+						{
+						}
+						<b>catch</b> (<a href="@1@System.Runtime/A.html#0b6129dd66924863" class="t t">OverflowException</a>)
+						{
+						}
+					}
+				}
+			}
+			<b>else</b>
+			{
+				<span class="r44 r">property</span> = <span class="r42 r">sourceType</span>.<span class="i method">GetDeclaredProperty</span>(<span class="r43 r">part</span>.<a href="#c731566dcee67890" class="i property">Content</a>);
+				<b>if</b> (<span class="r44 r">property</span> == <b>null</b>)
+					<span class="r44 r">property</span> = <span class="r42 r">sourceType</span>.<span class="i property">BaseType</span>.<a href="ReflectionExtensions.cs.html#34261bccf4104215" class="i method">GetProperty</a>(<span class="r43 r">part</span>.<a href="#c731566dcee67890" class="i property">Content</a>);
+			}
+ 
+			<b>if</b> (<span class="r44 r">property</span> != <b>null</b>)
+			{
+				<b>if</b> (<span class="r44 r">property</span>.<span class="i property">CanRead</span> &amp;&amp; <span class="r44 r">property</span>.<span class="i property">GetMethod</span>.<span class="i property">IsPublic</span> &amp;&amp; !<span class="r44 r">property</span>.<span class="i property">GetMethod</span>.<span class="i property">IsStatic</span>)
+					<span class="r43 r">part</span>.<a href="#8e5e720101208413" class="i property">LastGetter</a> = <span class="r44 r">property</span>.<span class="i property">GetMethod</span>;
+				<b>if</b> (<span class="r44 r">property</span>.<span class="i property">CanWrite</span> &amp;&amp; <span class="r44 r">property</span>.<span class="i property">SetMethod</span>.<span class="i property">IsPublic</span> &amp;&amp; !<span class="r44 r">property</span>.<span class="i property">SetMethod</span>.<span class="i property">IsStatic</span>)
+				{
+					<span class="r43 r">part</span>.<a href="#79a3a3a84cbdb1c8" class="i property">LastSetter</a> = <span class="r44 r">property</span>.<span class="i property">SetMethod</span>;
+					<span class="r43 r">part</span>.<a href="#dc7ccd96c6aacfe2" class="i property">SetterType</a> = <span class="r43 r">part</span>.<a href="#79a3a3a84cbdb1c8" class="i property">LastSetter</a>.<span class="i method">GetParameters</span>().<span class="i method">Last</span>().<span class="i property">ParameterType</span>;
+ 
+					<b>if</b> (<a href="#eb7e5b942a77b88f" class="i property">Binding</a>.<a href="BindingBase.cs.html#08cbc0e5e3944878" class="i property">AllowChaining</a>)
+					{
+						<span class="t t">FieldInfo</span> <span id="r50 rd" class="r50 r">bindablePropertyField</span> = <span class="r42 r">sourceType</span>.<span class="i method">GetDeclaredField</span>(<span class="r43 r">part</span>.<a href="#c731566dcee67890" class="i property">Content</a> + <span class="s">&quot;Property&quot;</span>);
+						<b>if</b> (<span class="r50 r">bindablePropertyField</span> != <b>null</b> &amp;&amp; <span class="r50 r">bindablePropertyField</span>.<span class="i property">FieldType</span> == <b>typeof</b>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>) &amp;&amp; <span class="r42 r">sourceType</span>.<span class="i property">ImplementedInterfaces</span>.<span class="i method">Contains</span>(<b>typeof</b>(<a href="IElementController.cs.html#abc33db1a216ce31" class="t t">IElementController</a>)))
+						{
+							<span class="t t">MethodInfo</span> <span id="r51 rd" class="r51 r">setValueMethod</span> = <b>null</b>;
+							<b>foreach</b> (<span class="t t">MethodInfo</span> <span id="r52 rd" class="r52 r">m</span> <b>in</b> <span class="r42 r">sourceType</span>.<span class="i method">AsType</span>().<span class="i method">GetRuntimeMethods</span>())
+							{
+								<b>if</b> (<span class="r52 r">m</span>.<span class="i property">Name</span>.<a href="@1@System.Runtime/A.html#cb74053b3f2d03f4" class="i method">EndsWith</a>(<span class="s">&quot;IElementController.SetValueFromRenderer&quot;</span>))
+								{
+									<span class="t t">ParameterInfo</span>[] <span id="r53 rd" class="r53 r">parameters</span> = <span class="r52 r">m</span>.<span class="i method">GetParameters</span>();
+									<b>if</b> (<span class="r53 r">parameters</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 2 &amp;&amp; <span class="r53 r">parameters</span>[0].<span class="i property">ParameterType</span> == <b>typeof</b>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>))
+									{
+										<span class="r51 r">setValueMethod</span> = <span class="r52 r">m</span>;
+										<b>break</b>;
+									}
+								}
+							}
+							<b>if</b> (<span class="r51 r">setValueMethod</span> != <b>null</b>)
+							{
+								<span class="r43 r">part</span>.<a href="#79a3a3a84cbdb1c8" class="i property">LastSetter</a> = <span class="r51 r">setValueMethod</span>;
+								<span class="r43 r">part</span>.<a href="#bb7bfb644d851906" class="i property">IsBindablePropertySetter</a> = <b>true</b>;
+								<span class="r43 r">part</span>.<a href="#14692230ac486462" class="i property">BindablePropertyField</a> = <span class="r50 r">bindablePropertyField</span>.<span class="i method">GetValue</span>(<b>null</b>);
+							}
+						}
+					}
+				}
+			}
+		}
+ 
+		<b>static</b> <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>[] <a id="4592814ab8e90518" href="R/4592814ab8e90518.html" target="n" data-glyph="46,1" class="i field">DecimalTypes</a> = <b>new</b>[] { <b>typeof</b>(<b>float</b>), <b>typeof</b>(<b>decimal</b>), <b>typeof</b>(<b>double</b>) };
+		<b>bool</b> <a id="316f74462cd056ef" href="R/316f74462cd056ef.html" target="n" data-glyph="76,1" class="i method">TryConvert</a>(<a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a> <span id="r54 rd" class="r54 r">part</span>, <b>ref object</b> <span id="r55 rd" class="r55 r">value</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r56 rd" class="r56 r">convertTo</span>, <b>bool</b> <span id="r57 rd" class="r57 r">toTarget</span>)
+		{
+			<b>if</b> (<span class="r55 r">value</span> == <b>null</b>)
+				<b>return true</b>;
+			<b>if</b> ((<span class="r57 r">toTarget</span> &amp;&amp; <a href="#bc63556efd3dab41" class="i field">_targetProperty</a>.<a href="BindableProperty.cs.html#c50e83cb086bedd0" class="i method">TryConvert</a>(<b>ref</b> <span class="r55 r">value</span>)) || (!<span class="r57 r">toTarget</span> &amp;&amp; <span class="r56 r">convertTo</span>.<a href="ReflectionExtensions.cs.html#8c499ef170a390f5" class="i method">IsInstanceOfType</a>(<span class="r55 r">value</span>)))
+				<b>return true</b>;
+ 
+			<b>object</b> <span id="r58 rd" class="r58 r">original</span> = <span class="r55 r">value</span>;
+			<b>try</b>
+			{
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r59 rd" class="r59 r">stringValue</span> = <span class="r55 r">value</span> <b>as string</b> ?? <b>string</b>.<a href="@1@System.Runtime/A.html#c9f70a27facb27cf" class="i field">Empty</a>;
+				<span class="c">// see: https://bugzilla.xamarin.com/show_bug.cgi?id=32871</span>
+				<span class="c">// do not canonicalize &quot;*.[.]&quot;; &quot;1.&quot; should not update bound BindableProperty</span>
+				<b>if</b> (<span class="r59 r">stringValue</span>.<a href="@1@System.Runtime/A.html#cb74053b3f2d03f4" class="i method">EndsWith</a>(<span class="s">&quot;.&quot;</span>) &amp;&amp; <a href="#4592814ab8e90518" class="i field">DecimalTypes</a>.<span class="i method">Contains</span>(<span class="r56 r">convertTo</span>))
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#7e5ede961b3eb9f3" class="t constructor">FormatException</a>();
+ 
+				<span class="c">// do not canonicalize &quot;-0&quot;; user will likely enter a period after &quot;-0&quot;</span>
+				<b>if</b> (<span class="r59 r">stringValue</span> == <span class="s">&quot;-0&quot;</span> &amp;&amp; <a href="#4592814ab8e90518" class="i field">DecimalTypes</a>.<span class="i method">Contains</span>(<span class="r56 r">convertTo</span>))
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#7e5ede961b3eb9f3" class="t constructor">FormatException</a>();
+ 
+				<span class="r55 r">value</span> = <span class="t t">Convert</span>.<span class="i method">ChangeType</span>(<span class="r55 r">value</span>, <span class="r56 r">convertTo</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>return true</b>;
+			}
+			<b>catch</b> (<a href="@1@System.Runtime/A.html#e9f84ee35463e2da" class="t t">InvalidCastException</a>)
+			{
+				<span class="r55 r">value</span> = <span class="r58 r">original</span>;
+				<b>return false</b>;
+			}
+			<b>catch</b> (<a href="@1@System.Runtime/A.html#80a470d64a9b80ef" class="t t">FormatException</a>)
+			{
+				<span class="r55 r">value</span> = <span class="r58 r">original</span>;
+				<b>return false</b>;
+			}
+			<b>catch</b> (<a href="@1@System.Runtime/A.html#0b6129dd66924863" class="t t">OverflowException</a>)
+			{
+				<span class="r55 r">value</span> = <span class="r58 r">original</span>;
+				<b>return false</b>;
+			}
+		}
+ 
+		<b>class</b> <a id="6c84e3740d79619c" href="R/../../0000000000.html" target="n" data-glyph="4,1" class="t t">BindingPair</a>
+		{
+			<b>public</b> <a id="3d86ce79970fb590" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i constructor">BindingPair</a>(<a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a> <span id="r60 rd" class="r60 r">part</span>, <b>object</b> <span id="r61 rd" class="r61 r">source</span>, <b>bool</b> <span id="r62 rd" class="r62 r">isLast</span>)
+			{
+				<a href="#338edea08f4753a0" class="i property">Part</a> = <span class="r60 r">part</span>;
+				<a href="#41e3b274d255c47e" class="i property">Source</a> = <span class="r61 r">source</span>;
+				<a href="#8b9af3dfbe00e93d" class="i property">IsLast</a> = <span class="r62 r">isLast</span>;
+			}
+ 
+			<b>public bool</b> <a id="8b9af3dfbe00e93d" href="R/8b9af3dfbe00e93d.html" target="n" data-glyph="102,2" class="i property">IsLast</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public</b> <a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a> <a id="338edea08f4753a0" href="R/338edea08f4753a0.html" target="n" data-glyph="102,2" class="i property">Part</a> { <b>get</b>; <b>private set</b>; }
+ 
+			<b>public object</b> <a id="41e3b274d255c47e" href="R/41e3b274d255c47e.html" target="n" data-glyph="102,2" class="i property">Source</a> { <b>get</b>; <b>private set</b>; }
+		}
+ 
+		<b>internal class</b> <a id="29d44b9ae98fd539" href="R/29d44b9ae98fd539.html" target="n" data-glyph="2,1" class="t t">WeakPropertyChangedProxy</a>
+		{
+			<b>readonly</b> <a href="@1@System.Runtime/A.html#809df5135c2bec67" class="t t">WeakReference</a>&lt;<span class="t t">INotifyPropertyChanged</span>&gt; <a id="d2465730c18d7291" href="R/d2465730c18d7291.html" target="n" data-glyph="46,2" class="i field">_source</a> = <b>new</b> <a href="@1@System.Runtime/A.html#0bcc5ece65ea67eb" class="t constructor">WeakReference</a>&lt;<span class="t t">INotifyPropertyChanged</span>&gt;(<b>null</b>);
+			<b>readonly</b> <a href="@1@System.Runtime/A.html#809df5135c2bec67" class="t t">WeakReference</a>&lt;<span class="t t">PropertyChangedEventHandler</span>&gt; <a id="a5bb20abb2a125f6" href="R/a5bb20abb2a125f6.html" target="n" data-glyph="46,2" class="i field">_listener</a> = <b>new</b> <a href="@1@System.Runtime/A.html#0bcc5ece65ea67eb" class="t constructor">WeakReference</a>&lt;<span class="t t">PropertyChangedEventHandler</span>&gt;(<b>null</b>);
+			<b>readonly</b> <span class="t t">PropertyChangedEventHandler</span> <a id="98856f7285a58e9b" href="R/98856f7285a58e9b.html" target="n" data-glyph="46,2" class="i field">_handler</a>;
+			<b>internal</b> <a href="@1@System.Runtime/A.html#809df5135c2bec67" class="t t">WeakReference</a>&lt;<span class="t t">INotifyPropertyChanged</span>&gt; <a id="fdbb56440ba41ef9" href="R/fdbb56440ba41ef9.html" target="n" data-glyph="104,2" class="i property">Source</a> =&gt; <a href="#d2465730c18d7291" class="i field">_source</a>;
+ 
+			<b>public</b> <a id="6864c3075d7218f5" href="R/6864c3075d7218f5.html" target="n" data-glyph="72,2" class="i constructor">WeakPropertyChangedProxy</a>()
+			{
+				<a href="#98856f7285a58e9b" class="i field">_handler</a> = <b>new</b> <span class="t">PropertyChangedEventHandler</span>(<a href="#8659e426da4df9dd" class="i method">OnPropertyChanged</a>);
+			}
+ 
+			<b>public</b> <a id="a6f272715e0ae476" href="R/a6f272715e0ae476.html" target="n" data-glyph="72,2" class="i constructor">WeakPropertyChangedProxy</a>(<span class="t t">INotifyPropertyChanged</span> <span id="r63 rd" class="r63 r">source</span>, <span class="t t">PropertyChangedEventHandler</span> <span id="r64 rd" class="r64 r">listener</span>) : <a href="#6864c3075d7218f5" class="k">this</a>()
+			{
+				<a href="#5a9554d4cccf1048" class="i method">SubscribeTo</a>(<span class="r63 r">source</span>, <span class="r64 r">listener</span>);
+			}
+ 
+			<b>public void</b> <a id="5a9554d4cccf1048" href="R/5a9554d4cccf1048.html" target="n" data-glyph="72,2" class="i method">SubscribeTo</a>(<span class="t t">INotifyPropertyChanged</span> <span id="r65 rd" class="r65 r">source</span>, <span class="t t">PropertyChangedEventHandler</span> <span id="r66 rd" class="r66 r">listener</span>)
+			{ 
+				<span class="r65 r">source</span>.<span class="i">PropertyChanged</span> += <a href="#98856f7285a58e9b" class="i field">_handler</a>;
+				<a href="#d2465730c18d7291" class="i field">_source</a>.<a href="@1@System.Runtime/A.html#3f115199ed47e802" class="i method">SetTarget</a>(<span class="r65 r">source</span>);
+				<a href="#a5bb20abb2a125f6" class="i field">_listener</a>.<a href="@1@System.Runtime/A.html#3f115199ed47e802" class="i method">SetTarget</a>(<span class="r66 r">listener</span>);
+			}
+ 
+			<b>public void</b> <a id="b87cd87a79098265" href="R/b87cd87a79098265.html" target="n" data-glyph="72,2" class="i method">Unsubscribe</a>()
+			{
+				<span class="t t">INotifyPropertyChanged</span> <span id="r67 rd" class="r67 r">source</span>;
+				<b>if</b> (<a href="#d2465730c18d7291" class="i field">_source</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r67 r">source</span>) &amp;&amp; <span class="r67 r">source</span>!=<b>null</b>)
+					<span class="r67 r">source</span>.<span class="i">PropertyChanged</span> -= <a href="#98856f7285a58e9b" class="i field">_handler</a>;
+				<a href="#d2465730c18d7291" class="i field">_source</a>.<a href="@1@System.Runtime/A.html#3f115199ed47e802" class="i method">SetTarget</a>(<b>null</b>);
+				<a href="#a5bb20abb2a125f6" class="i field">_listener</a>.<a href="@1@System.Runtime/A.html#3f115199ed47e802" class="i method">SetTarget</a>(<b>null</b>);
+			}
+ 
+			<b>void</b> <a id="8659e426da4df9dd" href="R/8659e426da4df9dd.html" target="n" data-glyph="76,2" class="i method">OnPropertyChanged</a>(<b>object</b> <span id="r68 rd" class="r68 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r69 rd" class="r69 r">e</span>)
+			{
+				<span class="t t">PropertyChangedEventHandler</span> <span id="r70 rd" class="r70 r">handler</span>;
+				<b>if</b> (<a href="#a5bb20abb2a125f6" class="i field">_listener</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r70 r">handler</span>) &amp;&amp; <span class="r70 r">handler</span> != <b>null</b>)
+					<span class="r70 r">handler</span>(<span class="r68 r">sender</span>, <span class="r69 r">e</span>);
+				<b>else</b>
+					<a href="#b87cd87a79098265" class="i method">Unsubscribe</a>();
+			}
+		}
+ 
+		<b>class</b> <a id="df951ece49e06b15" href="R/df951ece49e06b15.html" target="n" data-glyph="4,1" class="t t">BindingExpressionPart</a>
+		{
+			<b>readonly</b> <a href="#2aec715b3c2631f3" class="t t">BindingExpression</a> <a id="039a55b6abe49f3a" href="R/039a55b6abe49f3a.html" target="n" data-glyph="46,2" class="i field">_expression</a>;
+			<b>readonly</b> <span class="t t">PropertyChangedEventHandler</span> <a id="a8849932284534bc" href="R/a8849932284534bc.html" target="n" data-glyph="46,2" class="i field">_changeHandler</a>;
+			<a href="#29d44b9ae98fd539" class="t t">WeakPropertyChangedProxy</a> <a id="aee54a5030ca50a3" href="R/aee54a5030ca50a3.html" target="n" data-glyph="46,2" class="i field">_listener</a>;
+ 
+			<b>public</b> <a id="b898d2a60f01150d" href="R/b898d2a60f01150d.html" target="n" data-glyph="72,2" class="i constructor">BindingExpressionPart</a>(<a href="#2aec715b3c2631f3" class="t t">BindingExpression</a> <span id="r71 rd" class="r71 r">expression</span>, <b>string</b> <span id="r72 rd" class="r72 r">content</span>, <b>bool</b> <span id="r73 rd" class="r73 r">isIndexer</span> = <b>false</b>)
+			{
+				<a href="#039a55b6abe49f3a" class="i field">_expression</a> = <span class="r71 r">expression</span>;
+				<a href="#7199b2c6c103bb30" class="i property">IsSelf</a> = <span class="r72 r">content</span> == <span class="i n">Forms</span>.<a href="Binding.cs.html#2dbd2de7439b0217" class="t t">Binding</a>.<a href="Binding.cs.html#ca2f62e01593b7ea" class="i field">SelfPath</a>;
+				<a href="#c731566dcee67890" class="i property">Content</a> = <span class="r72 r">content</span>;
+				<a href="#5d7da3ed78b5b9d4" class="i property">IsIndexer</a> = <span class="r73 r">isIndexer</span>;
+ 
+				<a href="#a8849932284534bc" class="i field">_changeHandler</a> = <a href="#d6f0117bc7e0f96d" class="i method">PropertyChanged</a>;
+			}
+ 
+			<b>public void</b> <a id="6a8b0d0f201e6220" href="R/6a8b0d0f201e6220.html" target="n" data-glyph="72,2" class="i method">Subscribe</a>(<span class="t t">INotifyPropertyChanged</span> <span id="r74 rd" class="r74 r">handler</span>)
+			{
+				<span class="t t">INotifyPropertyChanged</span> <span id="r75 rd" class="r75 r">source</span>;
+				<b>if</b> (<a href="#aee54a5030ca50a3" class="i field">_listener</a> != <b>null</b> &amp;&amp; <a href="#aee54a5030ca50a3" class="i field">_listener</a>.<a href="#fdbb56440ba41ef9" class="i property">Source</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r75 r">source</span>) &amp;&amp; <a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r74 r">handler</span>, <span class="r75 r">source</span>))
+				{
+					<span class="c">// Already subscribed</span>
+					<b>return</b>;
+				}
+ 
+				<span class="c">// Clear out the old subscription if necessary</span>
+				<a href="#685e4de9c592a586" class="i method">Unsubscribe</a>();
+ 
+				<a href="#aee54a5030ca50a3" class="i field">_listener</a> = <b>new</b> <a href="#a6f272715e0ae476" class="t constructor">WeakPropertyChangedProxy</a>(<span class="r74 r">handler</span>, <a href="#a8849932284534bc" class="i field">_changeHandler</a>);
+			}
+ 
+			<b>public void</b> <a id="685e4de9c592a586" href="R/685e4de9c592a586.html" target="n" data-glyph="72,2" class="i method">Unsubscribe</a>()
+			{
+				<a href="#29d44b9ae98fd539" class="k">var</a> <span id="r76 rd" class="r76 r">listener</span> = <a href="#aee54a5030ca50a3" class="i field">_listener</a>;
+				<b>if</b> (<span class="r76 r">listener</span> != <b>null</b>)
+				{
+					<span class="r76 r">listener</span>.<a href="#b87cd87a79098265" class="i method">Unsubscribe</a>();
+					<a href="#aee54a5030ca50a3" class="i field">_listener</a> = <b>null</b>;
+				}
+			}
+ 
+			<b>public object</b>[] <a id="a19d8dfab7e5b098" href="R/a19d8dfab7e5b098.html" target="n" data-glyph="102,2" class="i property">Arguments</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public object</b> <a id="14692230ac486462" href="R/14692230ac486462.html" target="n" data-glyph="102,2" class="i property">BindablePropertyField</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public string</b> <a id="c731566dcee67890" href="R/c731566dcee67890.html" target="n" data-glyph="102,2" class="i property">Content</a> { <b>get</b>; }
+ 
+			<b>public string</b> <a id="4ceaa3314d7c5f0a" href="R/4ceaa3314d7c5f0a.html" target="n" data-glyph="102,2" class="i property">IndexerName</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public bool</b> <a id="bb7bfb644d851906" href="R/bb7bfb644d851906.html" target="n" data-glyph="102,2" class="i property">IsBindablePropertySetter</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public bool</b> <a id="5d7da3ed78b5b9d4" href="R/5d7da3ed78b5b9d4.html" target="n" data-glyph="102,2" class="i property">IsIndexer</a> { <b>get</b>; }
+ 
+			<b>public bool</b> <a id="7199b2c6c103bb30" href="R/7199b2c6c103bb30.html" target="n" data-glyph="102,2" class="i property">IsSelf</a> { <b>get</b>; }
+ 
+			<b>public</b> <span class="t t">MethodInfo</span> <a id="8e5e720101208413" href="R/8e5e720101208413.html" target="n" data-glyph="102,2" class="i property">LastGetter</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public</b> <span class="t t">MethodInfo</span> <a id="79a3a3a84cbdb1c8" href="R/79a3a3a84cbdb1c8.html" target="n" data-glyph="102,2" class="i property">LastSetter</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public</b> <a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a> <a id="ea930639a54b21a8" href="R/ea930639a54b21a8.html" target="n" data-glyph="102,2" class="i property">NextPart</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public</b> <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <a id="dc7ccd96c6aacfe2" href="R/dc7ccd96c6aacfe2.html" target="n" data-glyph="102,2" class="i property">SetterType</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public void</b> <a id="d6f0117bc7e0f96d" href="R/d6f0117bc7e0f96d.html" target="n" data-glyph="72,2" class="i method">PropertyChanged</a>(<b>object</b> <span id="r77 rd" class="r77 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r78 rd" class="r78 r">args</span>)
+			{
+				<a href="#df951ece49e06b15" class="t t">BindingExpressionPart</a> <span id="r79 rd" class="r79 r">part</span> = <a href="#ea930639a54b21a8" class="i property">NextPart</a> ?? <a href="#df951ece49e06b15" class="k">this</a>;
+ 
+				<b>string</b> <span id="r80 rd" class="r80 r">name</span> = <span class="r78 r">args</span>.<span class="i property">PropertyName</span>;
+ 
+				<b>if</b> (!<b>string</b>.<a href="@1@System.Runtime/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r80 r">name</span>))
+				{
+					<b>if</b> (<span class="r79 r">part</span>.<a href="#5d7da3ed78b5b9d4" class="i property">IsIndexer</a>)
+					{
+						<b>if</b> (<span class="r80 r">name</span>.<a href="@1@System.Runtime/A.html#428c5c9954dea844" class="i method">Contains</a>(<span class="s">&quot;[&quot;</span>))
+						{
+							<b>if</b> (<span class="r80 r">name</span> != <b>string</b>.<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;{0}[{1}]&quot;</span>, <span class="r79 r">part</span>.<a href="#4ceaa3314d7c5f0a" class="i property">IndexerName</a>, <span class="r79 r">part</span>.<a href="#c731566dcee67890" class="i property">Content</a>))
+								<b>return</b>;
+						}
+						<b>else if</b> (<span class="r80 r">name</span> != <span class="r79 r">part</span>.<a href="#4ceaa3314d7c5f0a" class="i property">IndexerName</a>)
+							<b>return</b>;
+					}
+					<b>else if</b> (<span class="r80 r">name</span> != <span class="r79 r">part</span>.<a href="#c731566dcee67890" class="i property">Content</a>)
+					{
+						<b>return</b>;
+					}
+				}
+ 
+				<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#c01f48f642e0b305" class="i method">BeginInvokeOnMainThread</a>(() =&gt; <a href="#039a55b6abe49f3a" class="i field">_expression</a>.<a href="#dd79f5ec1efc8f89" class="i method">Apply</a>());
+			}
+ 
+			<b>public bool</b> <a id="814985d8db8efa79" href="R/814985d8db8efa79.html" target="n" data-glyph="72,2" class="i method">TryGetValue</a>(<b>object</b> <span id="r81 rd" class="r81 r">source</span>, <b>out object</b> <span id="r82 rd" class="r82 r">value</span>)
+			{
+				<span class="r82 r">value</span> = <span class="r81 r">source</span>;
+ 
+				<b>if</b> (<a href="#8e5e720101208413" class="i property">LastGetter</a> != <b>null</b> &amp;&amp; <span class="r82 r">value</span> != <b>null</b>)
+				{
+					<b>if</b> (<a href="#5d7da3ed78b5b9d4" class="i property">IsIndexer</a>)
+					{
+						<b>try</b>
+						{
+							<span class="r82 r">value</span> = <a href="#8e5e720101208413" class="i property">LastGetter</a>.<span class="i method">Invoke</span>(<span class="r82 r">value</span>, <a href="#a19d8dfab7e5b098" class="i property">Arguments</a>);
+						}
+						<b>catch</b> (<span class="t t">TargetInvocationException</span> <span id="r83 rd" class="r83 r">ex</span>)
+						{
+							<b>if</b> (!(<span class="r83 r">ex</span>.<a href="@1@System.Runtime/A.html#89c20b39fb04108b" class="i property">InnerException</a> <b>is</b> <a href="@1@System.Runtime/A.html#4e5d8fbb690f6391" class="t t">KeyNotFoundException</a>))
+								<b>throw</b>;
+							<span class="r82 r">value</span> = <b>null</b>;
+						}
+						<b>return true</b>;
+					}
+					<span class="r82 r">value</span> = <a href="#8e5e720101208413" class="i property">LastGetter</a>.<span class="i method">Invoke</span>(<span class="r82 r">value</span>, <a href="#a19d8dfab7e5b098" class="i property">Arguments</a>);
+					<b>return true</b>;
+				}
+ 
+				<b>return false</b>;
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

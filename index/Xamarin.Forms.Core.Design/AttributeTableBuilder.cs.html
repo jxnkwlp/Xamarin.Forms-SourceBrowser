@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html><head><title>AttributeTableBuilder.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(75);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core.Design/AttributeTableBuilder.cs" target="_top">AttributeTableBuilder.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core.Design" target="_top">Xamarin.Forms.Core.Design\Xamarin.Forms.Core.Design.csproj</a> (Xamarin.Forms.Core.Design)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Windows</span>.<span class="i">Markup</span>;
+<b>using</b> <span class="i">Microsoft</span>.<span class="i">Windows</span>.<span class="i">Design</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Core</span>.<span class="i n">Design</span>
+{
+	<b>internal class</b> <a id="d1cfa85ae9f2853a" href="R/d1cfa85ae9f2853a.html" target="n" data-glyph="2,0" class="t t">AttributeTableBuilder</a> : <span class="i">Microsoft</span>.<span class="i">Windows</span>.<span class="i">Design</span>.<span class="i">Metadata</span>.<span class="i">AttributeTableBuilder</span>
+	{
+		<b>public</b> <a id="9e3c4f06b7fed761" href="R/9e3c4f06b7fed761.html" target="n" data-glyph="72,1" class="i constructor">AttributeTableBuilder</a> ()
+		{
+			<span class="c">// Turn off validation of values, which doesn&#39;t work for OnPlatform/OnIdiom</span>
+			<span class="i">AddCustomAttributes</span> (<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#d25a841d641b51c3" class="t t">AbsoluteLayout</a>).<span class="i">Assembly</span>,
+				<b>new</b> <span class="i">XmlnsSupportsValidationAttribute</span> (<span class="s">&quot;http://xamarin.com/schemas/2014/forms&quot;</span>, <b>false</b>));
+ 
+			<span class="c">// Style isn&#39;t a view, make it visible</span>
+			<span class="i">AddCallback</span> (<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#18d854577c3c5901" class="t t">Style</a>), <span id="r0 rd" class="r0 r">builder</span> =&gt; <span class="r0 r">builder</span>.<span class="i">AddCustomAttributes</span>(
+				<b>new</b> <span class="i">EditorBrowsableAttribute</span> (<span class="i">EditorBrowsableState</span>.<span class="i">Always</span>), 
+				<b>new</b> <span class="i">System</span>.<span class="i">Windows</span>.<span class="i">Markup</span>.<span class="i">ContentPropertyAttribute</span>(<span class="s">&quot;Setters&quot;</span>),
+				<span class="c">// Since the class doesn&#39;t have a public parameterless ctor, we need to provide a converter</span>
+				<b>new</b> <span class="i">System</span>.<span class="i">ComponentModel</span>.<span class="i">TypeConverterAttribute</span>(<b>typeof</b>(<span class="i">StringConverter</span>))));
+ 
+			<span class="c">// The Setter.Value can actually come from an &lt;OnPlatform /&gt;, so enable it as Content.</span>
+			<span class="i">AddCallback</span> (<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#f05634778c907e07" class="t t">Setter</a>), <span id="r1 rd" class="r1 r">builder</span> =&gt; <span class="r1 r">builder</span>.<span class="i">AddCustomAttributes</span> (
+				<b>new</b> <span class="i">EditorBrowsableAttribute</span> (<span class="i">EditorBrowsableState</span>.<span class="i">Always</span>), 
+				<b>new</b> <span class="i">System</span>.<span class="i">Windows</span>.<span class="i">Markup</span>.<span class="i">ContentPropertyAttribute</span>(<span class="s">&quot;Value&quot;</span>)));
+ 
+			<span class="c">// Special case for FontSize which isn&#39;t an enum.</span>
+			<b>var</b> <span id="r2 rd" class="r2 r">fontElements</span> = <b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>).<span class="i">Assembly</span>.<span class="i">ExportedTypes</span>.<span class="i">Where</span>(<span id="r3 rd" class="r3 r">t</span> =&gt; <b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#3c9f3593b88070f0" class="t t">IFontElement</a>).<span class="i">IsAssignableFrom</span>(<span class="r3 r">t</span>));
+			<b>foreach</b> (<b>var</b> <span id="r4 rd" class="r4 r">fontElement</span> <b>in</b> <span class="r2 r">fontElements</span>) {
+				<span class="i">AddCallback</span> (<span class="r4 r">fontElement</span>, <span id="r5 rd" class="r5 r">builder</span> =&gt; <span class="r5 r">builder</span>.<span class="i">AddCustomAttributes</span> (
+					<span class="s">&quot;FontSize&quot;</span>,
+					<b>new</b> <span class="i">System</span>.<span class="i">ComponentModel</span>.<span class="i">TypeConverterAttribute</span> (<b>typeof</b> (<a href="EnumConverter.cs.html#74c09d46e2be7601" class="t t">EnumConverter</a>&lt;<a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>&gt;))));
+			}
+ 
+			<span class="c">// TODO: OnPlatform/OnIdiom</span>
+			<span class="c">// These two should be proper markup extensions, to follow WPF syntax for those.</span>
+			<span class="c">// That would allow us to turn on XAML validation, which otherwise fails.</span>
+			<span class="c">// NOTE: the two also need to provide a non-generic, object-based T so that </span>
+			<span class="c">// the language service can find the type by its name. That class can be internal </span>
+			<span class="c">// though, since its visibility in the markup is controlled by the EditorBrowsableAttribute.</span>
+			<span class="c">// Make OnPlatform/OnIdiom visible for intellisense, and set as markup extension. </span>
+			<span class="i">AddCallback</span> (<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#768a216b11edbeca" class="t t">OnPlatform</a>&lt;&gt;), <span id="r6 rd" class="r6 r">builder</span> =&gt; <span class="r6 r">builder</span>.<span class="i">AddCustomAttributes</span> (<b>new</b> <span class="i">Attribute</span>[] {
+				<b>new</b> <span class="i">EditorBrowsableAttribute</span> (<span class="i">EditorBrowsableState</span>.<span class="i">Always</span>),
+				<span class="c">//new System.ComponentModel.TypeConverterAttribute(typeof(AnythingConverter)),</span>
+				<span class="c">//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),</span>
+			}));
+			<span class="i">AddCallback</span> (<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#cd21d518f54113d4" class="t t">OnIdiom</a>&lt;&gt;), <span id="r7 rd" class="r7 r">builder</span> =&gt; <span class="r7 r">builder</span>.<span class="i">AddCustomAttributes</span> (<b>new</b> <span class="i">Attribute</span>[] {
+				<b>new</b> <span class="i">EditorBrowsableAttribute</span> (<span class="i">EditorBrowsableState</span>.<span class="i">Always</span>), 
+				<span class="c">//new System.ComponentModel.TypeConverterAttribute(typeof(AnythingConverter)),</span>
+				<span class="c">//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),</span>
+			}));
+		}
+	}
+ 
+	<b>internal class</b> <a id="9a4fe9e1be906145" href="R/../../0000000000.html" target="n" data-glyph="2,0" class="t t"><span id="4d371dcfa2a8fbc4">AnythingConverter</span></a> : <span class="i">System</span>.<span class="i">ComponentModel</span>.<span class="i">TypeConverter</span>
+	{
+		<b>public override bool</b> <a id="8affabbda95864a5" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">CanConvertFrom</a> (<span class="i">ITypeDescriptorContext</span> <span id="r8 rd" class="r8 r">context</span>, <span class="i">Type</span> <span id="r9 rd" class="r9 r">sourceType</span>)
+		{
+			<b>return true</b>;
+		}
+ 
+		<b>public override bool</b> <a id="8a11092af55ff7ec" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">CanConvertTo</a> (<span class="i">ITypeDescriptorContext</span> <span id="r10 rd" class="r10 r">context</span>, <span class="i">Type</span> <span id="r11 rd" class="r11 r">destinationType</span>)
+		{
+			<b>return true</b>;
+		}
+ 
+		<b>public override bool</b> <a id="2eec8ba613150dc2" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">IsValid</a> (<span class="i">ITypeDescriptorContext</span> <span id="r12 rd" class="r12 r">context</span>, <b>object</b> <span id="r13 rd" class="r13 r">value</span>)
+		{
+			<b>return true</b>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

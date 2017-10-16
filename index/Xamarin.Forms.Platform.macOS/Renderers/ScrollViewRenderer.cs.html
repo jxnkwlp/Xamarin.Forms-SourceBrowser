@@ -1,0 +1,251 @@
+﻿<!DOCTYPE html>
+<html><head><title>ScrollViewRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(242);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/Renderers/ScrollViewRenderer.cs" target="_top">Renderers\ScrollViewRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+﻿<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="t">RectangleF</span> = <span class="i n">CoreGraphics</span>.<span class="t t">CGRect</span>;
+<b>using</b> <span class="i n">ObjCRuntime</span>;
+<b>using</b> <span class="i n">Foundation</span>;
+ 
+<span class="c">// ReSharper disable UnusedMember.Local</span>
+<span class="c">// ReSharper disable UnusedParameter.Local</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>public class</b> <a id="690c50ebb2390a51" href="../R/690c50ebb2390a51.html" target="n" data-glyph="0,0" class="t t">ScrollViewRenderer</a> : <span class="t t">NSScrollView</span>, <a href="../IVisualElementRenderer.cs.html#06d80d1922189ea9" class="t t">IVisualElementRenderer</a>
+	{
+		<a href="../EventTracker.cs.html#7d1b067875540a2a" class="t t">EventTracker</a> <a id="e90eb8fae6b5c4db" href="../R/e90eb8fae6b5c4db.html" target="n" data-glyph="46,1" class="i field">_events</a>;
+		<a href="../VisualElementTracker.cs.html#a936b9342a2082c9" class="t t">VisualElementTracker</a> <a id="b54f2058561a2353" href="../R/b54f2058561a2353.html" target="n" data-glyph="46,1" class="i field">_tracker</a>;
+		<a href="/Xamarin.Forms.Core/A.html#f03c2a98424144b5" class="t t">ScrollToRequestedEventArgs</a> <a id="9ce883bc15fef15b" href="../R/9ce883bc15fef15b.html" target="n" data-glyph="46,1" class="i field">_requestedScroll</a>;
+		<a href="../IVisualElementRenderer.cs.html#06d80d1922189ea9" class="t t">IVisualElementRenderer</a> <a id="0bb7b983bea40593" href="../R/0bb7b983bea40593.html" target="n" data-glyph="46,1" class="i field">_contentRenderer</a>;
+ 
+		<b>public</b> <a id="5e6ee8eb0495fb00" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">ScrollViewRenderer</a>() : <b>base</b>(<span class="t t">RectangleF</span>.<span class="i field">Empty</span>)
+		{
+			<span class="i property">ContentView</span> = <b>new</b> <a href="FlippedClipView.cs.html#2d6cedea13f22e7c" class="t constructor">FlippedClipView</a>();
+			<span class="i property">DrawsBackground</span> = <b>false</b>;
+			<span class="i property">ContentView</span>.<span class="i property">PostsBoundsChangedNotifications</span> = <b>false</b>;
+			<span class="t t">NSNotificationCenter</span>.<span class="i property">DefaultCenter</span>.<span class="i method">AddObserver</span>(<a href="#690c50ebb2390a51" class="k">this</a>, <b>new</b> <span class="t constructor">Selector</span>(<b>nameof</b>(<span class="i">UpdateScrollPosition</span>)), <span class="i property">BoundsChangedNotification</span>, <span class="i property">ContentView</span>);
+			<span class="i property">HasVerticalScroller</span> = <b>true</b>;
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#f4df39c3e50ec61f" class="t t">ScrollView</a> <a id="83999061dfea0660" href="../R/83999061dfea0660.html" target="n" data-glyph="106,1" class="i property">ScrollView</a> =&gt; <a href="#d38e1f2ef98c0b52" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#f4df39c3e50ec61f" class="t t">ScrollView</a>;
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a id="d38e1f2ef98c0b52" href="../R/d38e1f2ef98c0b52.html" target="n" data-glyph="102,1" class="i property">Element</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public event</b> <a href="@0@mscorlib/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="../ElementChangedEventArgs.cs.html#7f50625627bbf656" class="t t">VisualElementChangedEventArgs</a>&gt; <a id="d1d1912ea081912a" href="../R/d1d1912ea081912a.html" target="n" data-glyph="30,1" class="i">ElementChanged</a>;
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="02073801022d7278" href="../R/02073801022d7278.html" target="n" data-glyph="72,1" class="i method">GetDesiredSize</a>(<b>double</b> <span id="r0 rd" class="r0 r">widthConstraint</span>, <b>double</b> <span id="r1 rd" class="r1 r">heightConstraint</span>)
+		{
+			<b>return</b> <a href="#54d07e7487815c85" class="i property">NativeView</a>.<a href="../Extensions/UIViewExtensions.cs.html#a39b6dc312df2648" class="i method">GetSizeRequest</a>(<span class="r0 r">widthConstraint</span>, <span class="r1 r">heightConstraint</span>, 44, 44);
+		}
+ 
+		<b>public</b> <span class="t t">NSView</span> <a id="54d07e7487815c85" href="../R/54d07e7487815c85.html" target="n" data-glyph="102,1" class="i property">NativeView</a> =&gt; <a href="#690c50ebb2390a51" class="k">this</a>;
+ 
+		<b>public void</b> <a id="04ce1ab6292db73f" href="../R/04ce1ab6292db73f.html" target="n" data-glyph="72,1" class="i method">SetElement</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r2 rd" class="r2 r">element</span>)
+		{
+			<a href="#9ce883bc15fef15b" class="i field">_requestedScroll</a> = <b>null</b>;
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="k">var</a> <span id="r3 rd" class="r3 r">oldElement</span> = <a href="#d38e1f2ef98c0b52" class="i property">Element</a>;
+			<a href="#d38e1f2ef98c0b52" class="i property">Element</a> = <span class="r2 r">element</span>;
+ 
+			<b>if</b> (<span class="r3 r">oldElement</span> != <b>null</b>)
+			{
+				<span class="r3 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#0ba30f1e44a53511" class="i method">HandlePropertyChanged</a>;
+				((<a href="/Xamarin.Forms.Core/A.html#f4df39c3e50ec61f" class="t t">ScrollView</a>)<span class="r3 r">oldElement</span>).<a href="/Xamarin.Forms.Core/A.html#7d73ec937dfc6449" class="i">ScrollToRequested</a> -= <a href="#ba609b4172e82315" class="i method">OnScrollToRequested</a>;
+			}
+ 
+			<b>if</b> (<span class="r2 r">element</span> != <b>null</b>)
+			{
+				<span class="r2 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#0ba30f1e44a53511" class="i method">HandlePropertyChanged</a>;
+				((<a href="/Xamarin.Forms.Core/A.html#f4df39c3e50ec61f" class="t t">ScrollView</a>)<span class="r2 r">element</span>).<a href="/Xamarin.Forms.Core/A.html#7d73ec937dfc6449" class="i">ScrollToRequested</a> += <a href="#ba609b4172e82315" class="i method">OnScrollToRequested</a>;
+				<b>if</b> (<a href="#b54f2058561a2353" class="i field">_tracker</a> == <b>null</b>)
+				{
+					<a href="#0c1e3fdde9c710ec" class="i method">PackContent</a>();
+ 
+					<a href="#e90eb8fae6b5c4db" class="i field">_events</a> = <b>new</b> <a href="../EventTracker.cs.html#c3522a44ef5b0039" class="t constructor">EventTracker</a>(<a href="#690c50ebb2390a51" class="k">this</a>);
+					<a href="#e90eb8fae6b5c4db" class="i field">_events</a>.<a href="../EventTracker.cs.html#396c472d4efb7b6a" class="i method">LoadEvents</a>(<a href="#690c50ebb2390a51" class="k">this</a>);
+ 
+					<a href="#b54f2058561a2353" class="i field">_tracker</a> = <b>new</b> <a href="../VisualElementTracker.cs.html#e0f6aa1e3dfd0634" class="t constructor">VisualElementTracker</a>(<a href="#690c50ebb2390a51" class="k">this</a>);
+					<a href="#b54f2058561a2353" class="i field">_tracker</a>.<a href="../VisualElementTracker.cs.html#8a38126d1f31a16c" class="i">NativeControlUpdated</a> += <a href="#efd8a21acb3e2c05" class="i method">OnNativeControlUpdated</a>;
+				}
+ 
+				<a href="#5cd3b3dbcf37072f" class="i method">UpdateContentSize</a>();
+				<a href="#ec3394668580dfc8" class="i method">UpdateBackgroundColor</a>();
+ 
+				<a href="#de7f28b8c4afdab8" class="i method">OnElementChanged</a>(<b>new</b> <a href="../ElementChangedEventArgs.cs.html#0314f049547fda27" class="t constructor">VisualElementChangedEventArgs</a>(<span class="r3 r">oldElement</span>, <span class="r2 r">element</span>));
+			}
+		}
+ 
+		<b>public void</b> <a id="08e3790f795bfd2f" href="../R/08e3790f795bfd2f.html" target="n" data-glyph="72,1" class="i method">SetElementSize</a>(<a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <span id="r4 rd" class="r4 r">size</span>)
+		{
+			<span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="t t">Layout</a>.<a href="/Xamarin.Forms.Core/A.html#7ef8e1dd509efc78" class="i method">LayoutChildIntoBoundingRegion</a>(<a href="#d38e1f2ef98c0b52" class="i property">Element</a>,
+				<b>new</b> <a href="/Xamarin.Forms.Core/A.html#884b8ad2719b18bf" class="t constructor">Rectangle</a>(<a href="#d38e1f2ef98c0b52" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#e18ecb86f0d3566d" class="i property">X</a>, <a href="#d38e1f2ef98c0b52" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d889d87a84b3b903" class="i property">Y</a>, <span class="r4 r">size</span>.<a href="/Xamarin.Forms.Core/A.html#6207d8e3826352f7" class="i property">Width</a>, <span class="r4 r">size</span>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a>));
+		}
+ 
+		<b>public</b> <span class="t t">NSViewController</span> <a id="41efe0cae53d5fd7" href="../R/41efe0cae53d5fd7.html" target="n" data-glyph="102,1" class="i property">ViewController</a> =&gt; <b>null</b>;
+ 
+		<b>public override void</b> <a id="213e28a78a32ac89" href="../R/213e28a78a32ac89.html" target="n" data-glyph="72,1" class="i method">Layout</a>()
+		{
+			<b>base</b>.<span class="i method">Layout</span>();
+			<a href="#3c8e641b86003170" class="i method">LayoutSubviews</a>();
+		}
+ 
+		<b>protected override void</b> <a id="90ecca33633203c0" href="../R/90ecca33633203c0.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r5 rd" class="r5 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r5 r">disposing</span>)
+			{
+				<b>if</b> (<a href="#b54f2058561a2353" class="i field">_tracker</a> == <b>null</b>)
+					<b>return</b>;
+ 
+				<a href="#04ce1ab6292db73f" class="i method">SetElement</a>(<b>null</b>);
+ 
+				<a href="#b54f2058561a2353" class="i field">_tracker</a>.<a href="../VisualElementTracker.cs.html#8a38126d1f31a16c" class="i">NativeControlUpdated</a> -= <a href="#efd8a21acb3e2c05" class="i method">OnNativeControlUpdated</a>;
+				<a href="#b54f2058561a2353" class="i field">_tracker</a>.<a href="../VisualElementTracker.cs.html#eee0435685b1a545" class="i method">Dispose</a>();
+				<a href="#b54f2058561a2353" class="i field">_tracker</a> = <b>null</b>;
+ 
+				<a href="#e90eb8fae6b5c4db" class="i field">_events</a>.<a href="../EventTracker.cs.html#8be9df6b66c2cd85" class="i method">Dispose</a>();
+				<a href="#e90eb8fae6b5c4db" class="i field">_events</a> = <b>null</b>;
+ 
+				<a href="#4e8c29cfcfa9560f" class="i method">ClearContentRenderer</a>();
+ 
+				<span class="c">//NSNotificationCenter.DefaultCenter.RemoveObserver(this, BoundsChangedNotification);</span>
+			}
+ 
+			<b>base</b>.<span class="i method">Dispose</span>(<span class="r5 r">disposing</span>);
+		}
+ 
+		<b>void</b> <a id="de7f28b8c4afdab8" href="../R/de7f28b8c4afdab8.html" target="n" data-glyph="76,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#7f50625627bbf656" class="t t">VisualElementChangedEventArgs</a> <span id="r6 rd" class="r6 r">e</span>)
+		{
+			<a href="#d1d1912ea081912a" class="i">ElementChanged</a>?.<a href="@0@mscorlib/A.html#48225ee7c18a0e20" class="i method">Invoke</a>(<a href="#690c50ebb2390a51" class="k">this</a>, <span class="r6 r">e</span>);
+		}
+ 
+		<b>void</b> <a id="0c1e3fdde9c710ec" href="../R/0c1e3fdde9c710ec.html" target="n" data-glyph="76,1" class="i method">PackContent</a>()
+		{
+			<a href="#4e8c29cfcfa9560f" class="i method">ClearContentRenderer</a>();
+ 
+			<b>if</b> (<a href="#83999061dfea0660" class="i property">ScrollView</a>.<a href="/Xamarin.Forms.Core/A.html#8d358042762d736e" class="i property">Children</a>.<a href="@0@mscorlib/A.html#6f182bb82f68780e" class="i property">Count</a> == 0 || !(<a href="#83999061dfea0660" class="i property">ScrollView</a>.<a href="/Xamarin.Forms.Core/A.html#8d358042762d736e" class="i property">Children</a>[0] <b>is</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>))
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="k">var</a> <span id="r7 rd" class="r7 r">content</span> = (<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>)<a href="#83999061dfea0660" class="i property">ScrollView</a>.<a href="/Xamarin.Forms.Core/A.html#8d358042762d736e" class="i property">Children</a>[0];
+			<b>if</b> (<a href="../Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="../Platform.cs.html#4ab37f9d1be4bc41" class="i method">GetRenderer</a>(<span class="r7 r">content</span>) == <b>null</b>)
+				<a href="../Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="../Platform.cs.html#7bbb46ae9aa0c447" class="i method">SetRenderer</a>(<span class="r7 r">content</span>, <a href="../Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="../Platform.cs.html#bd37e2314b2cee5c" class="i method">CreateRenderer</a>(<span class="r7 r">content</span>));
+ 
+			<a href="#0bb7b983bea40593" class="i field">_contentRenderer</a> = <a href="../Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="../Platform.cs.html#4ab37f9d1be4bc41" class="i method">GetRenderer</a>(<span class="r7 r">content</span>);
+			(<span class="i property">ContentView</span> <b>as</b> <a href="FlippedClipView.cs.html#2d6cedea13f22e7c" class="t t">FlippedClipView</a>).<a href="FlippedClipView.cs.html#4f5ad83580c87a01" class="i property">ContentRenderer</a> = <a href="#0bb7b983bea40593" class="i field">_contentRenderer</a>;
+			<span class="i property">DocumentView</span> = <a href="#0bb7b983bea40593" class="i field">_contentRenderer</a>.<a href="../IVisualElementRenderer.cs.html#cc642a2f9731ed4a" class="i property">NativeView</a>;
+ 
+			<span class="i property">ContentView</span>.<span class="i property">PostsBoundsChangedNotifications</span> = <b>true</b>;
+		}
+ 
+		<b>void</b> <a id="3c8e641b86003170" href="../R/3c8e641b86003170.html" target="n" data-glyph="76,1" class="i method">LayoutSubviews</a>()
+		{
+			<b>if</b> (<a href="#9ce883bc15fef15b" class="i field">_requestedScroll</a> != <b>null</b> &amp;&amp; <span class="i property">Superview</span> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#f03c2a98424144b5" class="k">var</a> <span id="r8 rd" class="r8 r">request</span> = <a href="#9ce883bc15fef15b" class="i field">_requestedScroll</a>;
+				<a href="#9ce883bc15fef15b" class="i field">_requestedScroll</a> = <b>null</b>;
+				<a href="#ba609b4172e82315" class="i method">OnScrollToRequested</a>(<a href="#690c50ebb2390a51" class="k">this</a>, <span class="r8 r">request</span>);
+			}
+		}
+ 
+		<b>void</b> <a id="0ba30f1e44a53511" href="../R/0ba30f1e44a53511.html" target="n" data-glyph="76,1" class="i method">HandlePropertyChanged</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<b>if</b> (<span class="r10 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#f4df39c3e50ec61f" class="t t">ScrollView</a>.<a href="/Xamarin.Forms.Core/A.html#ec60d73d32a6799d" class="i field">ContentSizeProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#5cd3b3dbcf37072f" class="i method">UpdateContentSize</a>();
+			<b>else if</b> (<span class="r10 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#4d5a7481d6e7289d" class="i field">BackgroundColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#ec3394668580dfc8" class="i method">UpdateBackgroundColor</a>();
+		}
+ 
+		<b>void</b> <a id="efd8a21acb3e2c05" href="../R/efd8a21acb3e2c05.html" target="n" data-glyph="76,1" class="i method">OnNativeControlUpdated</a>(<b>object</b> <span id="r11 rd" class="r11 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r12 rd" class="r12 r">eventArgs</span>)
+		{
+			<a href="#5cd3b3dbcf37072f" class="i method">UpdateContentSize</a>();
+		}
+ 
+		<b>void</b> <a id="ba609b4172e82315" href="../R/ba609b4172e82315.html" target="n" data-glyph="76,1" class="i method">OnScrollToRequested</a>(<b>object</b> <span id="r13 rd" class="r13 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#f03c2a98424144b5" class="t t">ScrollToRequestedEventArgs</a> <span id="r14 rd" class="r14 r">e</span>)
+		{
+			<b>if</b> (<span class="i property">Superview</span> == <b>null</b>)
+			{
+				<a href="#9ce883bc15fef15b" class="i field">_requestedScroll</a> = <span class="r14 r">e</span>;
+				<b>return</b>;
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#71c2b8add148844d" class="t t">Point</a> <span id="r15 rd" class="r15 r">scrollPoint</span> = (<span class="r14 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#090e50bdd2b862ac" class="i property">Mode</a> == <a href="/Xamarin.Forms.Core/A.html#20430ff109b5c1f8" class="t t">ScrollToMode</a>.<a href="/Xamarin.Forms.Core/A.html#90c50bda59921005" class="i field">Position</a>)
+				? <b>new</b> <a href="/Xamarin.Forms.Core/A.html#a96bb28c9688c765" class="t constructor">Point</a>(<span class="r14 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#1a9827fc1de72624" class="i property">ScrollX</a>, <a href="#d38e1f2ef98c0b52" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a> - <span class="r14 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#687144c4a34e50fc" class="i property">ScrollY</a>)
+				: <a href="#83999061dfea0660" class="i property">ScrollView</a>.<a href="/Xamarin.Forms.Core/A.html#5c2809d055f0bd90" class="i method">GetScrollPositionForElement</a>(<span class="r14 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#11e5514da2648c85" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>, <span class="r14 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#fc0ff6f15e752ead" class="i property">Position</a>);
+ 
+			<span class="i property">ContentView</span>.<span class="i method">ScrollToPoint</span>(<span class="r15 r">scrollPoint</span>.<a href="../Extensions/ColorExtensions.cs.html#25fd768f953a70d5" class="i method">ToPointF</a>());
+			<a href="#83999061dfea0660" class="i property">ScrollView</a>.<a href="/Xamarin.Forms.Core/A.html#f4d0a9b6ca246dfe" class="i method">SendScrollFinished</a>();
+		}
+ 
+		<b>void</b> <a id="ec3394668580dfc8" href="../R/ec3394668580dfc8.html" target="n" data-glyph="76,1" class="i method">UpdateBackgroundColor</a>()
+		{
+			<b>if</b> (<a href="#d38e1f2ef98c0b52" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a> == <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#78f150ac7d83a2c8" class="i property">Default</a>)
+			{
+				<b>if</b> (<span class="i property">DrawsBackground</span>)
+					<span class="i property">DrawsBackground</span> = <b>false</b>;
+				<b>if</b> (<span class="i property">BackgroundColor</span> != <span class="t t">NSColor</span>.<span class="i property">Clear</span>)
+					<span class="i property">BackgroundColor</span> = <span class="t t">NSColor</span>.<span class="i property">Clear</span>;
+			}
+			<b>else</b>
+			{
+				<span class="i property">DrawsBackground</span> = <b>true</b>;
+				<span class="i property">BackgroundColor</span> = <a href="#d38e1f2ef98c0b52" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a>.<a href="../Extensions/ColorExtensions.cs.html#315625aceeb93f91" class="i method">ToNSColor</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="5cd3b3dbcf37072f" href="../R/5cd3b3dbcf37072f.html" target="n" data-glyph="76,1" class="i method">UpdateContentSize</a>()
+		{
+			<b>if</b> (<span class="i property">ContentView</span> == <b>null</b> || <a href="#83999061dfea0660" class="i property">ScrollView</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<span class="i property">ContentView</span>.<span class="i property">Frame</span> = <b>new</b> <span class="t constructor">RectangleF</span>(<span class="i property">ContentView</span>.<span class="i property">Frame</span>.<span class="i property">X</span>, <span class="i property">ContentView</span>.<span class="i property">Frame</span>.<span class="i property">Y</span>, <span class="i property">Frame</span>.<span class="i property">Width</span>, <span class="i property">Frame</span>.<span class="i property">Height</span>);
+			<a href="#668d646c279be836" class="i method">ResetNativeNonScroll</a>();
+		}
+ 
+		<b>private bool</b> <a id="668d646c279be836" href="../R/668d646c279be836.html" target="n" data-glyph="76,1" class="i method">ResetNativeNonScroll</a>( )
+		{
+			<b>if</b> (<a href="#83999061dfea0660" class="i property">ScrollView</a> == <b>null</b> || <span class="i property">ContentView</span> == <b>null</b>)
+				<b>return false</b>;
+ 
+			<b>if</b> (<a href="#83999061dfea0660" class="i property">ScrollView</a>.<a href="/Xamarin.Forms.Core/A.html#4350cb6f72069968" class="i property">ScrollY</a> &lt;= 0.0f &amp;&amp; <span class="i property">ContentView</span>.<span class="i method">DocumentVisibleRect</span>().<span class="i property">Location</span>.<span class="i property">Y</span> &gt; 0.0f)
+			{
+				<span class="i property">ContentView</span>.<span class="i method">ScrollToPoint</span>(<b>new</b> <span class="i n">CoreGraphics</span>.<span class="t constructor">CGPoint</span>(0, 0));
+				<b>return true</b>;
+			}
+ 
+			<b>return false</b>;
+		}
+ 
+		[<span class="t constructor">Export</span>(<b>nameof</b>(<span class="i">UpdateScrollPosition</span>))]
+		<b>void</b> <a id="79e95f49fd036b38" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">UpdateScrollPosition</a>()
+		{
+			<b>if</b> (<a href="#83999061dfea0660" class="i property">ScrollView</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#83999061dfea0660" class="i property">ScrollView</a>.<a href="/Xamarin.Forms.Core/A.html#f55cea6458bebeb9" class="i property">ContentSize</a>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a> &gt;= <a href="#83999061dfea0660" class="i property">ScrollView</a>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a>)
+			{
+				<span class="i n">CoreGraphics</span>.<span class="t t">CGPoint</span> <span id="r16 rd" class="r16 r">location</span> = <span class="i property">ContentView</span>.<span class="i method">DocumentVisibleRect</span>().<span class="i property">Location</span>;
+ 
+				<b>if</b> (<span class="r16 r">location</span>.<span class="i property">Y</span> &gt; -1)
+					<a href="#83999061dfea0660" class="i property">ScrollView</a>.<a href="/Xamarin.Forms.Core/A.html#186372b69786aa96" class="i method">SetScrolledPosition</a>(<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#e66bf1275e54a4bc" class="i method">Max</a>(0, <span class="r16 r">location</span>.<span class="i property">X</span>), <a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#e66bf1275e54a4bc" class="i method">Max</a>(0, <span class="i property">ContentView</span>.<span class="i property">Frame</span>.<span class="i property">Height</span> - <span class="r16 r">location</span>.<span class="i property">Y</span>));
+			}
+			<b>else</b>
+				<a href="#668d646c279be836" class="i method">ResetNativeNonScroll</a>();
+		}
+ 
+		<b>void</b> <a id="4e8c29cfcfa9560f" href="../R/4e8c29cfcfa9560f.html" target="n" data-glyph="76,1" class="i method">ClearContentRenderer</a>()
+		{
+			<b>if</b> ((<span class="i property">ContentView</span> <b>as</b> <a href="FlippedClipView.cs.html#2d6cedea13f22e7c" class="t t">FlippedClipView</a>) != <b>null</b>)
+				(<span class="i property">ContentView</span> <b>as</b> <a href="FlippedClipView.cs.html#2d6cedea13f22e7c" class="t t">FlippedClipView</a>).<a href="FlippedClipView.cs.html#4f5ad83580c87a01" class="i property">ContentRenderer</a> = <b>null</b>;
+ 
+			<a href="#0bb7b983bea40593" class="i field">_contentRenderer</a>?.<a href="../IVisualElementRenderer.cs.html#cc642a2f9731ed4a" class="i property">NativeView</a>?.<span class="i method">RemoveFromSuperview</span>();
+			<a href="#0bb7b983bea40593" class="i field">_contentRenderer</a>?.<a href="@0@mscorlib/A.html#4e23fed29bd598fa" class="i method">Dispose</a>();
+			<a href="#0bb7b983bea40593" class="i field">_contentRenderer</a> = <b>null</b>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

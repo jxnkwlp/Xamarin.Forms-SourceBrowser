@@ -1,0 +1,227 @@
+﻿<!DOCTYPE html>
+<html><head><title>EntryRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(218);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/Renderers/EntryRenderer.cs" target="_top">Renderers\EntryRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+ 
+<b>using</b> <span class="i n">System</span>.<span class="i n">Drawing</span>;
+<b>using</b> <span class="i n">UIKit</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">iOSSpecific</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+{
+	<b>public class</b> <a id="8541f5884124fa2b" href="../R/8541f5884124fa2b.html" target="n" data-glyph="0,0" class="t t">EntryRenderer</a> : <a href="../ViewRenderer.cs.html#a26bff279160b03e" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>, <span class="t t">UITextField</span>&gt;
+	{
+		<span class="t t">UIColor</span> <a id="f2a596b980f10e21" href="../R/f2a596b980f10e21.html" target="n" data-glyph="46,1" class="i field">_defaultTextColor</a>;
+		<b>bool</b> <a id="520b7a5cd519bb66" href="../R/520b7a5cd519bb66.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<b>public</b> <a id="be5e8b6c61a887b9" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">EntryRenderer</a>()
+		{
+			<span class="i property">Frame</span> = <b>new</b> <span class="t constructor">RectangleF</span>(0, 20, 320, 40);
+		}
+ 
+		<b>public override</b> <a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="77f8e785c524eb20" href="../R/77f8e785c524eb20.html" target="n" data-glyph="72,1" class="i method">GetDesiredSize</a>(<b>double</b> <span id="r0 rd" class="r0 r">widthConstraint</span>, <b>double</b> <span id="r1 rd" class="r1 r">heightConstraint</span>)
+		{
+			<span class="c">//with borderStyle set to RoundedRect, iOS always returns a height of 30</span>
+			<span class="c">//https://stackoverflow.com/a/36569247/1063783</span>
+			<span class="c">//we get the current value, and restor it, to allow custom renderers to change the border style</span>
+			<b>var</b> <span id="r2 rd" class="r2 r">borderStyle</span> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">BorderStyle</span>;
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">BorderStyle</span> = <span class="t t">UITextBorderStyle</span>.<span class="i field">None</span>;
+			<a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="k">var</a> <span id="r3 rd" class="r3 r">size</span> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<a href="../Extensions/UIViewExtensions.cs.html#c981fc7314706e11" class="i method">GetSizeRequest</a>(<span class="r0 r">widthConstraint</span>, <b>double</b>.<a href="@0@mscorlib/A.html#704210f8dd6afaed" class="i field">PositiveInfinity</a>);
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">BorderStyle</span> = <span class="r2 r">borderStyle</span>;
+			<b>return</b> <span class="r3 r">size</span>;
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a> <a id="65a2da911592ea2f" href="../R/65a2da911592ea2f.html" target="n" data-glyph="106,1" class="i property">ElementController</a> =&gt; <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a>;
+ 
+		<b>protected override void</b> <a id="3ec0e1cae354fd5a" href="../R/3ec0e1cae354fd5a.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r4 rd" class="r4 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#520b7a5cd519bb66" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<a href="#520b7a5cd519bb66" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<b>if</b> (<span class="r4 r">disposing</span>)
+			{
+				<a href="#f2a596b980f10e21" class="i field">_defaultTextColor</a> = <b>null</b>;
+ 
+				<b>if</b> (<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> != <b>null</b>)
+				{
+					<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i">EditingDidBegin</span> -= <a href="#405963a466dd79cb" class="i method">OnEditingBegan</a>;
+					<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i">EditingChanged</span> -= <a href="#114e230f8a8e3157" class="i method">OnEditingChanged</a>;
+					<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i">EditingDidEnd</span> -= <a href="#4c113ccfdf4c9315" class="i method">OnEditingEnded</a>;
+				}
+			}
+ 
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#0263ff95aef8d32c" class="i method">Dispose</a>(<span class="r4 r">disposing</span>);
+		}
+ 
+		<b>protected override void</b> <a id="839c613461deab1f" href="../R/839c613461deab1f.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#8cd59c48d876c811" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>&gt; <span id="r5 rd" class="r5 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#8d6908150c52ef88" class="i method">OnElementChanged</a>(<span class="r5 r">e</span>);
+ 
+			<b>if</b> (<span class="r5 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> == <b>null</b>)
+			{
+				<b>var</b> <span id="r6 rd" class="r6 r">textField</span> = <b>new</b> <span class="t constructor">UITextField</span>(<span class="t t">RectangleF</span>.<span class="i field">Empty</span>);
+				<a href="../ViewRenderer.cs.html#5a05fd07ede87b4f" class="i method">SetNativeControl</a>(<span class="r6 r">textField</span>);
+ 
+				<a href="#f2a596b980f10e21" class="i field">_defaultTextColor</a> = <span class="r6 r">textField</span>.<span class="i property">TextColor</span>;
+				<span class="r6 r">textField</span>.<span class="i property">BorderStyle</span> = <span class="t t">UITextBorderStyle</span>.<span class="i field">RoundedRect</span>;
+				<span class="r6 r">textField</span>.<span class="i property">ClipsToBounds</span> = <b>true</b>;
+ 
+				<span class="r6 r">textField</span>.<span class="i">EditingChanged</span> += <a href="#114e230f8a8e3157" class="i method">OnEditingChanged</a>;
+ 
+				<span class="r6 r">textField</span>.<span class="i property">ShouldReturn</span> = <a href="#f560b6724cd4b59f" class="i method">OnShouldReturn</a>;
+ 
+				<span class="r6 r">textField</span>.<span class="i">EditingDidBegin</span> += <a href="#405963a466dd79cb" class="i method">OnEditingBegan</a>;
+				<span class="r6 r">textField</span>.<span class="i">EditingDidEnd</span> += <a href="#4c113ccfdf4c9315" class="i method">OnEditingEnded</a>;
+			}
+ 
+			<a href="#b24c0170edc85331" class="i method">UpdatePlaceholder</a>();
+			<a href="#cee8e9721b00d618" class="i method">UpdatePassword</a>();
+			<a href="#169c4f166f424c72" class="i method">UpdateText</a>();
+			<a href="#42163af5975da3dc" class="i method">UpdateColor</a>();
+			<a href="#4312c3abfc02dc17" class="i method">UpdateFont</a>();
+			<a href="#6d89c39bbe1248b0" class="i method">UpdateKeyboard</a>();
+			<a href="#01de181c1b51ebf1" class="i method">UpdateAlignment</a>();
+			<a href="#d9a1e1c123fd51be" class="i method">UpdateAdjustsFontSizeToFitWidth</a>();
+		}
+ 
+		<b>protected override void</b> <a id="9b589116a1e9c7ac" href="../R/9b589116a1e9c7ac.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r7 rd" class="r7 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r8 rd" class="r8 r">e</span>)
+		{
+			<b>if</b> (<span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#6df5dfcf8ee4480b" class="i field">PlaceholderProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#bcbc1db5eadcc67a" class="i field">PlaceholderColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#b24c0170edc85331" class="i method">UpdatePlaceholder</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#9e296fa2f679a8f8" class="i field">IsPasswordProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#cee8e9721b00d618" class="i method">UpdatePassword</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#ae4a203fe61cca97" class="i field">TextProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#169c4f166f424c72" class="i method">UpdateText</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#5b43a1f00d970ec8" class="i field">TextColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#42163af5975da3dc" class="i method">UpdateColor</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<a href="/Xamarin.Forms.Core/A.html#0bdb2676f041347a" class="t t">InputView</a>.<a href="/Xamarin.Forms.Core/A.html#41fb3412462197b0" class="i field">KeyboardProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#6d89c39bbe1248b0" class="i method">UpdateKeyboard</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#5534bbcfa2a6a901" class="i field">HorizontalTextAlignmentProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#01de181c1b51ebf1" class="i method">UpdateAlignment</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#65019a503ce3b69a" class="i field">FontAttributesProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#4312c3abfc02dc17" class="i method">UpdateFont</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#850782815d6f82c5" class="i field">FontFamilyProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#4312c3abfc02dc17" class="i method">UpdateFont</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#6d491d25874dbe56" class="i field">FontSizeProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#4312c3abfc02dc17" class="i method">UpdateFont</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#d798cc16e0e87f98" class="i field">IsEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#42163af5975da3dc" class="i method">UpdateColor</a>();
+				<a href="#b24c0170edc85331" class="i method">UpdatePlaceholder</a>();
+			}
+			<b>else if</b> (<span class="r8 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <span class="i n">PlatformConfiguration</span>.<span class="i n">iOSSpecific</span>.<a href="/Xamarin.Forms.Core/A.html#0845fbd0cb69b543" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#82e97346acf9c77d" class="i field">AdjustsFontSizeToFitWidthProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#d9a1e1c123fd51be" class="i method">UpdateAdjustsFontSizeToFitWidth</a>();
+ 
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#9d8f9c1b9a699acd" class="i method">OnElementPropertyChanged</a>(<span class="r7 r">sender</span>, <span class="r8 r">e</span>);
+		}
+ 
+		<b>void</b> <a id="405963a466dd79cb" href="../R/405963a466dd79cb.html" target="n" data-glyph="76,1" class="i method">OnEditingBegan</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<a href="#65a2da911592ea2f" class="i property">ElementController</a>.<a href="/Xamarin.Forms.Core/A.html#4fa5976d0a57f29b" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <b>true</b>);
+		}
+ 
+		<b>void</b> <a id="114e230f8a8e3157" href="../R/114e230f8a8e3157.html" target="n" data-glyph="76,1" class="i method">OnEditingChanged</a>(<b>object</b> <span id="r11 rd" class="r11 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r12 rd" class="r12 r">eventArgs</span>)
+		{
+			<a href="#65a2da911592ea2f" class="i property">ElementController</a>.<a href="/Xamarin.Forms.Core/A.html#5e644259f42c0939" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#ae4a203fe61cca97" class="i field">TextProperty</a>, <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Text</span>);
+		}
+ 
+		<b>void</b> <a id="4c113ccfdf4c9315" href="../R/4c113ccfdf4c9315.html" target="n" data-glyph="76,1" class="i method">OnEditingEnded</a>(<b>object</b> <span id="r13 rd" class="r13 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r14 rd" class="r14 r">e</span>)
+		{
+			<span class="c">// Typing aid changes don&#39;t always raise EditingChanged event</span>
+			<b>if</b> (<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Text</span> != <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#035aca80d007619b" class="i property">Text</a>)
+			{
+				<a href="#65a2da911592ea2f" class="i property">ElementController</a>.<a href="/Xamarin.Forms.Core/A.html#5e644259f42c0939" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>.<a href="/Xamarin.Forms.Core/A.html#ae4a203fe61cca97" class="i field">TextProperty</a>, <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Text</span>);
+			}
+ 
+			<a href="#65a2da911592ea2f" class="i property">ElementController</a>.<a href="/Xamarin.Forms.Core/A.html#4fa5976d0a57f29b" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <b>false</b>);
+		}
+ 
+		<b>protected virtual bool</b> <a id="f560b6724cd4b59f" href="../R/f560b6724cd4b59f.html" target="n" data-glyph="75,1" class="i method">OnShouldReturn</a>(<span class="t t">UITextField</span> <span id="r15 rd" class="r15 r">view</span>)
+		{
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">ResignFirstResponder</span>();
+			((<a href="/Xamarin.Forms.Core/A.html#d1b6e5bd2cb2a28a" class="t t">IEntryController</a>)<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#5b18d2b8d94292d2" class="i method">SendCompleted</a>();
+			<b>return false</b>;
+		}
+ 
+		<b>void</b> <a id="01de181c1b51ebf1" href="../R/01de181c1b51ebf1.html" target="n" data-glyph="76,1" class="i method">UpdateAlignment</a>()
+		{
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">TextAlignment</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#aa9afd41e41f915b" class="i property">HorizontalTextAlignment</a>.<a href="AlignmentExtensions.cs.html#95808ed3798926b5" class="i method">ToNativeTextAlignment</a>();
+		}
+ 
+		<b>void</b> <a id="42163af5975da3dc" href="../R/42163af5975da3dc.html" target="n" data-glyph="76,1" class="i method">UpdateColor</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="k">var</a> <span id="r16 rd" class="r16 r">textColor</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#0285c2ed1c0a4c5e" class="i property">TextColor</a>;
+ 
+			<b>if</b> (<span class="r16 r">textColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a> || !<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>)
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">TextColor</span> = <a href="#f2a596b980f10e21" class="i field">_defaultTextColor</a>;
+			<b>else</b>
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">TextColor</span> = <span class="r16 r">textColor</span>.<a href="../Extensions/ColorExtensions.cs.html#76dd85b8fcdc3ec0" class="i method">ToUIColor</a>();
+		}
+ 
+		<b>void</b> <a id="d9a1e1c123fd51be" href="../R/d9a1e1c123fd51be.html" target="n" data-glyph="76,1" class="i method">UpdateAdjustsFontSizeToFitWidth</a>()
+		{
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">AdjustsFontSizeToFitWidth</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="../Extensions/PlatformConfigurationExtensions.cs.html#8d97f43337296e40" class="i method">OnThisPlatform</a>().<a href="/Xamarin.Forms.Core/A.html#95e19d51b2879e10" class="i method">AdjustsFontSizeToFitWidth</a>();
+		}
+ 
+		<b>void</b> <a id="4312c3abfc02dc17" href="../R/4312c3abfc02dc17.html" target="n" data-glyph="76,1" class="i method">UpdateFont</a>()
+		{
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Font</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="FontExtensions.cs.html#de149c32e2333d3b" class="i method">ToUIFont</a>();
+		}
+ 
+		<b>void</b> <a id="6d89c39bbe1248b0" href="../R/6d89c39bbe1248b0.html" target="n" data-glyph="76,1" class="i method">UpdateKeyboard</a>()
+		{
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<a href="../Extensions/Extensions.cs.html#fe68885210561375" class="i method">ApplyKeyboard</a>(<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2006320997f1696d" class="i property">Keyboard</a>);
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">ReloadInputViews</span>();
+		}
+ 
+		<b>void</b> <a id="cee8e9721b00d618" href="../R/cee8e9721b00d618.html" target="n" data-glyph="76,1" class="i method">UpdatePassword</a>()
+		{
+			<b>if</b> (<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#c4c649cea0309002" class="i property">IsPassword</a> &amp;&amp; <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">IsFirstResponder</span>)
+			{
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Enabled</span> = <b>false</b>;
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">SecureTextEntry</span> = <b>true</b>;
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Enabled</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>;
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">BecomeFirstResponder</span>();
+			}
+			<b>else</b>
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">SecureTextEntry</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#c4c649cea0309002" class="i property">IsPassword</a>;
+		}
+ 
+		<b>void</b> <a id="b24c0170edc85331" href="../R/b24c0170edc85331.html" target="n" data-glyph="76,1" class="i method">UpdatePlaceholder</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#92912ce984b52eea" class="k">var</a> <span id="r17 rd" class="r17 r">formatted</span> = (<a href="/Xamarin.Forms.Core/A.html#92912ce984b52eea" class="t t">FormattedString</a>)<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#9de9a7e9334350cf" class="i property">Placeholder</a>;
+ 
+			<b>if</b> (<span class="r17 r">formatted</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="k">var</a> <span id="r18 rd" class="r18 r">targetColor</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#1b9877e91f3d2536" class="i property">PlaceholderColor</a>;
+ 
+			<span class="c">// Placeholder default color is 70% gray</span>
+			<span class="c">// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder</span>
+ 
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="k">var</a> <span id="r19 rd" class="r19 r">color</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a> &amp;&amp; !<span class="r18 r">targetColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a> ? <span class="r18 r">targetColor</span> : <a href="../Extensions/ColorExtensions.cs.html#de156fe692aaa96d" class="t t">ColorExtensions</a>.<a href="../Extensions/ColorExtensions.cs.html#625f5c210dc33a2b" class="i field">SeventyPercentGrey</a>.<a href="../Extensions/ColorExtensions.cs.html#c31c7039f5c1c36b" class="i method">ToColor</a>();
+ 
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">AttributedPlaceholder</span> = <span class="r17 r">formatted</span>.<a href="FormattedStringExtensions.cs.html#fe3c5bef127c6a80" class="i method">ToAttributed</a>(<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>, <span class="r19 r">color</span>);
+		}
+ 
+		<b>void</b> <a id="169c4f166f424c72" href="../R/169c4f166f424c72.html" target="n" data-glyph="76,1" class="i method">UpdateText</a>()
+		{
+			<span class="c">// ReSharper disable once RedundantCheckBeforeAssignment</span>
+			<b>if</b> (<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Text</span> != <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#035aca80d007619b" class="i property">Text</a>)
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Text</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#035aca80d007619b" class="i property">Text</a>;
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html><head><title>LockingSemaphore.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(51);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/LockingSemaphore.cs" target="_top">LockingSemaphore.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>internal class</b> <a id="c7e05fd214778380" href="R/c7e05fd214778380.html" target="n" data-glyph="2,0" class="t t">LockingSemaphore</a>
+	{
+		<b>static readonly</b> <span class="t t">Task</span> <a id="7e02343a1bb6ac03" href="R/7e02343a1bb6ac03.html" target="n" data-glyph="46,1" class="i field">Completed</a> = <span class="t t">Task</span>.<span class="i method">FromResult</span>(<b>true</b>);
+		<b>readonly</b> <a href="@1@System.Collections/A.html#aa3beab99b2e0db2" class="t t">Queue</a>&lt;<span class="t t">TaskCompletionSource</span>&lt;<b>bool</b>&gt;&gt; <a id="75bffb401ca44cc2" href="R/75bffb401ca44cc2.html" target="n" data-glyph="46,1" class="i field">_waiters</a> = <b>new</b> <a href="@1@System.Collections/A.html#a09109def640b7b1" class="t constructor">Queue</a>&lt;<span class="t t">TaskCompletionSource</span>&lt;<b>bool</b>&gt;&gt;();
+		<b>int</b> <a id="9d47f0aa16be0ae6" href="R/9d47f0aa16be0ae6.html" target="n" data-glyph="46,1" class="i field">_currentCount</a>;
+ 
+		<b>public</b> <a id="53109fa3c6976f33" href="R/53109fa3c6976f33.html" target="n" data-glyph="72,1" class="i constructor">LockingSemaphore</a>(<b>int</b> <span id="r0 rd" class="r0 r">initialCount</span>)
+		{
+			<b>if</b> (<span class="r0 r">initialCount</span> &lt; 0)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;initialCount&quot;</span>);
+			<a href="#9d47f0aa16be0ae6" class="i field">_currentCount</a> = <span class="r0 r">initialCount</span>;
+		}
+ 
+		<b>public void</b> <a id="1b7a1b42e11321d7" href="R/1b7a1b42e11321d7.html" target="n" data-glyph="72,1" class="i method">Release</a>()
+		{
+			<span class="t t">TaskCompletionSource</span>&lt;<b>bool</b>&gt; <span id="r1 rd" class="r1 r">toRelease</span> = <b>null</b>;
+			<b>lock</b> (<a href="#75bffb401ca44cc2" class="i field">_waiters</a>)
+			{
+				<b>if</b> (<a href="#75bffb401ca44cc2" class="i field">_waiters</a>.<a href="@1@System.Collections/A.html#2d2504e4ca700843" class="i property">Count</a> &gt; 0)
+					<span class="r1 r">toRelease</span> = <a href="#75bffb401ca44cc2" class="i field">_waiters</a>.<a href="@1@System.Collections/A.html#e68caf2d91344411" class="i method">Dequeue</a>();
+				<b>else</b>
+					++<a href="#9d47f0aa16be0ae6" class="i field">_currentCount</a>;
+			}
+			<b>if</b> (<span class="r1 r">toRelease</span> != <b>null</b>)
+				<span class="r1 r">toRelease</span>.<span class="i method">TrySetResult</span>(<b>true</b>);
+		}
+ 
+		<b>public</b> <span class="t t">Task</span> <a id="78d2f7baa06deca8" href="R/78d2f7baa06deca8.html" target="n" data-glyph="72,1" class="i method">WaitAsync</a>(<span class="t t">CancellationToken</span> <span id="r2 rd" class="r2 r">token</span>)
+		{
+			<b>lock</b> (<a href="#75bffb401ca44cc2" class="i field">_waiters</a>)
+			{
+				<b>if</b> (<a href="#9d47f0aa16be0ae6" class="i field">_currentCount</a> &gt; 0)
+				{
+					--<a href="#9d47f0aa16be0ae6" class="i field">_currentCount</a>;
+					<b>return</b> <a href="#7e02343a1bb6ac03" class="i field">Completed</a>;
+				}
+				<b>var</b> <span id="r3 rd" class="r3 r">waiter</span> = <b>new</b> <span class="t constructor">TaskCompletionSource</span>&lt;<b>bool</b>&gt;();
+				<a href="#75bffb401ca44cc2" class="i field">_waiters</a>.<a href="@1@System.Collections/A.html#14c3cc45ceaf1566" class="i method">Enqueue</a>(<span class="r3 r">waiter</span>);
+				<span class="r2 r">token</span>.<span class="i method">Register</span>(() =&gt; <span class="r3 r">waiter</span>.<span class="i method">TrySetCanceled</span>());
+				<b>return</b> <span class="r3 r">waiter</span>.<span class="i property">Task</span>;
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

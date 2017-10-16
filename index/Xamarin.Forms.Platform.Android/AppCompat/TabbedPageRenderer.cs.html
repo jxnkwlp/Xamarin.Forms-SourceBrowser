@@ -1,0 +1,454 @@
+﻿<!DOCTYPE html>
+<html><head><title>TabbedPageRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(445);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/AppCompat/TabbedPageRenderer.cs" target="_top">AppCompat\TabbedPageRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Specialized</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>.<span class="i">Res</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Graphics</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Graphics</span>.<span class="i">Drawables</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">OS</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Runtime</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Support</span>.<span class="i">Design</span>.<span class="i">Widget</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Support</span>.<span class="i">V4</span>.<span class="i">App</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Support</span>.<span class="i">V4</span>.<span class="i">View</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">AndroidSpecific</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>.<span class="i n">AppCompat</span>
+{
+	<b>public class</b> <a id="21d7b02cbecc9441" href="../R/21d7b02cbecc9441.html" target="n" data-glyph="0,0" class="t t">TabbedPageRenderer</a> : <a href="../VisualElementRenderer.cs.html#2d9d0e6565735db7" class="t t">VisualElementRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>&gt;, <span class="i">TabLayout</span>.<span class="i">IOnTabSelectedListener</span>, <span class="i">ViewPager</span>.<span class="i">IOnPageChangeListener</span>, <a href="IManageFragments.cs.html#e04ededeb6c71405" class="t t">IManageFragments</a>
+	{
+		<span class="i">Drawable</span> <a id="b9434bb20d581616" href="../R/b9434bb20d581616.html" target="n" data-glyph="46,1" class="i field">_backgroundDrawable</a>;
+		<b>int</b>? <a id="4c8310e71c36e719" href="../R/4c8310e71c36e719.html" target="n" data-glyph="46,1" class="i field">_defaultColor</a>;
+		<b>bool</b> <a id="2e749750b94f3ae4" href="../R/2e749750b94f3ae4.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+		<span class="i">FragmentManager</span> <a id="9cf83715e48f9c46" href="../R/9cf83715e48f9c46.html" target="n" data-glyph="46,1" class="i field">_fragmentManager</a>;
+		<span class="i">TabLayout</span> <a id="96a6789f56173857" href="../R/96a6789f56173857.html" target="n" data-glyph="46,1" class="i field">_tabLayout</a>;
+		<b>bool</b> <a id="950551707b42b209" href="../R/950551707b42b209.html" target="n" data-glyph="46,1" class="i field">_useAnimations</a> = <b>true</b>;
+		<a href="FormsViewPager.cs.html#2c9d6ce6e845edb0" class="t t">FormsViewPager</a> <a id="421973e90df67817" href="../R/421973e90df67817.html" target="n" data-glyph="46,1" class="i field">_viewPager</a>;
+ 
+		<b>public</b> <a id="6bf99f4209ad1673" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">TabbedPageRenderer</a>()
+		{
+			<a href="../VisualElementRenderer.cs.html#51c5d397dcb4f87a" class="i property">AutoPackage</a> = <b>false</b>;
+		}
+ 
+		<span class="i">FragmentManager</span> <a id="7c8a1739cc05624f" href="../R/7c8a1739cc05624f.html" target="n" data-glyph="106,1" class="i property">FragmentManager</a> =&gt; <a href="#9cf83715e48f9c46" class="i field">_fragmentManager</a> ?? (<a href="#9cf83715e48f9c46" class="i field">_fragmentManager</a> = ((<a href="FormsAppCompatActivity.cs.html#73a28a031ead4b7d" class="t t">FormsAppCompatActivity</a>)<span class="i">Context</span>).<span class="i">SupportFragmentManager</span>);
+ 
+		<b>internal bool</b> <a id="e7ef3b1f65d3b499" href="../R/e7ef3b1f65d3b499.html" target="n" data-glyph="104,1" class="i property">UseAnimations</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#950551707b42b209" class="i field">_useAnimations</a>; }
+			<b>set</b>
+			{
+				<a href="FormsViewPager.cs.html#2c9d6ce6e845edb0" class="t t">FormsViewPager</a> <span id="r0 rd" class="r0 r">pager</span> = <a href="#421973e90df67817" class="i field">_viewPager</a>;
+ 
+				<a href="#950551707b42b209" class="i field">_useAnimations</a> = <b>value</b>;
+				<b>if</b> (<span class="r0 r">pager</span> != <b>null</b>)
+					<span class="r0 r">pager</span>.<a href="FormsViewPager.cs.html#2327d16e05fb1baa" class="i property">EnableGesture</a> = <b>value</b>;
+			}
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#b23cf6cd1d6182c9" class="t t">IPageController</a> <a id="d04e6c11927325ec" href="../R/d04e6c11927325ec.html" target="n" data-glyph="106,1" class="i property">PageController</a> =&gt; <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#b23cf6cd1d6182c9" class="t t">IPageController</a>;
+ 
+		<b>void</b> <a href="IManageFragments.cs.html#e04ededeb6c71405" class="t t">IManageFragments</a>.<a href="IManageFragments.cs.html#aeccfda35254eb25" class="i method">SetFragmentManager</a>(<span class="i">FragmentManager</span> <span id="r1 rd" class="r1 r">childFragmentManager</span>)
+		{
+			<b>if</b> (<a href="#9cf83715e48f9c46" class="i field">_fragmentManager</a> == <b>null</b>)
+				<a href="#9cf83715e48f9c46" class="i field">_fragmentManager</a> = <span class="r1 r">childFragmentManager</span>;
+		}
+ 
+		<b>void</b> <span class="i">ViewPager</span>.<span class="i">IOnPageChangeListener</span>.<a id="928c764c2255f1be" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnPageScrolled</a>(<b>int</b> <span id="r2 rd" class="r2 r">position</span>, <b>float</b> <span id="r3 rd" class="r3 r">positionOffset</span>, <b>int</b> <span id="r4 rd" class="r4 r">positionOffsetPixels</span>)
+		{
+			<a href="#ae7555a5ba7fc892" class="i method">UpdateTabBarTranslation</a>(<span class="r2 r">position</span>, <span class="r3 r">positionOffset</span>);
+		}
+ 
+		<b>void</b> <span class="i">ViewPager</span>.<span class="i">IOnPageChangeListener</span>.<a id="9aa48ab70bef95e7" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnPageScrollStateChanged</a>(<b>int</b> <span id="r5 rd" class="r5 r">state</span>)
+		{
+		}
+ 
+		<b>void</b> <span class="i">ViewPager</span>.<span class="i">IOnPageChangeListener</span>.<a id="fdc558a594fc80f1" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnPageSelected</a>(<b>int</b> <span id="r6 rd" class="r6 r">position</span>)
+		{
+			<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<span class="i">CurrentPage</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>[<span class="r6 r">position</span>];
+		}
+ 
+		<b>void</b> <span class="i">TabLayout</span>.<span class="i">IOnTabSelectedListener</span>.<a id="ba0a7852d9267cd2" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnTabReselected</a>(<span class="i">TabLayout</span>.<span class="i">Tab</span> <span id="r7 rd" class="r7 r">tab</span>)
+		{
+		}
+ 
+		<b>void</b> <span class="i">TabLayout</span>.<span class="i">IOnTabSelectedListener</span>.<a id="7a1ab964727616f1" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnTabSelected</a>(<span class="i">TabLayout</span>.<span class="i">Tab</span> <span id="r8 rd" class="r8 r">tab</span>)
+		{
+			<b>if</b> (<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>int</b> <span id="r9 rd" class="r9 r">selectedIndex</span> = <span class="r8 r">tab</span>.<span class="i">Position</span>;
+			<b>if</b> (<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>.<span class="i">Count</span> &gt; <span class="r9 r">selectedIndex</span> &amp;&amp; <span class="r9 r">selectedIndex</span> &gt;= 0)
+				<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<span class="i">CurrentPage</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>[<span class="r9 r">selectedIndex</span>];
+		}
+ 
+		<b>void</b> <span class="i">TabLayout</span>.<span class="i">IOnTabSelectedListener</span>.<a id="5cfb15300fbdb07a" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnTabUnselected</a>(<span class="i">TabLayout</span>.<span class="i">Tab</span> <span id="r10 rd" class="r10 r">tab</span>)
+		{
+		}
+ 
+		<b>protected override void</b> <a id="d9b03d31c39bce98" href="../R/d9b03d31c39bce98.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r11 rd" class="r11 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r11 r">disposing</span> &amp;&amp; !<a href="#2e749750b94f3ae4" class="i field">_disposed</a>)
+			{
+				<a href="#2e749750b94f3ae4" class="i field">_disposed</a> = <b>true</b>;
+				<span class="i">RemoveAllViews</span>();
+				<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r12 rd" class="r12 r">pageToRemove</span> <b>in</b> <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>)
+				{
+					<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r13 rd" class="r13 r">pageRenderer</span> = <span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<span class="r12 r">pageToRemove</span>);
+					<b>if</b> (<span class="r13 r">pageRenderer</span> != <b>null</b>)
+					{
+						<span class="r13 r">pageRenderer</span>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<a href="../ViewExtensions.cs.html#ed54340ae84abc92" class="i method">RemoveFromParent</a>();
+						<span class="r13 r">pageRenderer</span>.<span class="i">Dispose</span>();
+					}
+					<span class="r12 r">pageToRemove</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <span class="i">OnPagePropertyChanged</span>;
+					<span class="r12 r">pageToRemove</span>.<span class="i">ClearValue</span>(<span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#cda3e6f7841c17d4" class="i field">RendererProperty</a>);
+				}
+ 
+				<b>if</b> (<a href="#421973e90df67817" class="i field">_viewPager</a> != <b>null</b>)
+				{
+					<a href="#421973e90df67817" class="i field">_viewPager</a>.<span class="i">Adapter</span>.<span class="i">Dispose</span>();
+					<a href="#421973e90df67817" class="i field">_viewPager</a>.<span class="i">Dispose</span>();
+					<a href="#421973e90df67817" class="i field">_viewPager</a> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<a href="#96a6789f56173857" class="i field">_tabLayout</a> != <b>null</b>)
+				{
+					<a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">SetOnTabSelectedListener</span>(<b>null</b>);
+					<a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">Dispose</span>();
+					<a href="#96a6789f56173857" class="i field">_tabLayout</a> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a> != <b>null</b>)
+					<a href="#d04e6c11927325ec" class="i property">PageController</a>.<a href="/Xamarin.Forms.Core/A.html#58cca3d6af33124c" class="i property">InternalChildren</a>.<span class="i">CollectionChanged</span> -= <span class="i">OnChildrenCollectionChanged</span>;
+			}
+ 
+			<a href="../VisualElementRenderer.cs.html#2d9d0e6565735db7" class="k">base</a>.<a href="../VisualElementRenderer.cs.html#7e4c679353a39ac7" class="i method">Dispose</a>(<span class="r11 r">disposing</span>);
+		}
+ 
+		<b>protected override void</b> <a id="f928000287c1f7c5" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnAttachedToWindow</a>()
+		{
+			<a href="../VisualElementRenderer.cs.html#2d9d0e6565735db7" class="k">base</a>.<span class="i">OnAttachedToWindow</span>();
+			<a href="#d04e6c11927325ec" class="i property">PageController</a>.<span class="i">SendAppearing</span>();
+		}
+ 
+		<b>protected override void</b> <a id="f24f4183598aa0e5" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnDetachedFromWindow</a>()
+		{
+			<a href="../VisualElementRenderer.cs.html#2d9d0e6565735db7" class="k">base</a>.<span class="i">OnDetachedFromWindow</span>();
+			<a href="#d04e6c11927325ec" class="i property">PageController</a>.<span class="i">SendDisappearing</span>();
+		}
+ 
+		<b>protected override void</b> <a id="fa94599d1f957e10" href="../R/fa94599d1f957e10.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#9a1366c2961f4fde" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>&gt; <span id="r14 rd" class="r14 r">e</span>)
+		{
+			<a href="../VisualElementRenderer.cs.html#2d9d0e6565735db7" class="k">base</a>.<a href="../VisualElementRenderer.cs.html#48f7eabe0c8c2b33" class="i method">OnElementChanged</a>(<span class="r14 r">e</span>);
+ 
+			<a href="FormsAppCompatActivity.cs.html#73a28a031ead4b7d" class="k">var</a> <span id="r15 rd" class="r15 r">activity</span> = (<a href="FormsAppCompatActivity.cs.html#73a28a031ead4b7d" class="t t">FormsAppCompatActivity</a>)<span class="i">Context</span>;
+ 
+			<b>if</b> (<span class="r14 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a> != <b>null</b>)
+				((<a href="/Xamarin.Forms.Core/A.html#b23cf6cd1d6182c9" class="t t">IPageController</a>)<span class="r14 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>).<a href="/Xamarin.Forms.Core/A.html#58cca3d6af33124c" class="i property">InternalChildren</a>.<span class="i">CollectionChanged</span> -= <span class="i">OnChildrenCollectionChanged</span>;
+ 
+			<b>if</b> (<span class="r14 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<b>if</b> (<a href="#96a6789f56173857" class="i field">_tabLayout</a> == <b>null</b>)
+				{
+					<span class="i">TabLayout</span> <span id="r16 rd" class="r16 r">tabs</span>;
+					<b>if</b> (<a href="FormsAppCompatActivity.cs.html#73a28a031ead4b7d" class="t t">FormsAppCompatActivity</a>.<a href="FormsAppCompatActivity.cs.html#7965cbe6cd97fe5a" class="i property">TabLayoutResource</a> &gt; 0)
+					{
+						<span class="r16 r">tabs</span> = <a href="#96a6789f56173857" class="i field">_tabLayout</a> = <span class="r15 r">activity</span>.<span class="i">LayoutInflater</span>.<span class="i">Inflate</span>(<a href="FormsAppCompatActivity.cs.html#73a28a031ead4b7d" class="t t">FormsAppCompatActivity</a>.<a href="FormsAppCompatActivity.cs.html#7965cbe6cd97fe5a" class="i property">TabLayoutResource</a>, <b>null</b>).<span class="i">JavaCast</span>&lt;<span class="i">TabLayout</span>&gt;();
+					}
+					<b>else</b>
+						<span class="r16 r">tabs</span> = <a href="#96a6789f56173857" class="i field">_tabLayout</a> = <b>new</b> <span class="i">TabLayout</span>(<span class="r15 r">activity</span>) { <span class="i">TabMode</span> = <span class="i">TabLayout</span>.<span class="i">ModeFixed</span>, <span class="i">TabGravity</span> = <span class="i">TabLayout</span>.<span class="i">GravityFill</span> };
+					<a href="FormsViewPager.cs.html#2c9d6ce6e845edb0" class="t t">FormsViewPager</a> <span id="r17 rd" class="r17 r">pager</span> =
+						<a href="#421973e90df67817" class="i field">_viewPager</a> =
+						<b>new</b> <span class="t">FormsViewPager</span>(<span class="r15 r">activity</span>)
+						{
+							<span class="i">OverScrollMode</span> = <span class="i">OverScrollMode</span>.<span class="i">Never</span>,
+							<a href="FormsViewPager.cs.html#2327d16e05fb1baa" class="i property">EnableGesture</a> = <a href="#e7ef3b1f65d3b499" class="i property">UseAnimations</a>,
+							<span class="i">LayoutParameters</span> = <b>new</b> <span class="i">LayoutParams</span>(<span class="i">LayoutParams</span>.<span class="i">MatchParent</span>, <span class="i">LayoutParams</span>.<span class="i">MatchParent</span>),
+							<span class="i">Adapter</span> = <b>new</b> <a href="FormsFragmentPagerAdapter.cs.html#3ef57925ca025cb2" class="t constructor">FormsFragmentPagerAdapter</a>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt;(<span class="r14 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>, <a href="#7c8a1739cc05624f" class="i property">FragmentManager</a>) { <a href="FormsFragmentPagerAdapter.cs.html#c8bb1c90cd62dea8" class="i property">CountOverride</a> = <span class="r14 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>.<span class="i">Count</span> }
+						};
+					<span class="r17 r">pager</span>.<span class="i">Id</span> = <a href="Platform.cs.html#2431577fc7669ff2" class="t t">Platform</a>.<a href="Platform.cs.html#d1ae339db7fd1f7c" class="i method">GenerateViewId</a>();
+					<span class="r17 r">pager</span>.<span class="i">AddOnPageChangeListener</span>(<a href="#21d7b02cbecc9441" class="k">this</a>);
+ 
+					<span class="i">AddView</span>(<span class="r17 r">pager</span>);
+					<span class="i">AddView</span>(<span class="r16 r">tabs</span>);
+ 
+					<a href="#8b66be3dd04fc4e2" class="i method">OnChildrenCollectionChanged</a>(<b>null</b>, <b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>));
+				}
+ 
+				<a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a> <span id="r18 rd" class="r18 r">tabbedPage</span> = <span class="r14 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>;
+				<b>if</b> (<span class="r18 r">tabbedPage</span>.<a href="/Xamarin.Forms.Core/A.html#ffbdb21cfc058aa9" class="i property">CurrentPage</a> != <b>null</b>)
+					<a href="#0deb938a0900dc36" class="i method">ScrollToCurrentPage</a>();
+ 
+				((<a href="/Xamarin.Forms.Core/A.html#b23cf6cd1d6182c9" class="t t">IPageController</a>)<span class="r18 r">tabbedPage</span>).<a href="/Xamarin.Forms.Core/A.html#58cca3d6af33124c" class="i property">InternalChildren</a>.<span class="i">CollectionChanged</span> += <span class="i">OnChildrenCollectionChanged</span>;
+				<a href="#3594eea772e330ec" class="i method">UpdateBarBackgroundColor</a>();
+				<a href="#72bbde1e29e3a982" class="i method">UpdateBarTextColor</a>();
+				<a href="#7babae561dbfa6d7" class="i method">UpdateSwipePaging</a>();
+				<a href="#0b40f0f7ef60420a" class="i method">UpdateOffscreenPageLimit</a>();
+			}
+		}
+ 
+		<b>protected override void</b> <a id="c36c44ec6fd2d7ed" href="../R/c36c44ec6fd2d7ed.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r19 rd" class="r19 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r20 rd" class="r20 r">e</span>)
+		{
+			<a href="../VisualElementRenderer.cs.html#2d9d0e6565735db7" class="k">base</a>.<a href="../VisualElementRenderer.cs.html#a2a35e77093e6122" class="i method">OnElementPropertyChanged</a>(<span class="r19 r">sender</span>, <span class="r20 r">e</span>);
+ 
+			<b>if</b> (<span class="r20 r">e</span>.<span class="i">PropertyName</span> == <b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>.<a href="/Xamarin.Forms.Core/A.html#ffbdb21cfc058aa9" class="i property">CurrentPage</a>))
+			{
+				<b>if</b> (<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ffbdb21cfc058aa9" class="i property">CurrentPage</a> != <b>null</b>)
+					<a href="#0deb938a0900dc36" class="i method">ScrollToCurrentPage</a>();
+			}
+			<b>else if</b> (<span class="r20 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>.<a href="/Xamarin.Forms.Core/A.html#8a28d396e966251b" class="i field">BarBackgroundColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#3594eea772e330ec" class="i method">UpdateBarBackgroundColor</a>();
+			<b>else if</b> (<span class="r20 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>.<a href="/Xamarin.Forms.Core/A.html#a0df817621e01af8" class="i field">BarTextColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#72bbde1e29e3a982" class="i method">UpdateBarTextColor</a>();
+			<b>else if</b> (<span class="r20 r">e</span>.<span class="i">PropertyName</span> == <span class="i n">PlatformConfiguration</span>.<span class="i n">AndroidSpecific</span>.<a href="/Xamarin.Forms.Core/A.html#6f89b844eaf2295b" class="t t">TabbedPage</a>.<a href="/Xamarin.Forms.Core/A.html#d2ec74fc36bf8a5f" class="i field">IsSwipePagingEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#7babae561dbfa6d7" class="i method">UpdateSwipePaging</a>();
+		}
+ 
+		<b>protected override void</b> <a id="932c3488e7cf929b" href="../R/932c3488e7cf929b.html" target="n" data-glyph="75,1" class="i method">OnLayout</a>(<b>bool</b> <span id="r21 rd" class="r21 r">changed</span>, <b>int</b> <span id="r22 rd" class="r22 r">l</span>, <b>int</b> <span id="r23 rd" class="r23 r">t</span>, <b>int</b> <span id="r24 rd" class="r24 r">r</span>, <b>int</b> <span id="r25 rd" class="r25 r">b</span>)
+		{
+			<span class="i">TabLayout</span> <span id="r26 rd" class="r26 r">tabs</span> = <a href="#96a6789f56173857" class="i field">_tabLayout</a>;
+			<a href="FormsViewPager.cs.html#2c9d6ce6e845edb0" class="t t">FormsViewPager</a> <span id="r27 rd" class="r27 r">pager</span> = <a href="#421973e90df67817" class="i field">_viewPager</a>;
+			<span class="i">Context</span> <span id="r28 rd" class="r28 r">context</span> = <span class="i">Context</span>;
+			<b>int</b> <span id="r29 rd" class="r29 r">width</span> = <span class="r24 r">r</span> - <span class="r22 r">l</span>;
+			<b>int</b> <span id="r30 rd" class="r30 r">height</span> = <span class="r25 r">b</span> - <span class="r23 r">t</span>;
+ 
+			<span class="r26 r">tabs</span>.<span class="i">Measure</span>(<a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r29 r">width</span>, <span class="i">MeasureSpecMode</span>.<span class="i">Exactly</span>), <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r30 r">height</span>, <span class="i">MeasureSpecMode</span>.<span class="i">AtMost</span>));
+			<b>var</b> <span id="r31 rd" class="r31 r">tabsHeight</span> = 0;
+ 
+			<b>if</b> (<span class="r26 r">tabs</span>.<span class="i">Visibility</span> != <span class="i">ViewStates</span>.<span class="i">Gone</span>)
+			{
+				<span class="c">//MinimumHeight is only available on API 16+</span>
+				<b>if</b> ((<b>int</b>)<span class="i">Build</span>.<span class="i">VERSION</span>.<span class="i">SdkInt</span> &gt;= 16)
+					<span class="r31 r">tabsHeight</span> = <span class="i">Math</span>.<span class="i">Min</span>(<span class="r30 r">height</span>, <span class="i">Math</span>.<span class="i">Max</span>(<span class="r26 r">tabs</span>.<span class="i">MeasuredHeight</span>, <span class="r26 r">tabs</span>.<span class="i">MinimumHeight</span>));
+				<b>else</b>
+					<span class="r31 r">tabsHeight</span> = <span class="i">Math</span>.<span class="i">Min</span>(<span class="r30 r">height</span>, <span class="r26 r">tabs</span>.<span class="i">MeasuredHeight</span>);
+			}
+ 
+			<span class="r27 r">pager</span>.<span class="i">Measure</span>(<a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r29 r">width</span>, <span class="i">MeasureSpecMode</span>.<span class="i">AtMost</span>), <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r30 r">height</span>, <span class="i">MeasureSpecMode</span>.<span class="i">AtMost</span>));
+ 
+			<b>if</b> (<span class="r29 r">width</span> &gt; 0 &amp;&amp; <span class="r30 r">height</span> &gt; 0)
+			{
+				<a href="#d04e6c11927325ec" class="i property">PageController</a>.<span class="i">ContainerArea</span> = <b>new</b> <span class="t">Rectangle</span>(0, <span class="r28 r">context</span>.<a href="../ContextExtensions.cs.html#cce5139585f8ebc7" class="i method">FromPixels</a>(<span class="r31 r">tabsHeight</span>), <span class="r28 r">context</span>.<a href="../ContextExtensions.cs.html#cce5139585f8ebc7" class="i method">FromPixels</a>(<span class="r29 r">width</span>), <span class="r28 r">context</span>.<span class="i">FromPixels</span>(<span class="r30 r">height</span> - <span class="r31 r">tabsHeight</span>));
+ 
+				<b>for</b> (<b>var</b> <span id="r32 rd" class="r32 r">i</span> = 0; <span class="r32 r">i</span> &lt; <a href="#d04e6c11927325ec" class="i property">PageController</a>.<a href="/Xamarin.Forms.Core/A.html#58cca3d6af33124c" class="i property">InternalChildren</a>.<span class="i">Count</span>; <span class="r32 r">i</span>++)
+				{
+					<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="k">var</a> <span id="r33 rd" class="r33 r">child</span> = <a href="#d04e6c11927325ec" class="i property">PageController</a>.<a href="/Xamarin.Forms.Core/A.html#58cca3d6af33124c" class="i property">InternalChildren</a>[<span class="r32 r">i</span>] <b>as</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>;
+					<b>if</b> (<span class="r33 r">child</span> == <b>null</b>)
+						<b>continue</b>;
+					<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r34 rd" class="r34 r">renderer</span> = <span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<span class="r33 r">child</span>);
+					<a href="NavigationPageRenderer.cs.html#909bc0ccc002a492" class="k">var</a> <span id="r35 rd" class="r35 r">navigationRenderer</span> = <span class="r34 r">renderer</span> <b>as</b> <a href="NavigationPageRenderer.cs.html#909bc0ccc002a492" class="t t">NavigationPageRenderer</a>;
+					<b>if</b> (<span class="r35 r">navigationRenderer</span> != <b>null</b>)
+						<span class="r35 r">navigationRenderer</span>.<a href="NavigationPageRenderer.cs.html#dc4378e3ca834baf" class="i property">ContainerPadding</a> = <span class="r31 r">tabsHeight</span>;
+				}
+ 
+				<span class="r27 r">pager</span>.<span class="i">Layout</span>(0, 0, <span class="r29 r">width</span>, <span class="r25 r">b</span>);
+				<span class="c">// We need to measure again to ensure that the tabs show up</span>
+				<span class="r26 r">tabs</span>.<span class="i">Measure</span>(<a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r29 r">width</span>, <span class="i">MeasureSpecMode</span>.<span class="i">Exactly</span>), <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r31 r">tabsHeight</span>, <span class="i">MeasureSpecMode</span>.<span class="i">Exactly</span>));
+				<span class="r26 r">tabs</span>.<span class="i">Layout</span>(0, 0, <span class="r29 r">width</span>, <span class="r31 r">tabsHeight</span>);
+ 
+				<span class="i">UpdateTabBarTranslation</span>(<span class="r27 r">pager</span>.<span class="i">CurrentItem</span>, 0);
+			}
+ 
+			<a href="../VisualElementRenderer.cs.html#2d9d0e6565735db7" class="k">base</a>.<a href="../VisualElementRenderer.cs.html#33c4b945470fa7ab" class="i method">OnLayout</a>(<span class="r21 r">changed</span>, <span class="r22 r">l</span>, <span class="r23 r">t</span>, <span class="r24 r">r</span>, <span class="r25 r">b</span>);
+		}
+ 
+		<b>void</b> <a id="8b66be3dd04fc4e2" href="../R/8b66be3dd04fc4e2.html" target="n" data-glyph="76,1" class="i method">OnChildrenCollectionChanged</a>(<b>object</b> <span id="r36 rd" class="r36 r">sender</span>, <span class="i">NotifyCollectionChangedEventArgs</span> <span id="r37 rd" class="r37 r">e</span>)
+		{
+			<span class="r37 r">e</span>.<span class="i">Apply</span>((<span id="r38 rd" class="r38 r">o</span>, <span id="r39 rd" class="r39 r">i</span>, <span id="r40 rd" class="r40 r">c</span>) =&gt; <a href="#871b885c5442c0ab" class="i method">SetupPage</a>((<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>)<span class="r38 r">o</span>), (<span id="r41 rd" class="r41 r">o</span>, <span id="r42 rd" class="r42 r">i</span>) =&gt; <a href="#92f5f0164429009e" class="i method">TeardownPage</a>((<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>)<span class="r41 r">o</span>), <span class="i">Reset</span>);
+ 
+			<a href="FormsViewPager.cs.html#2c9d6ce6e845edb0" class="t t">FormsViewPager</a> <span id="r43 rd" class="r43 r">pager</span> = <a href="#421973e90df67817" class="i field">_viewPager</a>;
+			<span class="i">TabLayout</span> <span id="r44 rd" class="r44 r">tabs</span> = <a href="#96a6789f56173857" class="i field">_tabLayout</a>;
+ 
+			((<a href="FormsFragmentPagerAdapter.cs.html#2bb10e2b552622a6" class="t t">FormsFragmentPagerAdapter</a>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt;)<span class="r43 r">pager</span>.<span class="i">Adapter</span>).<a href="FormsFragmentPagerAdapter.cs.html#c8bb1c90cd62dea8" class="i property">CountOverride</a> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>.<span class="i">Count</span>;
+			
+			<span class="r43 r">pager</span>.<span class="i">Adapter</span>.<span class="i">NotifyDataSetChanged</span>();
+ 
+			<b>if</b> (<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>.<span class="i">Count</span> == 0)
+			{
+				<span class="r44 r">tabs</span>.<span class="i">RemoveAllTabs</span>();
+				<span class="r44 r">tabs</span>.<span class="i">SetupWithViewPager</span>(<b>null</b>);
+			}
+			<b>else</b>
+			{
+				<span class="r44 r">tabs</span>.<span class="i">SetupWithViewPager</span>(<span class="r43 r">pager</span>);
+				<a href="#d991deb54e6ae257" class="i method">UpdateTabIcons</a>();
+				<span class="r44 r">tabs</span>.<span class="i">SetOnTabSelectedListener</span>(<a href="#21d7b02cbecc9441" class="k">this</a>);
+			}
+ 
+			<a href="#67aee9359efdfd92" class="i method">UpdateIgnoreContainerAreas</a>();
+		}
+ 
+		<b>void</b> <a id="92f5f0164429009e" href="../R/92f5f0164429009e.html" target="n" data-glyph="76,1" class="i method">TeardownPage</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r45 rd" class="r45 r">page</span>)
+		{
+			<span class="r45 r">page</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <span class="i">OnPagePropertyChanged</span>;
+		}
+ 
+		<b>void</b> <a id="871b885c5442c0ab" href="../R/871b885c5442c0ab.html" target="n" data-glyph="76,1" class="i method">SetupPage</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r46 rd" class="r46 r">page</span>)
+		{
+			<span class="r46 r">page</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <span class="i">OnPagePropertyChanged</span>;
+		}
+ 
+		<b>void</b> <a id="9d0ba282681df4a3" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">Reset</a>()
+		{
+			<b>foreach</b> (<b>var</b> <span id="r47 rd" class="r47 r">page</span> <b>in</b> <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>)
+				<span class="i">SetupPage</span>(<span class="r47 r">page</span>);
+		}
+ 
+		<b>void</b> <a id="7accef4e349f02e3" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnPagePropertyChanged</a>(<b>object</b> <span id="r48 rd" class="r48 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r49 rd" class="r49 r">e</span>)
+		{
+			<b>if</b> (<span class="r49 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>.<a href="/Xamarin.Forms.Core/A.html#9b83529a350431f6" class="i field">TitleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="k">var</a> <span id="r50 rd" class="r50 r">page</span> = (<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>)<span class="r48 r">sender</span>;
+				<b>var</b> <span id="r51 rd" class="r51 r">index</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>.<span class="i">IndexOf</span>(<span class="r50 r">page</span>);
+				<span class="i">TabLayout</span>.<span class="i">Tab</span> <span id="r52 rd" class="r52 r">tab</span> = <a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">GetTabAt</span>(<span class="r51 r">index</span>);
+				<span class="r52 r">tab</span>.<span class="i">SetText</span>(<span class="r50 r">page</span>.<a href="/Xamarin.Forms.Core/A.html#25a9b5c9e8eb0d28" class="i property">Title</a>);
+			}
+		}
+ 
+		<b>void</b> <a id="0deb938a0900dc36" href="../R/0deb938a0900dc36.html" target="n" data-glyph="76,1" class="i method">ScrollToCurrentPage</a>()
+		{
+			((<a href="Platform.cs.html#2431577fc7669ff2" class="t t">Platform</a>)<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#1b1e73276f1d0e92" class="i property">Platform</a>).<a href="Platform.cs.html#802e3908bd6cbe5e" class="i property">NavAnimationInProgress</a> = <b>true</b>;
+			<a href="#421973e90df67817" class="i field">_viewPager</a>.<span class="i">SetCurrentItem</span>(<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>.<span class="i">IndexOf</span>(<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ffbdb21cfc058aa9" class="i property">CurrentPage</a>), <a href="#e7ef3b1f65d3b499" class="i property">UseAnimations</a>);
+			((<a href="Platform.cs.html#2431577fc7669ff2" class="t t">Platform</a>)<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#1b1e73276f1d0e92" class="i property">Platform</a>).<a href="Platform.cs.html#802e3908bd6cbe5e" class="i property">NavAnimationInProgress</a> = <b>false</b>;
+		}
+ 
+		<b>void</b> <a id="67aee9359efdfd92" href="../R/67aee9359efdfd92.html" target="n" data-glyph="76,1" class="i method">UpdateIgnoreContainerAreas</a>()
+		{
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#b23cf6cd1d6182c9" class="t t">IPageController</a> <span id="r53 rd" class="r53 r">child</span> <b>in</b> <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>)
+				<span class="r53 r">child</span>.<a href="/Xamarin.Forms.Core/A.html#a76be604d7f6cbe3" class="i property">IgnoresContainerArea</a> = <span class="r53 r">child</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>;
+		}
+ 
+		<b>void</b> <a id="0b40f0f7ef60420a" href="../R/0b40f0f7ef60420a.html" target="n" data-glyph="76,1" class="i method">UpdateOffscreenPageLimit</a>()
+		{
+			<a href="#421973e90df67817" class="i field">_viewPager</a>.<span class="i">OffscreenPageLimit</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="../PlatformConfigurationExtensions.cs.html#e5d2b3b6cebe48c2" class="i method">OnThisPlatform</a>().<span class="i">OffscreenPageLimit</span>();
+		}
+ 
+		<b>void</b> <a id="7babae561dbfa6d7" href="../R/7babae561dbfa6d7.html" target="n" data-glyph="76,1" class="i method">UpdateSwipePaging</a>()
+		{
+			<a href="#421973e90df67817" class="i field">_viewPager</a>.<a href="FormsViewPager.cs.html#2327d16e05fb1baa" class="i property">EnableGesture</a> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="../PlatformConfigurationExtensions.cs.html#e5d2b3b6cebe48c2" class="i method">OnThisPlatform</a>().<span class="i">IsSwipePagingEnabled</span>();
+		}
+ 
+		<b>void</b> <a id="ae7555a5ba7fc892" href="../R/ae7555a5ba7fc892.html" target="n" data-glyph="76,1" class="i method">UpdateTabBarTranslation</a>(<b>int</b> <span id="r54 rd" class="r54 r">position</span>, <b>float</b> <span id="r55 rd" class="r55 r">offset</span>)
+		{
+			<span class="i">TabLayout</span> <span id="r56 rd" class="r56 r">tabs</span> = <a href="#96a6789f56173857" class="i field">_tabLayout</a>;
+ 
+			<b>if</b> (<span class="r54 r">position</span> &gt;= <a href="#d04e6c11927325ec" class="i property">PageController</a>.<a href="/Xamarin.Forms.Core/A.html#58cca3d6af33124c" class="i property">InternalChildren</a>.<span class="i">Count</span>)
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="k">var</a> <span id="r57 rd" class="r57 r">leftPage</span> = (<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>)<a href="#d04e6c11927325ec" class="i property">PageController</a>.<a href="/Xamarin.Forms.Core/A.html#58cca3d6af33124c" class="i property">InternalChildren</a>[<span class="r54 r">position</span>];
+			<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r58 rd" class="r58 r">leftRenderer</span> = <span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<span class="r57 r">leftPage</span>);
+ 
+			<b>if</b> (<span class="r58 r">leftRenderer</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<span class="r55 r">offset</span> &lt;= 0 || <span class="r54 r">position</span> &gt;= <a href="#d04e6c11927325ec" class="i property">PageController</a>.<a href="/Xamarin.Forms.Core/A.html#58cca3d6af33124c" class="i property">InternalChildren</a>.<span class="i">Count</span> - 1)
+			{
+				<a href="NavigationPageRenderer.cs.html#909bc0ccc002a492" class="k">var</a> <span id="r59 rd" class="r59 r">leftNavRenderer</span> = <span class="r58 r">leftRenderer</span> <b>as</b> <a href="NavigationPageRenderer.cs.html#909bc0ccc002a492" class="t t">NavigationPageRenderer</a>;
+				<b>if</b> (<span class="r59 r">leftNavRenderer</span> != <b>null</b>)
+					<span class="r56 r">tabs</span>.<span class="i">TranslationY</span> = <span class="r59 r">leftNavRenderer</span>.<a href="NavigationPageRenderer.cs.html#80a66c36863c498b" class="i method">GetNavBarHeight</a>();
+				<b>else</b>
+					<span class="r56 r">tabs</span>.<span class="i">TranslationY</span> = 0;
+			}
+			<b>else</b>
+			{
+				<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="k">var</a> <span id="r60 rd" class="r60 r">rightPage</span> = (<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>)<a href="#d04e6c11927325ec" class="i property">PageController</a>.<a href="/Xamarin.Forms.Core/A.html#58cca3d6af33124c" class="i property">InternalChildren</a>[<span class="r54 r">position</span> + 1];
+				<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r61 rd" class="r61 r">rightRenderer</span> = <span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<span class="r60 r">rightPage</span>);
+ 
+				<b>var</b> <span id="r62 rd" class="r62 r">leftHeight</span> = 0;
+				<a href="NavigationPageRenderer.cs.html#909bc0ccc002a492" class="k">var</a> <span id="r63 rd" class="r63 r">leftNavRenderer</span> = <span class="r58 r">leftRenderer</span> <b>as</b> <a href="NavigationPageRenderer.cs.html#909bc0ccc002a492" class="t t">NavigationPageRenderer</a>;
+				<b>if</b> (<span class="r63 r">leftNavRenderer</span> != <b>null</b>)
+					<span class="r62 r">leftHeight</span> = <span class="r63 r">leftNavRenderer</span>.<a href="NavigationPageRenderer.cs.html#80a66c36863c498b" class="i method">GetNavBarHeight</a>();
+ 
+				<b>var</b> <span id="r64 rd" class="r64 r">rightHeight</span> = 0;
+				<a href="NavigationPageRenderer.cs.html#909bc0ccc002a492" class="k">var</a> <span id="r65 rd" class="r65 r">rightNavRenderer</span> = <span class="r61 r">rightRenderer</span> <b>as</b> <a href="NavigationPageRenderer.cs.html#909bc0ccc002a492" class="t t">NavigationPageRenderer</a>;
+				<b>if</b> (<span class="r65 r">rightNavRenderer</span> != <b>null</b>)
+					<span class="r64 r">rightHeight</span> = <span class="r65 r">rightNavRenderer</span>.<a href="NavigationPageRenderer.cs.html#80a66c36863c498b" class="i method">GetNavBarHeight</a>();
+ 
+				<span class="r56 r">tabs</span>.<span class="i">TranslationY</span> = <span class="r62 r">leftHeight</span> + (<span class="r64 r">rightHeight</span> - <span class="r62 r">leftHeight</span>) * <span class="r55 r">offset</span>;
+			}
+		}
+ 
+		<b>void</b> <a id="d991deb54e6ae257" href="../R/d991deb54e6ae257.html" target="n" data-glyph="76,1" class="i method">UpdateTabIcons</a>()
+		{
+			<span class="i">TabLayout</span> <span id="r66 rd" class="r66 r">tabs</span> = <a href="#96a6789f56173857" class="i field">_tabLayout</a>;
+ 
+			<b>if</b> (<span class="r66 r">tabs</span>.<span class="i">TabCount</span> != <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>.<span class="i">Count</span>)
+				<b>return</b>;
+ 
+			<b>for</b> (<b>var</b> <span id="r67 rd" class="r67 r">i</span> = 0; <span class="r67 r">i</span> &lt; <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>.<span class="i">Count</span>; <span class="r67 r">i</span>++)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r68 rd" class="r68 r">child</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>[<span class="r67 r">i</span>];
+				<a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a> <span id="r69 rd" class="r69 r">icon</span> = <span class="r68 r">child</span>.<a href="/Xamarin.Forms.Core/A.html#27bdee04ff62bec2" class="i property">Icon</a>;
+				<b>if</b> (<b>string</b>.<span class="i">IsNullOrEmpty</span>(<span class="r69 r">icon</span>))
+					<b>continue</b>;
+ 
+				<span class="i">TabLayout</span>.<span class="i">Tab</span> <span id="r70 rd" class="r70 r">tab</span> = <span class="r66 r">tabs</span>.<span class="i">GetTabAt</span>(<span class="r67 r">i</span>);
+				<a href="#8ddc7a912af4c256" class="i method">SetTabIcon</a>(<span class="r70 r">tab</span>, <span class="r69 r">icon</span>);
+			}
+		}
+ 
+		<b>protected virtual void</b> <a id="8ddc7a912af4c256" href="../R/8ddc7a912af4c256.html" target="n" data-glyph="75,1" class="i method">SetTabIcon</a>(<span class="i">TabLayout</span>.<span class="i">Tab</span> <span id="r71 rd" class="r71 r">tab</span>, <a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a> <span id="r72 rd" class="r72 r">icon</span>)
+		{
+			<span class="r71 r">tab</span>.<span class="i">SetIcon</span>(<a href="../ResourceManager.cs.html#1c4bd056b700c13c" class="t t">ResourceManager</a>.<a href="../ResourceManager.cs.html#19a8f0ba9b5937d9" class="i method">IdFromTitle</a>(<span class="r72 r">icon</span>, <a href="../ResourceManager.cs.html#1c4bd056b700c13c" class="t t">ResourceManager</a>.<a href="../ResourceManager.cs.html#31438fdd43c490ca" class="i property">DrawableClass</a>));
+		}
+ 
+		<b>void</b> <a id="3594eea772e330ec" href="../R/3594eea772e330ec.html" target="n" data-glyph="76,1" class="i method">UpdateBarBackgroundColor</a>()
+		{
+			<b>if</b> (<a href="#2e749750b94f3ae4" class="i field">_disposed</a> || <a href="#96a6789f56173857" class="i field">_tabLayout</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r73 rd" class="r73 r">tintColor</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ba71e007aefc8ec8" class="i property">BarBackgroundColor</a>;
+ 
+			<b>if</b> (<a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#75ec82fe3a2493eb" class="i property">IsLollipopOrNewer</a>)
+			{
+				<b>if</b> (<span class="r73 r">tintColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a>)
+					<a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">BackgroundTintMode</span> = <b>null</b>;
+				<b>else</b>
+				{
+					<a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">BackgroundTintMode</span> = <span class="i">PorterDuff</span>.<span class="i">Mode</span>.<span class="i">Src</span>;
+					<a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">BackgroundTintList</span> = <span class="i">ColorStateList</span>.<span class="i">ValueOf</span>(<span class="r73 r">tintColor</span>.<a href="../ColorExtensions.cs.html#268d9eb79e3a1fda" class="i method">ToAndroid</a>());
+				}
+			}
+			<b>else</b>
+			{
+				<b>if</b> (<span class="r73 r">tintColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a> &amp;&amp; <a href="#b9434bb20d581616" class="i field">_backgroundDrawable</a> != <b>null</b>)
+					<a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">SetBackground</span>(<a href="#b9434bb20d581616" class="i field">_backgroundDrawable</a>);
+				<b>else if</b> (!<span class="r73 r">tintColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a>)
+				{
+					<b>if</b> (<a href="#b9434bb20d581616" class="i field">_backgroundDrawable</a> == <b>null</b>)
+						<a href="#b9434bb20d581616" class="i field">_backgroundDrawable</a> = <a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">Background</span>;
+					<a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">SetBackgroundColor</span>(<span class="r73 r">tintColor</span>.<a href="../ColorExtensions.cs.html#268d9eb79e3a1fda" class="i method">ToAndroid</a>());
+				}
+			}
+		}
+ 
+		<b>void</b> <a id="72bbde1e29e3a982" href="../R/72bbde1e29e3a982.html" target="n" data-glyph="76,1" class="i method">UpdateBarTextColor</a>()
+		{
+			<b>if</b> (<a href="#2e749750b94f3ae4" class="i field">_disposed</a> || <a href="#96a6789f56173857" class="i field">_tabLayout</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>int</b> <span id="r74 rd" class="r74 r">currentColor</span> = <a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">TabTextColors</span>.<span class="i">DefaultColor</span>;
+ 
+			<b>if</b> (!<a href="#4c8310e71c36e719" class="i field">_defaultColor</a>.<span class="i">HasValue</span>)
+				<a href="#4c8310e71c36e719" class="i field">_defaultColor</a> = <span class="r74 r">currentColor</span>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r75 rd" class="r75 r">newTextColor</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d8d49daf12a0a900" class="i property">BarTextColor</a>;
+			<b>int</b> <span id="r76 rd" class="r76 r">newTextColorArgb</span> = <span class="r75 r">newTextColor</span>.<a href="../ColorExtensions.cs.html#268d9eb79e3a1fda" class="i method">ToAndroid</a>().<span class="i">ToArgb</span>();
+ 
+			<b>if</b> (!<span class="r75 r">newTextColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a> &amp;&amp; <span class="r74 r">currentColor</span> != <span class="r76 r">newTextColorArgb</span>)
+				<a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">SetTabTextColors</span>(<span class="r76 r">newTextColorArgb</span>, <span class="r76 r">newTextColorArgb</span>);
+			<b>else if</b> (<span class="r75 r">newTextColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a> &amp;&amp; <a href="#4c8310e71c36e719" class="i field">_defaultColor</a>.<span class="i">HasValue</span> &amp;&amp; <span class="r74 r">currentColor</span> != <a href="#4c8310e71c36e719" class="i field">_defaultColor</a>)
+				<a href="#96a6789f56173857" class="i field">_tabLayout</a>.<span class="i">SetTabTextColors</span>(<a href="#4c8310e71c36e719" class="i field">_defaultColor</a>.<span class="i">Value</span>, <a href="#4c8310e71c36e719" class="i field">_defaultColor</a>.<span class="i">Value</span>);
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

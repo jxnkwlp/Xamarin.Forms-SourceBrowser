@@ -1,0 +1,260 @@
+﻿<!DOCTYPE html>
+<html><head><title>MapRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(251);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Maps.WinRT.Tablet/MapRenderer.cs" target="_top">MapRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Maps.WinRT.Tablet" target="_top">Xamarin.Forms.Maps.WinRT.Tablet\Xamarin.Forms.Maps.WinRT.Tablet.csproj</a> (Xamarin.Forms.Maps.WinRT.Tablet)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">ObjectModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Specialized</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i">Windows</span>.<span class="i">Devices</span>.<span class="i">Geolocation</span>;
+<b>using</b> <span class="i">Windows</span>.<span class="i">UI</span>;
+<b>using</b> <span class="i">Windows</span>.<span class="i">UI</span>.<span class="i">Xaml</span>.<span class="i">Media</span>;
+<b>using</b> <span class="i">Windows</span>.<span class="i">UI</span>.<span class="i">Xaml</span>.<span class="i">Shapes</span>;
+<b>using</b> <span class="i">Bing</span>.<span class="i">Maps</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Maps</span>.<span class="i n">WinRT</span>
+{
+	<b>public class</b> <a id="13dbd408ea0e5851" href="R/13dbd408ea0e5851.html" target="n" data-glyph="0,0" class="t t"><span id="316ea8d6dc55f777">MapRenderer</span></a> : <a href="/Xamarin.Forms.Platform.WinRT/A.html#758d77404199f47d" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>, <span class="i">Bing</span>.<span class="i">Maps</span>.<span class="i">Map</span>&gt;
+	{
+		<b>bool</b> <a id="c9256990ccbb6b83" href="R/c9256990ccbb6b83.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+		<b>bool</b> <a id="d1272369788e0807" href="R/d1272369788e0807.html" target="n" data-glyph="46,1" class="i field">_firstZoomLevelChangeFired</a>;
+		<span class="i">Ellipse</span> <a id="dabb0fb480256b86" href="R/dabb0fb480256b86.html" target="n" data-glyph="46,1" class="i field">_userPositionCircle</a>;
+ 
+		<b>protected override async void</b> <a id="60fdec0f1050def1" href="R/60fdec0f1050def1.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="/Xamarin.Forms.Platform.WinRT/A.html#2106a6c47320d5ce" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>&gt; <span id="r0 rd" class="r0 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Platform.WinRT/A.html#758d77404199f47d" class="k">base</a>.<span class="i">OnElementChanged</span>(<span class="r0 r">e</span>);
+ 
+			<b>if</b> (<span class="r0 r">e</span>.<a href="/Xamarin.Forms.Platform.WinRT/A.html#4e3446e0b6157432" class="i property">OldElement</a> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="k">var</a> <span id="r1 rd" class="r1 r">mapModel</span> = <span class="r0 r">e</span>.<a href="/Xamarin.Forms.Platform.WinRT/A.html#4e3446e0b6157432" class="i property">OldElement</a>;
+				<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Unsubscribe</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>, <a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a>&gt;(<a href="#13dbd408ea0e5851" class="k">this</a>, <span class="s">&quot;MapMoveToRegion&quot;</span>);
+				((<span class="i">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a>&gt;)<span class="r1 r">mapModel</span>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>).<span class="i">CollectionChanged</span> -= <span class="i">OnCollectionChanged</span>;
+			}
+ 
+			<b>if</b> (<span class="r0 r">e</span>.<a href="/Xamarin.Forms.Platform.WinRT/A.html#be4376e6abb54396" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="k">var</a> <span id="r2 rd" class="r2 r">mapModel</span> = <span class="r0 r">e</span>.<a href="/Xamarin.Forms.Platform.WinRT/A.html#be4376e6abb54396" class="i property">NewElement</a>;
+ 
+				<b>if</b> (<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a> == <b>null</b>)
+				{
+					<span class="i">SetNativeControl</span>(<b>new</b> <span class="i">Bing</span>.<span class="i">Maps</span>.<span class="i">Map</span>());
+					<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Credentials</span> = <a href="FormsMaps.cs.html#c79f0e51c842c8ba" class="t t">FormsMaps</a>.<a href="FormsMaps.cs.html#79c7670408f4bdef" class="i property">AuthenticationToken</a>;
+					<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">ViewChanged</span> += (<span id="r3 rd" class="r3 r">s</span>, <span id="r4 rd" class="r4 r">a</span>) =&gt; <a href="#7114e09d397398ff" class="i method">UpdateVisibleRegion</a>();
+				}
+ 
+				<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Subscribe</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>, <a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a>&gt;(<a href="#13dbd408ea0e5851" class="k">this</a>, <span class="s">&quot;MapMoveToRegion&quot;</span>, (<span id="r5 rd" class="r5 r">s</span>, <span id="r6 rd" class="r6 r">a</span>) =&gt; <span class="i">MoveToRegion</span>(<span class="r6 r">a</span>), <span class="r2 r">mapModel</span>);
+ 
+				<a href="#ea1bef0e05d4b90e" class="i method">UpdateMapType</a>();
+				<a href="#d1db4d2a7eedad91" class="i method">UpdateHasScrollEnabled</a>();
+				<a href="#5f60431fcb1aa717" class="i method">UpdateHasZoomEnabled</a>();
+ 
+				((<span class="i">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a>&gt;)<span class="r2 r">mapModel</span>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>).<span class="i">CollectionChanged</span> += <span class="i">OnCollectionChanged</span>;
+ 
+				<b>if</b> (<span class="r2 r">mapModel</span>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>.<span class="i">Any</span>())
+					<a href="#50fba015ab3b0808" class="i method">LoadPins</a>();
+ 
+				<b>await</b> <a href="#3ada25ca3eae9cd5" class="i method">UpdateIsShowingUser</a>();
+			}
+		}
+ 
+		<b>protected override async void</b> <a id="973c6752ceef5ad2" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r7 rd" class="r7 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r8 rd" class="r8 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Platform.WinRT/A.html#758d77404199f47d" class="k">base</a>.<span class="i">OnElementPropertyChanged</span>(<span class="r7 r">sender</span>, <span class="r8 r">e</span>);
+ 
+			<b>if</b> (<span class="r8 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#3b6d2b786b0314bc" class="i field">MapTypeProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#ea1bef0e05d4b90e" class="i method">UpdateMapType</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#bf2b214a23f02e9c" class="i field">IsShowingUserProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<b>await</b> <a href="#3ada25ca3eae9cd5" class="i method">UpdateIsShowingUser</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#8b18114f57384d35" class="i field">HasScrollEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#d1db4d2a7eedad91" class="i method">UpdateHasScrollEnabled</a>();
+			<b>else if</b> (<span class="r8 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#b1081bfe51b8b9e3" class="i field">HasZoomEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#5f60431fcb1aa717" class="i method">UpdateHasZoomEnabled</a>();
+		}
+ 
+		<b>protected override void</b> <a id="35f4bcf64b67b40b" href="R/35f4bcf64b67b40b.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r9 rd" class="r9 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r9 r">disposing</span> &amp;&amp; !<a href="#c9256990ccbb6b83" class="i field">_disposed</a>)
+			{
+				<a href="#c9256990ccbb6b83" class="i field">_disposed</a> = <b>true</b>;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Unsubscribe</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>, <a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a>&gt;(<a href="#13dbd408ea0e5851" class="k">this</a>, <span class="s">&quot;MapMoveToRegion&quot;</span>);
+ 
+				<b>if</b> (<a href="/Xamarin.Forms.Platform.WinRT/A.html#7735b2edc11b6931" class="i property">Element</a> != <b>null</b>)
+					((<span class="i">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a>&gt;)<a href="/Xamarin.Forms.Platform.WinRT/A.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>).<span class="i">CollectionChanged</span> -= <span class="i">OnCollectionChanged</span>;
+			}
+			<a href="/Xamarin.Forms.Platform.WinRT/A.html#758d77404199f47d" class="k">base</a>.<span class="i">Dispose</span>(<span class="r9 r">disposing</span>);
+		}
+ 
+		<b>async</b> <span class="i">Task</span> <a id="3ada25ca3eae9cd5" href="R/3ada25ca3eae9cd5.html" target="n" data-glyph="76,1" class="i method">UpdateIsShowingUser</a>()
+		{
+			<b>if</b> (<a href="/Xamarin.Forms.Platform.WinRT/A.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Maps/A.html#b66098d7a63da5d6" class="i property">IsShowingUser</a>)
+			{
+				<b>var</b> <span id="r10 rd" class="r10 r">myGeolocator</span> = <b>new</b> <span class="i">Geolocator</span>();
+				<b>if</b> (<span class="r10 r">myGeolocator</span>.<span class="i">LocationStatus</span> != <span class="i">PositionStatus</span>.<span class="i">NotAvailable</span> &amp;&amp;
+				    <span class="r10 r">myGeolocator</span>.<span class="i">LocationStatus</span> != <span class="i">PositionStatus</span>.<span class="i">Disabled</span>)
+				{
+					<b>var</b> <span id="r11 rd" class="r11 r">userPosition</span> = <b>await</b> <span class="r10 r">myGeolocator</span>.<span class="i">GetGeopositionAsync</span>();
+					<b>if</b> (<span class="r11 r">userPosition</span>?.<span class="i">Coordinate</span> != <b>null</b>)
+						<span class="i">LoadUserPosition</span>(<span class="r11 r">userPosition</span>.<span class="i">Coordinate</span>, <b>true</b>);
+				}
+			}
+			<b>else if</b> (<a href="#dabb0fb480256b86" class="i field">_userPositionCircle</a> != <b>null</b> &amp;&amp; <a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Children</span>.<span class="i">Contains</span>(<a href="#dabb0fb480256b86" class="i field">_userPositionCircle</a>))
+				<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Children</span>.<span class="i">Remove</span>(<a href="#dabb0fb480256b86" class="i field">_userPositionCircle</a>);
+		}
+ 
+		<b>void</b> <a id="50fba015ab3b0808" href="R/50fba015ab3b0808.html" target="n" data-glyph="76,1" class="i method">LoadPins</a>()
+		{
+			<b>foreach</b> (<b>var</b> <span id="r12 rd" class="r12 r">pin</span> <b>in</b> <a href="/Xamarin.Forms.Platform.WinRT/A.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>)
+				<span class="i">LoadPin</span>(<span class="r12 r">pin</span>);
+		}
+ 
+		<b>void</b> <a id="733661029bf69561" href="R/733661029bf69561.html" target="n" data-glyph="76,1" class="i method">ClearPins</a>()
+		{
+			<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Children</span>.<span class="i">Clear</span>();
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 4014 <span class="c">// don&#39;t wanna block UI thread</span>
+			<a href="#3ada25ca3eae9cd5" class="i method">UpdateIsShowingUser</a>();
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span>
+		}
+ 
+		<b>void</b> <a id="948ec0713609be4a" href="R/948ec0713609be4a.html" target="n" data-glyph="76,1" class="i method">RemovePin</a>(<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r13 rd" class="r13 r">pinToRemove</span>)
+		{
+			<b>var</b> <span id="r14 rd" class="r14 r">pushPin</span> = <a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Children</span>.<span class="i">FirstOrDefault</span>(<span id="r15 rd" class="r15 r">c</span> =&gt;
+			{
+				<b>var</b> <span id="r16 rd" class="r16 r">pin</span> = (<span class="r15 r">c</span> <b>as</b> <span class="i">Pushpin</span>);
+				<b>return</b> (<span class="r16 r">pin</span> != <b>null</b> &amp;&amp; <span class="r16 r">pin</span>.<span class="i">DataContext</span>.<span class="i">Equals</span>(<span class="r13 r">pinToRemove</span>));
+			});
+ 
+			<b>if</b> (<span class="r14 r">pushPin</span> != <b>null</b>)
+				<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Children</span>.<span class="i">Remove</span>(<span class="r14 r">pushPin</span>);
+		}
+ 
+		<b>void</b> <a id="8cc958bd870d8d12" href="R/8cc958bd870d8d12.html" target="n" data-glyph="76,1" class="i method">LoadPin</a>(<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r17 rd" class="r17 r">pin</span>)
+		{
+			<b>var</b> <span id="r18 rd" class="r18 r">pushPin</span> = <b>new</b> <span class="i">Pushpin</span> { <span class="i">Text</span> = <span class="r17 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#0ea2a21012eec1be" class="i property">Label</a>, <span class="i">DataContext</span> = <span class="r17 r">pin</span> };
+			<span class="i">MapLayer</span>.<span class="i">SetPosition</span>(<span class="r18 r">pushPin</span>, <b>new</b> <span class="i">Location</span>(<span class="r17 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#d18675f8cc691ee2" class="i property">Position</a>.<a href="/Xamarin.Forms.Maps/A.html#cb5045a0674344be" class="i property">Latitude</a>, <span class="r17 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#d18675f8cc691ee2" class="i property">Position</a>.<a href="/Xamarin.Forms.Maps/A.html#e52379d680105ddc" class="i property">Longitude</a>));
+			<span class="r18 r">pushPin</span>.<span class="i">Tapped</span> += (<span id="r19 rd" class="r19 r">s</span>, <span id="r20 rd" class="r20 r">e</span>) =&gt; ((<span class="r19 r">s</span> <b>as</b> <span class="i">Pushpin</span>)?.<span class="i">DataContext</span> <b>as</b> <a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a>)?.<span class="i">SendTap</span>();
+			<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Children</span>.<span class="i">Add</span>(<span class="r18 r">pushPin</span>);
+		}
+ 
+		<b>void</b> <a id="ea1bef0e05d4b90e" href="R/ea1bef0e05d4b90e.html" target="n" data-glyph="76,1" class="i method">UpdateMapType</a>()
+		{
+			<b>switch</b> (<a href="/Xamarin.Forms.Platform.WinRT/A.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Maps/A.html#d6630e58ca345e1e" class="i property">MapType</a>)
+			{
+				<b>case</b> <a href="/Xamarin.Forms.Maps/A.html#b0e9d5c3230d3151" class="t t">MapType</a>.<a href="/Xamarin.Forms.Maps/A.html#90e190283631cdac" class="i field">Street</a>:
+					<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">MapType</span> = <span class="i">Bing</span>.<span class="i">Maps</span>.<span class="i">MapType</span>.<span class="i">Road</span>;
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Maps/A.html#b0e9d5c3230d3151" class="t t">MapType</a>.<a href="/Xamarin.Forms.Maps/A.html#9ae79d4b65b5112a" class="i field">Satellite</a>:
+					<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">MapType</span> = <span class="i">Bing</span>.<span class="i">Maps</span>.<span class="i">MapType</span>.<span class="i">Aerial</span>;
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Maps/A.html#b0e9d5c3230d3151" class="t t">MapType</a>.<a href="/Xamarin.Forms.Maps/A.html#4cb316bfe27c64d6" class="i field">Hybrid</a>:
+					<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">MapType</span> = <span class="i">Bing</span>.<span class="i">Maps</span>.<span class="i">MapType</span>.<span class="i">Birdseye</span>;
+					<b>break</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="811895beb57fe908" href="R/811895beb57fe908.html" target="n" data-glyph="76,1" class="i method">MoveToRegion</a>(<a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a> <span id="r21 rd" class="r21 r">span</span>)
+		{
+			<b>var</b> <span id="r22 rd" class="r22 r">center</span> = <b>new</b> <span class="i">Location</span>(<span class="r21 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#db8995ab43bb9e7c" class="i property">Center</a>.<a href="/Xamarin.Forms.Maps/A.html#cb5045a0674344be" class="i property">Latitude</a>, <span class="r21 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#db8995ab43bb9e7c" class="i property">Center</a>.<a href="/Xamarin.Forms.Maps/A.html#e52379d680105ddc" class="i property">Longitude</a>);
+			<b>var</b> <span id="r23 rd" class="r23 r">location</span> = <b>new</b> <span class="i">LocationRect</span>(<span class="r22 r">center</span>, <span class="r21 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#dea3c3352e2ce320" class="i property">LongitudeDegrees</a>, <span class="r21 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#183edcf551a5acf3" class="i property">LatitudeDegrees</a>);
+			<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">SetView</span>(<span class="r23 r">location</span>);
+		}
+ 
+		<b>void</b> <a id="7114e09d397398ff" href="R/7114e09d397398ff.html" target="n" data-glyph="76,1" class="i method">UpdateVisibleRegion</a>()
+		{
+			<b>if</b> (<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a> == <b>null</b> || <a href="/Xamarin.Forms.Platform.WinRT/A.html#7735b2edc11b6931" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (!<a href="#d1272369788e0807" class="i field">_firstZoomLevelChangeFired</a>)
+			{
+				<a href="#811895beb57fe908" class="i method">MoveToRegion</a>(<a href="/Xamarin.Forms.Platform.WinRT/A.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Maps/A.html#bb4915c64f5fd075" class="i property">LastMoveToRegion</a>);
+				<a href="#d1272369788e0807" class="i field">_firstZoomLevelChangeFired</a> = <b>true</b>;
+				<b>return</b>;
+			}
+ 
+			<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="k">var</a> <span id="r24 rd" class="r24 r">center</span> = <b>new</b> <span class="t">Position</span>(<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Center</span>.<span class="i">Latitude</span>, <a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Center</span>.<span class="i">Longitude</span>);
+ 
+			<b>var</b> <span id="r25 rd" class="r25 r">boundingRegion</span> = <a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Bounds</span>;
+			<a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="k">var</a> <span id="r26 rd" class="r26 r">result</span> = <b>new</b> <span class="t">MapSpan</span>(<span class="r24 r">center</span>, <span class="r25 r">boundingRegion</span>.<span class="i">Height</span>, <span class="r25 r">boundingRegion</span>.<span class="i">Width</span>);
+			<a href="/Xamarin.Forms.Platform.WinRT/A.html#7735b2edc11b6931" class="i property">Element</a>.<span class="i">SetVisibleRegion</span>(<span class="r26 r">result</span>);
+		}
+ 
+		<b>void</b> <a id="234f82c79c2543fa" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnCollectionChanged</a>(<b>object</b> <span id="r27 rd" class="r27 r">sender</span>, <span class="i">NotifyCollectionChangedEventArgs</span> <span id="r28 rd" class="r28 r">e</span>)
+		{
+			<b>switch</b> (<span class="r28 r">e</span>.<span class="i">Action</span>)
+			{
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Add</span>:
+					<b>foreach</b> (<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r29 rd" class="r29 r">pin</span> <b>in</b> <span class="r28 r">e</span>.<span class="i">NewItems</span>)
+						<a href="#8cc958bd870d8d12" class="i method">LoadPin</a>(<span class="r29 r">pin</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Move</span>:
+					<span class="c">// no matter</span>
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Remove</span>:
+					<b>foreach</b> (<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r30 rd" class="r30 r">pin</span> <b>in</b> <span class="r28 r">e</span>.<span class="i">OldItems</span>)
+						<a href="#948ec0713609be4a" class="i method">RemovePin</a>(<span class="r30 r">pin</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Replace</span>:
+					<b>foreach</b> (<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r31 rd" class="r31 r">pin</span> <b>in</b> <span class="r28 r">e</span>.<span class="i">OldItems</span>)
+						<a href="#948ec0713609be4a" class="i method">RemovePin</a>(<span class="r31 r">pin</span>);
+					<b>foreach</b> (<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r32 rd" class="r32 r">pin</span> <b>in</b> <span class="r28 r">e</span>.<span class="i">NewItems</span>)
+						<a href="#8cc958bd870d8d12" class="i method">LoadPin</a>(<span class="r32 r">pin</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>:
+					<a href="#733661029bf69561" class="i method">ClearPins</a>();
+					<b>break</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="afe3f66d5ac51a9d" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">LoadUserPosition</a>(<span class="i">Geocoordinate</span> <span id="r33 rd" class="r33 r">userCoordinate</span>, <b>bool</b> <span id="r34 rd" class="r34 r">center</span>)
+		{
+			<b>var</b> <span id="r35 rd" class="r35 r">userPosition</span> = <b>new</b> <span class="i">Location</span>
+			{
+				<span class="i">Latitude</span> = <span class="r33 r">userCoordinate</span>.<span class="i">Point</span>.<span class="i">Position</span>.<span class="i">Latitude</span>,
+				<span class="i">Longitude</span> = <span class="r33 r">userCoordinate</span>.<span class="i">Point</span>.<span class="i">Position</span>.<span class="i">Longitude</span>
+			};
+ 
+			<b>if</b> (<a href="#dabb0fb480256b86" class="i field">_userPositionCircle</a> == <b>null</b>)
+			{
+				<a href="#dabb0fb480256b86" class="i field">_userPositionCircle</a> = <b>new</b> <span class="i">Ellipse</span>
+				{
+					<span class="i">Stroke</span> = <b>new</b> <span class="i">SolidColorBrush</span>(<span class="i">Colors</span>.<span class="i">White</span>),
+					<span class="i">Fill</span> = <b>new</b> <span class="i">SolidColorBrush</span>(<span class="i">Colors</span>.<span class="i">Blue</span>),
+					<span class="i">StrokeThickness</span> = 2,
+					<span class="i">Height</span> = 20,
+					<span class="i">Width</span> = 20,
+					<span class="i">Opacity</span> = 50
+				};
+			}
+ 
+			<b>if</b> (<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Children</span>.<span class="i">Contains</span>(<a href="#dabb0fb480256b86" class="i field">_userPositionCircle</a>))
+				<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Children</span>.<span class="i">Remove</span>(<a href="#dabb0fb480256b86" class="i field">_userPositionCircle</a>);
+ 
+			<span class="i">MapLayer</span>.<span class="i">SetPosition</span>(<a href="#dabb0fb480256b86" class="i field">_userPositionCircle</a>, <span class="r35 r">userPosition</span>);
+			<span class="i">MapLayer</span>.<span class="i">SetPositionAnchor</span>(<a href="#dabb0fb480256b86" class="i field">_userPositionCircle</a>, <b>new</b> <span class="i">Windows</span>.<span class="i">Foundation</span>.<span class="i">Point</span>(0.5, 0.5));
+ 
+			<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Children</span>.<span class="i">Add</span>(<a href="#dabb0fb480256b86" class="i field">_userPositionCircle</a>);
+ 
+			<b>if</b> (<span class="r34 r">center</span>)
+			{
+				<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Center</span> = <span class="r35 r">userPosition</span>;
+				<a href="/Xamarin.Forms.Platform.WinRT/A.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">ZoomLevel</span> = 13;
+			}
+		}
+ 
+		<b>void</b> <a id="5f60431fcb1aa717" href="R/5f60431fcb1aa717.html" target="n" data-glyph="76,1" class="i method">UpdateHasZoomEnabled</a>()
+		{
+		}
+ 
+		<b>void</b> <a id="d1db4d2a7eedad91" href="R/d1db4d2a7eedad91.html" target="n" data-glyph="76,1" class="i method">UpdateHasScrollEnabled</a>()
+		{
+		}
+	}
+}</pre></td></tr></table></div></body></html>

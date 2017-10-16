@@ -1,0 +1,547 @@
+﻿<!DOCTYPE html>
+<html><head><title>NodeILExtensions.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(538);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/NodeILExtensions.cs" target="_top">NodeILExtensions.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Globalization</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Cil</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>
+{
+	<b>static class</b> <a id="178c880a3c65b5f1" href="R/../../0000000000.html" target="n" data-glyph="2,0" class="t t">NodeILExtensions</a>
+	{
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <a id="3cbac4793dbbae49" href="R/3cbac4793dbbae49.html" target="n" data-glyph="220,1" class="i method">PushConvertedValue</a>(<b>this</b> <a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a> <span id="r0 rd" class="r0 r">node</span>, <a href="ILContext.cs.html#cfeae44d09d495a0" class="t t">ILContext</a> <span id="r1 rd" class="r1 r">context</span>,
+			<span class="i">TypeReference</span> <span id="r2 rd" class="r2 r">targetTypeRef</span>, <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">ICustomAttributeProvider</span>&gt; <span id="r3 rd" class="r3 r">attributeProviders</span>,
+			<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <span id="r4 rd" class="r4 r">pushServiceProvider</span>, <b>bool</b> <span id="r5 rd" class="r5 r">boxValueTypes</span>, <b>bool</b> <span id="r6 rd" class="r6 r">unboxValueTypes</span>)
+		{
+			<span class="i">TypeReference</span> <span id="r7 rd" class="r7 r">typeConverter</span> = <b>null</b>;
+			<b>foreach</b> (<b>var</b> <span id="r8 rd" class="r8 r">attributeProvider</span> <b>in</b> <span class="r3 r">attributeProviders</span>)
+			{
+				<span class="i">CustomAttribute</span> <span id="r9 rd" class="r9 r">typeConverterAttribute</span>;
+				<b>if</b> (
+					(<span class="r9 r">typeConverterAttribute</span> =
+						<span class="r8 r">attributeProvider</span>.<span class="i">CustomAttributes</span>.<span class="i">FirstOrDefault</span>(
+							<span id="r10 rd" class="r10 r">cad</span> =&gt; <a href="/Xamarin.Forms.Core/A.html#214107ffee4f0359" class="t t">TypeConverterAttribute</a>.<a href="/Xamarin.Forms.Core/A.html#042fa2175542ffdd" class="i field">TypeConvertersType</a>.<span class="i">Contains</span>(<span class="r10 r">cad</span>.<span class="i">AttributeType</span>.<span class="i">FullName</span>))) != <b>null</b>)
+				{
+					<span class="r7 r">typeConverter</span> = <span class="r9 r">typeConverterAttribute</span>.<span class="i">ConstructorArguments</span>[0].<span class="i">Value</span> <b>as</b> <span class="i">TypeReference</span>;
+					<b>break</b>;
+				}
+			}
+			<b>return</b> <span class="r0 r">node</span>.<a href="#0fbc385f19436ee0" class="i method">PushConvertedValue</a>(<span class="r1 r">context</span>, <span class="r2 r">targetTypeRef</span>, <span class="r7 r">typeConverter</span>, <span class="r4 r">pushServiceProvider</span>, <span class="r5 r">boxValueTypes</span>,
+				<span class="r6 r">unboxValueTypes</span>);
+		}
+ 
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <a id="efa7f9550d0b6712" href="R/efa7f9550d0b6712.html" target="n" data-glyph="220,1" class="i method">PushConvertedValue</a>(<b>this</b> <a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a> <span id="r11 rd" class="r11 r">node</span>, <a href="ILContext.cs.html#cfeae44d09d495a0" class="t t">ILContext</a> <span id="r12 rd" class="r12 r">context</span>, <span class="i">FieldReference</span> <span id="r13 rd" class="r13 r">bpRef</span>,
+			<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <span id="r14 rd" class="r14 r">pushServiceProvider</span>, <b>bool</b> <span id="r15 rd" class="r15 r">boxValueTypes</span>, <b>bool</b> <span id="r16 rd" class="r16 r">unboxValueTypes</span>)
+		{
+			<b>var</b> <span id="r17 rd" class="r17 r">module</span> = <span class="r12 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>;
+			<b>var</b> <span id="r18 rd" class="r18 r">targetTypeRef</span> = <span class="r13 r">bpRef</span>.<span class="i">GetBindablePropertyType</span>(<span class="r11 r">node</span>, <span class="r17 r">module</span>);
+			<b>var</b> <span id="r19 rd" class="r19 r">typeConverter</span> = <span class="r13 r">bpRef</span>.<span class="i">GetBindablePropertyTypeConverter</span>(<span class="r17 r">module</span>);
+ 
+			<b>return</b> <span class="r11 r">node</span>.<a href="#0fbc385f19436ee0" class="i method">PushConvertedValue</a>(<span class="r12 r">context</span>, <span class="r18 r">targetTypeRef</span>, <span class="r19 r">typeConverter</span>, <span class="r14 r">pushServiceProvider</span>, <span class="r15 r">boxValueTypes</span>,
+				<span class="r16 r">unboxValueTypes</span>);
+		}
+ 
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <a id="0fbc385f19436ee0" href="R/0fbc385f19436ee0.html" target="n" data-glyph="220,1" class="i method">PushConvertedValue</a>(<b>this</b> <a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a> <span id="r20 rd" class="r20 r">node</span>, <a href="ILContext.cs.html#cfeae44d09d495a0" class="t t">ILContext</a> <span id="r21 rd" class="r21 r">context</span>,
+			<span class="i">TypeReference</span> <span id="r22 rd" class="r22 r">targetTypeRef</span>, <span class="i">TypeReference</span> <span id="r23 rd" class="r23 r">typeConverter</span>, <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <span id="r24 rd" class="r24 r">pushServiceProvider</span>,
+			<b>bool</b> <span id="r25 rd" class="r25 r">boxValueTypes</span>, <b>bool</b> <span id="r26 rd" class="r26 r">unboxValueTypes</span>)
+		{
+			<b>var</b> <span id="r27 rd" class="r27 r">module</span> = <span class="r21 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>;
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r28 rd" class="r28 r">str</span> = (<b>string</b>)<span class="r20 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#5fa72a93b49782e1" class="i property">Value</a>;
+ 
+			<span class="c">//If the TypeConverter has a ProvideCompiledAttribute that can be resolved, shortcut this</span>
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r29 rd" class="r29 r">compiledConverterName</span> = <span class="r23 r">typeConverter</span>?.<span class="i">GetCustomAttribute</span> (<span class="r27 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#d578091fd04433f6" class="t t">ProvideCompiledAttribute</a>)))?.<span class="i">ConstructorArguments</span>?.<span class="i">First</span>().<span class="i">Value</span> <b>as string</b>;
+			<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r30 rd" class="r30 r">compiledConverterType</span>;
+			<b>if</b> (<span class="r29 r">compiledConverterName</span> != <b>null</b> &amp;&amp; (<span class="r30 r">compiledConverterType</span> = <a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>.<a href="@0@mscorlib/A.html#ba8d29b0ddf9aaa0" class="i method">GetType</a> (<span class="r29 r">compiledConverterName</span>)) != <b>null</b>) {
+				<a href="@0@mscorlib/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r31 rd" class="r31 r">compiledConverter</span> = <a href="@0@mscorlib/A.html#955a7437554c8efc" class="t t">Activator</a>.<a href="@0@mscorlib/A.html#4c7b92371a93f246" class="i method">CreateInstance</a> (<span class="r30 r">compiledConverterType</span>);
+				<a href="@0@mscorlib/A.html#382d90b1fa682bac" class="k">var</a> <span id="r32 rd" class="r32 r">converter</span> = <b>typeof</b>(<a href="CompiledConverters/ICompiledTypeConverter.cs.html#9cd7e0046f235fb3" class="t t">ICompiledTypeConverter</a>).<a href="@0@mscorlib/A.html#7c091fc4114614b5" class="i method">GetMethods</a> ().<a href="@0@System.Core/A.html#b7e5965cab68b1cf" class="i method">FirstOrDefault</a> (<span id="r33 rd" class="r33 r">md</span> =&gt; <span class="r33 r">md</span>.<a href="@0@mscorlib/A.html#aa4f112f79364b6e" class="i property">Name</a> == <span class="s">&quot;ConvertFromString&quot;</span>);
+				<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="k">var</a> <span id="r34 rd" class="r34 r">instructions</span> = (<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt;)<span class="r32 r">converter</span>.<a href="@0@mscorlib/A.html#c8277ed81262a367" class="i method">Invoke</a> (<span class="r31 r">compiledConverter</span>, <b>new</b> <b>object</b>[] {
+					<span class="r20 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#5fa72a93b49782e1" class="i property">Value</a> <b>as string</b>, <span class="r21 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>, <span class="r20 r">node</span> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#aee785270197d5f3" class="t t">BaseNode</a>});
+				<b>foreach</b> (<b>var</b> <span id="r35 rd" class="r35 r">i</span> <b>in</b> <span class="r34 r">instructions</span>)
+					<b>yield return</b> <span class="r35 r">i</span>;
+				<b>if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">IsValueType</span> &amp;&amp; <span class="r25 r">boxValueTypes</span>)
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span> (<span class="i">OpCodes</span>.<span class="i">Box</span>, <span class="r27 r">module</span>.<span class="i">ImportReference</span> (<span class="r22 r">targetTypeRef</span>));
+				<b>yield break</b>;
+			}
+ 
+			<span class="c">//If there&#39;s a [TypeConverter], use it</span>
+			<b>if</b> (<span class="r23 r">typeConverter</span> != <b>null</b>)
+			{
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r36 rd" class="r36 r">isExtendedConverter</span> = <span class="r23 r">typeConverter</span>.<span class="i">ImplementsInterface</span>(<span class="r27 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#bbb7fd1931680a0e" class="t t">IExtendedTypeConverter</a>)));
+				<b>var</b> <span id="r37 rd" class="r37 r">typeConverterCtor</span> = <span class="r23 r">typeConverter</span>.<span class="i">Resolve</span>().<span class="i">Methods</span>.<span class="i">Single</span>(<span id="r38 rd" class="r38 r">md</span> =&gt; <span class="r38 r">md</span>.<span class="i">IsConstructor</span> &amp;&amp; <span class="r38 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 0 &amp;&amp; !<span class="r38 r">md</span>.<span class="i">IsStatic</span>);
+				<b>var</b> <span id="r39 rd" class="r39 r">typeConverterCtorRef</span> = <span class="r27 r">module</span>.<span class="i">ImportReference</span>(<span class="r37 r">typeConverterCtor</span>);
+				<b>var</b> <span id="r40 rd" class="r40 r">convertFromInvariantStringDefinition</span> = <span class="r36 r">isExtendedConverter</span>
+					? <span class="r27 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#bbb7fd1931680a0e" class="t t">IExtendedTypeConverter</a>))
+						.<span class="i">Resolve</span>()
+						.<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(<span id="r41 rd" class="r41 r">md</span> =&gt; <span class="r41 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;ConvertFromInvariantString&quot;</span> &amp;&amp; <span class="r41 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 2)
+					: <span class="r23 r">typeConverter</span>.<span class="i">Resolve</span>()
+						.<span class="i">AllMethods</span>()
+						.<a href="@0@System.Core/A.html#b7e5965cab68b1cf" class="i method">FirstOrDefault</a>(<span id="r42 rd" class="r42 r">md</span> =&gt; <span class="r42 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;ConvertFromInvariantString&quot;</span> &amp;&amp; <span class="r42 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 1);
+				<b>var</b> <span id="r43 rd" class="r43 r">convertFromInvariantStringReference</span> = <span class="r27 r">module</span>.<span class="i">ImportReference</span>(<span class="r40 r">convertFromInvariantStringDefinition</span>);
+ 
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r39 r">typeConverterCtorRef</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, <span class="r20 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#5fa72a93b49782e1" class="i property">Value</a> <b>as string</b>);
+ 
+				<b>if</b> (<span class="r36 r">isExtendedConverter</span>)
+				{
+					<b>foreach</b> (<b>var</b> <span id="r44 rd" class="r44 r">instruction</span> <b>in</b> <span class="r24 r">pushServiceProvider</span>)
+						<b>yield return</b> <span class="r44 r">instruction</span>;
+				}
+ 
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r43 r">convertFromInvariantStringReference</span>);
+ 
+				<b>if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">IsValueType</span> &amp;&amp; <span class="r26 r">unboxValueTypes</span>)
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Unbox_Any</span>, <span class="r27 r">module</span>.<span class="i">ImportReference</span>(<span class="r22 r">targetTypeRef</span>));
+ 
+				<span class="c">//ConvertFrom returns an object, no need to Box</span>
+				<b>yield break</b>;
+			}
+			<b>var</b> <span id="r45 rd" class="r45 r">originalTypeRef</span> = <span class="r22 r">targetTypeRef</span>;
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r46 rd" class="r46 r">isNullable</span> = <b>false</b>;
+			<span class="i">MethodReference</span> <span id="r47 rd" class="r47 r">nullableCtor</span> = <b>null</b>;
+			<b>if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">Resolve</span>().<span class="i">FullName</span> == <span class="s">&quot;System.Nullable`1&quot;</span>)
+			{
+				<b>var</b> <span id="r48 rd" class="r48 r">nullableTypeRef</span> = <span class="r22 r">targetTypeRef</span>;
+				<span class="r22 r">targetTypeRef</span> = ((<span class="i">GenericInstanceType</span>)<span class="r22 r">targetTypeRef</span>).<span class="i">GenericArguments</span>[0];
+				<span class="r46 r">isNullable</span> = <b>true</b>;
+				<span class="r47 r">nullableCtor</span> = <span class="r45 r">originalTypeRef</span>.<span class="i">GetMethods</span>(<span id="r49 rd" class="r49 r">md</span> =&gt; <span class="r49 r">md</span>.<span class="i">IsConstructor</span> &amp;&amp; <span class="r49 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 1, <span class="r27 r">module</span>).<a href="@0@System.Core/A.html#35e2ff5965cb4b7e" class="i method">Single</a>().<a href="@0@mscorlib/A.html#d1922db1cf9dcd03" class="i property">Item1</a>;
+				<span class="r47 r">nullableCtor</span> = <span class="r47 r">nullableCtor</span>.<span class="i">ResolveGenericParameters</span>(<span class="r48 r">nullableTypeRef</span>, <span class="r27 r">module</span>);
+			}
+ 
+			<b>var</b> <span id="r50 rd" class="r50 r">implicitOperator</span> = <span class="r27 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">String</span>.<span class="i">GetImplicitOperatorTo</span>(<span class="r22 r">targetTypeRef</span>, <span class="r27 r">module</span>);
+ 
+			<span class="c">//Obvious Built-in conversions</span>
+			<b>if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">Resolve</span>().<span class="i">BaseType</span> != <b>null</b> &amp;&amp; <span class="r22 r">targetTypeRef</span>.<span class="i">Resolve</span>().<span class="i">BaseType</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Enum&quot;</span>)
+				<b>yield return</b> <a href="#8a84409f2e61e4d1" class="i method">PushParsedEnum</a>(<span class="r22 r">targetTypeRef</span>, <span class="r28 r">str</span>, <span class="r20 r">node</span>);
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Char&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <a href="@0@mscorlib/A.html#02f2b1a33b09362d" class="t t">Char</a>.<a href="@0@mscorlib/A.html#cba1db4a5bbb1c8e" class="i method">Parse</a>(<span class="r28 r">str</span>));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.SByte&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <a href="@0@mscorlib/A.html#85a269e3de1e7b9d" class="t t">SByte</a>.<a href="@0@mscorlib/A.html#2709323a0b8f862a" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Int16&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <a href="@0@mscorlib/A.html#4f2f28ae4cd2bc79" class="t t">Int16</a>.<a href="@0@mscorlib/A.html#871ff18a7d88070a" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Int32&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <a href="@0@mscorlib/A.html#225942ed7b7a3252" class="t t">Int32</a>.<a href="@0@mscorlib/A.html#78ffbe1e274ca0bb" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Int64&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I8</span>, <a href="@0@mscorlib/A.html#e566178cce890c36" class="t t">Int64</a>.<a href="@0@mscorlib/A.html#aa76bf9458630289" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Byte&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <a href="@0@mscorlib/A.html#3933aebb80415ce0" class="t t">Byte</a>.<a href="@0@mscorlib/A.html#05640f56fcbe1390" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.UInt16&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <b>unchecked</b>((<b>int</b>)<a href="@0@mscorlib/A.html#fb226f61047a07ff" class="t t">UInt16</a>.<a href="@0@mscorlib/A.html#963ac58f346809a2" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>)));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.UInt32&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <a href="@0@mscorlib/A.html#0cd3c987eff5ef85" class="t t">UInt32</a>.<a href="@0@mscorlib/A.html#3a6bee0596002787" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.UInt64&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I8</span>, <b>unchecked</b>((<b>long</b>)<a href="@0@mscorlib/A.html#4c2dfeca03143bfd" class="t t">UInt64</a>.<a href="@0@mscorlib/A.html#58dd43530169b4c4" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>)));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Single&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_R4</span>, <a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="t t">Single</a>.<a href="@0@mscorlib/A.html#021a8ef574be38a2" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Double&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_R8</span>, <a href="@0@mscorlib/A.html#1a65cbdb09544ba1" class="t t">Double</a>.<a href="@0@mscorlib/A.html#73cc31e0b47fd637" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Boolean&quot;</span>) {
+				<b>if</b> (<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="t t">Boolean</a>.<a href="@0@mscorlib/A.html#e2a8f2e50ecf93c0" class="i method">Parse</a>(<span class="r28 r">str</span>))
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4_1</span>);
+				<b>else
+					yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4_0</span>);
+			} <b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.TimeSpan&quot;</span>) {
+				<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="k">var</a> <span id="r51 rd" class="r51 r">ts</span> = <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>.<a href="@0@mscorlib/A.html#55df39e3fee10a08" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>);
+				<a href="@0@mscorlib/A.html#e566178cce890c36" class="k">var</a> <span id="r52 rd" class="r52 r">ticks</span> = <span class="r51 r">ts</span>.<a href="@0@mscorlib/A.html#45b3882f7cfdd300" class="i property">Ticks</a>;
+				<b>var</b> <span id="r53 rd" class="r53 r">timeSpanCtor</span> =
+					<span class="r27 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>))
+						.<span class="i">Resolve</span>()
+						.<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(<span id="r54 rd" class="r54 r">md</span> =&gt; <span class="r54 r">md</span>.<span class="i">IsConstructor</span> &amp;&amp; <span class="r54 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 1);
+				<b>var</b> <span id="r55 rd" class="r55 r">timeSpanCtorRef</span> = <span class="r27 r">module</span>.<span class="i">ImportReference</span>(<span class="r53 r">timeSpanCtor</span>);
+ 
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I8</span>, <span class="r52 r">ticks</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r55 r">timeSpanCtorRef</span>);
+			} <b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.DateTime&quot;</span>) {
+				<a href="@0@mscorlib/A.html#df6b1eba7461813b" class="k">var</a> <span id="r56 rd" class="r56 r">dt</span> = <a href="@0@mscorlib/A.html#df6b1eba7461813b" class="t t">DateTime</a>.<a href="@0@mscorlib/A.html#3dcde4b72349960c" class="i method">Parse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>);
+				<a href="@0@mscorlib/A.html#e566178cce890c36" class="k">var</a> <span id="r57 rd" class="r57 r">ticks</span> = <span class="r56 r">dt</span>.<a href="@0@mscorlib/A.html#92f52fcc6830b73e" class="i property">Ticks</a>;
+				<b>var</b> <span id="r58 rd" class="r58 r">dateTimeCtor</span> =
+					<span class="r27 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="@0@mscorlib/A.html#df6b1eba7461813b" class="t t">DateTime</a>))
+						.<span class="i">Resolve</span>()
+						.<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(<span id="r59 rd" class="r59 r">md</span> =&gt; <span class="r59 r">md</span>.<span class="i">IsConstructor</span> &amp;&amp; <span class="r59 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 1);
+				<b>var</b> <span id="r60 rd" class="r60 r">dateTimeCtorRef</span> = <span class="r27 r">module</span>.<span class="i">ImportReference</span>(<span class="r58 r">dateTimeCtor</span>);
+ 
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I8</span>, <span class="r57 r">ticks</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r60 r">dateTimeCtorRef</span>);
+			} <b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.String&quot;</span> &amp;&amp; <span class="r28 r">str</span>.<a href="@0@mscorlib/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;{}&quot;</span>, <a href="@0@mscorlib/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@0@mscorlib/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, <span class="r28 r">str</span>.<a href="@0@mscorlib/A.html#882fa7998d6ca35a" class="i method">Substring</a>(2));
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.String&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, <span class="r28 r">str</span>);
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Object&quot;</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, <span class="r28 r">str</span>);
+			<b>else if</b> (<span class="r22 r">targetTypeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Decimal&quot;</span>) {
+				<b>decimal</b> <span id="r61 rd" class="r61 r">outdecimal</span>;
+				<b>if</b> (<b>decimal</b>.<a href="@0@mscorlib/A.html#b98a5fce4b17eb2a" class="i method">TryParse</a>(<span class="r28 r">str</span>, <a href="@0@mscorlib/A.html#4523c5163ff35e41" class="t t">NumberStyles</a>.<a href="@0@mscorlib/A.html#cf3733616e2bd9e9" class="i field">Number</a>, <a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>.<a href="@0@mscorlib/A.html#26ef1c020f0dbb7a" class="i property">InvariantCulture</a>, <b>out</b> <span class="r61 r">outdecimal</span>)) {
+					<b>var</b> <span id="r62 rd" class="r62 r">vardef</span> = <b>new</b> <span class="i">VariableDefinition</span>(<span class="r21 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<b>decimal</b>)));
+					<span class="r21 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Variables</span>.<span class="i">Add</span>(<span class="r62 r">vardef</span>);
+					<span class="c">//Use an extra temp var so we can push the value to the stack, just like other cases</span>
+					<span class="c">//					IL_0003:  ldstr &quot;adecimal&quot;</span>
+					<span class="c">//					IL_0008:  ldc.i4.s 0x6f</span>
+					<span class="c">//					IL_000a:  call class [mscorlib]System.Globalization.CultureInfo class [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()</span>
+					<span class="c">//					IL_000f:  ldloca.s 0</span>
+					<span class="c">//					IL_0011:  call bool valuetype [mscorlib]System.Decimal::TryParse(string, valuetype [mscorlib]System.Globalization.NumberStyles, class [mscorlib]System.IFormatProvider, [out] valuetype [mscorlib]System.Decimal&amp;)</span>
+					<span class="c">//					IL_0016:  pop</span>
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, <span class="r28 r">str</span>);
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, 0x6f); <span class="c">//NumberStyles.Number</span>
+					<b>var</b> <span id="r63 rd" class="r63 r">getInvariantInfo</span> =
+						<span class="r21 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="@0@mscorlib/A.html#e319c6636909012f" class="t t">CultureInfo</a>))
+							.<span class="i">Resolve</span>()
+							.<span class="i">Properties</span>.<span class="i">FirstOrDefault</span>(<span id="r64 rd" class="r64 r">pd</span> =&gt; <span class="r64 r">pd</span>.<span class="i">Name</span> == <span class="s">&quot;InvariantCulture&quot;</span>)
+							.<span class="i">GetMethod</span>;
+					<b>var</b> <span id="r65 rd" class="r65 r">getInvariant</span> = <span class="r21 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>.<span class="i">ImportReference</span>(<span class="r63 r">getInvariantInfo</span>);
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r65 r">getInvariant</span>);
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldloca</span>, <span class="r62 r">vardef</span>);
+					<b>var</b> <span id="r66 rd" class="r66 r">tryParseInfo</span> =
+						<span class="r21 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<b>decimal</b>))
+							.<span class="i">Resolve</span>()
+							.<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(<span id="r67 rd" class="r67 r">md</span> =&gt; <span class="r67 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;TryParse&quot;</span> &amp;&amp; <span class="r67 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 4);
+					<b>var</b> <span id="r68 rd" class="r68 r">tryParse</span> = <span class="r21 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>.<span class="i">ImportReference</span>(<span class="r66 r">tryParseInfo</span>);
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r68 r">tryParse</span>);
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Pop</span>);
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <span class="r62 r">vardef</span>);
+				} <b>else</b> {
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4_0</span>);
+					<b>var</b> <span id="r69 rd" class="r69 r">decimalctorinfo</span> =
+						<span class="r21 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<b>decimal</b>))
+							.<span class="i">Resolve</span>()
+							.<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(
+								<span id="r70 rd" class="r70 r">md</span> =&gt; <span class="r70 r">md</span>.<span class="i">IsConstructor</span> &amp;&amp; <span class="r70 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 1 &amp;&amp; <span class="r70 r">md</span>.<span class="i">Parameters</span>[0].<span class="i">ParameterType</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Int32&quot;</span>);
+					<b>var</b> <span id="r71 rd" class="r71 r">decimalctor</span> = <span class="r21 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>.<span class="i">ImportReference</span>(<span class="r69 r">decimalctorinfo</span>);
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r71 r">decimalctor</span>);
+				}
+			} <b>else if</b> (<span class="r50 r">implicitOperator</span> != <b>null</b>) {
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, <span class="r20 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#5fa72a93b49782e1" class="i property">Value</a> <b>as string</b>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r27 r">module</span>.<span class="i">ImportReference</span>(<span class="r50 r">implicitOperator</span>));
+			} <b>else
+				yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldnull</span>);
+ 
+			<b>if</b> (<span class="r46 r">isNullable</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r27 r">module</span>.<span class="i">ImportReference</span>(<span class="r47 r">nullableCtor</span>));
+			<b>if</b> (<span class="r45 r">originalTypeRef</span>.<span class="i">IsValueType</span> &amp;&amp; <span class="r25 r">boxValueTypes</span>)
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Box</span>, <span class="r27 r">module</span>.<span class="i">ImportReference</span>(<span class="r45 r">originalTypeRef</span>));
+		}
+ 
+		<b>static</b> <span class="i">Instruction</span> <a id="8a84409f2e61e4d1" href="R/8a84409f2e61e4d1.html" target="n" data-glyph="76,1" class="i method">PushParsedEnum</a>(<span class="i">TypeReference</span> <span id="r72 rd" class="r72 r">enumRef</span>, <b>string</b> <span id="r73 rd" class="r73 r">value</span>, <a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a> <span id="r74 rd" class="r74 r">lineInfo</span>)
+		{
+			<b>var</b> <span id="r75 rd" class="r75 r">enumDef</span> = <span class="r72 r">enumRef</span>.<span class="i">Resolve</span>();
+			<b>if</b> (!<span class="r75 r">enumDef</span>.<span class="i">IsEnum</span>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8d6a52a5496ce078" class="t constructor">InvalidOperationException</a>();
+ 
+			<span class="c">// The approved types for an enum are byte, sbyte, short, ushort, int, uint, long, or ulong.</span>
+			<span class="c">// https://msdn.microsoft.com/en-us/library/sbbt4032.aspx</span>
+			<b>byte</b> <span id="r76 rd" class="r76 r">b</span> = 0; <b>sbyte</b> <span id="r77 rd" class="r77 r">sb</span> = 0; <b>short</b> <span id="r78 rd" class="r78 r">s</span> = 0; <b>ushort</b> <span id="r79 rd" class="r79 r">us</span> = 0;
+			<b>int</b> <span id="r80 rd" class="r80 r">i</span> = 0; <b>uint</b> <span id="r81 rd" class="r81 r">ui</span> = 0; <b>long</b> <span id="r82 rd" class="r82 r">l</span> = 0; <b>ulong</b> <span id="r83 rd" class="r83 r">ul</span> = 0;
+			<b>bool</b> <span id="r84 rd" class="r84 r">found</span> = <b>false</b>;
+			<span class="i">TypeReference</span> <span id="r85 rd" class="r85 r">typeRef</span> = <b>null</b>;
+ 
+			<b>foreach</b> (<b>var</b> <span id="r86 rd" class="r86 r">field</span> <b>in</b> <span class="r75 r">enumDef</span>.<span class="i">Fields</span>)
+				<b>if</b> (<span class="r86 r">field</span>.<span class="i">Name</span> == <span class="s">&quot;value__&quot;</span>)
+					<span class="r85 r">typeRef</span> = <span class="r86 r">field</span>.<span class="i">FieldType</span>;
+ 
+			<b>if</b> (<span class="r85 r">typeRef</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#71d200dcf0047f8b" class="t constructor">ArgumentException</a>();
+ 
+			<b>foreach</b> (<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r87 rd" class="r87 r">v</span> <b>in</b> <span class="r73 r">value</span>.<a href="@0@mscorlib/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;,&#39;</span>)) {
+				<b>foreach</b> (<b>var</b> <span id="r88 rd" class="r88 r">field</span> <b>in</b> <span class="r75 r">enumDef</span>.<span class="i">Fields</span>) {
+					<b>if</b> (<span class="r88 r">field</span>.<span class="i">Name</span> == <span class="s">&quot;value__&quot;</span>)
+						<b>continue</b>;
+					<b>if</b> (<span class="r88 r">field</span>.<span class="i">Name</span> == <span class="r87 r">v</span>.<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>()) {
+						<b>switch</b> (<span class="r85 r">typeRef</span>.<span class="i">FullName</span>) {
+						<b>case</b> <span class="s">&quot;System.Byte&quot;</span>:
+							<span class="r76 r">b</span> |= (<b>byte</b>)<span class="r88 r">field</span>.<span class="i">Constant</span>;
+							<b>break</b>;
+						<b>case</b> <span class="s">&quot;System.SByte&quot;</span>:
+							<b>if</b> (<span class="r84 r">found</span>)
+								<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Multi-valued enums are not valid on sbyte enum types</span><span class="s">&quot;</span>, <span class="r74 r">lineInfo</span>);
+							<span class="r77 r">sb</span> = (<b>sbyte</b>)<span class="r88 r">field</span>.<span class="i">Constant</span>;
+							<b>break</b>;
+						<b>case</b> <span class="s">&quot;System.Int16&quot;</span>:
+							<span class="r78 r">s</span> |= (<b>short</b>)<span class="r88 r">field</span>.<span class="i">Constant</span>;
+							<b>break</b>;
+						<b>case</b> <span class="s">&quot;System.UInt16&quot;</span>:
+							<span class="r79 r">us</span> |= (<b>ushort</b>)<span class="r88 r">field</span>.<span class="i">Constant</span>;
+							<b>break</b>;
+						<b>case</b> <span class="s">&quot;System.Int32&quot;</span>:
+							<span class="r80 r">i</span> |= (<b>int</b>)<span class="r88 r">field</span>.<span class="i">Constant</span>;
+							<b>break</b>;
+						<b>case</b> <span class="s">&quot;System.UInt32&quot;</span>:
+							<span class="r81 r">ui</span> |= (<b>uint</b>)<span class="r88 r">field</span>.<span class="i">Constant</span>;
+							<b>break</b>;
+						<b>case</b> <span class="s">&quot;System.Int64&quot;</span>:
+							<span class="r82 r">l</span> |= (<b>long</b>)<span class="r88 r">field</span>.<span class="i">Constant</span>;
+							<b>break</b>;
+						<b>case</b> <span class="s">&quot;System.UInt64&quot;</span>:
+							<span class="r83 r">ul</span> |= (<b>ulong</b>)<span class="r88 r">field</span>.<span class="i">Constant</span>;
+							<b>break</b>;
+						}
+						<span class="r84 r">found</span> = <b>true</b>;
+					}
+				}
+			}
+ 
+			<b>if</b> (!<span class="r84 r">found</span>)
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Enum value not found for </span>{<span class="r73 r">value</span>}<span class="s">&quot;</span>, <span class="r74 r">lineInfo</span>);
+				
+			<b>switch</b> (<span class="r85 r">typeRef</span>.<span class="i">FullName</span>) {
+			<b>case</b> <span class="s">&quot;System.Byte&quot;</span>:
+				<b>return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>int</b>)<span class="r76 r">b</span>);
+			<b>case</b> <span class="s">&quot;System.SByte&quot;</span>:
+				<b>return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>int</b>)<span class="r77 r">sb</span>);
+			<b>case</b> <span class="s">&quot;System.Int16&quot;</span>:
+				<b>return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>int</b>)<span class="r78 r">s</span>);
+			<b>case</b> <span class="s">&quot;System.UInt16&quot;</span>:
+				<b>return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>int</b>)<span class="r79 r">us</span>);
+			<b>case</b> <span class="s">&quot;System.Int32&quot;</span>:
+				<b>return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>int</b>)<span class="r80 r">i</span>);
+			<b>case</b> <span class="s">&quot;System.UInt32&quot;</span>:
+				<b>return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>uint</b>)<span class="r81 r">ui</span>);
+			<b>case</b> <span class="s">&quot;System.Int64&quot;</span>:
+				<b>return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>long</b>)<span class="r82 r">l</span>);
+			<b>case</b> <span class="s">&quot;System.UInt64&quot;</span>:
+				<b>return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>ulong</b>)<span class="r83 r">ul</span>);
+			<b>default</b>:
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Enum value not found for </span>{<span class="r73 r">value</span>}<span class="s">&quot;</span>, <span class="r74 r">lineInfo</span>);
+			}
+		}
+ 
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <a id="3adec3b19017d186" href="R/3adec3b19017d186.html" target="n" data-glyph="220,1" class="i method">PushXmlLineInfo</a>(<b>this</b> <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r89 rd" class="r89 r">node</span>, <a href="ILContext.cs.html#cfeae44d09d495a0" class="t t">ILContext</a> <span id="r90 rd" class="r90 r">context</span>)
+		{
+			<b>var</b> <span id="r91 rd" class="r91 r">module</span> = <span class="r90 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>;
+ 
+			<a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="k">var</a> <span id="r92 rd" class="r92 r">xmlLineInfo</span> = <span class="r89 r">node</span> <b>as</b> <a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a>;
+			<b>if</b> (<span class="r92 r">xmlLineInfo</span> == <b>null</b>)
+			{
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldnull</span>);
+				<b>yield break</b>;
+			}
+			<span class="i">MethodReference</span> <span id="r93 rd" class="r93 r">ctor</span>;
+			<b>if</b> (<span class="r92 r">xmlLineInfo</span>.<a href="@0@System.Xml/A.html#7401ff0cd48120d5" class="i method">HasLineInfo</a>())
+			{
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <span class="r92 r">xmlLineInfo</span>.<a href="@0@System.Xml/A.html#d6ed7054facc7a1b" class="i property">LineNumber</a>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <span class="r92 r">xmlLineInfo</span>.<a href="@0@System.Xml/A.html#b557573e4ef57cac" class="i property">LinePosition</a>);
+				<span class="r93 r">ctor</span> = <span class="r91 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#46d5a667b8f4b529" class="t t">XmlLineInfo</a>).<a href="@0@mscorlib/A.html#99a42237dc7ae116" class="i method">GetConstructor</a>(<b>new</b>[] { <b>typeof</b> (<b>int</b>), <b>typeof</b> (<b>int</b>) }));
+			}
+			<b>else</b>
+				<span class="r93 r">ctor</span> = <span class="r91 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#46d5a667b8f4b529" class="t t">XmlLineInfo</a>).<a href="@0@mscorlib/A.html#99a42237dc7ae116" class="i method">GetConstructor</a>(<b>new</b> <a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>[] { }));
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r93 r">ctor</span>);
+		}
+ 
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <a id="3d298c89451f153f" href="R/3d298c89451f153f.html" target="n" data-glyph="220,1" class="i method">PushParentObjectsArray</a>(<b>this</b> <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r94 rd" class="r94 r">node</span>, <a href="ILContext.cs.html#cfeae44d09d495a0" class="t t">ILContext</a> <span id="r95 rd" class="r95 r">context</span>)
+		{
+			<b>var</b> <span id="r96 rd" class="r96 r">module</span> = <span class="r95 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>;
+ 
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r97 rd" class="r97 r">nodes</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a>&gt;();
+			<a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r98 rd" class="r98 r">n</span> = <span class="r94 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#aaa082f00606354b" class="i property">Parent</a>;
+			<b>while</b> (<span class="r98 r">n</span> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="k">var</a> <span id="r99 rd" class="r99 r">en</span> = <span class="r98 r">n</span> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a>;
+				<b>if</b> (<span class="r99 r">en</span> != <b>null</b> &amp;&amp; <span class="r95 r">context</span>.<a href="ILContext.cs.html#3a594383a1a7a590" class="i property">Variables</a>.<a href="@0@mscorlib/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r99 r">en</span>))
+					<span class="r97 r">nodes</span>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r99 r">en</span>);
+				<span class="r98 r">n</span> = <span class="r98 r">n</span>.<a href="/Xamarin.Forms.Xaml/A.html#aaa082f00606354b" class="i property">Parent</a>;
+			}
+ 
+			<b>if</b> (<span class="r97 r">nodes</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> == 0 &amp;&amp; <span class="r95 r">context</span>.<a href="ILContext.cs.html#2064df85e5c9bdab" class="i property">ParentContextValues</a> == <b>null</b>)
+			{
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldnull</span>);
+				<b>yield break</b>;
+			}
+ 
+			<b>if</b> (<span class="r97 r">nodes</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> == 0)
+			{
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldarg_0</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldfld</span>, <span class="r95 r">context</span>.<a href="ILContext.cs.html#2064df85e5c9bdab" class="i property">ParentContextValues</a>);
+				<b>yield break</b>;
+			}
+ 
+			<span class="c">//Compute parent object length</span>
+			<b>if</b> (<span class="r95 r">context</span>.<a href="ILContext.cs.html#2064df85e5c9bdab" class="i property">ParentContextValues</a> != <b>null</b>)
+			{
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldarg_0</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldfld</span>, <span class="r95 r">context</span>.<a href="ILContext.cs.html#2064df85e5c9bdab" class="i property">ParentContextValues</a>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldlen</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Conv_I4</span>);
+			}
+			<b>else
+				yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4_0</span>);
+			<b>var</b> <span id="r100 rd" class="r100 r">parentObjectLength</span> = <b>new</b> <span class="i">VariableDefinition</span>(<span class="r96 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Int32</span>);
+			<span class="r95 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Variables</span>.<span class="i">Add</span>(<span class="r100 r">parentObjectLength</span>);
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Stloc</span>, <span class="r100 r">parentObjectLength</span>);
+ 
+			<span class="c">//Create the final array</span>
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <span class="r100 r">parentObjectLength</span>);
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <span class="r97 r">nodes</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a>);
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Add</span>);
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newarr</span>, <span class="r96 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Object</span>);
+			<b>var</b> <span id="r101 rd" class="r101 r">finalArray</span> = <b>new</b> <span class="i">VariableDefinition</span>(<span class="r96 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<b>object</b>[])));
+			<span class="r95 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Variables</span>.<span class="i">Add</span>(<span class="r101 r">finalArray</span>);
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Stloc</span>, <span class="r101 r">finalArray</span>);
+ 
+			<span class="c">//Copy original array to final</span>
+			<b>if</b> (<span class="r95 r">context</span>.<a href="ILContext.cs.html#2064df85e5c9bdab" class="i property">ParentContextValues</a> != <b>null</b>)
+			{
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldarg_0</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldfld</span>, <span class="r95 r">context</span>.<a href="ILContext.cs.html#2064df85e5c9bdab" class="i property">ParentContextValues</a>); <span class="c">//sourceArray</span>
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4_0</span>); <span class="c">//sourceIndex</span>
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <span class="r101 r">finalArray</span>); <span class="c">//destinationArray</span>
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <span class="r97 r">nodes</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a>); <span class="c">//destinationIndex</span>
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <span class="r100 r">parentObjectLength</span>); <span class="c">//length</span>
+				<b>var</b> <span id="r102 rd" class="r102 r">arrayCopy</span> =
+					<span class="r96 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="@0@mscorlib/A.html#156e066ecc4ccedf" class="t t">Array</a>))
+						.<span class="i">Resolve</span>()
+						.<span class="i">Methods</span>.<span class="i">First</span>(
+							<span id="r103 rd" class="r103 r">md</span> =&gt;
+								<span class="r103 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;Copy&quot;</span> &amp;&amp; <span class="r103 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 5 &amp;&amp;
+								<span class="r103 r">md</span>.<span class="i">Parameters</span>[1].<span class="i">ParameterType</span>.<span class="i">FullName</span> == <span class="r96 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Int32</span>.<span class="i">FullName</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r96 r">module</span>.<span class="i">ImportReference</span>(<span class="r102 r">arrayCopy</span>));
+			}
+ 
+			<span class="c">//Add nodes to array</span>
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <span class="r101 r">finalArray</span>);
+			<b>if</b> (<span class="r97 r">nodes</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> &gt; 0)
+			{
+				<b>for</b> (<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r104 rd" class="r104 r">i</span> = 0; <span class="r104 r">i</span> &lt; <span class="r97 r">nodes</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r104 r">i</span>++)
+				{
+					<a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="k">var</a> <span id="r105 rd" class="r105 r">en</span> = <span class="r97 r">nodes</span><a href="@0@mscorlib/A.html#0c65bec4d3fac21e">[</a><span class="r104 r">i</span>];
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Dup</span>);
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <span class="r104 r">i</span>);
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <span class="r95 r">context</span>.<a href="ILContext.cs.html#3a594383a1a7a590" class="i property">Variables</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r105 r">en</span>]);
+					<b>if</b> (<span class="r95 r">context</span>.<a href="ILContext.cs.html#3a594383a1a7a590" class="i property">Variables</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r105 r">en</span>].<span class="i">VariableType</span>.<span class="i">IsValueType</span>)
+						<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Box</span>, <span class="r96 r">module</span>.<span class="i">ImportReference</span>(<span class="r95 r">context</span>.<a href="ILContext.cs.html#3a594383a1a7a590" class="i property">Variables</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r105 r">en</span>].<span class="i">VariableType</span>));
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Stelem_Ref</span>);
+				}
+			}
+		}
+ 
+		<b>static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <a id="0a9914cec8807ade" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PushTargetProperty</a>(<span class="i">FieldReference</span> <span id="r106 rd" class="r106 r">bpRef</span>, <span class="i">PropertyReference</span> <span id="r107 rd" class="r107 r">propertyRef</span>, <span class="i">TypeReference</span> <span id="r108 rd" class="r108 r">declaringTypeReference</span>, <span class="i">ModuleDefinition</span> <span id="r109 rd" class="r109 r">module</span>)
+		{
+			<b>if</b> (<span class="r106 r">bpRef</span> != <b>null</b>) {
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldsfld</span>, <span class="r106 r">bpRef</span>);
+				<b>yield break</b>;
+			}
+			<b>if</b> (<span class="r107 r">propertyRef</span> != <b>null</b>) {
+<span class="c">//				IL_0000:  ldtoken [mscorlib]System.String</span>
+<span class="c">//				IL_0005:  call class [mscorlib]System.Type class [mscorlib] System.Type::GetTypeFromHandle(valuetype [mscorlib] System.RuntimeTypeHandle)</span>
+<span class="c">//				IL_000a:  ldstr &quot;Foo&quot;</span>
+<span class="c">//				IL_000f:  callvirt instance class [mscorlib] System.Reflection.PropertyInfo class [mscorlib] System.Type::GetProperty(string)</span>
+				<b>var</b> <span id="r110 rd" class="r110 r">getTypeFromHandle</span> = <span class="r109 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>).<a href="@0@mscorlib/A.html#d43a8d0bb16a0b39" class="i method">GetMethod</a>(<span class="s">&quot;GetTypeFromHandle&quot;</span>, <b>new</b> [] { <b>typeof</b>(<a href="@0@mscorlib/A.html#0701d28060985e94" class="t t">RuntimeTypeHandle</a>) }));
+				<b>var</b> <span id="r111 rd" class="r111 r">getPropertyInfo</span> = <span class="r109 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>).<a href="@0@mscorlib/A.html#d43a8d0bb16a0b39" class="i method">GetMethod</a>(<span class="s">&quot;GetProperty&quot;</span>, <b>new</b> [] { <b>typeof</b>(<b>string</b>) }));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldtoken</span>, <span class="r109 r">module</span>.<span class="i">ImportReference</span>(<span class="r108 r">declaringTypeReference</span> ?? <span class="r107 r">propertyRef</span>.<span class="i">DeclaringType</span>));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r109 r">module</span>.<span class="i">ImportReference</span>(<span class="r110 r">getTypeFromHandle</span>));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, <span class="r107 r">propertyRef</span>.<span class="i">Name</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r109 r">module</span>.<span class="i">ImportReference</span>(<span class="r111 r">getPropertyInfo</span>));
+				<b>yield break</b>;
+			}
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldnull</span>);
+			<b>yield break</b>;
+		}
+ 
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <a id="895e7d2b28c5de96" href="R/895e7d2b28c5de96.html" target="n" data-glyph="220,1" class="i method">PushServiceProvider</a>(<b>this</b> <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r112 rd" class="r112 r">node</span>, <a href="ILContext.cs.html#cfeae44d09d495a0" class="t t">ILContext</a> <span id="r113 rd" class="r113 r">context</span>, <span class="i">FieldReference</span> <span id="r114 rd" class="r114 r">bpRef</span> = <b>null</b>, <span class="i">PropertyReference</span> <span id="r115 rd" class="r115 r">propertyRef</span> = <b>null</b>, <span class="i">TypeReference</span> <span id="r116 rd" class="r116 r">declaringTypeReference</span> = <b>null</b>)
+		{
+			<b>var</b> <span id="r117 rd" class="r117 r">module</span> = <span class="r113 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">NOSERVICEPROVIDER</span>
+<span class="e">			yield return Instruction.Create (OpCodes.Ldnull);
+			yield break;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+			<a href="@0@mscorlib/A.html#efafec8b833cfa7f" class="k">var</a> <span id="r118 rd" class="r118 r">ctorinfo</span> = <b>typeof</b> (<a href="/Xamarin.Forms.Xaml/A.html#820a1bf30a03f150" class="t t">XamlServiceProvider</a>).<a href="@0@mscorlib/A.html#99a42237dc7ae116" class="i method">GetConstructor</a>(<b>new</b> <a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>[] { });
+			<b>var</b> <span id="r119 rd" class="r119 r">ctor</span> = <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<span class="r118 r">ctorinfo</span>);
+ 
+			<a href="@0@mscorlib/A.html#382d90b1fa682bac" class="k">var</a> <span id="r120 rd" class="r120 r">addServiceInfo</span> = <b>typeof</b> (<a href="/Xamarin.Forms.Xaml/A.html#820a1bf30a03f150" class="t t">XamlServiceProvider</a>).<a href="@0@mscorlib/A.html#d43a8d0bb16a0b39" class="i method">GetMethod</a>(<span class="s">&quot;Add&quot;</span>, <b>new</b>[] { <b>typeof</b> (<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>), <b>typeof</b> (<b>object</b>) });
+			<b>var</b> <span id="r121 rd" class="r121 r">addService</span> = <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<span class="r120 r">addServiceInfo</span>);
+ 
+			<b>var</b> <span id="r122 rd" class="r122 r">getTypeFromHandle</span> =
+				<span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>).<a href="@0@mscorlib/A.html#d43a8d0bb16a0b39" class="i method">GetMethod</a>(<span class="s">&quot;GetTypeFromHandle&quot;</span>, <b>new</b>[] { <b>typeof</b> (<a href="@0@mscorlib/A.html#0701d28060985e94" class="t t">RuntimeTypeHandle</a>) }));
+			<b>var</b> <span id="r123 rd" class="r123 r">getAssembly</span> = <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>).<a href="@0@mscorlib/A.html#fabf683030a6ad8d" class="i method">GetProperty</a>(<span class="s">&quot;Assembly&quot;</span>).<a href="@0@mscorlib/A.html#4a7d7ce3dc2d6cb2" class="i property">GetMethod</a>);
+ 
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r119 r">ctor</span>);
+ 
+			<span class="c">//Add a SimpleValueTargetProvider</span>
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r124 rd" class="r124 r">pushParentIl</span> = <span class="r112 r">node</span>.<a href="#3d298c89451f153f" class="i method">PushParentObjectsArray</a>(<span class="r113 r">context</span>).<a href="@0@System.Core/A.html#e276d6892241255b" class="i method">ToList</a>();
+			<b>if</b> (<span class="r124 r">pushParentIl</span><a href="@0@mscorlib/A.html#0c65bec4d3fac21e">[</a><span class="r124 r">pushParentIl</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> - 1].<span class="i">OpCode</span> != <span class="i">OpCodes</span>.<span class="i">Ldnull</span>)
+			{
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Dup</span>); <span class="c">//Keep the serviceProvider on the stack</span>
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldtoken</span>, <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#89e12b7a1b32f354" class="t t">IProvideValueTarget</a>)));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<span class="r122 r">getTypeFromHandle</span>));
+ 
+				<b>foreach</b> (<b>var</b> <span id="r125 rd" class="r125 r">instruction</span> <b>in</b> <span class="r124 r">pushParentIl</span>)
+					<b>yield return</b> <span class="r125 r">instruction</span>;
+ 
+				<b>foreach</b> (<b>var</b> <span id="r126 rd" class="r126 r">instruction</span> <b>in</b> <span class="i">PushTargetProperty</span>(<span class="r114 r">bpRef</span>, <span class="r115 r">propertyRef</span>, <span class="r116 r">declaringTypeReference</span>, <span class="r117 r">module</span>))
+					<b>yield return</b> <span class="r126 r">instruction</span>;
+ 
+				<b>var</b> <span id="r127 rd" class="r127 r">targetProviderCtor</span> =
+					<span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Xaml/A.html#488a71c6fa51b230" class="t t">SimpleValueTargetProvider</a>).<a href="@0@mscorlib/A.html#99a42237dc7ae116" class="i method">GetConstructor</a>(<b>new</b>[] { <b>typeof</b> (<b>object</b>[]), <b>typeof</b>(<b>object</b>) }));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r127 r">targetProviderCtor</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r121 r">addService</span>);
+			}
+ 
+			<span class="c">//Add a NamescopeProvider</span>
+			<b>if</b> (<span class="r113 r">context</span>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a>.<a href="@0@mscorlib/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r112 r">node</span>))
+			{
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Dup</span>); <span class="c">//Dupicate the serviceProvider</span>
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldtoken</span>, <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Xaml/A.html#a03093ee67e95d99" class="t t">INameScopeProvider</a>)));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<span class="r122 r">getTypeFromHandle</span>));
+				<b>var</b> <span id="r128 rd" class="r128 r">namescopeProviderCtor</span> = <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Xaml/A.html#305454d6239897bf" class="t t">NameScopeProvider</a>).<a href="@0@mscorlib/A.html#99a42237dc7ae116" class="i method">GetConstructor</a>(<b>new</b> <a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>[] { }));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r128 r">namescopeProviderCtor</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Dup</span>); <span class="c">//Duplicate the namescopeProvider</span>
+				<b>var</b> <span id="r129 rd" class="r129 r">setNamescope</span> = <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Xaml/A.html#305454d6239897bf" class="t t">NameScopeProvider</a>).<a href="@0@mscorlib/A.html#fabf683030a6ad8d" class="i method">GetProperty</a>(<span class="s">&quot;NameScope&quot;</span>).<a href="@0@mscorlib/A.html#5b292baa19bc28b3" class="i method">GetSetMethod</a>());
+ 
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <span class="r113 r">context</span>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r112 r">node</span>].<a href="@0@mscorlib/A.html#d1922db1cf9dcd03" class="i property">Item1</a>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r129 r">setNamescope</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r121 r">addService</span>);
+			}
+ 
+			<span class="c">//Add a XamlTypeResolver</span>
+			<b>if</b> (<span class="r112 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#94ec96934707488c" class="i property">NamespaceResolver</a> != <b>null</b>)
+			{
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Dup</span>); <span class="c">//Dupicate the serviceProvider</span>
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldtoken</span>, <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#d05cb618ccf24dce" class="t t">IXamlTypeResolver</a>)));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<span class="r122 r">getTypeFromHandle</span>));
+				<b>var</b> <span id="r130 rd" class="r130 r">xmlNamespaceResolverCtor</span> = <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Xaml/A.html#94b494617d393bcf" class="t t">XmlNamespaceResolver</a>).<a href="@0@mscorlib/A.html#99a42237dc7ae116" class="i method">GetConstructor</a>(<b>new</b> <a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>[] { }));
+				<b>var</b> <span id="r131 rd" class="r131 r">addNamespace</span> = <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Xaml/A.html#94b494617d393bcf" class="t t">XmlNamespaceResolver</a>).<a href="@0@mscorlib/A.html#aa0028890b299af1" class="i method">GetMethod</a>(<span class="s">&quot;Add&quot;</span>));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r130 r">xmlNamespaceResolverCtor</span>);
+				<b>foreach</b> (<a href="@0@mscorlib/A.html#8585965bb176a426" class="k">var</a> <span id="r132 rd" class="r132 r">kvp</span> <b>in</b> <span class="r112 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#94ec96934707488c" class="i property">NamespaceResolver</a>.<a href="@0@System.Xml/A.html#569fd38deb718a86" class="i method">GetNamespacesInScope</a>(<a href="@0@System.Xml/A.html#d4091bf84f9d8b14" class="t t">XmlNamespaceScope</a>.<a href="@0@System.Xml/A.html#62b11d493a2ebec0" class="i field">ExcludeXml</a>))
+				{
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Dup</span>); <span class="c">//dup the resolver</span>
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, <span class="r132 r">kvp</span>.<a href="@0@mscorlib/A.html#f9d1c04feb1af032" class="i property">Key</a>);
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, <span class="r132 r">kvp</span>.<a href="@0@mscorlib/A.html#38c0e86cc4b30170" class="i property">Value</a>);
+					<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r131 r">addNamespace</span>);
+				}
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldtoken</span>, <span class="r113 r">context</span>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">DeclaringType</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<span class="r122 r">getTypeFromHandle</span>));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r123 r">getAssembly</span>);
+				<b>var</b> <span id="r133 rd" class="r133 r">xtr</span> = <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Xaml/A.html#7fdd1d4b8e32cb07" class="t t">XamlTypeResolver</a>)).<span class="i">Resolve</span>();
+				<b>var</b> <span id="r134 rd" class="r134 r">xamlTypeResolverCtor</span> = <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<span class="r133 r">xtr</span>.<span class="i">Methods</span>.<span class="i">First</span>(<span id="r135 rd" class="r135 r">md</span> =&gt; <span class="r135 r">md</span>.<span class="i">IsConstructor</span> &amp;&amp; <span class="r135 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 2));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r134 r">xamlTypeResolverCtor</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r121 r">addService</span>);
+			}
+ 
+			<b>if</b> (<span class="r112 r">node</span> <b>is</b> <a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a>)
+			{
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Dup</span>); <span class="c">//Dupicate the serviceProvider</span>
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldtoken</span>, <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="t t">IXmlLineInfoProvider</a>)));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<span class="r122 r">getTypeFromHandle</span>));
+ 
+				<b>foreach</b> (<b>var</b> <span id="r136 rd" class="r136 r">instruction</span> <b>in</b> <span class="r112 r">node</span>.<a href="#3adec3b19017d186" class="i method">PushXmlLineInfo</a>(<span class="r113 r">context</span>))
+					<b>yield return</b> <span class="r136 r">instruction</span>;
+ 
+				<b>var</b> <span id="r137 rd" class="r137 r">lip</span> = <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Xaml/A.html#ddf7915ed7cf6deb" class="t t">XmlLineInfoProvider</a>)).<span class="i">Resolve</span>();
+				<b>var</b> <span id="r138 rd" class="r138 r">lineInfoProviderCtor</span> = <span class="r117 r">module</span>.<span class="i">ImportReference</span>(<span class="r137 r">lip</span>.<span class="i">Methods</span>.<span class="i">First</span>(<span id="r139 rd" class="r139 r">md</span> =&gt; <span class="r139 r">md</span>.<span class="i">IsConstructor</span> &amp;&amp; <span class="r139 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 1));
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r138 r">lineInfoProviderCtor</span>);
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r121 r">addService</span>);
+			}
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

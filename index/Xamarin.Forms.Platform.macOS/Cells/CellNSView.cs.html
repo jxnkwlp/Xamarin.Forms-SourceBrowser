@@ -1,0 +1,234 @@
+﻿<!DOCTYPE html>
+<html><head><title>CellNSView.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(225);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/Cells/CellNSView.cs" target="_top">Cells\CellNSView.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="i n">CoreGraphics</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>internal class</b> <a id="6881c9dd68ad7a1e" href="../R/6881c9dd68ad7a1e.html" target="n" data-glyph="2,0" class="t t">CellNSView</a> : <span class="t t">NSView</span>, <a href="/Xamarin.Forms.Core/A.html#71fbb484073b15d1" class="t t">INativeElementView</a>
+	{
+		<b>static readonly</b> <span class="t t">NSColor</span> <a id="1f039245742c90e1" href="../R/1f039245742c90e1.html" target="n" data-glyph="46,1" class="i field">s_defaultChildViewsBackground</a> = <span class="t t">NSColor</span>.<span class="i property">Clear</span>;
+		<b>static readonly</b> <span class="t t">CGColor</span> <a id="394a791fea94249f" href="../R/394a791fea94249f.html" target="n" data-glyph="46,1" class="i field">s_defaultHeaderViewsBackground</a> = <span class="t t">NSColor</span>.<span class="i property">LightGray</span>.<span class="i property">CGColor</span>;
+		<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <a id="7bb625c2b7d6b471" href="../R/7bb625c2b7d6b471.html" target="n" data-glyph="46,1" class="i field">_cell</a>;
+		<b>readonly</b> <a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a> <a id="ef4f29083976db19" href="../R/ef4f29083976db19.html" target="n" data-glyph="46,1" class="i field">_style</a>;
+		<span class="t t">NSView</span> <a id="6531c285ebffed2a" href="../R/6531c285ebffed2a.html" target="n" data-glyph="46,1" class="i field">_contexActionsTrackingView</a>;
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#27863de72c2c9b49" class="t t">Action</a>&lt;<b>object</b>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a>&gt; <a id="e2f11d78dbffce5a" href="../R/e2f11d78dbffce5a.html" target="n" data-glyph="42,1" class="i field">PropertyChanged</a>;
+ 
+		<b>public</b> <a id="c437de7c46cf6e7e" href="../R/c437de7c46cf6e7e.html" target="n" data-glyph="72,1" class="i constructor">CellNSView</a>(<a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a> <span id="r0 rd" class="r0 r">style</span>)
+		{
+			<span class="i property">WantsLayer</span> = <b>true</b>;
+			<a href="#ef4f29083976db19" class="i field">_style</a> = <span class="r0 r">style</span>;
+			<a href="#dccdc25ab2c196ea" class="i method">CreateUI</a>();
+		}
+ 
+		<b>public</b> <span class="t t">NSTextField</span> <a id="298890d5d0acd967" href="../R/298890d5d0acd967.html" target="n" data-glyph="102,1" class="i property">TextLabel</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public</b> <span class="t t">NSTextField</span> <a id="2c2344e737f9f16d" href="../R/2c2344e737f9f16d.html" target="n" data-glyph="102,1" class="i property">DetailTextLabel</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public</b> <span class="t t">NSImageView</span> <a id="467879d1ef53298b" href="../R/467879d1ef53298b.html" target="n" data-glyph="102,1" class="i property">ImageView</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public</b> <span class="t t">NSView</span> <a id="cea8071e6f5bfa24" href="../R/cea8071e6f5bfa24.html" target="n" data-glyph="102,1" class="i property">AccessoryView</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public virtual</b> <a href="/Xamarin.Forms.Core/A.html#76098df8350c0484" class="t t">Element</a> <a id="a08fa27b171e8231" href="../R/a08fa27b171e8231.html" target="n" data-glyph="102,1" class="i property">Element</a> =&gt; <a href="#9b4c217f53265b65" class="i property">Cell</a>;
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <a id="9b4c217f53265b65" href="../R/9b4c217f53265b65.html" target="n" data-glyph="102,1" class="i property">Cell</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#7bb625c2b7d6b471" class="i field">_cell</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#7bb625c2b7d6b471" class="i field">_cell</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<b>if</b> (<a href="#7bb625c2b7d6b471" class="i field">_cell</a> != <b>null</b>)
+					<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#c01f48f642e0b305" class="i method">BeginInvokeOnMainThread</a>(<a href="#7bb625c2b7d6b471" class="i field">_cell</a>.<a href="/Xamarin.Forms.Core/A.html#9a269aae86b7756c" class="i method">SendDisappearing</a>);
+ 
+				<a href="#7bb625c2b7d6b471" class="i field">_cell</a> = <b>value</b>;
+ 
+				<b>if</b> (<a href="#7bb625c2b7d6b471" class="i field">_cell</a> != <b>null</b>)
+					<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#c01f48f642e0b305" class="i method">BeginInvokeOnMainThread</a>(<a href="#7bb625c2b7d6b471" class="i field">_cell</a>.<a href="/Xamarin.Forms.Core/A.html#884674abe59f9ab2" class="i method">SendAppearing</a>);
+			}
+		}
+ 
+		<b>public void</b> <a id="c14cf421cbd72893" href="../R/c14cf421cbd72893.html" target="n" data-glyph="72,1" class="i method">HandlePropertyChanged</a>(<b>object</b> <span id="r1 rd" class="r1 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r2 rd" class="r2 r">e</span>)
+		{
+			<a href="#e2f11d78dbffce5a" class="i field">PropertyChanged</a>?.<a href="@0@mscorlib/A.html#928e849f54d2e4af" class="i method">Invoke</a>(<a href="#6881c9dd68ad7a1e" class="k">this</a>, <span class="r2 r">e</span>);
+		}
+ 
+		<b>public override void</b> <a id="3757a2f8511b755e" href="../R/3757a2f8511b755e.html" target="n" data-glyph="72,1" class="i method">Layout</a>()
+		{
+			<b>const int</b> <span id="r3 rd" class="r3 r">padding</span> = 10;
+			<span class="t t">nfloat</span> <span id="r4 rd" class="r4 r">availableHeight</span> = <span class="i property">Frame</span>.<span class="i property">Height</span>;
+			<span class="t t">nfloat</span> <span id="r5 rd" class="r5 r">availableWidth</span> = <span class="i property">Frame</span>.<span class="i property">Width</span> - <span class="r3 r">padding</span> * 2;
+			<span class="t t">nfloat</span> <span id="r6 rd" class="r6 r">imageWidth</span> = 0;
+			<span class="t t">nfloat</span> <span id="r7 rd" class="r7 r">accessoryViewWidth</span> = 0;
+ 
+			<b>if</b> (<a href="#467879d1ef53298b" class="i property">ImageView</a> != <b>null</b>)
+			{
+				<span class="t t">nfloat</span> <span id="r8 rd" class="r8 r">imageHeight</span> = <span class="r6 r">imageWidth</span> = <span class="r4 r">availableHeight</span>;
+				<a href="#467879d1ef53298b" class="i property">ImageView</a>.<span class="i property">Frame</span> = <b>new</b> <span class="t constructor">CGRect</span>(<span class="r3 r">padding</span>, 0, <span class="r6 r">imageWidth</span>, <span class="r8 r">imageHeight</span>);
+			}
+ 
+			<b>if</b> (<a href="#cea8071e6f5bfa24" class="i property">AccessoryView</a> != <b>null</b>)
+			{
+				<span class="r7 r">accessoryViewWidth</span> = <a href="#ef4f29083976db19" class="i field">_style</a> == <a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a>.<a href="NSTableViewCellStyle.cs.html#f37fb260fc1022c1" class="i field">Value1</a> ? 50 : <span class="r5 r">availableWidth</span> - 100;
+				<a href="#cea8071e6f5bfa24" class="i property">AccessoryView</a>.<span class="i property">Frame</span> = <b>new</b> <span class="t constructor">CGRect</span>(<span class="r5 r">availableWidth</span> - <span class="r7 r">accessoryViewWidth</span> + <span class="r3 r">padding</span>, 0, <span class="r7 r">accessoryViewWidth</span>,
+					<span class="r4 r">availableHeight</span>);
+				<b>foreach</b> (<b>var</b> <span id="r9 rd" class="r9 r">subView</span> <b>in</b> <a href="#cea8071e6f5bfa24" class="i property">AccessoryView</a>.<span class="i property">Subviews</span>)
+				{
+					<span class="c">//try to find the size the control wants, if no width use default width</span>
+					<b>var</b> <span id="r10 rd" class="r10 r">size</span> = <span class="r9 r">subView</span>.<span class="i property">FittingSize</span>;
+					<b>if</b> (<span class="r10 r">size</span>.<span class="i property">Width</span> == 0)
+						<span class="r10 r">size</span>.<span class="i property">Width</span> = <span class="r7 r">accessoryViewWidth</span>;
+ 
+					<b>var</b> <span id="r11 rd" class="r11 r">x</span> = <a href="#cea8071e6f5bfa24" class="i property">AccessoryView</a>.<span class="i property">Bounds</span>.<span class="i property">Width</span> - <span class="r10 r">size</span>.<span class="i property">Width</span>;
+					<b>var</b> <span id="r12 rd" class="r12 r">y</span> = (<a href="#cea8071e6f5bfa24" class="i property">AccessoryView</a>.<span class="i property">Bounds</span>.<span class="i property">Height</span> - <span class="r10 r">size</span>.<span class="i property">Height</span>) / 2;
+					<span class="r9 r">subView</span>.<span class="i property">Frame</span> = <b>new</b> <span class="t constructor">CGRect</span>(<b>new</b> <span class="t constructor">CGPoint</span>(<span class="r11 r">x</span>, <span class="r12 r">y</span>), <span class="r10 r">size</span>);
+				}
+			}
+ 
+			<span class="t t">nfloat</span> <span id="r13 rd" class="r13 r">labelHeights</span> = <span class="r4 r">availableHeight</span>;
+			<span class="t t">nfloat</span> <span id="r14 rd" class="r14 r">labelWidth</span> = <span class="r5 r">availableWidth</span> - <span class="r6 r">imageWidth</span> - <span class="r7 r">accessoryViewWidth</span>;
+ 
+			<b>if</b> (<a href="#2c2344e737f9f16d" class="i property">DetailTextLabel</a> != <b>null</b>)
+			{
+ 
+				<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="#2c2344e737f9f16d" class="i property">DetailTextLabel</a>?.<span class="i property">StringValue</span>))
+				{
+					<span class="r13 r">labelHeights</span> = <span class="r4 r">availableHeight</span> / 2;
+					<a href="#2c2344e737f9f16d" class="i property">DetailTextLabel</a>.<a href="../Extensions/NSTextFieldExtensions.cs.html#bdb5b6fb48e93e6c" class="i method">CenterTextVertically</a>(<b>new</b> <span class="t constructor">CGRect</span>(<span class="r6 r">imageWidth</span> + <span class="r3 r">padding</span>, 0, <span class="r14 r">labelWidth</span>, <span class="r13 r">labelHeights</span>));
+				}
+			}
+ 
+			<a href="#298890d5d0acd967" class="i property">TextLabel</a>?.<a href="../Extensions/NSTextFieldExtensions.cs.html#bdb5b6fb48e93e6c" class="i method">CenterTextVertically</a>(<b>new</b> <span class="t constructor">CGRect</span>(<span class="r6 r">imageWidth</span> + <span class="r3 r">padding</span>, <span class="r4 r">availableHeight</span> - <span class="r13 r">labelHeights</span>, <span class="r14 r">labelWidth</span>,
+				<span class="r13 r">labelHeights</span>));
+ 
+			<b>var</b> <span id="r15 rd" class="r15 r">topNSView</span> = <span class="i property">Subviews</span>.<a href="@0@System.Core/A.html#981cccb3b4b716eb" class="i method">LastOrDefault</a>();
+			<b>if</b> (<a href="#6531c285ebffed2a" class="i field">_contexActionsTrackingView</a> != <span class="r15 r">topNSView</span>)
+			{
+				<a href="#6531c285ebffed2a" class="i field">_contexActionsTrackingView</a>.<span class="i method">RemoveFromSuperview</span>();
+				<a href="#6531c285ebffed2a" class="i field">_contexActionsTrackingView</a>.<span class="i property">Frame</span> = <span class="i property">Frame</span>;
+				<span class="i method">AddSubview</span>(<a href="#6531c285ebffed2a" class="i field">_contexActionsTrackingView</a>, <span class="t t">NSWindowOrderingMode</span>.<span class="i field">Above</span>, <span class="i property">Subviews</span>.<a href="@0@System.Core/A.html#981cccb3b4b716eb" class="i method">LastOrDefault</a>());
+			}
+			<b>base</b>.<span class="i method">Layout</span>();
+		}
+ 
+		<b>internal static</b> <span class="t t">NSView</span> <a id="c89d0c39b7acbc0c" href="../R/c89d0c39b7acbc0c.html" target="n" data-glyph="74,1" class="i method">GetNativeCell</a>(<span class="t t">NSTableView</span> <span id="r16 rd" class="r16 r">tableView</span>, <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r17 rd" class="r17 r">cell</span>, <b>string</b> <span id="r18 rd" class="r18 r">templateId</span> = <span class="s">&quot;&quot;</span>, <b>bool</b> <span id="r19 rd" class="r19 r">isHeader</span> = <b>false</b>,
+			<b>bool</b> <span id="r20 rd" class="r20 r">isRecycle</span> = <b>false</b>)
+		{
+			<b>var</b> <span id="r21 rd" class="r21 r">reusable</span> = <span class="r16 r">tableView</span>.<span class="i method">MakeView</span>(<span class="r18 r">templateId</span>, <span class="r16 r">tableView</span>);
+			<span class="t t">NSView</span> <span id="r22 rd" class="r22 r">nativeCell</span>;
+			<b>if</b> (<span class="r21 r">reusable</span> == <b>null</b> || !<span class="r20 r">isRecycle</span>)
+			{
+				<a href="CellRenderer.cs.html#100d1d44491992e8" class="k">var</a> <span id="r23 rd" class="r23 r">renderer</span> = (<a href="CellRenderer.cs.html#100d1d44491992e8" class="t t">CellRenderer</a>)<span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="/Xamarin.Forms.Core/A.html#5f29d2ac0e30bd81" class="i property">Registered</a>.<a href="/Xamarin.Forms.Core/A.html#af776dc3bf4e03c2" class="i method">GetHandlerForObject</a>&lt;<a href="/Xamarin.Forms.Core/A.html#7954845ad809eeba" class="t t">IRegisterable</a>&gt;(<span class="r17 r">cell</span>);
+				<span class="r22 r">nativeCell</span> = <span class="r23 r">renderer</span>.<a href="CellRenderer.cs.html#ecaef70e6ea97c83" class="i method">GetCell</a>(<span class="r17 r">cell</span>, <b>null</b>, <span class="r16 r">tableView</span>);
+			}
+			<b>else</b>
+			{
+				<span class="r22 r">nativeCell</span> = <span class="r21 r">reusable</span>;
+			}
+ 
+			<b>if</b> (<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r22 r">nativeCell</span>.<span class="i property">Identifier</span>))
+				<span class="r22 r">nativeCell</span>.<span class="i property">Identifier</span> = <span class="r18 r">templateId</span>;
+ 
+			<b>if</b> (!<span class="r19 r">isHeader</span>) <b>return</b> <span class="r22 r">nativeCell</span>;
+			<b>if</b> (<span class="r22 r">nativeCell</span>.<span class="i property">Layer</span> != <b>null</b>) <span class="r22 r">nativeCell</span>.<span class="i property">Layer</span>.<span class="i property">BackgroundColor</span> = <a href="#394a791fea94249f" class="i field">s_defaultHeaderViewsBackground</a>;
+			<b>return</b> <span class="r22 r">nativeCell</span>;
+		}
+ 
+		<b>void</b> <a id="dccdc25ab2c196ea" href="../R/dccdc25ab2c196ea.html" target="n" data-glyph="76,1" class="i method">CreateUI</a>()
+		{
+			<a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="k">var</a> <span id="r24 rd" class="r24 r">style</span> = <a href="#ef4f29083976db19" class="i field">_style</a>;
+			<b>if</b> (<span class="r24 r">style</span> != <a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a>.<a href="NSTableViewCellStyle.cs.html#1097e4ccebccf840" class="i field">Empty</a>)
+			{
+				<span class="i method">AddSubview</span>(<a href="#298890d5d0acd967" class="i property">TextLabel</a> = <b>new</b> <span class="t constructor">NSTextField</span>
+				{
+					<span class="i property">Bordered</span> = <b>false</b>,
+					<span class="i property">Selectable</span> = <b>false</b>,
+					<span class="i property">Editable</span> = <b>false</b>,
+					<span class="i property">Font</span> = <span class="t t">NSFont</span>.<span class="i method">LabelFontOfSize</span>(<span class="t t">NSFont</span>.<span class="i property">SystemFontSize</span>)
+				});
+ 
+				<a href="#298890d5d0acd967" class="i property">TextLabel</a>.<span class="i property">Cell</span>.<span class="i property">BackgroundColor</span> = <a href="#1f039245742c90e1" class="i field">s_defaultChildViewsBackground</a>;
+ 
+				<b>if</b> (<span class="r24 r">style</span> == <a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a>.<a href="NSTableViewCellStyle.cs.html#d6b32a0465963d11" class="i field">Image</a> || <span class="r24 r">style</span> == <a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a>.<a href="NSTableViewCellStyle.cs.html#be883300fffd4454" class="i field">Subtitle</a> ||
+					<span class="r24 r">style</span> == <a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a>.<a href="NSTableViewCellStyle.cs.html#97e851d134d44756" class="i field">ImageSubtitle</a>)
+				{
+					<span class="i method">AddSubview</span>(<a href="#2c2344e737f9f16d" class="i property">DetailTextLabel</a> = <b>new</b> <span class="t constructor">NSTextField</span>
+					{
+						<span class="i property">Bordered</span> = <b>false</b>,
+						<span class="i property">Selectable</span> = <b>false</b>,
+						<span class="i property">Editable</span> = <b>false</b>,
+						<span class="i property">Font</span> = <span class="t t">NSFont</span>.<span class="i method">LabelFontOfSize</span>(<span class="t t">NSFont</span>.<span class="i property">SmallSystemFontSize</span>)
+					});
+					<a href="#2c2344e737f9f16d" class="i property">DetailTextLabel</a>.<span class="i property">Cell</span>.<span class="i property">BackgroundColor</span> = <a href="#1f039245742c90e1" class="i field">s_defaultChildViewsBackground</a>;
+				}
+ 
+				<b>if</b> (<span class="r24 r">style</span> == <a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a>.<a href="NSTableViewCellStyle.cs.html#d6b32a0465963d11" class="i field">Image</a> || <span class="r24 r">style</span> == <a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a>.<a href="NSTableViewCellStyle.cs.html#97e851d134d44756" class="i field">ImageSubtitle</a>)
+					<span class="i method">AddSubview</span>(<a href="#467879d1ef53298b" class="i property">ImageView</a> = <b>new</b> <span class="t constructor">NSImageView</span>());
+ 
+				<b>if</b> (<span class="r24 r">style</span> == <a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a>.<a href="NSTableViewCellStyle.cs.html#f37fb260fc1022c1" class="i field">Value1</a> || <span class="r24 r">style</span> == <a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a>.<a href="NSTableViewCellStyle.cs.html#432413fd6ae74602" class="i field">Value2</a>)
+				{
+					<b>var</b> <span id="r25 rd" class="r25 r">accessoryView</span> = <b>new</b> <span class="t constructor">NSView</span> { <span class="i property">WantsLayer</span> = <b>true</b> };
+					<span class="r25 r">accessoryView</span>.<span class="i property">Layer</span>.<span class="i property">BackgroundColor</span> = <a href="#1f039245742c90e1" class="i field">s_defaultChildViewsBackground</a>.<span class="i property">CGColor</span>;
+					<span class="i method">AddSubview</span>(<a href="#cea8071e6f5bfa24" class="i property">AccessoryView</a> = <span class="r25 r">accessoryView</span>);
+				}
+			}
+			<span class="i method">AddSubview</span>(<a href="#6531c285ebffed2a" class="i field">_contexActionsTrackingView</a> = <b>new</b> <a href="#d5e859a262b070e4" class="t constructor">TrackingClickNSView</a>());
+		}
+	}
+ 
+	<b>class</b> <a id="d5e859a262b070e4" href="../R/d5e859a262b070e4.html" target="n" data-glyph="2,0" class="t t"><span id="dd4cb56e14fd5aca">TrackingClickNSView</span></a> : <span class="t t">NSView</span>
+	{
+		<b>public override void</b> <a id="f671a30ce2eec5b3" href="../R/f671a30ce2eec5b3.html" target="n" data-glyph="72,1" class="i method">RightMouseDown</a>(<span class="t t">NSEvent</span> <span id="r26 rd" class="r26 r">theEvent</span>)
+		{
+			<a href="#b3a3f1788e577937" class="i method">HandleContextActions</a>(<span class="r26 r">theEvent</span>);
+ 
+			<b>base</b>.<span class="i method">RightMouseDown</span>(<span class="r26 r">theEvent</span>);
+		}
+ 
+		<b>void</b> <a id="b3a3f1788e577937" href="../R/b3a3f1788e577937.html" target="n" data-glyph="76,1" class="i method">HandleContextActions</a>(<span class="t t">NSEvent</span> <span id="r27 rd" class="r27 r">theEvent</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="k">var</a> <span id="r28 rd" class="r28 r">contextActionCell</span> = (<span class="i property">Superview</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#71fbb484073b15d1" class="t t">INativeElementView</a>).<a href="/Xamarin.Forms.Core/A.html#2bd1b4b350c894af" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>;
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r29 rd" class="r29 r">contextActionsCount</span> = <span class="r28 r">contextActionCell</span>.<a href="/Xamarin.Forms.Core/A.html#df6ab09b8d06612c" class="i property">ContextActions</a>.<a href="@0@mscorlib/A.html#3d6c21c4e9bd5f63" class="i property">Count</a>;
+			<b>if</b> (<span class="r29 r">contextActionsCount</span> &gt; 0)
+			{
+				<span class="t t">NSMenu</span> <span id="r30 rd" class="r30 r">menu</span> = <b>new</b> <span class="t constructor">NSMenu</span>();
+				<b>for</b> (<b>int</b> <span id="r31 rd" class="r31 r">i</span> = 0; <span class="r31 r">i</span> &lt; <span class="r29 r">contextActionsCount</span>; <span class="r31 r">i</span>++)
+				{
+					<a href="/Xamarin.Forms.Core/A.html#36ded754cef116fb" class="k">var</a> <span id="r32 rd" class="r32 r">contextAction</span> = <span class="r28 r">contextActionCell</span>.<a href="/Xamarin.Forms.Core/A.html#df6ab09b8d06612c" class="i property">ContextActions</a><a href="@0@mscorlib/A.html#396bb785d31f5979">[</a><span class="r31 r">i</span>];
+					<b>var</b> <span id="r33 rd" class="r33 r">nsMenuItem</span> = <a href="#c4581c45f7d805a9" class="i method">GetNSMenuItem</a>(<span class="r31 r">i</span>, <span class="r32 r">contextAction</span>);
+					<span class="r30 r">menu</span>.<span class="i method">AddItem</span>(<span class="r33 r">nsMenuItem</span>);
+				}
+ 
+				<span class="t t">NSMenu</span>.<span class="i method">PopUpContextMenu</span>(<span class="r30 r">menu</span>, <span class="r27 r">theEvent</span>, <a href="#d5e859a262b070e4" class="k">this</a>);
+			}
+		}
+ 
+		<b>static</b> <span class="t t">NSMenuItem</span> <a id="c4581c45f7d805a9" href="../R/c4581c45f7d805a9.html" target="n" data-glyph="76,1" class="i method">GetNSMenuItem</a>(<b>int</b> <span id="r34 rd" class="r34 r">i</span>, <a href="/Xamarin.Forms.Core/A.html#36ded754cef116fb" class="t t">MenuItem</a> <span id="r35 rd" class="r35 r">contextAction</span>)
+		{
+			<b>var</b> <span id="r36 rd" class="r36 r">menuItem</span> = <b>new</b> <span class="t constructor">NSMenuItem</span>(<span class="r35 r">contextAction</span>.<a href="/Xamarin.Forms.Core/A.html#2e0c5c546b8a8b5b" class="i property">Text</a> ?? <span class="s">&quot;&quot;</span>);
+			<span class="r36 r">menuItem</span>.<span class="i property">Tag</span> = <span class="r34 r">i</span>;
+			<span class="r36 r">menuItem</span>.<span class="i property">Enabled</span> = <span class="r35 r">contextAction</span>.<a href="/Xamarin.Forms.Core/A.html#7a81b789dd2233fb" class="i property">IsEnabled</a>;
+			<b>if</b> (<span class="r36 r">menuItem</span>.<span class="i property">Enabled</span>)
+				<span class="r36 r">menuItem</span>.<span class="i">Activated</span> += (<span id="r37 rd" class="r37 r">sender</span>, <span id="r38 rd" class="r38 r">e</span>) =&gt;
+				{
+					<span class="r35 r">contextAction</span>.<a href="/Xamarin.Forms.Core/A.html#acfa69a60a16cf67" class="i method">Activate</a>();
+				};
+			<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r35 r">contextAction</span>.<a href="/Xamarin.Forms.Core/A.html#17e918f3f7180401" class="i property">Icon</a>))
+				<span class="r36 r">menuItem</span>.<span class="i property">Image</span> = <b>new</b> <span class="t constructor">NSImage</span>(<span class="r35 r">contextAction</span>.<a href="/Xamarin.Forms.Core/A.html#17e918f3f7180401" class="i property">Icon</a>);
+ 
+			<b>return</b> <span class="r36 r">menuItem</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+<html><head><title>WindowsIsolatedStorage.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(120);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/WindowsIsolatedStorage.cs" target="_top">WindowsIsolatedStorage.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">IO</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Storage</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Storage</span>.<span class="i n">FileProperties</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Storage</span>.<span class="i n">Streams</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.WinRT
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal class</b> <a id="ad7c42566c7ebf6d" href="R/ad7c42566c7ebf6d.html" target="n" data-glyph="2,0" class="t t">WindowsIsolatedStorage</a> : <a href="/Xamarin.Forms.Core/A.html#04ea35780c7f35ff" class="t t">IIsolatedStorageFile</a>
+	{
+		 <span class="t t">StorageFolder</span> <a id="9e3ecf64e46f93c2" href="R/9e3ecf64e46f93c2.html" target="n" data-glyph="46,1" class="i field">_folder</a>;
+ 
+		<b>public</b> <a id="64521a7055acaf73" href="R/64521a7055acaf73.html" target="n" data-glyph="72,1" class="i constructor">WindowsIsolatedStorage</a>(<span class="t t">StorageFolder</span> <span id="r0 rd" class="r0 r">folder</span>)
+		{
+			<b>if</b> (<span class="r0 r">folder</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<span class="s">&quot;folder&quot;</span>);
+ 
+			<a href="#9e3ecf64e46f93c2" class="i field">_folder</a> = <span class="r0 r">folder</span>;
+		}
+ 
+		<b>public</b> <span class="i">Task</span> <a id="556f1c8e86d5cc2a" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">CreateDirectoryAsync</a>(<b>string</b> <span id="r1 rd" class="r1 r">path</span>)
+		{
+			<b>return</b> <a href="#9e3ecf64e46f93c2" class="i field">_folder</a>.<span class="i">CreateFolderAsync</span>(<span class="r1 r">path</span>).<span class="i">AsTask</span>();
+		}
+ 
+		<b>public async</b> <span class="i">Task</span>&lt;<b>bool</b>&gt; <a id="99e73af1d0eb60fb" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetDirectoryExistsAsync</a>(<b>string</b> <span id="r2 rd" class="r2 r">path</span>)
+		{
+			<b>try</b>
+			{
+				<b>await</b> <a href="#9e3ecf64e46f93c2" class="i field">_folder</a>.<span class="i">GetFolderAsync</span>(<span class="r2 r">path</span>).<span class="i">AsTask</span>().<span class="i">ConfigureAwait</span>(<b>false</b>);
+				<b>return true</b>;
+			}
+			<b>catch</b> (<span class="i">FileNotFoundException</span>)
+			{
+				<b>return false</b>;
+			}
+		}
+ 
+		<b>public async</b> <span class="i">Task</span>&lt;<b>bool</b>&gt; <a id="12c04b3e43596327" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetFileExistsAsync</a>(<b>string</b> <span id="r3 rd" class="r3 r">path</span>)
+		{
+			<b>try</b>
+			{
+				<b>await</b> <a href="#9e3ecf64e46f93c2" class="i field">_folder</a>.<span class="i">GetFileAsync</span>(<span class="r3 r">path</span>).<span class="i">AsTask</span>().<span class="i">ConfigureAwait</span>(<b>false</b>);
+				<b>return true</b>;
+			}
+			<b>catch</b> (<span class="i">FileNotFoundException</span>)
+			{
+				<b>return false</b>;
+			}
+		}
+ 
+		<b>public async</b> <span class="i">Task</span>&lt;<span class="i">DateTimeOffset</span>&gt; <a id="53de7c6457339778" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetLastWriteTimeAsync</a>(<b>string</b> <span id="r4 rd" class="r4 r">path</span>)
+		{
+			<span class="t t">StorageFile</span> <span id="r5 rd" class="r5 r">file</span> = <b>await</b> <a href="#9e3ecf64e46f93c2" class="i field">_folder</a>.<span class="i">GetFileAsync</span>(<span class="r4 r">path</span>).<span class="i">AsTask</span>().<span class="i">ConfigureAwait</span>(<b>false</b>);
+			<span class="t t">BasicProperties</span> <span id="r6 rd" class="r6 r">properties</span> = <b>await</b> <span class="r5 r">file</span>.<span class="i method">GetBasicPropertiesAsync</span>().<span class="i">AsTask</span>().<span class="i">ConfigureAwait</span>(<b>false</b>);
+			<b>return</b> <span class="r6 r">properties</span>.<span class="i property">DateModified</span>;
+		}
+ 
+		<b>public async</b> <span class="i">Task</span>&lt;<span class="i">Stream</span>&gt; <a id="4e9ad706f604e5c8" href="R/4e9ad706f604e5c8.html" target="n" data-glyph="72,1" class="i method">OpenFileAsync</a>(<b>string</b> <span id="r7 rd" class="r7 r">path</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a> <span id="r8 rd" class="r8 r">mode</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#254bf02e30755ba7" class="t t">FileAccess</a> <span id="r9 rd" class="r9 r">access</span>)
+		{
+			<span class="t t">StorageFile</span> <span id="r10 rd" class="r10 r">file</span>;
+ 
+			<b>switch</b> (<span class="r8 r">mode</span>)
+			{
+				<b>case</b> <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a>.<a href="/Xamarin.Forms.Core/A.html#5e6419309cd280d2" class="i field">CreateNew</a>:
+					<span class="r10 r">file</span> = <b>await</b> <a href="#9e3ecf64e46f93c2" class="i field">_folder</a>.<span class="i">CreateFileAsync</span>(<span class="r7 r">path</span>, <span class="t t">CreationCollisionOption</span>.<span class="i field">FailIfExists</span>).<span class="i">AsTask</span>().<span class="i">ConfigureAwait</span>(<b>false</b>);
+					<b>break</b>;
+ 
+				<b>case</b> <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a>.<a href="/Xamarin.Forms.Core/A.html#1bbc170d66d118fd" class="i field">Create</a>:
+				<b>case</b> <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a>.<a href="/Xamarin.Forms.Core/A.html#7a9d6235d965a824" class="i field">Truncate</a>: <span class="c">// TODO See if ReplaceExisting already truncates</span>
+					<span class="r10 r">file</span> = <b>await</b> <a href="#9e3ecf64e46f93c2" class="i field">_folder</a>.<span class="i">CreateFileAsync</span>(<span class="r7 r">path</span>, <span class="t t">CreationCollisionOption</span>.<span class="i field">ReplaceExisting</span>).<span class="i">AsTask</span>().<span class="i">ConfigureAwait</span>(<b>false</b>);
+					<b>break</b>;
+ 
+				<b>case</b> <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a>.<a href="/Xamarin.Forms.Core/A.html#67fc0c19ec8d7197" class="i field">OpenOrCreate</a>:
+				<b>case</b> <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a>.<a href="/Xamarin.Forms.Core/A.html#78f4fa032c53a670" class="i field">Append</a>:
+					<span class="r10 r">file</span> = <b>await</b> <a href="#9e3ecf64e46f93c2" class="i field">_folder</a>.<span class="i">CreateFileAsync</span>(<span class="r7 r">path</span>, <span class="t t">CreationCollisionOption</span>.<span class="i field">OpenIfExists</span>).<span class="i">AsTask</span>().<span class="i">ConfigureAwait</span>(<b>false</b>);
+					<b>break</b>;
+ 
+				<b>case</b> <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a>.<a href="/Xamarin.Forms.Core/A.html#57f74d74c7e0485e" class="i field">Open</a>:
+					<span class="r10 r">file</span> = <b>await</b> <a href="#9e3ecf64e46f93c2" class="i field">_folder</a>.<span class="i">GetFileAsync</span>(<span class="r7 r">path</span>);
+					<b>break</b>;
+ 
+				<b>default</b>:
+					<b>throw</b> <b>new</b> <span class="i">ArgumentException</span>(<span class="s">&quot;mode was an invalid FileMode&quot;</span>, <span class="s">&quot;mode&quot;</span>);
+			}
+ 
+			<b>switch</b> (<span class="r9 r">access</span>)
+			{
+				<b>case</b> <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#254bf02e30755ba7" class="t t">FileAccess</a>.<a href="/Xamarin.Forms.Core/A.html#22b7a19635238d0a" class="i field">Read</a>:
+					<b>return await</b> <span class="r10 r">file</span>.<span class="i">OpenStreamForReadAsync</span>().<span class="i">ConfigureAwait</span>(<b>false</b>);
+				<b>case</b> <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#254bf02e30755ba7" class="t t">FileAccess</a>.<a href="/Xamarin.Forms.Core/A.html#f5f8fc5b30b033ca" class="i field">Write</a>:
+					<span class="i">Stream</span> <span id="r11 rd" class="r11 r">stream</span> = <b>await</b> <span class="r10 r">file</span>.<span class="i">OpenStreamForWriteAsync</span>().<span class="i">ConfigureAwait</span>(<b>false</b>);
+					<b>if</b> (<span class="r8 r">mode</span> == <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a>.<a href="/Xamarin.Forms.Core/A.html#78f4fa032c53a670" class="i field">Append</a>)
+						<span class="r11 r">stream</span>.<span class="i">Position</span> = <span class="r11 r">stream</span>.<span class="i">Length</span>;
+ 
+					<b>return</b> <span class="r11 r">stream</span>;
+ 
+				<b>case</b> <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#254bf02e30755ba7" class="t t">FileAccess</a>.<a href="/Xamarin.Forms.Core/A.html#ed009355dbae3bf9" class="i field">ReadWrite</a>:
+					<span class="t t">IRandomAccessStream</span> <span id="r12 rd" class="r12 r">randStream</span> = <b>await</b> <span class="r10 r">file</span>.<span class="i">OpenAsync</span>(<span class="t t">FileAccessMode</span>.<span class="i field">ReadWrite</span>).<span class="i">AsTask</span>().<span class="i">ConfigureAwait</span>(<b>false</b>);
+					<b>return</b> <span class="r12 r">randStream</span>.<span class="i">AsStream</span>();
+ 
+				<b>default</b>:
+					<b>throw</b> <b>new</b> <span class="i">ArgumentException</span>(<span class="s">&quot;access was an invalid FileAccess&quot;</span>, <span class="s">&quot;access&quot;</span>);
+			}
+		}
+ 
+		<b>public</b> <span class="i">Task</span>&lt;<span class="i">Stream</span>&gt; <a id="68fb78485bf63821" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OpenFileAsync</a>(<b>string</b> <span id="r13 rd" class="r13 r">path</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a> <span id="r14 rd" class="r14 r">mode</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#254bf02e30755ba7" class="t t">FileAccess</a> <span id="r15 rd" class="r15 r">access</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#d462b5f07b93898b" class="t t">FileShare</a> <span id="r16 rd" class="r16 r">share</span>)
+		{
+			<b>return</b> <a href="#4e9ad706f604e5c8" class="i method">OpenFileAsync</a>(<span class="r13 r">path</span>, <span class="r14 r">mode</span>, <span class="r15 r">access</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

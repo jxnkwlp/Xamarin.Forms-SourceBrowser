@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html><head><title>Issue774.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(67);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Controls/Issue774.cs" target="_top">Issue774.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Controls" target="_top">Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj</a> (Xamarin.Forms.Controls)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+ 
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">CustomAttributes</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">using Xamarin.UITest;
+using NUnit.Framework;
+using Xamarin.UITest.iOS;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>.<span class="i n">Issues</span>
+{
+	[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a> (<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+	[<a href="/Xamarin.Forms.CustomAttributes/A.html#7e3803f42297329b" class="t constructor">Issue</a> (<a href="/Xamarin.Forms.CustomAttributes/A.html#71fbc272a65cfefa" class="t t">IssueTracker</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#95167b8d420cde62" class="i field">Github</a>, 774, <span class="s">&quot;ActionSheet won&#39;t dismiss after rotation to landscape&quot;</span>, <a href="/Xamarin.Forms.CustomAttributes/A.html#e0966d88fdc6123d" class="t t">PlatformAffected</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#3ae82ddf44fd075d" class="i field">Android</a>, <a href="/Xamarin.Forms.CustomAttributes/A.html#30db812e1f599755" class="t t">NavigationBehavior</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#944ef2dbbac8fdef" class="i field">PushModalAsync</a>)]
+	<b>public class</b> <a id="efd6eb3072d6f9d9" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t"><span id="33e333cc108eaa63">Issue774</span></a> : <a href="TestPages.cs.html#68092d82b8b3d7b5" class="t t">TestContentPage</a>
+	{
+		<b>protected override void</b> <a id="a7cf740c877263bb" href="R/a7cf740c877263bb.html" target="n" data-glyph="75,1" class="i method">Init</a> ()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#3929eda3f5d3e80d" class="i property">Content</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a> {
+				<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a> = {
+					<b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a> {
+						<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">&quot;Hi&quot;</span>
+					},
+					<b>new</b> <a href="/Xamarin.Forms.Core/A.html#c9ccc9248166aa0f" class="t constructor">Button</a> {
+						<a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a> = <span class="s">&quot;Show ActionSheet&quot;</span>,
+						<a href="/Xamarin.Forms.Core/A.html#e7eff0ffbd8fe128" class="i property">Command</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#d3d443b93c84bcc3" class="t constructor">Command</a> (<b>async</b> () =&gt; <b>await</b> <a href="/Xamarin.Forms.Core/A.html#2e7e770075e54b1b" class="i method">DisplayActionSheet</a> (<span class="s">&quot;What&#39;s up&quot;</span>, <span class="s">&quot;Dismiss&quot;</span>, <span class="s">&quot;Destroy&quot;</span>))
+					}
+				}
+			};
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		[Test]
+		public void Issue774TestsDismissActionSheetAfterRotation ()
+		{
+			RunningApp.Tap(q =&gt; q.Button(&quot;Show ActionSheet&quot;));
+			RunningApp.Screenshot(&quot;Show ActionSheet&quot;);
+ 
+			RunningApp.SetOrientationLandscape();
+			RunningApp.Screenshot(&quot;Rotate Device&quot;);
+ 
+			// Wait for the action sheet element to show up
+			RunningApp.WaitForElement(q =&gt; q.Marked(&quot;What&#39;s up&quot;));
+ 
+			var dismiss = RunningApp.Query(&quot;Dismiss&quot;);
+ 
+			var target = dismiss.Length &gt; 0 ? &quot;Dismiss&quot; : &quot;Destroy&quot;;
+ 
+ 
+			RunningApp.Tap(q =&gt; q.Marked(target));
+			RunningApp.WaitForNoElement(q =&gt; q.Marked(target));
+ 
+			RunningApp.Screenshot(&quot;Dismiss ActionSheet&quot;);
+ 
+		}
+ 
+		[TearDown]
+		public void TearDown()
+		{
+			RunningApp.SetOrientationPortrait();
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+	}
+}
+</pre></td></tr></table></div></body></html>

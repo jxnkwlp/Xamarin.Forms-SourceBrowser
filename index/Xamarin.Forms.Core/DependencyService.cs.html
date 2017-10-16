@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+<html><head><title>DependencyService.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(117);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/DependencyService.cs" target="_top">DependencyService.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>public static class</b> <a id="8d311a81ee952ba4" href="R/8d311a81ee952ba4.html" target="n" data-glyph="0,0" class="t t">DependencyService</a>
+	{
+		<b>static bool</b> <a id="c16ba1bad6fa011e" href="R/c16ba1bad6fa011e.html" target="n" data-glyph="46,1" class="i field">s_initialized</a>;
+ 
+		<b>static readonly</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>&gt; <a id="7ca4732a4ec924e4" href="R/7ca4732a4ec924e4.html" target="n" data-glyph="46,1" class="i field">DependencyTypes</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>&gt;();
+		<b>static readonly</b> <a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <a href="#780dadaeb0d463b2" class="t t">DependencyData</a>&gt; <a id="fd457b42aeb7560e" href="R/fd457b42aeb7560e.html" target="n" data-glyph="46,1" class="i field">DependencyImplementations</a> = <b>new</b> <a href="@1@System.Collections/A.html#bf6849e410b43c4c" class="t constructor">Dictionary</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <a href="#780dadaeb0d463b2" class="t t">DependencyData</a>&gt;();
+ 
+		<b>public static</b> <span class="r0 r t">T</span> <a id="ac938f0fb30da4e5" href="R/ac938f0fb30da4e5.html" target="n" data-glyph="72,1" class="i method">Get</a>&lt;<span id="r0 rd t" class="r0 r t">T</span>&gt;(<a href="DependencyFetchTarget.cs.html#02cd319df0c06b8e" class="t t">DependencyFetchTarget</a> <span id="r1 rd" class="r1 r">fetchTarget</span> = <a href="DependencyFetchTarget.cs.html#02cd319df0c06b8e" class="t t">DependencyFetchTarget</a>.<a href="DependencyFetchTarget.cs.html#d842bc9fb164af49" class="i field">GlobalInstance</a>) <b>where</b> <span class="r0 r t">T</span> : <b>class</b>
+		{
+			<a href="#5ed3926c50b4ce74" class="i method">Initialize</a>();
+ 
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r2 rd" class="r2 r">targetType</span> = <b>typeof</b>(<span class="r0 r t">T</span>);
+ 
+			<b>if</b> (!<a href="#fd457b42aeb7560e" class="i field">DependencyImplementations</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r2 r">targetType</span>))
+			{
+				<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r3 rd" class="r3 r">implementor</span> = <a href="#e45da0e16a28cfac" class="i method">FindImplementor</a>(<span class="r2 r">targetType</span>);
+				<a href="#fd457b42aeb7560e" class="i field">DependencyImplementations</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r2 r">targetType</span>] = <span class="r3 r">implementor</span> != <b>null</b> ? <b>new</b> <a href="#780dadaeb0d463b2" class="t constructor">DependencyData</a> { <a href="#20ba74bef17a4f24" class="i property">ImplementorType</a> = <span class="r3 r">implementor</span> } : <b>null</b>;
+			}
+ 
+			<a href="#780dadaeb0d463b2" class="t t">DependencyData</a> <span id="r4 rd" class="r4 r">dependencyImplementation</span> = <a href="#fd457b42aeb7560e" class="i field">DependencyImplementations</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r2 r">targetType</span>];
+			<b>if</b> (<span class="r4 r">dependencyImplementation</span> == <b>null</b>)
+				<b>return null</b>;
+ 
+			<b>if</b> (<span class="r1 r">fetchTarget</span> == <a href="DependencyFetchTarget.cs.html#02cd319df0c06b8e" class="t t">DependencyFetchTarget</a>.<a href="DependencyFetchTarget.cs.html#d842bc9fb164af49" class="i field">GlobalInstance</a>)
+			{
+				<b>if</b> (<span class="r4 r">dependencyImplementation</span>.<a href="#8e2a5068944d3904" class="i property">GlobalInstance</a> == <b>null</b>)
+				{
+					<span class="r4 r">dependencyImplementation</span>.<a href="#8e2a5068944d3904" class="i property">GlobalInstance</a> = <a href="@1@System.Runtime/A.html#955a7437554c8efc" class="t t">Activator</a>.<a href="@1@System.Runtime/A.html#4c7b92371a93f246" class="i method">CreateInstance</a>(<span class="r4 r">dependencyImplementation</span>.<a href="#20ba74bef17a4f24" class="i property">ImplementorType</a>);
+				}
+				<b>return</b> (<span class="r0 r t">T</span>)<span class="r4 r">dependencyImplementation</span>.<a href="#8e2a5068944d3904" class="i property">GlobalInstance</a>;
+			}
+			<b>return</b> (<span class="r0 r t">T</span>)<a href="@1@System.Runtime/A.html#955a7437554c8efc" class="t t">Activator</a>.<a href="@1@System.Runtime/A.html#4c7b92371a93f246" class="i method">CreateInstance</a>(<span class="r4 r">dependencyImplementation</span>.<a href="#20ba74bef17a4f24" class="i property">ImplementorType</a>);
+		}
+ 
+		<b>public static void</b> <a id="2ad93e483511fe73" href="R/2ad93e483511fe73.html" target="n" data-glyph="72,1" class="i method">Register</a>&lt;<span id="r5 rd t" class="r5 r t">T</span>&gt;() <b>where</b> <span class="r5 r t">T</span> : <b>class</b>
+		{
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r6 rd" class="r6 r">type</span> = <b>typeof</b>(<span class="r5 r t">T</span>);
+			<b>if</b> (!<a href="#7ca4732a4ec924e4" class="i field">DependencyTypes</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r6 r">type</span>))
+				<a href="#7ca4732a4ec924e4" class="i field">DependencyTypes</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r6 r">type</span>);
+		}
+ 
+		<b>public static void</b> <a id="cc6848b148dc2b3f" href="R/cc6848b148dc2b3f.html" target="n" data-glyph="72,1" class="i method">Register</a>&lt;<span id="r7 rd t" class="r7 r t">T</span>, <span id="r8 rd t" class="r8 r t">TImpl</span>&gt;() <b>where</b> <span class="r7 r t">T</span> : <b>class where</b> <span class="r8 r t">TImpl</span> : <b>class</b>, <span class="r7 r t">T</span>
+		{
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r9 rd" class="r9 r">targetType</span> = <b>typeof</b>(<span class="r7 r t">T</span>);
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r10 rd" class="r10 r">implementorType</span> = <b>typeof</b>(<span class="r8 r t">TImpl</span>);
+			<b>if</b> (!<a href="#7ca4732a4ec924e4" class="i field">DependencyTypes</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r9 r">targetType</span>))
+				<a href="#7ca4732a4ec924e4" class="i field">DependencyTypes</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r9 r">targetType</span>);
+ 
+			<a href="#fd457b42aeb7560e" class="i field">DependencyImplementations</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r9 r">targetType</span>] = <b>new</b> <a href="#780dadaeb0d463b2" class="t constructor">DependencyData</a> { <a href="#20ba74bef17a4f24" class="i property">ImplementorType</a> = <span class="r10 r">implementorType</span> };
+		}
+ 
+		<b>static</b> <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <a id="e45da0e16a28cfac" href="R/e45da0e16a28cfac.html" target="n" data-glyph="76,1" class="i method">FindImplementor</a>(<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r11 rd" class="r11 r">target</span>)
+		{
+			<b>return</b> <a href="#7ca4732a4ec924e4" class="i field">DependencyTypes</a>.<span class="i method">FirstOrDefault</span>(<span id="r12 rd" class="r12 r">t</span> =&gt; <span class="r11 r">target</span>.<a href="ReflectionExtensions.cs.html#4aeb7fed02b54bd2" class="i method">IsAssignableFrom</a>(<span class="r12 r">t</span>));
+		}
+ 
+		<b>static void</b> <a id="5ed3926c50b4ce74" href="R/5ed3926c50b4ce74.html" target="n" data-glyph="76,1" class="i method">Initialize</a>()
+		{
+			<b>if</b> (<a href="#c16ba1bad6fa011e" class="i field">s_initialized</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<span class="t t">Assembly</span>[] <span id="r13 rd" class="r13 r">assemblies</span> = <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#3fda63ed080b1c9d" class="i method">GetAssemblies</a>();
+			<b>if</b> (<span class="i n">Internals</span>.<a href="Registrar.cs.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="Registrar.cs.html#ecb9bd743ff87c94" class="i property">ExtraAssemblies</a> != <b>null</b>)
+			{
+				<span class="r13 r">assemblies</span> = <span class="r13 r">assemblies</span>.<span class="i method">Union</span>(<span class="i n">Internals</span>.<a href="Registrar.cs.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="Registrar.cs.html#ecb9bd743ff87c94" class="i property">ExtraAssemblies</a>).<span class="i method">ToArray</span>();
+			}
+ 
+			<a href="#0f706aaf89966387" class="i method">Initialize</a>(<span class="r13 r">assemblies</span>);
+		}
+ 
+		<b>internal static void</b> <a id="0f706aaf89966387" href="R/0f706aaf89966387.html" target="n" data-glyph="74,1" class="i method">Initialize</a>(<span class="t t">Assembly</span>[] <span id="r14 rd" class="r14 r">assemblies</span>)
+		{
+			<b>if</b> (<a href="#c16ba1bad6fa011e" class="i field">s_initialized</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r15 rd" class="r15 r">targetAttrType</span> = <b>typeof</b>(<a href="DependencyAttribute.cs.html#a6a15ee47025a14f" class="t t">DependencyAttribute</a>);
+ 
+			<span class="c">// Don&#39;t use LINQ for performance reasons</span>
+			<span class="c">// Naive implementation can easily take over a second to run</span>
+			<b>foreach</b> (<span class="t t">Assembly</span> <span id="r16 rd" class="r16 r">assembly</span> <b>in</b> <span class="r14 r">assemblies</span>)
+			{
+				<a href="@1@System.Runtime/A.html#707d3dbc6c887265" class="t t">Attribute</a>[] <span id="r17 rd" class="r17 r">attributes</span> = <span class="r16 r">assembly</span>.<span class="i method">GetCustomAttributes</span>(<span class="r15 r">targetAttrType</span>).<span class="i method">ToArray</span>();
+				<b>if</b> (<span class="r17 r">attributes</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 0)
+					<b>continue</b>;
+ 
+				<b>foreach</b> (<a href="DependencyAttribute.cs.html#a6a15ee47025a14f" class="t t">DependencyAttribute</a> <span id="r18 rd" class="r18 r">attribute</span> <b>in</b> <span class="r17 r">attributes</span>)
+				{
+					<b>if</b> (!<a href="#7ca4732a4ec924e4" class="i field">DependencyTypes</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r18 r">attribute</span>.<a href="DependencyAttribute.cs.html#a2f47adfaa6297f9" class="i property">Implementor</a>))
+					{
+						<a href="#7ca4732a4ec924e4" class="i field">DependencyTypes</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r18 r">attribute</span>.<a href="DependencyAttribute.cs.html#a2f47adfaa6297f9" class="i property">Implementor</a>);
+					}
+				}
+			}
+ 
+			<a href="#c16ba1bad6fa011e" class="i field">s_initialized</a> = <b>true</b>;
+		}
+ 
+		<b>class</b> <a id="780dadaeb0d463b2" href="R/780dadaeb0d463b2.html" target="n" data-glyph="4,1" class="t t"><span id="bc37627fd1366311">DependencyData</span></a>
+		{
+			<b>public object</b> <a id="8e2a5068944d3904" href="R/8e2a5068944d3904.html" target="n" data-glyph="102,2" class="i property">GlobalInstance</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public</b> <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <a id="20ba74bef17a4f24" href="R/20ba74bef17a4f24.html" target="n" data-glyph="102,2" class="i property">ImplementorType</a> { <b>get</b>; <b>set</b>; }
+		}
+	}
+}</pre></td></tr></table></div></body></html>

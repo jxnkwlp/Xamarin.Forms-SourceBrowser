@@ -1,0 +1,346 @@
+﻿<!DOCTYPE html>
+<html><head><title>TabbedPageRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(337);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/TabbedPageRenderer.cs" target="_top">TabbedPageRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Specialized</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Automation</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">WindowsSpecific</span>;
+<b>using</b> <span class="t">WGrid</span> = <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Grid</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+{
+    <b>public class</b> <a id="4b795840f55e2927" href="R/4b795840f55e2927.html" target="n" data-glyph="0,0" class="t t"><span id="caeb42ab930d6fdc">TabbedPageRenderer</span></a> : <a href="IVisualElementRenderer.cs.html#5e8fccba4d16485c" class="t t">IVisualElementRenderer</a>, <a href="ITitleProvider.cs.html#4d5fac609712dc35" class="t t">ITitleProvider</a>, <a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a>
+    {
+        <b>const string</b> <a id="c00fab026ecd3dd6" href="R/c00fab026ecd3dd6.html" target="n" data-glyph="10,1" class="i field">TabBarHeaderTextBlockName</a> = <span class="s">&quot;TabbedPageHeaderTextBlock&quot;</span>;
+        <b>const string</b> <a id="87773dcda71648f1" href="R/87773dcda71648f1.html" target="n" data-glyph="10,1" class="i field">TabBarHeaderGridName</a> = <span class="s">&quot;TabbedPageHeaderGrid&quot;</span>;
+ 
+        <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <a id="9825c25f68a4abb4" href="R/9825c25f68a4abb4.html" target="n" data-glyph="46,1" class="i field">_barBackgroundColor</a>;
+        <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <a id="4911269fc548bc99" href="R/4911269fc548bc99.html" target="n" data-glyph="46,1" class="i field">_barTextColor</a>;
+        <b>bool</b> <a id="c619795c496d8707" href="R/c619795c496d8707.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+        <b>bool</b> <a id="be9855c86e914801" href="R/be9855c86e914801.html" target="n" data-glyph="46,1" class="i field">_showTitle</a>;
+        <a href="VisualElementTracker.cs.html#5eede7d092b7a8ae" class="t t">VisualElementTracker</a>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>, <span class="t t">Pivot</span>&gt; <a id="e903a2d9141e378a" href="R/e903a2d9141e378a.html" target="n" data-glyph="46,1" class="i field">_tracker</a>;
+ 
+        <a href="ITitleProvider.cs.html#4d5fac609712dc35" class="t t">ITitleProvider</a> <a id="ca46d5f8eb15e184" href="R/ca46d5f8eb15e184.html" target="n" data-glyph="106,1" class="i property">TitleProvider</a> =&gt; <a href="#4b795840f55e2927" class="k">this</a>;
+ 
+        <b>public</b> <a href="FormsPivot.cs.html#f9b39ec7dc6a92d1" class="t t">FormsPivot</a> <a id="feee0ec62d208126" href="R/feee0ec62d208126.html" target="n" data-glyph="102,1" class="i property">Control</a> { <b>get</b>; <b>private set</b>; }
+ 
+        <b>public</b> <a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a> <a id="e20e86c7664aee97" href="R/e20e86c7664aee97.html" target="n" data-glyph="102,1" class="i property">Element</a> { <b>get</b>; <b>private set</b>; }
+ 
+        <b>protected</b> <a href="VisualElementTracker.cs.html#5eede7d092b7a8ae" class="t t">VisualElementTracker</a>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>, <span class="t t">Pivot</span>&gt; <a id="f1c1ae5a2d95396e" href="R/f1c1ae5a2d95396e.html" target="n" data-glyph="105,1" class="i property">Tracker</a>
+        {
+            <b>get</b> { <b>return</b> <a href="#e903a2d9141e378a" class="i field">_tracker</a>; }
+            <b>set</b>
+            {
+                <b>if</b> (<a href="#e903a2d9141e378a" class="i field">_tracker</a> == <b>value</b>)
+                    <b>return</b>;
+ 
+                <b>if</b> (<a href="#e903a2d9141e378a" class="i field">_tracker</a> != <b>null</b>)
+                    <a href="#e903a2d9141e378a" class="i field">_tracker</a>.<a href="VisualElementTracker.cs.html#37ca6f51fdc4e085" class="i method">Dispose</a>();
+ 
+                <a href="#e903a2d9141e378a" class="i field">_tracker</a> = <b>value</b>;
+            }
+        }
+ 
+        <b>public void</b> <a id="5c7de0e2d526c129" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Dispose</a>()
+        {
+            <a href="#f0ab1063ec040ff5" class="i method">Dispose</a>(<b>true</b>);
+        }
+ 
+        <span class="t t">Brush</span> <a href="ITitleProvider.cs.html#4d5fac609712dc35" class="t t">ITitleProvider</a>.<a href="ITitleProvider.cs.html#0063206370e6177a" class="i property">BarBackgroundBrush</a>
+        {
+            <b>set</b> { <a href="#feee0ec62d208126" class="i property">Control</a>.<a href="FormsPivot.cs.html#a2134ed22f12f1d9" class="i property">ToolbarBackground</a> = <b>value</b>; }
+        }
+ 
+        <span class="t t">Brush</span> <a href="ITitleProvider.cs.html#4d5fac609712dc35" class="t t">ITitleProvider</a>.<a href="ITitleProvider.cs.html#80926ce109c60563" class="i property">BarForegroundBrush</a>
+        {
+            <b>set</b> { <a href="#feee0ec62d208126" class="i property">Control</a>.<a href="FormsPivot.cs.html#a0636a2a211f2403" class="i property">ToolbarForeground</a> = <b>value</b>; }
+        }
+ 
+        <b>bool</b> <a href="ITitleProvider.cs.html#4d5fac609712dc35" class="t t">ITitleProvider</a>.<a href="ITitleProvider.cs.html#d35d3e494170d3cc" class="i property">ShowTitle</a>
+        {
+            <b>get</b> { <b>return</b> <a href="#be9855c86e914801" class="i field">_showTitle</a>; }
+ 
+            <b>set</b>
+            {
+                <b>if</b> (<a href="#be9855c86e914801" class="i field">_showTitle</a> == <b>value</b>)
+                    <b>return</b>;
+                <a href="#be9855c86e914801" class="i field">_showTitle</a> = <b>value</b>;
+ 
+                <a href="#dda7416f73c5d2cf" class="i method">UpdateTitleVisibility</a>();
+            }
+        }
+ 
+        <b>string</b> <a href="ITitleProvider.cs.html#4d5fac609712dc35" class="t t">ITitleProvider</a>.<a href="ITitleProvider.cs.html#f6cd7c74d64902e4" class="i property">Title</a>
+        {
+            <b>get</b> { <b>return</b> (<b>string</b>)<a href="#feee0ec62d208126" class="i property">Control</a>?.<span class="i property">Title</span>; }
+ 
+            <b>set</b>
+            {
+                <b>if</b> (<a href="#feee0ec62d208126" class="i property">Control</a> != <b>null</b> &amp;&amp; <a href="#be9855c86e914801" class="i field">_showTitle</a>)
+                    <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">Title</span> = <b>value</b>;
+            }
+        }
+ 
+        <b>public</b> <span class="i">Task</span>&lt;<span class="t t">CommandBar</span>&gt; <a id="671b97242acb5440" href="R/671b97242acb5440.html" target="n" data-glyph="72,1" class="i method">GetCommandBarAsync</a>()
+        {
+            <b>return</b> (<a href="#feee0ec62d208126" class="i property">Control</a> <b>as</b> <a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a>)?.<a href="IToolbarProvider.cs.html#0902b0e2d73c7339" class="i method">GetCommandBarAsync</a>();
+        }
+ 
+        <b>public</b> <span class="t t">FrameworkElement</span> <a id="1459202379bef0d5" href="R/1459202379bef0d5.html" target="n" data-glyph="102,1" class="i property">ContainerElement</a>
+        {
+            <b>get</b> { <b>return</b> <a href="#feee0ec62d208126" class="i property">Control</a>; }
+        }
+ 
+        <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a href="IVisualElementRenderer.cs.html#5e8fccba4d16485c" class="t t">IVisualElementRenderer</a>.<a href="IVisualElementRenderer.cs.html#6e6ba4e26c168297" class="i property">Element</a>
+        {
+            <b>get</b> { <b>return</b> <a href="#e20e86c7664aee97" class="i property">Element</a>; }
+        }
+ 
+        <b>public event</b> <span class="i">EventHandler</span>&lt;<a href="VisualElementChangedEventArgs.cs.html#987f24d4661ba3e7" class="t t">VisualElementChangedEventArgs</a>&gt; <a id="036bcf1da2ce45f0" href="R/036bcf1da2ce45f0.html" target="n" data-glyph="30,1" class="i">ElementChanged</a>;
+ 
+        <b>public</b> <a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="7a48f4a15a8b75b6" href="R/7a48f4a15a8b75b6.html" target="n" data-glyph="72,1" class="i method">GetDesiredSize</a>(<b>double</b> <span id="r0 rd" class="r0 r">widthConstraint</span>, <b>double</b> <span id="r1 rd" class="r1 r">heightConstraint</span>)
+        {
+            <b>var</b> <span id="r2 rd" class="r2 r">constraint</span> = <b>new</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="i">Size</span>(<span class="r0 r">widthConstraint</span>, <span class="r1 r">heightConstraint</span>);
+ 
+            <b>double</b> <span id="r3 rd" class="r3 r">oldWidth</span> = <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">Width</span>;
+            <b>double</b> <span id="r4 rd" class="r4 r">oldHeight</span> = <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">Height</span>;
+ 
+            <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">Height</span> = <b>double</b>.<span class="i">NaN</span>;
+            <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">Width</span> = <b>double</b>.<span class="i">NaN</span>;
+ 
+            <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i">Measure</span>(<span class="r2 r">constraint</span>);
+            <a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="k">var</a> <span id="r5 rd" class="r5 r">result</span> = <b>new</b> <span class="t">Size</span>(<span class="i">Math</span>.<span class="i">Ceiling</span>(<a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">DesiredSize</span>.<span class="i">Width</span>), <span class="i">Math</span>.<span class="i">Ceiling</span>(<a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">DesiredSize</span>.<span class="i">Height</span>));
+ 
+            <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">Width</span> = <span class="r3 r">oldWidth</span>;
+            <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">Height</span> = <span class="r4 r">oldHeight</span>;
+ 
+            <b>return</b> <b>new</b> <span class="t">SizeRequest</span>(<span class="r5 r">result</span>);
+        }
+ 
+		<span class="t t">UIElement</span> <a href="IVisualElementRenderer.cs.html#5e8fccba4d16485c" class="t t">IVisualElementRenderer</a>.<a href="IVisualElementRenderer.cs.html#fd13aab183fc9a08" class="i method">GetNativeElement</a>()
+		{
+			<b>return</b> <a href="#feee0ec62d208126" class="i property">Control</a>;
+		}
+ 
+		<b>public void</b> <a id="c39b4df9fec1c8a4" href="R/c39b4df9fec1c8a4.html" target="n" data-glyph="72,1" class="i method">SetElement</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r6 rd" class="r6 r">element</span>)
+        {
+            <b>if</b> (<span class="r6 r">element</span> != <b>null</b> &amp;&amp; !(<span class="r6 r">element</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>))
+                <b>throw</b> <b>new</b> <span class="i">ArgumentException</span>(<span class="s">&quot;Element must be a TabbedPage&quot;</span>, <span class="s">&quot;element&quot;</span>);
+ 
+            <a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a> <span id="r7 rd" class="r7 r">oldElement</span> = <a href="#e20e86c7664aee97" class="i property">Element</a>;
+            <a href="#e20e86c7664aee97" class="i property">Element</a> = (<a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>)<span class="r6 r">element</span>;
+ 
+            <b>if</b> (<span class="r7 r">oldElement</span> != <b>null</b>)
+            {
+                <span class="r7 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <span class="i">OnElementPropertyChanged</span>;
+                ((<span class="i">INotifyCollectionChanged</span>)<span class="r7 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>).<span class="i">CollectionChanged</span> -= <span class="i">OnPagesChanged</span>;
+            }
+ 
+            <b>if</b> (<span class="r6 r">element</span> != <b>null</b>)
+            {
+                <b>if</b> (<a href="#feee0ec62d208126" class="i property">Control</a> == <b>null</b>)
+                {
+                    <a href="#feee0ec62d208126" class="i property">Control</a> = <b>new</b> <a href="FormsPivot.cs.html#f9b39ec7dc6a92d1" class="t constructor">FormsPivot</a>
+                    {
+                        <span class="i">Style</span> = (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Style</span>)<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Application</span>.<span class="i property">Current</span>.<span class="i property">Resources</span>[<span class="s">&quot;TabbedPageStyle&quot;</span>],
+                    };
+ 
+                    <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i">SelectionChanged</span> += <span class="i">OnSelectionChanged</span>;
+ 
+                    <a href="#f1c1ae5a2d95396e" class="i property">Tracker</a> = <b>new</b> <a href="BackgroundTracker.cs.html#43e0ae2aa2ed9650" class="t constructor">BackgroundTracker</a>&lt;<span class="t t">Pivot</span>&gt;(<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Control</span>.<span class="i property">BackgroundProperty</span>)
+                    {
+                        <a href="VisualElementTracker.cs.html#0f1fd41cefec6568" class="i property">Element</a> = (<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>)<span class="r6 r">element</span>,
+                        <a href="VisualElementTracker.cs.html#8bd6c42528f7d271" class="i property">Control</a> = <a href="#feee0ec62d208126" class="i property">Control</a>,
+                        <a href="VisualElementTracker.cs.html#c5324a165ab0dec8" class="i property">Container</a> = <a href="#feee0ec62d208126" class="i property">Control</a>
+                    };
+ 
+                    <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i">Loaded</span> += <span class="i">OnLoaded</span>;
+                    <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i">Unloaded</span> += <span class="i">OnUnloaded</span>;
+                }
+ 
+                <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">DataContext</span> = <a href="#e20e86c7664aee97" class="i property">Element</a>;
+                <span class="i">OnPagesChanged</span>(<a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>,
+                    <b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>));
+ 
+                <a href="#0ddfec04c7458d65" class="i method">UpdateCurrentPage</a>();
+                <a href="#c52439708cef2451" class="i method">UpdateToolbarPlacement</a>();
+ 
+                ((<span class="i">INotifyCollectionChanged</span>)<a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>).<span class="i">CollectionChanged</span> += <span class="i">OnPagesChanged</span>;
+                <span class="r6 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <span class="i">OnElementPropertyChanged</span>;
+ 
+                <b>if</b> (!<b>string</b>.<span class="i">IsNullOrEmpty</span>(<span class="r6 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>))
+					<a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i">SetValue</span>(<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Automation</span>.<span class="t t">AutomationProperties</span>.<span class="i property">AutomationIdProperty</span>, <span class="r6 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>);
+            }
+ 
+            <a href="#f4170532d0002392" class="i method">OnElementChanged</a>(<b>new</b> <a href="VisualElementChangedEventArgs.cs.html#ebffa9de2bf319ed" class="t constructor">VisualElementChangedEventArgs</a>(<span class="r7 r">oldElement</span>, <span class="r6 r">element</span>));
+        }
+ 
+        <b>protected virtual void</b> <a id="f0ab1063ec040ff5" href="R/f0ab1063ec040ff5.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r8 rd" class="r8 r">disposing</span>)
+        {
+            <b>if</b> (!<span class="r8 r">disposing</span> || <a href="#c619795c496d8707" class="i field">_disposed</a>)
+                <b>return</b>;
+ 
+            <a href="#c619795c496d8707" class="i field">_disposed</a> = <b>true</b>;
+            <a href="#e20e86c7664aee97" class="i property">Element</a>?.<span class="i">SendDisappearing</span>();
+            <a href="#c39b4df9fec1c8a4" class="i method">SetElement</a>(<b>null</b>);
+            <a href="#f1c1ae5a2d95396e" class="i property">Tracker</a> = <b>null</b>;
+        }
+ 
+        <b>protected virtual void</b> <a id="f4170532d0002392" href="R/f4170532d0002392.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="VisualElementChangedEventArgs.cs.html#987f24d4661ba3e7" class="t t">VisualElementChangedEventArgs</a> <span id="r9 rd" class="r9 r">e</span>)
+        {
+            <span class="i">EventHandler</span>&lt;<a href="VisualElementChangedEventArgs.cs.html#987f24d4661ba3e7" class="t t">VisualElementChangedEventArgs</a>&gt; <span id="r10 rd" class="r10 r">changed</span> = <a href="#036bcf1da2ce45f0" class="i">ElementChanged</a>;
+            <b>if</b> (<span class="r10 r">changed</span> != <b>null</b>)
+                <span class="r10 r">changed</span>(<a href="#4b795840f55e2927" class="k">this</a>, <span class="r9 r">e</span>);
+        }
+ 
+        <b>void</b> <a id="d54b4d608cc3848b" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r11 rd" class="r11 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r12 rd" class="r12 r">e</span>)
+        {
+            <b>if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>.<a href="/Xamarin.Forms.Core/A.html#ffbdb21cfc058aa9" class="i property">CurrentPage</a>))
+            {
+                <a href="#0ddfec04c7458d65" class="i method">UpdateCurrentPage</a>();
+                <a href="#4748842e52b3e922" class="i method">UpdateBarTextColor</a>();
+                <a href="#ab98d15bfc47c5c0" class="i method">UpdateBarBackgroundColor</a>();
+            }
+            <b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>.<a href="/Xamarin.Forms.Core/A.html#bf792ec58f3329e8" class="i field">BarTextColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+                <a href="#4748842e52b3e922" class="i method">UpdateBarTextColor</a>();
+            <b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>.<a href="/Xamarin.Forms.Core/A.html#41d3d4e5a9852bad" class="i field">BarBackgroundColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+                <a href="#ab98d15bfc47c5c0" class="i method">UpdateBarBackgroundColor</a>();
+            <b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <span class="i n">PlatformConfiguration</span>.<span class="i n">WindowsSpecific</span>.<a href="/Xamarin.Forms.Core/A.html#961a8191c5c2ee23" class="t t">Page</a>.<a href="/Xamarin.Forms.Core/A.html#41f27b8b4d943715" class="i field">ToolbarPlacementProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+                <a href="#c52439708cef2451" class="i method">UpdateToolbarPlacement</a>();
+        }
+ 
+        <b>void</b> <a id="6197f0b2422e047b" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnLoaded</a>(<b>object</b> <span id="r13 rd" class="r13 r">sender</span>, <span class="t t">RoutedEventArgs</span> <span id="r14 rd" class="r14 r">args</span>)
+        {
+            <a href="#e20e86c7664aee97" class="i property">Element</a>?.<span class="i">SendAppearing</span>();
+            <a href="#4748842e52b3e922" class="i method">UpdateBarTextColor</a>();
+            <a href="#ab98d15bfc47c5c0" class="i method">UpdateBarBackgroundColor</a>();
+        }
+ 
+        <b>void</b> <a id="ef69088328791cc9" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnPagesChanged</a>(<b>object</b> <span id="r15 rd" class="r15 r">sender</span>, <span class="i">NotifyCollectionChangedEventArgs</span> <span id="r16 rd" class="r16 r">e</span>)
+        {
+            <span class="r16 r">e</span>.<span class="i">Apply</span>(<a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>, <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">Items</span>);
+ 
+            <span class="c">// Potential performance issue, UpdateLayout () is called for every page change</span>
+            <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i">UpdateLayout</span>();
+        }
+ 
+        <b>void</b> <a id="df5787bbe92ff25c" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnSelectionChanged</a>(<b>object</b> <span id="r17 rd" class="r17 r">sender</span>, <span class="t t">SelectionChangedEventArgs</span> <span id="r18 rd" class="r18 r">e</span>)
+        {
+            <b>if</b> (<a href="#e20e86c7664aee97" class="i property">Element</a> == <b>null</b>)
+                <b>return</b>;
+ 
+            <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r19 rd" class="r19 r">page</span> = <span class="r18 r">e</span>.<span class="i property">AddedItems</span>.<span class="i">Count</span> &gt; 0 ? (<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>)<span class="r18 r">e</span>.<span class="i property">AddedItems</span>[0] : <b>null</b>;
+            <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r20 rd" class="r20 r">currentPage</span> = <a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ffbdb21cfc058aa9" class="i property">CurrentPage</a>;
+            <b>if</b> (<span class="r20 r">currentPage</span> == <span class="r19 r">page</span>)
+                <b>return</b>;
+            <span class="r20 r">currentPage</span>?.<span class="i">SendDisappearing</span>();
+            <a href="#e20e86c7664aee97" class="i property">Element</a>.<span class="i">CurrentPage</span> = <span class="r19 r">page</span>;
+            <span class="r19 r">page</span>?.<span class="i">SendAppearing</span>();
+        }
+ 
+        <b>void</b> <a id="5c4840976ae8161d" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnUnloaded</a>(<b>object</b> <span id="r21 rd" class="r21 r">sender</span>, <span class="t t">RoutedEventArgs</span> <span id="r22 rd" class="r22 r">args</span>)
+        {
+            <a href="#e20e86c7664aee97" class="i property">Element</a>?.<span class="i">SendDisappearing</span>();
+        }
+ 
+        <span class="t t">Brush</span> <a id="d44b33ca6ab8b5e9" href="R/d44b33ca6ab8b5e9.html" target="n" data-glyph="76,1" class="i method">GetBarBackgroundBrush</a>()
+        {
+            <b>object</b> <span id="r23 rd" class="r23 r">defaultColor</span> =
+                <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Application</span>.<span class="i property">Current</span>.<span class="i property">Resources</span>[<span class="s">&quot;SystemControlBackgroundChromeMediumLowBrush&quot;</span>];
+            <b>if</b> (<a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ba71e007aefc8ec8" class="i property">BarBackgroundColor</a>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a> &amp;&amp; <span class="r23 r">defaultColor</span> != <b>null</b>)
+                <b>return</b> (<span class="t t">Brush</span>)<span class="r23 r">defaultColor</span>;
+            <b>return</b> <a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ba71e007aefc8ec8" class="i property">BarBackgroundColor</a>.<a href="ConvertExtensions.cs.html#c3efec80155500f9" class="i method">ToBrush</a>();
+        }
+ 
+        <span class="t t">Brush</span> <a id="e839386dbb791c40" href="R/e839386dbb791c40.html" target="n" data-glyph="76,1" class="i method">GetBarForegroundBrush</a>()
+        {
+            <b>object</b> <span id="r24 rd" class="r24 r">defaultColor</span> = <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Application</span>.<span class="i property">Current</span>.<span class="i property">Resources</span>[<span class="s">&quot;ApplicationForegroundThemeBrush&quot;</span>];
+            <b>if</b> (<a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d8d49daf12a0a900" class="i property">BarTextColor</a>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a> &amp;&amp; <span class="r24 r">defaultColor</span> != <b>null</b>)
+                <b>return</b> (<span class="t t">Brush</span>)<span class="r24 r">defaultColor</span>;
+            <b>return</b> <a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d8d49daf12a0a900" class="i property">BarTextColor</a>.<a href="ConvertExtensions.cs.html#c3efec80155500f9" class="i method">ToBrush</a>();
+        }
+ 
+        <b>void</b> <a id="ab98d15bfc47c5c0" href="R/ab98d15bfc47c5c0.html" target="n" data-glyph="76,1" class="i method">UpdateBarBackgroundColor</a>()
+        {
+            <b>if</b> (<a href="#e20e86c7664aee97" class="i property">Element</a> == <b>null</b>) <b>return</b>;
+            <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="k">var</a> <span id="r25 rd" class="r25 r">barBackgroundColor</span> = <a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ba71e007aefc8ec8" class="i property">BarBackgroundColor</a>;
+ 
+            <b>if</b> (<span class="r25 r">barBackgroundColor</span> == <a href="#9825c25f68a4abb4" class="i field">_barBackgroundColor</a>) <b>return</b>;
+            <a href="#9825c25f68a4abb4" class="i field">_barBackgroundColor</a> = <span class="r25 r">barBackgroundColor</span>;
+ 
+            <b>var</b> <span id="r26 rd" class="r26 r">controlToolbarBackground</span> = <a href="#feee0ec62d208126" class="i property">Control</a>.<a href="FormsPivot.cs.html#a2134ed22f12f1d9" class="i property">ToolbarBackground</a>;
+            <b>if</b> (<span class="r26 r">controlToolbarBackground</span> == <b>null</b> &amp;&amp; <span class="r25 r">barBackgroundColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a>) <b>return</b>;
+ 
+            <b>var</b> <span id="r27 rd" class="r27 r">brush</span> = <a href="#d44b33ca6ab8b5e9" class="i method">GetBarBackgroundBrush</a>();
+            <b>if</b> (<span class="r27 r">brush</span> == <span class="r26 r">controlToolbarBackground</span>) <b>return</b>;
+ 
+            <a href="#ca46d5f8eb15e184" class="i property">TitleProvider</a>.<a href="ITitleProvider.cs.html#0063206370e6177a" class="i property">BarBackgroundBrush</a> = <span class="r27 r">brush</span>;
+ 
+            <b>foreach</b> (<span class="t t">WGrid</span> <span id="r28 rd" class="r28 r">tabBarGrid</span> <b>in</b> <a href="#feee0ec62d208126" class="i property">Control</a>.<a href="FrameworkElementExtensions.cs.html#61080bcc3920b125" class="i method">GetDescendantsByName</a>&lt;<span class="t t">WGrid</span>&gt;(<a href="#87773dcda71648f1" class="i field">TabBarHeaderGridName</a>))
+            {
+                <span class="r28 r">tabBarGrid</span>.<span class="i">Background</span> = <span class="r27 r">brush</span>;
+            }
+        }
+ 
+        <b>void</b> <a id="4748842e52b3e922" href="R/4748842e52b3e922.html" target="n" data-glyph="76,1" class="i method">UpdateBarTextColor</a>()
+        {
+            <b>if</b> (<a href="#e20e86c7664aee97" class="i property">Element</a> == <b>null</b>) <b>return</b>;
+            <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="k">var</a> <span id="r29 rd" class="r29 r">barTextColor</span> = <a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d8d49daf12a0a900" class="i property">BarTextColor</a>;
+ 
+            <b>if</b> (<span class="r29 r">barTextColor</span> == <a href="#4911269fc548bc99" class="i field">_barTextColor</a>) <b>return</b>;
+            <a href="#4911269fc548bc99" class="i field">_barTextColor</a> = <span class="r29 r">barTextColor</span>;
+ 
+            <b>var</b> <span id="r30 rd" class="r30 r">controlToolbarForeground</span> = <a href="#feee0ec62d208126" class="i property">Control</a>.<a href="FormsPivot.cs.html#a0636a2a211f2403" class="i property">ToolbarForeground</a>;
+            <b>if</b> (<span class="r30 r">controlToolbarForeground</span> == <b>null</b> &amp;&amp; <span class="r29 r">barTextColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a>) <b>return</b>;
+ 
+            <b>var</b> <span id="r31 rd" class="r31 r">brush</span> = <a href="#e839386dbb791c40" class="i method">GetBarForegroundBrush</a>();
+            <b>if</b> (<span class="r31 r">brush</span> == <span class="r30 r">controlToolbarForeground</span>)
+                <b>return</b>;
+ 
+            <a href="#ca46d5f8eb15e184" class="i property">TitleProvider</a>.<a href="ITitleProvider.cs.html#80926ce109c60563" class="i property">BarForegroundBrush</a> = <span class="r31 r">brush</span>;
+ 
+            <b>foreach</b> (<span class="t t">TextBlock</span> <span id="r32 rd" class="r32 r">tabBarTextBlock</span> <b>in</b> <a href="#feee0ec62d208126" class="i property">Control</a>.<a href="FrameworkElementExtensions.cs.html#61080bcc3920b125" class="i method">GetDescendantsByName</a>&lt;<span class="t t">TextBlock</span>&gt;(<a href="#c00fab026ecd3dd6" class="i field">TabBarHeaderTextBlockName</a>))
+            {
+                <span class="r32 r">tabBarTextBlock</span>.<span class="i">Foreground</span> = <span class="r31 r">brush</span>;
+            }
+        }
+ 
+        <b>void</b> <a id="dda7416f73c5d2cf" href="R/dda7416f73c5d2cf.html" target="n" data-glyph="76,1" class="i method">UpdateTitleVisibility</a>()
+        {
+            <a href="#feee0ec62d208126" class="i property">Control</a>.<a href="FormsPivot.cs.html#20605967b07d879d" class="i property">TitleVisibility</a> = <a href="#be9855c86e914801" class="i field">_showTitle</a> ? <span class="t t">Visibility</span>.<span class="i field">Visible</span> : <span class="t t">Visibility</span>.<span class="i field">Collapsed</span>;
+        }
+ 
+        <b>void</b> <a id="0ddfec04c7458d65" href="R/0ddfec04c7458d65.html" target="n" data-glyph="76,1" class="i method">UpdateCurrentPage</a>()
+        {
+            <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r33 rd" class="r33 r">page</span> = <a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ffbdb21cfc058aa9" class="i property">CurrentPage</a>;
+ 
+            <a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="k">var</a> <span id="r34 rd" class="r34 r">nav</span> = <span class="r33 r">page</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>;
+            <a href="#ca46d5f8eb15e184" class="i property">TitleProvider</a>.<a href="ITitleProvider.cs.html#d35d3e494170d3cc" class="i property">ShowTitle</a> = <span class="r34 r">nav</span> != <b>null</b>;
+ 
+			<span class="c">// Enforce consistency rules on toolbar (show toolbar if visible Tab is Navigation Page)</span>
+			<a href="#feee0ec62d208126" class="i property">Control</a>.<a href="FormsPivot.cs.html#c99cdd47628cac2f" class="i property">ShouldShowToolbar</a> = <span class="r34 r">nav</span> != <b>null</b>;
+ 
+            <b>if</b> (<span class="r33 r">page</span> == <b>null</b>)
+                <b>return</b>;
+ 
+            <a href="#feee0ec62d208126" class="i property">Control</a>.<span class="i property">SelectedItem</span> = <span class="r33 r">page</span>;
+        }
+ 
+        <b>void</b> <a id="c52439708cef2451" href="R/c52439708cef2451.html" target="n" data-glyph="76,1" class="i method">UpdateToolbarPlacement</a>()
+        {
+            <a href="#feee0ec62d208126" class="i property">Control</a>.<a href="FormsPivot.cs.html#7b5278690ae9c817" class="i property">ToolbarPlacement</a> = <a href="#e20e86c7664aee97" class="i property">Element</a>.<a href="PlatformConfigurationExtensions.cs.html#b19f040258388849" class="i method">OnThisPlatform</a>().<a href="/Xamarin.Forms.Core/A.html#7566148426ebed68" class="i method">GetToolbarPlacement</a>();
+        }
+    }
+}</pre></td></tr></table></div></body></html>

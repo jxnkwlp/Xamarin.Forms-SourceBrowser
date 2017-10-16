@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+<html><head><title>InnerGestureListener.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(205);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/InnerGestureListener.cs" target="_top">InnerGestureListener.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Runtime</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">Object</span> = <span class="i n">Java</span>.<span class="i">Lang</span>.<span class="i">Object</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>internal class</b> <a id="b6727888e041aecc" href="R/b6727888e041aecc.html" target="n" data-glyph="2,0" class="t t">InnerGestureListener</a> : <span class="i">Object</span>, <span class="i">GestureDetector</span>.<span class="i">IOnGestureListener</span>, <span class="i">GestureDetector</span>.<span class="i">IOnDoubleTapListener</span>
+	{
+		<b>readonly</b> <a href="TapGestureHandler.cs.html#effb910c77b1dd04" class="t t">TapGestureHandler</a> <a id="116d65d70e63dc25" href="R/116d65d70e63dc25.html" target="n" data-glyph="46,1" class="i field">_tapGestureHandler</a>;
+		<b>readonly</b> <a href="PanGestureHandler.cs.html#d0abc7a98a6fc886" class="t t">PanGestureHandler</a> <a id="a08af27911df62d7" href="R/a08af27911df62d7.html" target="n" data-glyph="46,1" class="i field">_panGestureHandler</a>;
+		<b>bool</b> <a id="f0dc149af4daf183" href="R/f0dc149af4daf183.html" target="n" data-glyph="46,1" class="i field">_isScrolling</a>;		
+		<b>float</b> <a id="6c25cb337d4a26e9" href="R/6c25cb337d4a26e9.html" target="n" data-glyph="46,1" class="i field">_lastX</a>;
+		<b>float</b> <a id="cb92f344f8c2dbed" href="R/cb92f344f8c2dbed.html" target="n" data-glyph="46,1" class="i field">_lastY</a>;
+		<b>bool</b> <a id="196c255c507323c0" href="R/196c255c507323c0.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<span class="i">Func</span>&lt;<b>bool</b>&gt; <a id="1e807e52e63ebb45" href="R/1e807e52e63ebb45.html" target="n" data-glyph="46,1" class="i field">_scrollCompleteDelegate</a>;
+		<span class="i">Func</span>&lt;<b>float</b>, <b>float</b>, <b>int</b>, <b>bool</b>&gt; <a id="c6e23ae862cbe3f4" href="R/c6e23ae862cbe3f4.html" target="n" data-glyph="46,1" class="i field">_scrollDelegate</a>;
+		<span class="i">Func</span>&lt;<b>int</b>, <b>bool</b>&gt; <a id="af9bbd5d0e9d394e" href="R/af9bbd5d0e9d394e.html" target="n" data-glyph="46,1" class="i field">_scrollStartedDelegate</a>;
+		<span class="i">Func</span>&lt;<b>int</b>, <b>bool</b>&gt; <a id="55541a1f30516106" href="R/55541a1f30516106.html" target="n" data-glyph="46,1" class="i field">_tapDelegate</a>;
+		<span class="i">Func</span>&lt;<b>int</b>, <span class="i">IEnumerable</span>&lt;<a href="/Xamarin.Forms.Core/A.html#ee3163fce3030ae2" class="t t">TapGestureRecognizer</a>&gt;&gt; <a id="52d0c463488cb161" href="R/52d0c463488cb161.html" target="n" data-glyph="46,1" class="i field">_tapGestureRecognizers</a>;
+ 
+		<b>public</b> <a id="9d4776a6faf18483" href="R/9d4776a6faf18483.html" target="n" data-glyph="72,1" class="i constructor">InnerGestureListener</a>(<a href="TapGestureHandler.cs.html#effb910c77b1dd04" class="t t">TapGestureHandler</a> <span id="r0 rd" class="r0 r">tapGestureHandler</span>, <a href="PanGestureHandler.cs.html#d0abc7a98a6fc886" class="t t">PanGestureHandler</a> <span id="r1 rd" class="r1 r">panGestureHandler</span>)
+		{
+			<b>if</b> (<span class="r0 r">tapGestureHandler</span> == <b>null</b>)
+			{
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<b>nameof</b>(<span class="r0 r">tapGestureHandler</span>));
+			}
+ 
+			<b>if</b> (<span class="r1 r">panGestureHandler</span> == <b>null</b>)
+			{
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<b>nameof</b>(<span class="r1 r">panGestureHandler</span>));
+			}
+ 
+			<a href="#116d65d70e63dc25" class="i field">_tapGestureHandler</a> = <span class="r0 r">tapGestureHandler</span>;
+			<a href="#a08af27911df62d7" class="i field">_panGestureHandler</a> = <span class="r1 r">panGestureHandler</span>;
+ 
+			<a href="#55541a1f30516106" class="i field">_tapDelegate</a> = <span class="r0 r">tapGestureHandler</span>.<span class="i">OnTap</span>;
+			<a href="#52d0c463488cb161" class="i field">_tapGestureRecognizers</a> = <span class="r0 r">tapGestureHandler</span>.<span class="i">TapGestureRecognizers</span>;
+			<a href="#c6e23ae862cbe3f4" class="i field">_scrollDelegate</a> = <span class="r1 r">panGestureHandler</span>.<span class="i">OnPan</span>;
+			<a href="#af9bbd5d0e9d394e" class="i field">_scrollStartedDelegate</a> = <span class="r1 r">panGestureHandler</span>.<span class="i">OnPanStarted</span>;
+			<a href="#1e807e52e63ebb45" class="i field">_scrollCompleteDelegate</a> = <span class="r1 r">panGestureHandler</span>.<span class="i">OnPanComplete</span>;
+		}
+ 
+		<b>bool</b> <a id="9871b79d1cf8c99d" href="R/9871b79d1cf8c99d.html" target="n" data-glyph="76,1" class="i method">HasAnyGestures</a>()
+		{
+			<b>return</b> <a href="#a08af27911df62d7" class="i field">_panGestureHandler</a>.<a href="PanGestureHandler.cs.html#4f2288540172268b" class="i method">HasAnyGestures</a>() || <a href="#116d65d70e63dc25" class="i field">_tapGestureHandler</a>.<a href="TapGestureHandler.cs.html#1f2785ac987bdca8" class="i method">HasAnyGestures</a>();
+		}
+ 
+		<span class="c">// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds</span>
+		<span class="c">// which can result in the need to resurrect this object if it has already been disposed. We dispose</span>
+		<span class="c">// eagerly to allow easier garbage collection of the renderer</span>
+		<b>internal</b> <a id="7cc48f23ff9b182c" href="R/../../0000000000.html" target="n" data-glyph="74,1" class="i constructor">InnerGestureListener</a>(<span class="i">IntPtr</span> <span id="r2 rd" class="r2 r">handle</span>, <span class="i">JniHandleOwnership</span> <span id="r3 rd" class="r3 r">ownership</span>) : <b>base</b>(<span class="r2 r">handle</span>, <span class="r3 r">ownership</span>)
+		{
+		}
+ 
+		<b>bool</b> <span class="i">GestureDetector</span>.<span class="i">IOnDoubleTapListener</span>.<a id="8e6a5824e79d862a" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnDoubleTap</a>(<span class="i">MotionEvent</span> <span id="r4 rd" class="r4 r">e</span>)
+		{
+			<b>if</b> (<a href="#196c255c507323c0" class="i field">_disposed</a>)
+				<b>return false</b>;
+ 
+			<b>return</b> <span class="i">_tapDelegate</span>(2);
+		}
+ 
+		<b>bool</b> <span class="i">GestureDetector</span>.<span class="i">IOnDoubleTapListener</span>.<a id="570d730bea35e0ce" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnDoubleTapEvent</a>(<span class="i">MotionEvent</span> <span id="r5 rd" class="r5 r">e</span>)
+		{
+			<b>return false</b>;
+		}
+ 
+		<b>bool</b> <span class="i">GestureDetector</span>.<span class="i">IOnGestureListener</span>.<a id="2c51f6b67a03e297" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnDown</a>(<span class="i">MotionEvent</span> <span id="r6 rd" class="r6 r">e</span>)
+		{
+			<a href="#703ace46d0e5895d" class="i method">SetStartingPosition</a>(<span class="r6 r">e</span>);
+ 
+			<b>if</b> (<a href="#9871b79d1cf8c99d" class="i method">HasAnyGestures</a>())
+			{
+				<span class="c">// If we have any gestures to listen for, we need to return true to show we&#39;re interested in the rest</span>
+				<span class="c">// of the events.		</span>
+				<b>return true</b>;
+			}
+ 
+			<span class="c">// Since we don&#39;t have any gestures we&#39;re listening for, we return false to show we&#39;re not interested</span>
+			<span class="c">// and let parent controls have a whack at the events</span>
+			<b>return false</b>;
+		}
+ 
+		<b>bool</b> <span class="i">GestureDetector</span>.<span class="i">IOnGestureListener</span>.<a id="aa81eae2a3b74d7f" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnFling</a>(<span class="i">MotionEvent</span> <span id="r7 rd" class="r7 r">e1</span>, <span class="i">MotionEvent</span> <span id="r8 rd" class="r8 r">e2</span>, <b>float</b> <span id="r9 rd" class="r9 r">velocityX</span>, <b>float</b> <span id="r10 rd" class="r10 r">velocityY</span>)
+		{
+			<a href="#e4ace7a2f6f4f761" class="i method">EndScrolling</a>();
+			<b>return false</b>;
+		}
+ 
+		<b>void</b> <span class="i">GestureDetector</span>.<span class="i">IOnGestureListener</span>.<a id="39ea03a68c1e1075" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnLongPress</a>(<span class="i">MotionEvent</span> <span id="r11 rd" class="r11 r">e</span>)
+		{
+			<a href="#703ace46d0e5895d" class="i method">SetStartingPosition</a>(<span class="r11 r">e</span>);
+		}
+ 
+		<b>bool</b> <span class="i">GestureDetector</span>.<span class="i">IOnGestureListener</span>.<a id="aedaf514167bbc42" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnScroll</a>(<span class="i">MotionEvent</span> <span id="r12 rd" class="r12 r">e1</span>, <span class="i">MotionEvent</span> <span id="r13 rd" class="r13 r">e2</span>, <b>float</b> <span id="r14 rd" class="r14 r">distanceX</span>, <b>float</b> <span id="r15 rd" class="r15 r">distanceY</span>)
+		{
+			<b>if</b> (<span class="r12 r">e1</span> == <b>null</b> || <span class="r13 r">e2</span> == <b>null</b>)
+				<b>return false</b>;
+ 
+			<a href="#703ace46d0e5895d" class="i method">SetStartingPosition</a>(<span class="r12 r">e1</span>);
+ 
+			<b>return</b> <a href="#3de4081687ef4c4c" class="i method">StartScrolling</a>(<span class="r13 r">e2</span>);
+		}
+ 
+		<b>void</b> <span class="i">GestureDetector</span>.<span class="i">IOnGestureListener</span>.<a id="a9a0ee08cb02cb19" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnShowPress</a>(<span class="i">MotionEvent</span> <span id="r16 rd" class="r16 r">e</span>)
+		{
+		}
+ 
+		<b>bool</b> <span class="i">GestureDetector</span>.<span class="i">IOnGestureListener</span>.<a id="5aa6ffdd5e60c104" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnSingleTapUp</a>(<span class="i">MotionEvent</span> <span id="r17 rd" class="r17 r">e</span>)
+		{
+			<b>if</b> (<a href="#196c255c507323c0" class="i field">_disposed</a>)
+				<b>return false</b>;
+ 
+			<b>if</b> (<a href="#b08de48be2036162" class="i method">HasDoubleTapHandler</a>())
+			{
+				<span class="c">// Because we have a handler for double-tap, we need to wait for</span>
+				<span class="c">// OnSingleTapConfirmed (to verify it&#39;s really just a single tap) before running the delegate</span>
+				<b>return false</b>;
+			}
+ 
+			<span class="c">// A single tap has occurred and there&#39;s no handler for double tap to worry about,</span>
+			<span class="c">// so we can go ahead and run the delegate</span>
+			<b>return</b> <span class="i">_tapDelegate</span>(1);
+		}
+ 
+		<b>bool</b> <span class="i">GestureDetector</span>.<span class="i">IOnDoubleTapListener</span>.<a id="cca8fe28f0823bc1" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnSingleTapConfirmed</a>(<span class="i">MotionEvent</span> <span id="r18 rd" class="r18 r">e</span>)
+		{
+			<b>if</b> (<a href="#196c255c507323c0" class="i field">_disposed</a>)
+				<b>return false</b>;
+ 
+			<b>if</b> (!<a href="#b08de48be2036162" class="i method">HasDoubleTapHandler</a>())
+			{
+				<span class="c">// We&#39;re not worried about double-tap, so OnSingleTap has already run the delegate</span>
+				<span class="c">// there&#39;s nothing for us to do here</span>
+				<b>return false</b>;
+			}
+ 
+			<span class="c">// Since there was a double-tap handler, we had to wait for OnSingleTapConfirmed;</span>
+			<span class="c">// Now that we&#39;re sure it&#39;s a single tap, we can run the delegate</span>
+			<b>return</b> <span class="i">_tapDelegate</span>(1);
+		}
+ 
+		<b>protected override void</b> <a id="ce2ba9015faf04af" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r19 rd" class="r19 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#196c255c507323c0" class="i field">_disposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="#196c255c507323c0" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<b>if</b> (<span class="r19 r">disposing</span>)
+			{
+				<a href="#55541a1f30516106" class="i field">_tapDelegate</a> = <b>null</b>;
+				<a href="#52d0c463488cb161" class="i field">_tapGestureRecognizers</a> = <b>null</b>;
+				<a href="#c6e23ae862cbe3f4" class="i field">_scrollDelegate</a> = <b>null</b>;
+				<a href="#af9bbd5d0e9d394e" class="i field">_scrollStartedDelegate</a> = <b>null</b>;
+				<a href="#1e807e52e63ebb45" class="i field">_scrollCompleteDelegate</a> = <b>null</b>;
+			}
+ 
+			<b>base</b>.<span class="i">Dispose</span>(<span class="r19 r">disposing</span>);
+		}
+ 
+		<b>void</b> <a id="703ace46d0e5895d" href="R/703ace46d0e5895d.html" target="n" data-glyph="76,1" class="i method">SetStartingPosition</a>(<span class="i">MotionEvent</span> <span id="r20 rd" class="r20 r">e1</span>)
+		{
+			<a href="#6c25cb337d4a26e9" class="i field">_lastX</a> = <span class="r20 r">e1</span>.<span class="i">GetX</span>();
+			<a href="#cb92f344f8c2dbed" class="i field">_lastY</a> = <span class="r20 r">e1</span>.<span class="i">GetY</span>();
+		}
+ 
+		<b>bool</b> <a id="3de4081687ef4c4c" href="R/3de4081687ef4c4c.html" target="n" data-glyph="76,1" class="i method">StartScrolling</a>(<span class="i">MotionEvent</span> <span id="r21 rd" class="r21 r">e2</span>)
+		{
+			<b>if</b> (<a href="#c6e23ae862cbe3f4" class="i field">_scrollDelegate</a> == <b>null</b>)
+				<b>return false</b>;
+ 
+			<b>if</b> (!<a href="#f0dc149af4daf183" class="i field">_isScrolling</a> &amp;&amp; <a href="#af9bbd5d0e9d394e" class="i field">_scrollStartedDelegate</a> != <b>null</b>)
+				<span class="i">_scrollStartedDelegate</span>(<span class="r21 r">e2</span>.<span class="i">PointerCount</span>);
+ 
+			<a href="#f0dc149af4daf183" class="i field">_isScrolling</a> = <b>true</b>;
+ 
+			<b>float</b> <span id="r22 rd" class="r22 r">totalX</span> = <span class="r21 r">e2</span>.<span class="i">GetX</span>() - <a href="#6c25cb337d4a26e9" class="i field">_lastX</a>;
+			<b>float</b> <span id="r23 rd" class="r23 r">totalY</span> = <span class="r21 r">e2</span>.<span class="i">GetY</span>() - <a href="#cb92f344f8c2dbed" class="i field">_lastY</a>;
+ 
+			<b>return</b> <span class="i">_scrollDelegate</span>(<span class="r22 r">totalX</span>, <span class="r23 r">totalY</span>, <span class="r21 r">e2</span>.<span class="i">PointerCount</span>);
+		}
+ 
+		<b>void</b> <a id="e4ace7a2f6f4f761" href="R/e4ace7a2f6f4f761.html" target="n" data-glyph="76,1" class="i method">EndScrolling</a>()
+		{
+			<b>if</b> (<a href="#f0dc149af4daf183" class="i field">_isScrolling</a> &amp;&amp; <a href="#1e807e52e63ebb45" class="i field">_scrollCompleteDelegate</a> != <b>null</b>)
+				<span class="i">_scrollCompleteDelegate</span>();
+ 
+			<a href="#f0dc149af4daf183" class="i field">_isScrolling</a> = <b>false</b>;
+		}
+ 
+		<b>bool</b> <a id="b08de48be2036162" href="R/b08de48be2036162.html" target="n" data-glyph="76,1" class="i method">HasDoubleTapHandler</a>()
+		{
+			<b>if</b> (<a href="#52d0c463488cb161" class="i field">_tapGestureRecognizers</a> == <b>null</b>)
+				<b>return false</b>;
+			<b>return</b> <span class="i">_tapGestureRecognizers</span>(2).<span class="i">Any</span>();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

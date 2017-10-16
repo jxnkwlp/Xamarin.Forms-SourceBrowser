@@ -1,0 +1,346 @@
+﻿<!DOCTYPE html>
+<html><head><title>BlogPage.xaml.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(337);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Controls/HanselForms/BlogPage.xaml.cs" target="_top">HanselForms\BlogPage.xaml.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Controls" target="_top">Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj</a> (Xamarin.Forms.Controls)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Net</span>.<span class="i">Http</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>
+{
+	<b>public</b> <b>partial</b> <b>class</b> <a id="5b6bd40947c251d9" href="../R/5b6bd40947c251d9.html" target="n" data-glyph="0,0" class="t t">BlogPage</a> : <a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t t">ContentPage</a>
+	{
+ 
+		<b>private</b> <a href="#ec90ddc7f1971e27" class="t t">BlogFeedViewModel</a> <a id="d68d5f6e951483d8" href="../R/d68d5f6e951483d8.html" target="n" data-glyph="106,1" class="i property">ViewModel</a>
+		{
+			<b>get</b> { <b>return</b> <a href="/Xamarin.Forms.Core/A.html#ec31b23be1ce91d4" class="i property">BindingContext</a> <b>as</b> <a href="#ec90ddc7f1971e27" class="t t">BlogFeedViewModel</a>; }
+		}
+ 
+		<b>public</b> <a id="ded6f2a920209360" href="../R/ded6f2a920209360.html" target="n" data-glyph="72,1" class="i constructor">BlogPage</a>()
+		{
+			<span class="i">InitializeComponent</span>();
+			<a href="/Xamarin.Forms.Core/A.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <b>new</b> <a href="#5592d0477e3ab670" class="t constructor">BlogFeedViewModel</a>();
+ 
+			<span class="i">listView</span>.<span class="i">ItemTapped</span> += (<span id="r0 rd" class="r0 r">sender</span>, <span id="r1 rd" class="r1 r">args</span>) =&gt;
+			{
+				<b>if</b> (<span class="i">listView</span>.<span class="i">SelectedItem</span> == <b>null</b>)
+					<b>return</b>;
+				<a href="#5b6bd40947c251d9" class="k">this</a>.<a href="/Xamarin.Forms.Core/A.html#0621720042f94078" class="i property">Navigation</a>.<a href="/Xamarin.Forms.Core/A.html#3ff757e3b604805a" class="i method">PushAsync</a>(<b>new</b> <a href="#a4188ad5355f8ff1" class="t constructor">BlogDetailsView</a>(<span class="i">listView</span>.<span class="i">SelectedItem</span> <b>as</b> <a href="#8b474448074cdf84" class="t t">FeedItem</a>));
+				<span class="i">listView</span>.<span class="i">SelectedItem</span> = <b>null</b>;
+			};
+		}
+ 
+		<b>protected override void</b> <a id="4b1840ab8929aa36" href="../R/4b1840ab8929aa36.html" target="n" data-glyph="75,1" class="i method">OnAppearing</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="k">base</a>.<a href="/Xamarin.Forms.Core/A.html#6159d4d059ac7175" class="i method">OnAppearing</a>();
+			<b>if</b> (<a href="#d68d5f6e951483d8" class="i property">ViewModel</a> == <b>null</b> || !<a href="#d68d5f6e951483d8" class="i property">ViewModel</a>.<a href="HBaseViewModel.cs.html#e632c621b1ee1d35" class="i property">CanLoadMore</a> || <a href="#d68d5f6e951483d8" class="i property">ViewModel</a>.<a href="HBaseViewModel.cs.html#9297ee8b0a7f9db9" class="i property">IsBusy</a> || <a href="#d68d5f6e951483d8" class="i property">ViewModel</a>.<a href="#60c088880b15e0b0" class="i property">FeedItems</a>.<a href="@1@System.Runtime/A.html#f2419069e9890f5d" class="i property">Count</a> &gt; 0)
+				<b>return</b>;
+ 
+			<a href="#d68d5f6e951483d8" class="i property">ViewModel</a>.<a href="#dfe61e27afdf30fd" class="i property">LoadItemsCommand</a>.<a href="/Xamarin.Forms.Core/A.html#20e65f5fba0a6e66" class="i method">Execute</a>(<b>null</b>);
+		}
+	}
+ 
+ 
+	<b>public class</b> <a id="08f075196c06c5e0" href="../R/08f075196c06c5e0.html" target="n" data-glyph="0,0" class="t t">BlogDetailsView</a> : <a href="BaseView.cs.html#50217eaeea61c0c3" class="t t">BaseView</a>
+	{
+		<b>public</b> <a id="a4188ad5355f8ff1" href="../R/a4188ad5355f8ff1.html" target="n" data-glyph="72,1" class="i constructor">BlogDetailsView</a>(<a href="#8b474448074cdf84" class="t t">FeedItem</a> <span id="r2 rd" class="r2 r">item</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <span class="r2 r">item</span>;
+			<a href="/Xamarin.Forms.Core/A.html#52d8a16d29ea5696" class="k">var</a> <span id="r3 rd" class="r3 r">webView</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#0cad0eb150f76411" class="t constructor">WebView</a>
+			{
+				<a href="/Xamarin.Forms.Core/A.html#8e761ec8c2755065" class="i property">VerticalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#c9facb92cdbf2f53" class="i field">FillAndExpand</a>,
+				<a href="/Xamarin.Forms.Core/A.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#c9facb92cdbf2f53" class="i field">FillAndExpand</a>
+			};
+			<span class="r3 r">webView</span>.<a href="/Xamarin.Forms.Core/A.html#9f375fc5a4f1da28" class="i property">Source</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#c4fe406f13557fd9" class="t constructor">HtmlWebViewSource</a>
+			{
+				<a href="/Xamarin.Forms.Core/A.html#12e3ea5124ebe906" class="i property">Html</a> = <span class="r2 r">item</span>.<a href="#f1c676ccd2f7e434" class="i property">Description</a>
+			};
+			<a href="/Xamarin.Forms.Core/A.html#3929eda3f5d3e80d" class="i property">Content</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a>
+			{
+				<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a> =
+		{
+		  <span class="r3 r">webView</span>
+		}
+			};
+			<a href="/Xamarin.Forms.Core/A.html#40969ab465b00442" class="k">var</a> <span id="r4 rd" class="r4 r">share</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#0fad0c83927719a9" class="t constructor">ToolbarItem</a>
+			{
+				<a href="/Xamarin.Forms.Core/A.html#17e918f3f7180401" class="i property">Icon</a> = <span class="s">&quot;ic_share.png&quot;</span>,
+				<a href="/Xamarin.Forms.Core/A.html#2e0c5c546b8a8b5b" class="i property">Text</a> = <span class="s">&quot;Share&quot;</span>,
+				<span class="c">//Command = new Command(() =&gt; CrossShare.Current</span>
+				<span class="c">//  .Share(&quot;Be sure to read @shanselman&#39;s &quot; + item.Title + &quot; &quot; + item.Link))</span>
+			};
+ 
+			<a href="/Xamarin.Forms.Core/A.html#d2ac1f7009750d5f" class="i property">ToolbarItems</a>.<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r4 r">share</span>);
+		}
+	}
+ 
+ 
+	<b>public class</b> <a id="ec90ddc7f1971e27" href="../R/ec90ddc7f1971e27.html" target="n" data-glyph="0,0" class="t t">BlogFeedViewModel</a> : <a href="HBaseViewModel.cs.html#26db8a8eb01678da" class="t t">HBaseViewModel</a>
+	{
+		<b>public</b> <a id="5592d0477e3ab670" href="../R/5592d0477e3ab670.html" target="n" data-glyph="72,1" class="i constructor">BlogFeedViewModel</a>()
+		{
+			<a href="HBaseViewModel.cs.html#6b3bcb792626218f" class="i property">Title</a> = <span class="s">&quot;Blog&quot;</span>;
+			<a href="HBaseViewModel.cs.html#5162c1dcd3c3b705" class="i property">Icon</a> = <span class="s">&quot;blog.png&quot;</span>;
+		}
+ 
+		<b>private</b> <span class="t t">ObservableCollection</span>&lt;<a href="#8b474448074cdf84" class="t t">FeedItem</a>&gt; <a id="b207e834c1814c45" href="../R/b207e834c1814c45.html" target="n" data-glyph="46,1" class="i field">feedItems</a> = <b>new</b> <span class="t constructor">ObservableCollection</span>&lt;<a href="#8b474448074cdf84" class="t t">FeedItem</a>&gt;();
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> gets or sets the feed items</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>public</b> <span class="t t">ObservableCollection</span>&lt;<a href="#8b474448074cdf84" class="t t">FeedItem</a>&gt; <a id="60c088880b15e0b0" href="../R/60c088880b15e0b0.html" target="n" data-glyph="102,1" class="i property">FeedItems</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#b207e834c1814c45" class="i field">feedItems</a>; }
+			<b>set</b> { <a href="#b207e834c1814c45" class="i field">feedItems</a> = <b>value</b>; <a href="HBaseViewModel.cs.html#a357551a7ff755ef" class="i method">OnPropertyChanged</a>(); }
+		}
+ 
+		<b>private</b> <a href="#8b474448074cdf84" class="t t">FeedItem</a> <a id="fb4642593c80389a" href="../R/fb4642593c80389a.html" target="n" data-glyph="46,1" class="i field">selectedFeedItem</a>;
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> Gets or sets the selected feed item</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>public</b> <a href="#8b474448074cdf84" class="t t">FeedItem</a> <a id="6a97bc627ba72630" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">SelectedFeedItem</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#fb4642593c80389a" class="i field">selectedFeedItem</a>; }
+			<b>set</b>
+			{
+				<a href="#fb4642593c80389a" class="i field">selectedFeedItem</a> = <b>value</b>;
+				<a href="HBaseViewModel.cs.html#a357551a7ff755ef" class="i method">OnPropertyChanged</a>();
+			}
+		}
+ 
+		<b>private</b> <a href="/Xamarin.Forms.Core/A.html#8751d3e015cab881" class="t t">Command</a> <a id="1187ccdb36d23d25" href="../R/1187ccdb36d23d25.html" target="n" data-glyph="46,1" class="i field">loadItemsCommand</a>;
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> Command to load/refresh items</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#8751d3e015cab881" class="t t">Command</a> <a id="dfe61e27afdf30fd" href="../R/dfe61e27afdf30fd.html" target="n" data-glyph="102,1" class="i property">LoadItemsCommand</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#1187ccdb36d23d25" class="i field">loadItemsCommand</a> ?? (<a href="#1187ccdb36d23d25" class="i field">loadItemsCommand</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#d3d443b93c84bcc3" class="t constructor">Command</a>(<b>async</b> () =&gt; <b>await</b> <a href="#f3d6559ee70bb237" class="i method">ExecuteLoadItemsCommand</a>())); }
+		}
+ 
+		<b>private async</b> <span class="t t">Task</span> <a id="f3d6559ee70bb237" href="../R/f3d6559ee70bb237.html" target="n" data-glyph="76,1" class="i method">ExecuteLoadItemsCommand</a>()
+		{
+			<b>if</b> (<a href="HBaseViewModel.cs.html#9297ee8b0a7f9db9" class="i property">IsBusy</a>)
+				<b>return</b>;
+ 
+			<a href="HBaseViewModel.cs.html#9297ee8b0a7f9db9" class="i property">IsBusy</a> = <b>true</b>;
+			<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r5 rd" class="r5 r">error</span> = <b>false</b>;
+			<b>try</b>
+			{
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r6 rd" class="r6 r">responseString</span> = <b>string</b>.<a href="@1@System.Runtime/A.html#c9f70a27facb27cf" class="i field">Empty</a>;
+				<b>using</b> (<b>var</b> <span id="r7 rd" class="r7 r">httpClient</span> = <b>new</b> <span class="i">HttpClient</span>())
+				{
+					<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r8 rd" class="r8 r">feed</span> = <span class="s">&quot;http://feeds.hanselman.com/ScottHanselman&quot;</span>;
+					<span class="r6 r">responseString</span> = <b>await</b> <span class="r7 r">httpClient</span>.<span class="i">GetStringAsync</span>(<span class="r8 r">feed</span>);
+				}
+ 
+				<a href="#60c088880b15e0b0" class="i property">FeedItems</a>.<a href="@1@System.Runtime/A.html#1c7184c9f3526d9d" class="i method">Clear</a>();
+				<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r9 rd" class="r9 r">items</span> = <b>await</b> <a href="#c04e39735d1f91ab" class="i method">ParseFeed</a>(<span class="r6 r">responseString</span>);
+				<b>foreach</b> (<a href="#8b474448074cdf84" class="k">var</a> <span id="r10 rd" class="r10 r">item</span> <b>in</b> <span class="r9 r">items</span>)
+				{
+					<a href="#60c088880b15e0b0" class="i property">FeedItems</a>.<a href="@1@System.Runtime/A.html#5c61cc24de82f7e7" class="i method">Add</a>(<span class="r10 r">item</span>);
+				}
+			}
+			<b>catch</b>
+			{
+				<span class="r5 r">error</span> = <b>true</b>;
+			}
+ 
+			<b>if</b> (<span class="r5 r">error</span>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="k">var</a> <span id="r11 rd" class="r11 r">page</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t constructor">ContentPage</a>();
+				<b>await</b> <span class="r11 r">page</span>.<a href="/Xamarin.Forms.Core/A.html#3dc9f3ad3bd6f0c0" class="i method">DisplayAlert</a>(<span class="s">&quot;Error&quot;</span>, <span class="s">&quot;Unable to load blog.&quot;</span>, <span class="s">&quot;OK&quot;</span>);
+ 
+			}
+ 
+			<a href="HBaseViewModel.cs.html#9297ee8b0a7f9db9" class="i property">IsBusy</a> = <b>false</b>;
+		}
+ 
+ 
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> Parse the RSS Feed</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r12 r">rss</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<b>private async</b> <span class="t t">Task</span>&lt;<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#8b474448074cdf84" class="t t">FeedItem</a>&gt;&gt; <a id="c04e39735d1f91ab" href="../R/c04e39735d1f91ab.html" target="n" data-glyph="76,1" class="i method">ParseFeed</a>(<b>string</b> <span id="r12 rd" class="r12 r">rss</span>)
+		{
+			<b>return await</b> <span class="t t">Task</span>.<span class="i method">Run</span>(() =&gt;
+				{
+					<b>var</b> <span id="r13 rd" class="r13 r">xdoc</span> = <span class="t t">XDocument</span>.<span class="i method">Parse</span>(<span class="r12 r">rss</span>);
+					<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r14 rd" class="r14 r">id</span> = 0;
+					<b>return</b> (<b>from</b> <span class="i">item</span> <b>in</b> <span class="r13 r">xdoc</span>.<span class="i method">Descendants</span>(<span class="s">&quot;item&quot;</span>)
+							<b>select</b> <b>new</b> <a href="#8b474448074cdf84" class="t constructor">FeedItem</a>
+							{
+								<a href="#fa5793cc9cac4237" class="i property">Title</a> = (<b>string</b>)<span class="i">item</span>.<span class="i method">Element</span>(<span class="s">&quot;title&quot;</span>),
+								<a href="#f1c676ccd2f7e434" class="i property">Description</a> = (<b>string</b>)<span class="i">item</span>.<span class="i method">Element</span>(<span class="s">&quot;description&quot;</span>),
+								<a href="#6e0b571f1824a04c" class="i property">Link</a> = (<b>string</b>)<span class="i">item</span>.<span class="i method">Element</span>(<span class="s">&quot;link&quot;</span>),
+								<a href="#fe9c2246d10abeee" class="i property">PublishDate</a> = (<b>string</b>)<span class="i">item</span>.<span class="i method">Element</span>(<span class="s">&quot;pubDate&quot;</span>),
+								<a href="#282a010bcfb63659" class="i property">Category</a> = (<b>string</b>)<span class="i">item</span>.<span class="i method">Element</span>(<span class="s">&quot;category&quot;</span>),
+								<a href="#6893b688c8e033da" class="i property">Id</a> = <span class="r14 r">id</span>++
+							}).<span class="i method">ToList</span>();
+				});
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> Gets a specific feed item for an Id</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r15 r">id</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<b>public</b> <a href="#8b474448074cdf84" class="t t">FeedItem</a> <a id="70dbd844db0dea21" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetFeedItem</a>(<b>int</b> <span id="r15 rd" class="r15 r">id</span>)
+		{
+			<b>return</b> <a href="#60c088880b15e0b0" class="i property">FeedItems</a>.<span class="i method">FirstOrDefault</span>(<span id="r16 rd" class="r16 r">i</span> =&gt; <span class="r16 r">i</span>.<a href="#6893b688c8e033da" class="i property">Id</a> == <span class="r15 r">id</span>);
+		}
+	}
+ 
+	<b>public class</b> <a id="8b474448074cdf84" href="../R/8b474448074cdf84.html" target="n" data-glyph="0,0" class="t t"><span id="50106791560f2a4f">FeedItem</span></a> : <span class="t t">INotifyPropertyChanged</span>
+	{
+ 
+ 
+ 
+		<b>public string</b> <a id="f1c676ccd2f7e434" href="../R/f1c676ccd2f7e434.html" target="n" data-glyph="102,1" class="i property">Description</a> { <b>get</b>; <b>set</b>; }
+		<b>public string</b> <a id="6e0b571f1824a04c" href="../R/6e0b571f1824a04c.html" target="n" data-glyph="102,1" class="i property">Link</a> { <b>get</b>; <b>set</b>; }
+		<b>private string</b> <a id="b099f92570c2c83a" href="../R/b099f92570c2c83a.html" target="n" data-glyph="46,1" class="i field">publishDate</a>;
+		<b>public string</b> <a id="fe9c2246d10abeee" href="../R/fe9c2246d10abeee.html" target="n" data-glyph="102,1" class="i property">PublishDate</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#b099f92570c2c83a" class="i field">publishDate</a>; }
+			<b>set</b>
+			{
+				<a href="@1@System.Runtime/A.html#df6b1eba7461813b" class="t t">DateTime</a> <span id="r17 rd" class="r17 r">time</span>;
+				<b>if</b> (<a href="@1@System.Runtime/A.html#df6b1eba7461813b" class="t t">DateTime</a>.<a href="@1@System.Runtime/A.html#8b793d81bd481d85" class="i method">TryParse</a>(<b>value</b>, <b>out</b> <span class="r17 r">time</span>))
+					<a href="#b099f92570c2c83a" class="i field">publishDate</a> = <span class="r17 r">time</span>.<a href="@1@System.Runtime/A.html#cb52bd43f26943a3" class="i method">ToLocalTime</a>().<a href="@1@System.Runtime/A.html#5088b43558351160" class="i method">ToString</a>(<span class="s">&quot;D&quot;</span>);
+				<b>else</b>
+					<a href="#b099f92570c2c83a" class="i field">publishDate</a> = <b>value</b>;
+			}
+		}
+		<b>public string</b> <a id="d1d315c21bb1468c" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Author</a> { <b>get</b>; <b>set</b>; }
+		<b>public string</b> <a id="b71ec00ab391cbe3" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">AuthorEmail</a> { <b>get</b>; <b>set</b>; }
+		<b>public int</b> <a id="6893b688c8e033da" href="../R/6893b688c8e033da.html" target="n" data-glyph="102,1" class="i property">Id</a> { <b>get</b>; <b>set</b>; }
+		<b>public string</b> <a id="114eed61bb0a45cd" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">CommentCount</a> { <b>get</b>; <b>set</b>; }
+		<b>public string</b> <a id="282a010bcfb63659" href="../R/282a010bcfb63659.html" target="n" data-glyph="102,1" class="i property">Category</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public string</b> <a id="5324e817e2716626" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Mp3Url</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>private string</b> <a id="326657e2506b0daf" href="../R/326657e2506b0daf.html" target="n" data-glyph="46,1" class="i field">title</a>;
+		<b>public string</b> <a id="fa5793cc9cac4237" href="../R/fa5793cc9cac4237.html" target="n" data-glyph="102,1" class="i property">Title</a>
+		{
+			<b>get</b>
+			{
+				<b>return</b> <a href="#326657e2506b0daf" class="i field">title</a>;
+			}
+			<b>set</b>
+			{
+				<a href="#326657e2506b0daf" class="i field">title</a> = <b>value</b>;
+ 
+			}
+		}
+ 
+		<b>private string</b> <a id="d199be414aba3827" href="../R/d199be414aba3827.html" target="n" data-glyph="46,1" class="i field">caption</a>;
+ 
+		<b>public string</b> <a id="ff616a6dfd204a7c" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Caption</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (!<b>string</b>.<a href="@1@System.Runtime/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(<a href="#d199be414aba3827" class="i field">caption</a>))
+					<b>return</b> <a href="#d199be414aba3827" class="i field">caption</a>;
+ 
+ 
+				<span class="c">//get rid of HTML tags</span>
+				<a href="#d199be414aba3827" class="i field">caption</a> = <span class="t t">Regex</span>.<span class="i method">Replace</span>(<a href="#f1c676ccd2f7e434" class="i property">Description</a>, <span class="s">&quot;&lt;[^&gt;]*&gt;&quot;</span>, <b>string</b>.<a href="@1@System.Runtime/A.html#c9f70a27facb27cf" class="i field">Empty</a>);
+ 
+ 
+				<span class="c">//get rid of multiple blank lines</span>
+				<a href="#d199be414aba3827" class="i field">caption</a> = <span class="t t">Regex</span>.<span class="i method">Replace</span>(<a href="#d199be414aba3827" class="i field">caption</a>, <span class="s">@&quot;^\s*$\n&quot;</span>, <b>string</b>.<a href="@1@System.Runtime/A.html#c9f70a27facb27cf" class="i field">Empty</a>, <span class="t t">RegexOptions</span>.<span class="i field">Multiline</span>);
+ 
+				<a href="#d199be414aba3827" class="i field">caption</a> = <a href="#d199be414aba3827" class="i field">caption</a>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(0, <a href="#d199be414aba3827" class="i field">caption</a>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> &lt; 200 ? <a href="#d199be414aba3827" class="i field">caption</a>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> : 200).<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>() + <span class="s">&quot;...&quot;</span>;
+				<b>return</b> <a href="#d199be414aba3827" class="i field">caption</a>;
+			}
+		}
+ 
+		<b>public string</b> <a id="fde63ec28befa815" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Length</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>private bool</b> <a id="b6709928d46a5d46" href="../R/b6709928d46a5d46.html" target="n" data-glyph="46,1" class="i field">showImage</a> = <b>true</b>;
+ 
+		<b>public bool</b> <a id="2b4b7e9a37653259" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">ShowImage</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#b6709928d46a5d46" class="i field">showImage</a>; }
+			<b>set</b> { <a href="#b6709928d46a5d46" class="i field">showImage</a> = <b>value</b>; }
+		}
+ 
+		<b>private string</b> <a id="c17b2a0c56ff92fd" href="../R/c17b2a0c56ff92fd.html" target="n" data-glyph="46,1" class="i field">image</a> = <span class="s">@&quot;https://secure.gravatar.com/avatar/70148d964bb389d42547834e1062c886?s=60&amp;r=x&amp;d=http%3a%2f%2fd1iqk4d73cu9hh.cloudfront.net%2fcomponents%2fimg%2fuser-icon.png&quot;</span>;
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> When we set the image, mark show image as true</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>public string</b> <a id="14c3e7e520427bb4" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Image</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#c17b2a0c56ff92fd" class="i field">image</a>; }
+			<b>set</b>
+			{
+				<a href="#c17b2a0c56ff92fd" class="i field">image</a> = <b>value</b>;
+				<a href="#b6709928d46a5d46" class="i field">showImage</a> = <b>true</b>;
+			}
+ 
+		}
+ 
+		<b>private string</b> <a id="78f319db043c5764" href="../R/78f319db043c5764.html" target="n" data-glyph="46,1" class="i field">firstImage</a>;
+		<b>public string</b> <a id="48bde758db326464" href="../R/48bde758db326464.html" target="n" data-glyph="102,1" class="i property">FirstImage</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (!<b>string</b>.<a href="@1@System.Runtime/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(<a href="#78f319db043c5764" class="i field">firstImage</a>))
+					<b>return</b> <a href="#78f319db043c5764" class="i field">firstImage</a>;
+ 
+ 
+				<b>var</b> <span id="r18 rd" class="r18 r">regx</span> = <b>new</b> <span class="t constructor">Regex</span>(<span class="s">&quot;http://([\\w+?\\.\\w+])+([a-zA-Z0-9\\~\\!\\@\\#\\$\\%\\^\\&amp;amp;\\*\\(\\)_\\-\\=\\+\\\\\\/\\?\\.\\:\\;\\&#39;\\,]*)?.(?:jpg|bmp|gif|png)&quot;</span>, <span class="t t">RegexOptions</span>.<span class="i field">IgnoreCase</span>);
+				<b>var</b> <span id="r19 rd" class="r19 r">matches</span> = <span class="r18 r">regx</span>.<span class="i method">Matches</span>(<a href="#f1c676ccd2f7e434" class="i property">Description</a>);
+ 
+				<b>if</b> (<span class="r19 r">matches</span>.<span class="i property">Count</span> == 0)
+					<a href="#78f319db043c5764" class="i field">firstImage</a> = <a href="#896dea8b4bbca719" class="i property">ScottHead</a>;
+				<b>else</b>
+					<a href="#78f319db043c5764" class="i field">firstImage</a> = <span class="r19 r">matches</span>[0].<span class="i property">Value</span>;
+ 
+				<b>return</b> <a href="#78f319db043c5764" class="i field">firstImage</a>;
+			}
+		}
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="t t">ImageSource</a> <a id="4de6f98566834f03" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">FirstImageSource</a>
+		{
+			<b>get</b>
+			{
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r20 rd" class="r20 r">image</span> = <a href="#48bde758db326464" class="i property">FirstImage</a>;
+				<b>return</b> <a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="t t">UriImageSource</a>.<a href="/Xamarin.Forms.Core/A.html#1f4d9413016495e9" class="i method">FromUri</a>(<b>new</b> <a href="@1@System.Runtime/A.html#9e1bb2fef0d1159b" class="t constructor">Uri</a>(<span class="r20 r">image</span>));
+			}
+		}
+ 
+		<b>public string</b> <a id="896dea8b4bbca719" href="../R/896dea8b4bbca719.html" target="n" data-glyph="102,1" class="i property">ScottHead</a> { <b>get</b> { <b>return</b> <span class="s">&quot;http://www.hanselman.com/images/photo-scott-tall.jpg&quot;</span>; } }
+ 
+		<b>private decimal</b> <a id="22b6d3943ab8400e" href="../R/22b6d3943ab8400e.html" target="n" data-glyph="46,1" class="i field">progress</a> = 0.0M;
+		<b>public decimal</b> <a id="68c507433f932a35" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Progress</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#22b6d3943ab8400e" class="i field">progress</a>; }
+			<b>set</b> { <a href="#22b6d3943ab8400e" class="i field">progress</a> = <b>value</b>; <a href="#e6c88dd21adc64dd" class="i method">OnPropertyChanged</a>(<span class="s">&quot;Progress&quot;</span>); }
+		}
+ 
+ 
+		<b>public event</b> <span class="t t">PropertyChangedEventHandler</span> <a id="11a9b18a131e5cd2" href="../R/11a9b18a131e5cd2.html" target="n" data-glyph="30,1" class="i">PropertyChanged</a>;
+		<b>private void</b> <a id="e6c88dd21adc64dd" href="../R/e6c88dd21adc64dd.html" target="n" data-glyph="76,1" class="i method">OnPropertyChanged</a>(<b>string</b> <span id="r21 rd" class="r21 r">name</span>)
+		{
+			<b>if</b> (<a href="#11a9b18a131e5cd2" class="i">PropertyChanged</a> == <b>null</b>)
+				<b>return</b>;
+			<a href="#11a9b18a131e5cd2" class="i">PropertyChanged</a>(<a href="#8b474448074cdf84" class="k">this</a>, <b>new</b> <span class="t constructor">PropertyChangedEventArgs</span>(<span class="r21 r">name</span>));
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

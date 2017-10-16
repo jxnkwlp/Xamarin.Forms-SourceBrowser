@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html><head><title>WindowsSerializer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(71);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/WindowsSerializer.cs" target="_top">WindowsSerializer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Diagnostics</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">IO</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Runtime</span>.<span class="i">Serialization</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Storage</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.WinRT
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal sealed class</b> <a id="12b44657ba0741cc" href="R/12b44657ba0741cc.html" target="n" data-glyph="2,0" class="t t"><span id="1c9368d0dbea7df1">WindowsSerializer</span></a> : <a href="/Xamarin.Forms.Core/A.html#4485832055b9ed19" class="t t">IDeserializer</a>
+	{
+		<b>const string</b> <a id="f0d6f42f05bc8071" href="R/f0d6f42f05bc8071.html" target="n" data-glyph="10,1" class="i field">PropertyStoreFile</a> = <span class="s">&quot;PropertyStore.forms&quot;</span>;
+ 
+		<b>public async</b> <span class="i">Task</span>&lt;<span class="i">IDictionary</span>&lt;<b>string</b>, <b>object</b>&gt;&gt; <a id="58ca1273d2fff741" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">DeserializePropertiesAsync</a>()
+		{
+			<b>try</b>
+			{
+				<span class="t t">StorageFile</span> <span id="r0 rd" class="r0 r">file</span> = <b>await</b> <span class="t t">ApplicationData</span>.<span class="i property">Current</span>.<span class="i property">RoamingFolder</span>.<span class="i">GetFileAsync</span>(<a href="#f0d6f42f05bc8071" class="i field">PropertyStoreFile</a>).<a href="Extensions.cs.html#a0a424fee984737c" class="i method">DontSync</a>();
+				<b>using</b> (<span class="i">Stream</span> <span id="r1 rd" class="r1 r">stream</span> = (<b>await</b> <span class="r0 r">file</span>.<span class="i method">OpenReadAsync</span>().<a href="Extensions.cs.html#a0a424fee984737c" class="i method">DontSync</a>()).<span class="i">AsStreamForRead</span>())
+				{
+					<b>if</b> (<span class="r1 r">stream</span>.<span class="i">Length</span> == 0)
+						<b>return</b> <b>new</b> <span class="i">Dictionary</span>&lt;<b>string</b>, <b>object</b>&gt;(4);
+ 
+					<b>try</b>
+					{
+						<b>var</b> <span id="r2 rd" class="r2 r">serializer</span> = <b>new</b> <span class="i">DataContractSerializer</span>(<b>typeof</b>(<span class="i">IDictionary</span>&lt;<b>string</b>, <b>object</b>&gt;));
+						<b>return</b> (<span class="i">IDictionary</span>&lt;<b>string</b>, <b>object</b>&gt;)<span class="r2 r">serializer</span>.<span class="i">ReadObject</span>(<span class="r1 r">stream</span>);
+					}
+					<b>catch</b> (<span class="i">Exception</span> <span id="r3 rd" class="r3 r">e</span>)
+					{
+						<span class="i">Debug</span>.<span class="i">WriteLine</span>(<span class="s">&quot;Could not deserialize properties: &quot;</span> + <span class="r3 r">e</span>.<span class="i">Message</span>);
+						<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<span class="i">Warning</span>(<span class="s">&quot;Xamarin.Forms PropertyStore&quot;</span>, <span class="s">$&quot;</span><span class="s">Exception while reading Application properties: </span>{<span class="r3 r">e</span>}<span class="s">&quot;</span>);
+					}
+ 
+					<b>return null</b>;
+				}
+			}
+			<b>catch</b> (<span class="i">FileNotFoundException</span>)
+			{
+				<b>return</b> <b>new</b> <span class="i">Dictionary</span>&lt;<b>string</b>, <b>object</b>&gt;(4);
+			}
+		}
+ 
+		<b>public async</b> <span class="i">Task</span> <a id="e1e0985554f2f51a" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SerializePropertiesAsync</a>(<span class="i">IDictionary</span>&lt;<b>string</b>, <b>object</b>&gt; <span id="r4 rd" class="r4 r">properties</span>)
+		{
+			<span class="t t">StorageFile</span> <span id="r5 rd" class="r5 r">file</span> = <b>await</b> <span class="t t">ApplicationData</span>.<span class="i property">Current</span>.<span class="i property">RoamingFolder</span>.<span class="i">CreateFileAsync</span>(<a href="#f0d6f42f05bc8071" class="i field">PropertyStoreFile</a>, <span class="t t">CreationCollisionOption</span>.<span class="i field">ReplaceExisting</span>).<a href="Extensions.cs.html#a0a424fee984737c" class="i method">DontSync</a>();
+			<b>using</b> (<span class="t t">StorageStreamTransaction</span> <span id="r6 rd" class="r6 r">transaction</span> = <b>await</b> <span class="r5 r">file</span>.<span class="i method">OpenTransactedWriteAsync</span>().<a href="Extensions.cs.html#a0a424fee984737c" class="i method">DontSync</a>())
+			{
+				<b>try</b>
+				{
+					<span class="i">Stream</span> <span id="r7 rd" class="r7 r">stream</span> = <span class="r6 r">transaction</span>.<span class="i property">Stream</span>.<span class="i">AsStream</span>();
+					<b>var</b> <span id="r8 rd" class="r8 r">serializer</span> = <b>new</b> <span class="i">DataContractSerializer</span>(<b>typeof</b>(<span class="i">IDictionary</span>&lt;<b>string</b>, <b>object</b>&gt;));
+					<span class="r8 r">serializer</span>.<span class="i">WriteObject</span>(<span class="r7 r">stream</span>, <span class="r4 r">properties</span>);
+					<b>await</b> <span class="r6 r">transaction</span>.<span class="i method">CommitAsync</span>().<a href="Extensions.cs.html#75f7f8c4e3c6bc41" class="i method">DontSync</a>();
+				}
+				<b>catch</b> (<span class="i">Exception</span> <span id="r9 rd" class="r9 r">e</span>)
+				{
+					<span class="i">Debug</span>.<span class="i">WriteLine</span>(<span class="s">&quot;Could not move new serialized property file over old: &quot;</span> + <span class="r9 r">e</span>.<span class="i">Message</span>);
+				}
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

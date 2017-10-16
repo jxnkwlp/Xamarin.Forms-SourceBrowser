@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html><head><title>CADisplayLinkTicker.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(78);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/CADisplayLinkTicker.cs" target="_top">CADisplayLinkTicker.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Concurrent</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">Foundation</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">CoreVideo</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="i n">CoreAnimation</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<span class="c">// ReSharper disable once InconsistentNaming</span>
+	<b>internal class</b> <a id="02c5b064c6dc0541" href="R/02c5b064c6dc0541.html" target="n" data-glyph="2,0" class="t t">CADisplayLinkTicker</a> : <a href="/Xamarin.Forms.Core/A.html#9ac4e7c1113aeac4" class="t t">Ticker</a>
+	{
+		<b>readonly</b> <a href="@0@System/A.html#3fc8b6e4e28ee36c" class="t t">BlockingCollection</a>&lt;<a href="@0@mscorlib/A.html#9147ae6f76643aae" class="t t">Action</a>&gt; <a id="dba094cb4347e24f" href="R/dba094cb4347e24f.html" target="n" data-glyph="46,1" class="i field">_queue</a> = <b>new</b> <a href="@0@System/A.html#ba810d591165b7b6" class="t constructor">BlockingCollection</a>&lt;<a href="@0@mscorlib/A.html#9147ae6f76643aae" class="t t">Action</a>&gt;();
+		<span class="t t">CVDisplayLink</span> <a id="91f82593d02dd675" href="R/91f82593d02dd675.html" target="n" data-glyph="46,1" class="i field">_link</a>;
+ 
+		<b>public</b> <a id="4fb7dcc52bf0d157" href="R/4fb7dcc52bf0d157.html" target="n" data-glyph="72,1" class="i constructor">CADisplayLinkTicker</a>()
+		{
+			<a href="@0@mscorlib/A.html#3980e012bae82e96" class="k">var</a> <span id="r0 rd" class="r0 r">thread</span> = <b>new</b> <a href="@0@mscorlib/A.html#76f340c84df6da8d" class="t constructor">Thread</a>(<a href="#e934ddbbc825d2f3" class="i method">StartThread</a>);
+			<span class="r0 r">thread</span>.<a href="@0@mscorlib/A.html#cd2144b8dd6f4373" class="i method">Start</a>();
+		}
+ 
+		<b>internal</b> <b>new</b> <b>static</b> <a href="#02c5b064c6dc0541" class="t t">CADisplayLinkTicker</a> <a id="497fdbaa443899c5" href="R/../../0000000000.html" target="n" data-glyph="104,1" class="i property">Default</a> =&gt; <a href="/Xamarin.Forms.Core/A.html#9ac4e7c1113aeac4" class="t t">Ticker</a>.<a href="/Xamarin.Forms.Core/A.html#daa22f70b75e15e1" class="i property">Default</a> <b>as</b> <a href="#02c5b064c6dc0541" class="t t">CADisplayLinkTicker</a>;
+ 
+		<b>public void</b> <a id="6cb5fc9de9977cda" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Invoke</a>(<a href="@0@mscorlib/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r1 rd" class="r1 r">action</span>)
+		{
+			<a href="#dba094cb4347e24f" class="i field">_queue</a>.<a href="@0@System/A.html#240b18446b25bb58" class="i method">Add</a>(<span class="r1 r">action</span>);
+		}
+ 
+		<b>protected override void</b> <a id="0b772bc1fd6a94c3" href="R/0b772bc1fd6a94c3.html" target="n" data-glyph="75,1" class="i method">DisableTimer</a>()
+		{
+			<a href="#91f82593d02dd675" class="i field">_link</a>?.<span class="i method">Stop</span>();
+			<a href="#91f82593d02dd675" class="i field">_link</a>?.<span class="i method">Dispose</span>();
+			<a href="#91f82593d02dd675" class="i field">_link</a> = <b>null</b>;
+		}
+ 
+		<b>protected override void</b> <a id="a69899b37fa486eb" href="R/a69899b37fa486eb.html" target="n" data-glyph="75,1" class="i method">EnableTimer</a>()
+		{
+			<a href="#91f82593d02dd675" class="i field">_link</a> = <b>new</b> <span class="t constructor">CVDisplayLink</span>();
+			<a href="#91f82593d02dd675" class="i field">_link</a>.<span class="i method">SetOutputCallback</span>(<a href="#a0b911d5e1af56bd" class="i method">DisplayLinkOutputCallback</a>);
+			<a href="#91f82593d02dd675" class="i field">_link</a>.<span class="i method">Start</span>();
+		}
+ 
+		<b>public</b> <span class="t t">CVReturn</span> <a id="a0b911d5e1af56bd" href="R/a0b911d5e1af56bd.html" target="n" data-glyph="72,1" class="i method">DisplayLinkOutputCallback</a>(<span class="t t">CVDisplayLink</span> <span id="r2 rd" class="r2 r">displayLink</span>, <b>ref</b> <span class="t t">CVTimeStamp</span> <span id="r3 rd" class="r3 r">inNow</span>,
+			<b>ref</b> <span class="t t">CVTimeStamp</span> <span id="r4 rd" class="r4 r">inOutputTime</span>, <span class="t t">CVOptionFlags</span> <span id="r5 rd" class="r5 r">flagsIn</span>, <b>ref</b> <span class="t t">CVOptionFlags</span> <span id="r6 rd" class="r6 r">flagsOut</span>)
+		{
+			<span class="c">// There is no autorelease pool when this method is called because it will be called from a background thread</span>
+			<span class="c">// It&#39;s important to create one or you will leak objects</span>
+			<span class="c">// ReSharper disable once UnusedVariable</span>
+			<b>using</b> (<b>var</b> <span id="r7 rd" class="r7 r">pool</span> = <b>new</b> <span class="t constructor">NSAutoreleasePool</span>())
+			{
+				<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#c01f48f642e0b305" class="i method">BeginInvokeOnMainThread</a>(() =&gt; <a href="/Xamarin.Forms.Core/A.html#fd7b6a4307c0b904" class="i method">SendSignals</a>());
+			}
+			<b>return</b> <span class="t t">CVReturn</span>.<span class="i field">Success</span>;
+		}
+ 
+		<b>void</b> <a id="e934ddbbc825d2f3" href="R/e934ddbbc825d2f3.html" target="n" data-glyph="76,1" class="i method">StartThread</a>()
+		{
+			<b>while</b> (<b>true</b>)
+			{
+				<a href="@0@mscorlib/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r8 rd" class="r8 r">action</span> = <a href="#dba094cb4347e24f" class="i field">_queue</a>.<a href="@0@System/A.html#6b00be0930a56743" class="i method">Take</a>();
+				<b>bool</b> <span id="r9 rd" class="r9 r">previous</span> = <span class="t t">NSApplication</span>.<span class="i field">CheckForIllegalCrossThreadCalls</span>;
+				<span class="t t">NSApplication</span>.<span class="i field">CheckForIllegalCrossThreadCalls</span> = <b>false</b>;
+ 
+				<span class="t t">CATransaction</span>.<span class="i method">Begin</span>();
+				<span class="r8 r">action</span>.<a href="@0@mscorlib/A.html#6fbb51427c383a3a" class="i method">Invoke</a>();
+ 
+				<b>while</b> (<a href="#dba094cb4347e24f" class="i field">_queue</a>.<a href="@0@System/A.html#f62d1c69fe735f2d" class="i method">TryTake</a>(<b>out</b> <span class="r8 r">action</span>))
+					<span class="r8 r">action</span>.<a href="@0@mscorlib/A.html#6fbb51427c383a3a" class="i method">Invoke</a>();
+				<span class="t t">CATransaction</span>.<span class="i method">Commit</span>();
+ 
+				<span class="t t">NSApplication</span>.<span class="i field">CheckForIllegalCrossThreadCalls</span> = <span class="r9 r">previous</span>;
+			}
+			<span class="c">// ReSharper disable once FunctionNeverReturns</span>
+		}
+	}
+}</pre></td></tr></table></div></body></html>

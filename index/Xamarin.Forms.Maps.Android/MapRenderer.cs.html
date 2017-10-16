@@ -1,0 +1,407 @@
+﻿<!DOCTYPE html>
+<html><head><title>MapRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(398);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Maps.Android/MapRenderer.cs" target="_top">MapRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Maps.Android" target="_top">Xamarin.Forms.Maps.Android\Xamarin.Forms.Maps.Android.csproj</a> (Xamarin.Forms.Maps.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">ObjectModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Specialized</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Gms</span>.<span class="i">Maps</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Gms</span>.<span class="i">Maps</span>.<span class="i">Model</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">OS</span>;
+<b>using</b> <span class="i n">Java</span>.<span class="i">Lang</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>;
+<b>using</b> <span class="i">Math</span> = <span class="i">System</span>.<span class="i">Math</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Maps</span>.<span class="i n">Android</span>
+{
+	<b>public class</b> <a id="38970172c47ae836" href="R/38970172c47ae836.html" target="n" data-glyph="0,0" class="t t">MapRenderer</a> : <a href="/Xamarin.Forms.Platform.Android/A.html#71cff1c98136dff0" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>, <span class="i">MapView</span>&gt;,
+		<span class="i">GoogleMap</span>.<span class="i">IOnCameraChangeListener</span>, <span class="i">IOnMapReadyCallback</span>
+	{
+		<b>const string</b> <a id="1096ad6e550e2fe2" href="R/1096ad6e550e2fe2.html" target="n" data-glyph="10,1" class="i field">MoveMessageName</a> = <span class="s">&quot;MapMoveToRegion&quot;</span>;
+ 
+		<b>static</b> <span class="i">Bundle</span> <a id="a84af85b0e99083d" href="R/a84af85b0e99083d.html" target="n" data-glyph="46,1" class="i field">s_bundle</a>;
+ 
+		<b>bool</b> <a id="e66bd3ab88e0a603" href="R/e66bd3ab88e0a603.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<b>bool</b> <a id="ccbb1a5182b10fb5" href="R/ccbb1a5182b10fb5.html" target="n" data-glyph="46,1" class="i field">_init</a> = <b>true</b>;
+ 
+		<span class="i">List</span>&lt;<span class="i">Marker</span>&gt; <a id="2d9c1faf1ba39d9a" href="R/2d9c1faf1ba39d9a.html" target="n" data-glyph="46,1" class="i field">_markers</a>;
+ 
+		<b>public</b> <a id="be070762cfa49e6a" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">MapRenderer</a>()
+		{
+			<a href="/Xamarin.Forms.Platform.Android/A.html#51c5d397dcb4f87a" class="i property">AutoPackage</a> = <b>false</b>;
+		}
+ 
+		<b>protected</b> <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a> <a id="a18affab7b3c63d3" href="R/a18affab7b3c63d3.html" target="n" data-glyph="105,1" class="i property">Map</a> =&gt; <a href="/Xamarin.Forms.Platform.Android/A.html#37a572695e51b5a8" class="i property">Element</a>;
+ 
+		<b>protected</b> <span class="i">GoogleMap</span> <a id="d9234186ab5df49d" href="R/d9234186ab5df49d.html" target="n" data-glyph="45,1" class="i field">NativeMap</a>;
+ 
+		<b>internal static</b> <span class="i">Bundle</span> <a id="3690c5b4f3e03815" href="R/3690c5b4f3e03815.html" target="n" data-glyph="104,1" class="i property">Bundle</a>
+		{
+			<b>set</b> { <a href="#a84af85b0e99083d" class="i field">s_bundle</a> = <b>value</b>; }
+		}
+ 
+		<b>public void</b> <a id="e9dde7ea46fa7e2d" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnCameraChange</a>(<span class="i">CameraPosition</span> <span id="r0 rd" class="r0 r">pos</span>)
+		{
+			<span class="i">UpdateVisibleRegion</span>(<span class="r0 r">pos</span>.<span class="i">Target</span>);
+		}
+ 
+		<b>public override</b> <a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="e1abf2fcca613a8e" href="R/e1abf2fcca613a8e.html" target="n" data-glyph="72,1" class="i method">GetDesiredSize</a>(<b>int</b> <span id="r1 rd" class="r1 r">widthConstraint</span>, <b>int</b> <span id="r2 rd" class="r2 r">heightConstraint</span>)
+		{
+			<b>return</b> <b>new</b> <span class="t">SizeRequest</span>(<b>new</b> <span class="t">Size</span>(<span class="i">Context</span>.<span class="i">ToPixels</span>(40), <span class="i">Context</span>.<span class="i">ToPixels</span>(40)));
+		}
+ 
+		<b>protected override</b> <span class="i">MapView</span> <a id="9d6d23b1d909c0e1" href="R/9d6d23b1d909c0e1.html" target="n" data-glyph="75,1" class="i method">CreateNativeControl</a>()
+		{
+			<b>return</b> <b>new</b> <span class="i">MapView</span>(<span class="i">Context</span>);
+		}
+ 
+		<b>protected override void</b> <a id="f93c3fd532bbb77e" href="R/f93c3fd532bbb77e.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r3 rd" class="r3 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#e66bd3ab88e0a603" class="i field">_disposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="#e66bd3ab88e0a603" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<b>if</b> (<span class="r3 r">disposing</span>)
+			{
+				<b>if</b> (<a href="/Xamarin.Forms.Platform.Android/A.html#37a572695e51b5a8" class="i property">Element</a> != <b>null</b>)
+				{
+					<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Unsubscribe</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>, <a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a>&gt;(<a href="#38970172c47ae836" class="k">this</a>, <a href="#1096ad6e550e2fe2" class="i field">MoveMessageName</a>);
+					((<span class="i">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a>&gt;)<a href="/Xamarin.Forms.Platform.Android/A.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>).<span class="i">CollectionChanged</span> -= <span class="i">OnCollectionChanged</span>;
+				}
+ 
+				<b>if</b> (<a href="#d9234186ab5df49d" class="i field">NativeMap</a> != <b>null</b>)
+ 				{
+ 					<a href="#d9234186ab5df49d" class="i field">NativeMap</a>.<span class="i">MyLocationEnabled</span> = <b>false</b>;
+ 					<a href="#d9234186ab5df49d" class="i field">NativeMap</a>.<span class="i">SetOnCameraChangeListener</span>(<b>null</b>);
+ 					<a href="#d9234186ab5df49d" class="i field">NativeMap</a>.<span class="i">InfoWindowClick</span> -= <span class="i">MapOnMarkerClick</span>;
+ 					<a href="#d9234186ab5df49d" class="i field">NativeMap</a>.<span class="i">Dispose</span>();
+					<a href="#d9234186ab5df49d" class="i field">NativeMap</a> = <b>null</b>;
+				 }
+ 
+				<a href="/Xamarin.Forms.Platform.Android/A.html#ae97bb4279742be5" class="i property">Control</a>?.<span class="i">OnDestroy</span>();
+			}
+ 
+			<a href="/Xamarin.Forms.Platform.Android/A.html#71cff1c98136dff0" class="k">base</a>.<a href="/Xamarin.Forms.Platform.Android/A.html#2257743d08fe8ebc" class="i method">Dispose</a>(<span class="r3 r">disposing</span>);
+		}
+ 
+		<b>protected override void</b> <a id="95a0b7b6e337e63d" href="R/95a0b7b6e337e63d.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="/Xamarin.Forms.Platform.Android/A.html#9a1366c2961f4fde" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>&gt; <span id="r4 rd" class="r4 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Platform.Android/A.html#71cff1c98136dff0" class="k">base</a>.<a href="/Xamarin.Forms.Platform.Android/A.html#5d5d3ece35573040" class="i method">OnElementChanged</a>(<span class="r4 r">e</span>);
+ 
+			<span class="i">MapView</span> <span id="r5 rd" class="r5 r">oldMapView</span> = <a href="/Xamarin.Forms.Platform.Android/A.html#ae97bb4279742be5" class="i property">Control</a>;
+ 
+			<span class="i">MapView</span> <span id="r6 rd" class="r6 r">mapView</span> = <a href="#9d6d23b1d909c0e1" class="i method">CreateNativeControl</a>();
+			<span class="r6 r">mapView</span>.<span class="i">OnCreate</span>(<a href="#a84af85b0e99083d" class="i field">s_bundle</a>);
+			<span class="r6 r">mapView</span>.<span class="i">OnResume</span>();
+			<a href="/Xamarin.Forms.Platform.Android/A.html#b428fe451327a704" class="i method">SetNativeControl</a>(<span class="r6 r">mapView</span>);
+ 
+			<b>if</b> (<span class="r4 r">e</span>.<a href="/Xamarin.Forms.Platform.Android/A.html#3ce3d81b001baec9" class="i property">OldElement</a> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a> <span id="r7 rd" class="r7 r">oldMapModel</span> = <span class="r4 r">e</span>.<a href="/Xamarin.Forms.Platform.Android/A.html#3ce3d81b001baec9" class="i property">OldElement</a>;
+				((<span class="i">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a>&gt;)<span class="r7 r">oldMapModel</span>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>).<span class="i">CollectionChanged</span> -= <span class="i">OnCollectionChanged</span>;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Unsubscribe</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>, <a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a>&gt;(<a href="#38970172c47ae836" class="k">this</a>, <a href="#1096ad6e550e2fe2" class="i field">MoveMessageName</a>);
+ 
+				<b>if</b> (<a href="#d9234186ab5df49d" class="i field">NativeMap</a> != <b>null</b>)
+				{
+					<a href="#d9234186ab5df49d" class="i field">NativeMap</a>.<span class="i">SetOnCameraChangeListener</span>(<b>null</b>);
+					<a href="#d9234186ab5df49d" class="i field">NativeMap</a>.<span class="i">InfoWindowClick</span> -= <span class="i">MapOnMarkerClick</span>;
+					<a href="#d9234186ab5df49d" class="i field">NativeMap</a> = <b>null</b>;
+				}
+ 
+				<span class="r5 r">oldMapView</span>.<span class="i">Dispose</span>();
+			}
+ 
+			<a href="/Xamarin.Forms.Platform.Android/A.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">GetMapAsync</span>(<a href="#38970172c47ae836" class="k">this</a>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Subscribe</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>, <a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a>&gt;(<a href="#38970172c47ae836" class="k">this</a>, <a href="#1096ad6e550e2fe2" class="i field">MoveMessageName</a>, <span class="i">OnMoveToRegionMessage</span>, <a href="#a18affab7b3c63d3" class="i property">Map</a>);
+ 
+			<b>var</b> <span id="r8 rd" class="r8 r">incc</span> = <a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a> <b>as</b> <span class="i">INotifyCollectionChanged</span>;
+			<b>if</b> (<span class="r8 r">incc</span> != <b>null</b>)
+			{
+				<span class="r8 r">incc</span>.<span class="i">CollectionChanged</span> += <span class="i">OnCollectionChanged</span>;
+			}
+		}
+ 
+		<b>protected override void</b> <a id="dbe77312053a1749" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Platform.Android/A.html#71cff1c98136dff0" class="k">base</a>.<span class="i">OnElementPropertyChanged</span>(<span class="r9 r">sender</span>, <span class="r10 r">e</span>);
+ 
+			<b>if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#3b6d2b786b0314bc" class="i field">MapTypeProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#cf56796365fede08" class="i method">SetMapType</a>();
+				<b>return</b>;
+			}
+ 
+			<span class="i">GoogleMap</span> <span id="r11 rd" class="r11 r">gmap</span> = <a href="#d9234186ab5df49d" class="i field">NativeMap</a>;
+			<b>if</b> (<span class="r11 r">gmap</span> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#bf2b214a23f02e9c" class="i field">IsShowingUserProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<span class="r11 r">gmap</span>.<span class="i">MyLocationEnabled</span> = <span class="r11 r">gmap</span>.<span class="i">UiSettings</span>.<span class="i">MyLocationButtonEnabled</span> = <a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#b66098d7a63da5d6" class="i property">IsShowingUser</a>;
+			}
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#8b18114f57384d35" class="i field">HasScrollEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<span class="r11 r">gmap</span>.<span class="i">UiSettings</span>.<span class="i">ScrollGesturesEnabled</span> = <a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#e1aed0f4dcabef9c" class="i property">HasScrollEnabled</a>;
+			}
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#b1081bfe51b8b9e3" class="i field">HasZoomEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<span class="r11 r">gmap</span>.<span class="i">UiSettings</span>.<span class="i">ZoomControlsEnabled</span> = <a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#b05e726284c21b79" class="i property">HasZoomEnabled</a>;
+				<span class="r11 r">gmap</span>.<span class="i">UiSettings</span>.<span class="i">ZoomGesturesEnabled</span> = <a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#b05e726284c21b79" class="i property">HasZoomEnabled</a>;
+			}
+		}
+ 
+		<b>protected override void</b> <a id="685ab4ac81082668" href="R/685ab4ac81082668.html" target="n" data-glyph="75,1" class="i method">OnLayout</a>(<b>bool</b> <span id="r12 rd" class="r12 r">changed</span>, <b>int</b> <span id="r13 rd" class="r13 r">l</span>, <b>int</b> <span id="r14 rd" class="r14 r">t</span>, <b>int</b> <span id="r15 rd" class="r15 r">r</span>, <b>int</b> <span id="r16 rd" class="r16 r">b</span>)
+		{
+			<a href="/Xamarin.Forms.Platform.Android/A.html#71cff1c98136dff0" class="k">base</a>.<a href="/Xamarin.Forms.Platform.Android/A.html#5a89f7ab69a7b6c5" class="i method">OnLayout</a>(<span class="r12 r">changed</span>, <span class="r13 r">l</span>, <span class="r14 r">t</span>, <span class="r15 r">r</span>, <span class="r16 r">b</span>);
+ 
+			<b>if</b> (<a href="#ccbb1a5182b10fb5" class="i field">_init</a>)
+			{
+				<b>if</b> (<a href="#d9234186ab5df49d" class="i field">NativeMap</a> != <b>null</b>)
+				{
+					<a href="#9fb663b4c003509d" class="i method">MoveToRegion</a>(<a href="/Xamarin.Forms.Platform.Android/A.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Maps/A.html#bb4915c64f5fd075" class="i property">LastMoveToRegion</a>, <b>false</b>);
+					<span class="i">OnCollectionChanged</span>(<a href="/Xamarin.Forms.Platform.Android/A.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>, <b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>));
+					<a href="#ccbb1a5182b10fb5" class="i field">_init</a> = <b>false</b>;
+				}
+			}
+			<b>else if</b> (<span class="r12 r">changed</span>)
+			{
+				<b>if</b> (<a href="#d9234186ab5df49d" class="i field">NativeMap</a> != <b>null</b>)
+				{
+					<span class="i">UpdateVisibleRegion</span>(<a href="#d9234186ab5df49d" class="i field">NativeMap</a>.<span class="i">CameraPosition</span>.<span class="i">Target</span>);
+				}
+				<a href="#9fb663b4c003509d" class="i method">MoveToRegion</a>(<a href="/Xamarin.Forms.Platform.Android/A.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Maps/A.html#bb4915c64f5fd075" class="i property">LastMoveToRegion</a>, <b>false</b>);
+			}
+		}
+		
+		<b>protected virtual void</b> <a id="0b078b88c5cffe7a" href="R/0b078b88c5cffe7a.html" target="n" data-glyph="75,1" class="i method">OnMapReady</a>(<span class="i">GoogleMap</span> <span id="r17 rd" class="r17 r">map</span>)
+		{
+			<b>if</b> (<span class="r17 r">map</span> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+			
+			<span class="r17 r">map</span>.<span class="i">SetOnCameraChangeListener</span>(<a href="#38970172c47ae836" class="k">this</a>);
+			<span class="r17 r">map</span>.<span class="i">InfoWindowClick</span> += <span class="i">MapOnMarkerClick</span>;
+			
+			<span class="r17 r">map</span>.<span class="i">UiSettings</span>.<span class="i">ZoomControlsEnabled</span> = <a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#b05e726284c21b79" class="i property">HasZoomEnabled</a>;
+			<span class="r17 r">map</span>.<span class="i">UiSettings</span>.<span class="i">ZoomGesturesEnabled</span> = <a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#b05e726284c21b79" class="i property">HasZoomEnabled</a>;
+			<span class="r17 r">map</span>.<span class="i">UiSettings</span>.<span class="i">ScrollGesturesEnabled</span> = <a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#e1aed0f4dcabef9c" class="i property">HasScrollEnabled</a>;
+			<span class="r17 r">map</span>.<span class="i">MyLocationEnabled</span> = <span class="r17 r">map</span>.<span class="i">UiSettings</span>.<span class="i">MyLocationButtonEnabled</span> = <a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#b66098d7a63da5d6" class="i property">IsShowingUser</a>;
+			<a href="#cf56796365fede08" class="i method">SetMapType</a>();
+		}
+		
+		<b>protected virtual</b> <span class="i">MarkerOptions</span> <a id="17b0b22895d89630" href="R/17b0b22895d89630.html" target="n" data-glyph="75,1" class="i method">CreateMarker</a>(<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r18 rd" class="r18 r">pin</span>)
+		{
+			<b>var</b> <span id="r19 rd" class="r19 r">opts</span> = <b>new</b> <span class="i">MarkerOptions</span>();
+			<span class="r19 r">opts</span>.<span class="i">SetPosition</span>(<b>new</b> <span class="i">LatLng</span>(<span class="r18 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#d18675f8cc691ee2" class="i property">Position</a>.<a href="/Xamarin.Forms.Maps/A.html#cb5045a0674344be" class="i property">Latitude</a>, <span class="r18 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#d18675f8cc691ee2" class="i property">Position</a>.<a href="/Xamarin.Forms.Maps/A.html#e52379d680105ddc" class="i property">Longitude</a>));
+			<span class="r19 r">opts</span>.<span class="i">SetTitle</span>(<span class="r18 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#0ea2a21012eec1be" class="i property">Label</a>);
+			<span class="r19 r">opts</span>.<span class="i">SetSnippet</span>(<span class="r18 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#dcdc719bbd77bc7e" class="i property">Address</a>);
+			
+			<b>return</b> <span class="r19 r">opts</span>;
+		}
+ 
+		<b>void</b> <a id="902fe937bce8dbcc" href="R/902fe937bce8dbcc.html" target="n" data-glyph="76,1" class="i method">AddPins</a>(<span class="i">IList</span> <span id="r20 rd" class="r20 r">pins</span>)
+		{
+			<span class="i">GoogleMap</span> <span id="r21 rd" class="r21 r">map</span> = <a href="#d9234186ab5df49d" class="i field">NativeMap</a>;
+			<b>if</b> (<span class="r21 r">map</span> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<a href="#2d9c1faf1ba39d9a" class="i field">_markers</a> == <b>null</b>)
+			{
+				<a href="#2d9c1faf1ba39d9a" class="i field">_markers</a> = <b>new</b> <span class="i">List</span>&lt;<span class="i">Marker</span>&gt;();
+			}
+ 
+			<a href="#2d9c1faf1ba39d9a" class="i field">_markers</a>.<span class="i">AddRange</span>(<span class="r20 r">pins</span>.<span class="i">Cast</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a>&gt;().<span class="i">Select</span>(<span id="r22 rd" class="r22 r">p</span> =&gt;
+			{
+				<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r23 rd" class="r23 r">pin</span> = <span class="r22 r">p</span>;
+				<b>var</b> <span id="r24 rd" class="r24 r">opts</span> = <a href="#17b0b22895d89630" class="i method">CreateMarker</a>(<span class="r23 r">pin</span>);
+				<b>var</b> <span id="r25 rd" class="r25 r">marker</span> = <span class="r21 r">map</span>.<span class="i">AddMarker</span>(<span class="r24 r">opts</span>);
+ 
+				<span class="c">// associate pin with marker for later lookup in event handlers</span>
+				<span class="r23 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#52306723f4b0b98f" class="i property">Id</a> = <span class="r25 r">marker</span>.<span class="i">Id</span>;
+				<b>return</b> <span class="r25 r">marker</span>;
+			}));
+		}
+ 
+		<b>void</b> <a id="f28aaf10d9e84b08" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">MapOnMarkerClick</a>(<b>object</b> <span id="r26 rd" class="r26 r">sender</span>, <span class="i">GoogleMap</span>.<span class="i">InfoWindowClickEventArgs</span> <span id="r27 rd" class="r27 r">eventArgs</span>)
+		{
+			<span class="c">// clicked marker</span>
+			<b>var</b> <span id="r28 rd" class="r28 r">marker</span> = <span class="r27 r">eventArgs</span>.<span class="i">Marker</span>;
+ 
+			<span class="c">// lookup pin</span>
+			<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r29 rd" class="r29 r">targetPin</span> = <b>null</b>;
+			<b>for</b> (<b>var</b> <span id="r30 rd" class="r30 r">i</span> = 0; <span class="r30 r">i</span> &lt; <a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>.<span class="i">Count</span>; <span class="r30 r">i</span>++)
+			{
+				<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r31 rd" class="r31 r">pin</span> = <a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>[<span class="r30 r">i</span>];
+				<b>if</b> ((<b>string</b>)<span class="r31 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#52306723f4b0b98f" class="i property">Id</a> != <span class="r28 r">marker</span>.<span class="i">Id</span>)
+				{
+					<b>continue</b>;
+				}
+ 
+				<span class="r29 r">targetPin</span> = <span class="r31 r">pin</span>;
+				<b>break</b>;
+			}
+ 
+			<span class="c">// only consider event handled if a handler is present. </span>
+			<span class="c">// Else allow default behavior of displaying an info window.</span>
+			<span class="r29 r">targetPin</span>?.<span class="i">SendTap</span>();
+		}
+ 
+		<b>void</b> <a id="9fb663b4c003509d" href="R/9fb663b4c003509d.html" target="n" data-glyph="76,1" class="i method">MoveToRegion</a>(<a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a> <span id="r32 rd" class="r32 r">span</span>, <b>bool</b> <span id="r33 rd" class="r33 r">animate</span>)
+		{
+			<span class="i">GoogleMap</span> <span id="r34 rd" class="r34 r">map</span> = <a href="#d9234186ab5df49d" class="i field">NativeMap</a>;
+			<b>if</b> (<span class="r34 r">map</span> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<span class="r32 r">span</span> = <span class="r32 r">span</span>.<span class="i">ClampLatitude</span>(85, -85);
+			<b>var</b> <span id="r35 rd" class="r35 r">ne</span> = <b>new</b> <span class="i">LatLng</span>(<span class="r32 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#db8995ab43bb9e7c" class="i property">Center</a>.<a href="/Xamarin.Forms.Maps/A.html#cb5045a0674344be" class="i property">Latitude</a> + <span class="r32 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#183edcf551a5acf3" class="i property">LatitudeDegrees</a> / 2,
+				<span class="r32 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#db8995ab43bb9e7c" class="i property">Center</a>.<a href="/Xamarin.Forms.Maps/A.html#e52379d680105ddc" class="i property">Longitude</a> + <span class="r32 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#dea3c3352e2ce320" class="i property">LongitudeDegrees</a> / 2);
+			<b>var</b> <span id="r36 rd" class="r36 r">sw</span> = <b>new</b> <span class="i">LatLng</span>(<span class="r32 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#db8995ab43bb9e7c" class="i property">Center</a>.<a href="/Xamarin.Forms.Maps/A.html#cb5045a0674344be" class="i property">Latitude</a> - <span class="r32 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#183edcf551a5acf3" class="i property">LatitudeDegrees</a> / 2,
+				<span class="r32 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#db8995ab43bb9e7c" class="i property">Center</a>.<a href="/Xamarin.Forms.Maps/A.html#e52379d680105ddc" class="i property">Longitude</a> - <span class="r32 r">span</span>.<a href="/Xamarin.Forms.Maps/A.html#dea3c3352e2ce320" class="i property">LongitudeDegrees</a> / 2);
+			<span class="i">CameraUpdate</span> <span id="r37 rd" class="r37 r">update</span> = <span class="i">CameraUpdateFactory</span>.<span class="i">NewLatLngBounds</span>(<b>new</b> <span class="i">LatLngBounds</span>(<span class="r36 r">sw</span>, <span class="r35 r">ne</span>), 0);
+ 
+			<b>try</b>
+			{
+				<b>if</b> (<span class="r33 r">animate</span>)
+				{
+					<span class="r34 r">map</span>.<span class="i">AnimateCamera</span>(<span class="r37 r">update</span>);
+				}
+				<b>else</b>
+				{
+					<span class="r34 r">map</span>.<span class="i">MoveCamera</span>(<span class="r37 r">update</span>);
+				}
+			}
+			<b>catch</b> (<span class="i">IllegalStateException</span> <span id="r38 rd" class="r38 r">exc</span>)
+			{
+				<span class="i">System</span>.<span class="i">Diagnostics</span>.<span class="i">Debug</span>.<span class="i">WriteLine</span>(<span class="s">&quot;MoveToRegion exception: &quot;</span> + <span class="r38 r">exc</span>);
+				<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<span class="i">Warning</span>(<span class="s">&quot;Xamarin.Forms MapRenderer&quot;</span>, <span class="s">$&quot;</span><span class="s">MoveToRegion exception: </span>{<span class="r38 r">exc</span>}<span class="s">&quot;</span>);
+			}
+		}
+ 
+		<b>void</b> <a id="59d42351258c1e79" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnCollectionChanged</a>(<b>object</b> <span id="r39 rd" class="r39 r">sender</span>, <span class="i">NotifyCollectionChangedEventArgs</span> <span id="r40 rd" class="r40 r">notifyCollectionChangedEventArgs</span>)
+		{
+			<b>switch</b> (<span class="r40 r">notifyCollectionChangedEventArgs</span>.<span class="i">Action</span>)
+			{
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Add</span>:
+					<span class="i">AddPins</span>(<span class="r40 r">notifyCollectionChangedEventArgs</span>.<span class="i">NewItems</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Remove</span>:
+					<span class="i">RemovePins</span>(<span class="r40 r">notifyCollectionChangedEventArgs</span>.<span class="i">OldItems</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Replace</span>:
+					<span class="i">RemovePins</span>(<span class="r40 r">notifyCollectionChangedEventArgs</span>.<span class="i">OldItems</span>);
+					<span class="i">AddPins</span>(<span class="r40 r">notifyCollectionChangedEventArgs</span>.<span class="i">NewItems</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>:
+					<a href="#2d9c1faf1ba39d9a" class="i field">_markers</a>?.<span class="i">ForEach</span>(<span id="r41 rd" class="r41 r">m</span> =&gt; <span class="r41 r">m</span>.<span class="i">Remove</span>());
+					<a href="#2d9c1faf1ba39d9a" class="i field">_markers</a> = <b>null</b>;
+					<a href="#902fe937bce8dbcc" class="i method">AddPins</a>((<span class="i">IList</span>)<a href="/Xamarin.Forms.Platform.Android/A.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>);
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Move</span>:
+					<span class="c">//do nothing</span>
+					<b>break</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="5e5f3607a0776308" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnMoveToRegionMessage</a>(<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a> <span id="r42 rd" class="r42 r">s</span>, <a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a> <span id="r43 rd" class="r43 r">a</span>)
+		{
+			<a href="#9fb663b4c003509d" class="i method">MoveToRegion</a>(<span class="r43 r">a</span>, <b>true</b>);
+		}
+ 
+		<b>void</b> <a id="30d576a6dc347e11" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">RemovePins</a>(<span class="i">IList</span> <span id="r44 rd" class="r44 r">pins</span>)
+		{
+			<span class="i">GoogleMap</span> <span id="r45 rd" class="r45 r">map</span> = <a href="#d9234186ab5df49d" class="i field">NativeMap</a>;
+			<b>if</b> (<span class="r45 r">map</span> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+			<b>if</b> (<a href="#2d9c1faf1ba39d9a" class="i field">_markers</a> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>foreach</b> (<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r46 rd" class="r46 r">p</span> <b>in</b> <span class="r44 r">pins</span>)
+			{
+				<b>var</b> <span id="r47 rd" class="r47 r">marker</span> = <a href="#2d9c1faf1ba39d9a" class="i field">_markers</a>.<span class="i">FirstOrDefault</span>(<span id="r48 rd" class="r48 r">m</span> =&gt; (<b>object</b>)<span class="r48 r">m</span>.<span class="i">Id</span> == <span class="r46 r">p</span>.<a href="/Xamarin.Forms.Maps/A.html#52306723f4b0b98f" class="i property">Id</a>);
+				<b>if</b> (<span class="r47 r">marker</span> == <b>null</b>)
+				{
+					<b>continue</b>;
+				}
+				<span class="r47 r">marker</span>.<span class="i">Remove</span>();
+				<a href="#2d9c1faf1ba39d9a" class="i field">_markers</a>.<span class="i">Remove</span>(<span class="r47 r">marker</span>);
+			}
+		}
+ 
+		<b>void</b> <a id="cf56796365fede08" href="R/cf56796365fede08.html" target="n" data-glyph="76,1" class="i method">SetMapType</a>()
+		{
+			<span class="i">GoogleMap</span> <span id="r49 rd" class="r49 r">map</span> = <a href="#d9234186ab5df49d" class="i field">NativeMap</a>;
+			<b>if</b> (<span class="r49 r">map</span> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>switch</b> (<a href="#a18affab7b3c63d3" class="i property">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#d6630e58ca345e1e" class="i property">MapType</a>)
+			{
+				<b>case</b> <a href="/Xamarin.Forms.Maps/A.html#b0e9d5c3230d3151" class="t t">MapType</a>.<a href="/Xamarin.Forms.Maps/A.html#90e190283631cdac" class="i field">Street</a>:
+					<span class="r49 r">map</span>.<span class="i">MapType</span> = <span class="i">GoogleMap</span>.<span class="i">MapTypeNormal</span>;
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Maps/A.html#b0e9d5c3230d3151" class="t t">MapType</a>.<a href="/Xamarin.Forms.Maps/A.html#9ae79d4b65b5112a" class="i field">Satellite</a>:
+					<span class="r49 r">map</span>.<span class="i">MapType</span> = <span class="i">GoogleMap</span>.<span class="i">MapTypeSatellite</span>;
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Maps/A.html#b0e9d5c3230d3151" class="t t">MapType</a>.<a href="/Xamarin.Forms.Maps/A.html#4cb316bfe27c64d6" class="i field">Hybrid</a>:
+					<span class="r49 r">map</span>.<span class="i">MapType</span> = <span class="i">GoogleMap</span>.<span class="i">MapTypeHybrid</span>;
+					<b>break</b>;
+				<b>default</b>:
+					<b>throw</b> <b>new</b> <span class="i">ArgumentOutOfRangeException</span>();
+			}
+		}
+ 
+		<b>void</b> <a id="f8047d0fc33b5f7c" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">UpdateVisibleRegion</a>(<span class="i">LatLng</span> <span id="r50 rd" class="r50 r">pos</span>)
+		{
+			<span class="i">GoogleMap</span> <span id="r51 rd" class="r51 r">map</span> = <a href="#d9234186ab5df49d" class="i field">NativeMap</a>;
+			<b>if</b> (<span class="r51 r">map</span> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+			<span class="i">Projection</span> <span id="r52 rd" class="r52 r">projection</span> = <span class="r51 r">map</span>.<span class="i">Projection</span>;
+			<b>int</b> <span id="r53 rd" class="r53 r">width</span> = <a href="/Xamarin.Forms.Platform.Android/A.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">Width</span>;
+			<b>int</b> <span id="r54 rd" class="r54 r">height</span> = <a href="/Xamarin.Forms.Platform.Android/A.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">Height</span>;
+			<span class="i">LatLng</span> <span id="r55 rd" class="r55 r">ul</span> = <span class="r52 r">projection</span>.<span class="i">FromScreenLocation</span>(<b>new</b> <b>global</b>::<span class="i">Android</span>.<span class="i">Graphics</span>.<span class="i">Point</span>(0, 0));
+			<span class="i">LatLng</span> <span id="r56 rd" class="r56 r">ur</span> = <span class="r52 r">projection</span>.<span class="i">FromScreenLocation</span>(<b>new</b> <b>global</b>::<span class="i">Android</span>.<span class="i">Graphics</span>.<span class="i">Point</span>(<span class="r53 r">width</span>, 0));
+			<span class="i">LatLng</span> <span id="r57 rd" class="r57 r">ll</span> = <span class="r52 r">projection</span>.<span class="i">FromScreenLocation</span>(<b>new</b> <b>global</b>::<span class="i">Android</span>.<span class="i">Graphics</span>.<span class="i">Point</span>(0, <span class="r54 r">height</span>));
+			<span class="i">LatLng</span> <span id="r58 rd" class="r58 r">lr</span> = <span class="r52 r">projection</span>.<span class="i">FromScreenLocation</span>(<b>new</b> <b>global</b>::<span class="i">Android</span>.<span class="i">Graphics</span>.<span class="i">Point</span>(<span class="r53 r">width</span>, <span class="r54 r">height</span>));
+			<b>double</b> <span id="r59 rd" class="r59 r">dlat</span> = <span class="i">Math</span>.<span class="i">Max</span>(<span class="i">Math</span>.<span class="i">Abs</span>(<span class="r55 r">ul</span>.<span class="i">Latitude</span> - <span class="r58 r">lr</span>.<span class="i">Latitude</span>), <span class="i">Math</span>.<span class="i">Abs</span>(<span class="r56 r">ur</span>.<span class="i">Latitude</span> - <span class="r57 r">ll</span>.<span class="i">Latitude</span>));
+			<b>double</b> <span id="r60 rd" class="r60 r">dlong</span> = <span class="i">Math</span>.<span class="i">Max</span>(<span class="i">Math</span>.<span class="i">Abs</span>(<span class="r55 r">ul</span>.<span class="i">Longitude</span> - <span class="r58 r">lr</span>.<span class="i">Longitude</span>), <span class="i">Math</span>.<span class="i">Abs</span>(<span class="r56 r">ur</span>.<span class="i">Longitude</span> - <span class="r57 r">ll</span>.<span class="i">Longitude</span>));
+			<a href="/Xamarin.Forms.Platform.Android/A.html#37a572695e51b5a8" class="i property">Element</a>.<span class="i">SetVisibleRegion</span>(<b>new</b> <span class="t">MapSpan</span>(<b>new</b> <span class="t">Position</span>(<span class="r50 r">pos</span>.<span class="i">Latitude</span>, <span class="r50 r">pos</span>.<span class="i">Longitude</span>), <span class="r59 r">dlat</span>, <span class="r60 r">dlong</span>));
+		}
+ 
+		<b>void</b> <span class="i">IOnMapReadyCallback</span>.<a id="1991213d3ab3632d" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnMapReady</a>(<span class="i">GoogleMap</span> <span id="r61 rd" class="r61 r">map</span>)
+		{
+			<a href="#d9234186ab5df49d" class="i field">NativeMap</a> = <span class="r61 r">map</span>;
+			<a href="#0b078b88c5cffe7a" class="i method">OnMapReady</a>(<span class="r61 r">map</span>);
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

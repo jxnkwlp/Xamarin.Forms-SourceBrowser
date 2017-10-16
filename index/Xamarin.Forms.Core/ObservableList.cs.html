@@ -1,0 +1,121 @@
+﻿<!DOCTYPE html>
+<html><head><title>ObservableList.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(112);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/ObservableList.cs" target="_top">ObservableList.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>internal class</b> <a id="67164bbbaeb445b1" href="R/67164bbbaeb445b1.html" target="n" data-glyph="2,0" class="t t"><span id="d2137cc67493186d">ObservableList</span></a>&lt;<span id="r0 rd t" class="r0 r t">T</span>&gt; : <span class="t t">ObservableCollection</span>&lt;<span class="r0 r t">T</span>&gt;
+	{
+		<span class="c">// There&#39;s lots of special-casing optimizations that could be done here</span>
+		<span class="c">// but right now this is only being used for tests.</span>
+ 
+		<b>public void</b> <a id="24f0cee651fe3034" href="R/24f0cee651fe3034.html" target="n" data-glyph="72,1" class="i method">AddRange</a>(<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="r0 r t">T</span>&gt; <span id="r1 rd" class="r1 r">range</span>)
+		{
+			<b>if</b> (<span class="r1 r">range</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;range&quot;</span>);
+ 
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<span class="r0 r t">T</span>&gt; <span id="r2 rd" class="r2 r">items</span> = <span class="r1 r">range</span>.<span class="i method">ToList</span>();
+			<b>int</b> <span id="r3 rd" class="r3 r">index</span> = <a href="@1@System.Runtime/A.html#a0629dbd0f63a60e" class="i property">Items</a>.<a href="@1@System.Runtime/A.html#3d6c21c4e9bd5f63" class="i property">Count</a>;
+			<b>foreach</b> (<span class="r0 r t">T</span> <span id="r4 rd" class="r4 r">item</span> <b>in</b> <span class="r2 r">items</span>)
+				<a href="@1@System.Runtime/A.html#a0629dbd0f63a60e" class="i property">Items</a>.<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r4 r">item</span>);
+ 
+			<span class="i method">OnCollectionChanged</span>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>, <span class="r2 r">items</span>, <span class="r3 r">index</span>));
+		}
+ 
+		<b>public void</b> <a id="df18c141b3bf538c" href="R/df18c141b3bf538c.html" target="n" data-glyph="72,1" class="i method">InsertRange</a>(<b>int</b> <span id="r5 rd" class="r5 r">index</span>, <a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="r0 r t">T</span>&gt; <span id="r6 rd" class="r6 r">range</span>)
+		{
+			<b>if</b> (<span class="r5 r">index</span> &lt; 0 || <span class="r5 r">index</span> &gt; <a href="@1@System.Runtime/A.html#f2419069e9890f5d" class="i property">Count</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;index&quot;</span>);
+			<b>if</b> (<span class="r6 r">range</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;range&quot;</span>);
+ 
+			<b>int</b> <span id="r7 rd" class="r7 r">originalIndex</span> = <span class="r5 r">index</span>;
+ 
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<span class="r0 r t">T</span>&gt; <span id="r8 rd" class="r8 r">items</span> = <span class="r6 r">range</span>.<span class="i method">ToList</span>();
+			<b>foreach</b> (<span class="r0 r t">T</span> <span id="r9 rd" class="r9 r">item</span> <b>in</b> <span class="r8 r">items</span>)
+				<a href="@1@System.Runtime/A.html#a0629dbd0f63a60e" class="i property">Items</a>.<a href="@1@System.Runtime/A.html#11453faf8022b027" class="i method">Insert</a>(<span class="r5 r">index</span>++, <span class="r9 r">item</span>);
+ 
+			<span class="i method">OnCollectionChanged</span>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>, <span class="r8 r">items</span>, <span class="r7 r">originalIndex</span>));
+		}
+ 
+		<b>public void</b> <a id="bda0aec300debdda" href="R/bda0aec300debdda.html" target="n" data-glyph="72,1" class="i method">Move</a>(<b>int</b> <span id="r10 rd" class="r10 r">oldIndex</span>, <b>int</b> <span id="r11 rd" class="r11 r">newIndex</span>, <b>int</b> <span id="r12 rd" class="r12 r">count</span>)
+		{
+			<b>if</b> (<span class="r10 r">oldIndex</span> &lt; 0 || <span class="r10 r">oldIndex</span> + <span class="r12 r">count</span> &gt; <a href="@1@System.Runtime/A.html#f2419069e9890f5d" class="i property">Count</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;oldIndex&quot;</span>);
+			<b>if</b> (<span class="r11 r">newIndex</span> &lt; 0 || <span class="r11 r">newIndex</span> + <span class="r12 r">count</span> &gt; <a href="@1@System.Runtime/A.html#f2419069e9890f5d" class="i property">Count</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;newIndex&quot;</span>);
+ 
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r13 rd" class="r13 r">items</span> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<span class="r0 r t">T</span>&gt;(<span class="r12 r">count</span>);
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r14 rd" class="r14 r">i</span> = 0; <span class="r14 r">i</span> &lt; <span class="r12 r">count</span>; <span class="r14 r">i</span>++)
+			{
+				<span class="r0 r t">T</span> <span id="r15 rd" class="r15 r">item</span> = <a href="@1@System.Runtime/A.html#a0629dbd0f63a60e" class="i property">Items</a><a href="@1@System.Runtime/A.html#396bb785d31f5979">[</a><span class="r10 r">oldIndex</span>];
+				<span class="r13 r">items</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r15 r">item</span>);
+				<a href="@1@System.Runtime/A.html#a0629dbd0f63a60e" class="i property">Items</a>.<a href="@1@System.Runtime/A.html#3d7a8bddfaa22596" class="i method">RemoveAt</a>(<span class="r10 r">oldIndex</span>);
+			}
+ 
+			<b>int</b> <span id="r16 rd" class="r16 r">index</span> = <span class="r11 r">newIndex</span>;
+			<b>if</b> (<span class="r11 r">newIndex</span> &gt; <span class="r10 r">oldIndex</span>)
+				<span class="r16 r">index</span> -= <span class="r13 r">items</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> - 1;
+ 
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r17 rd" class="r17 r">i</span> = 0; <span class="r17 r">i</span> &lt; <span class="r13 r">items</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r17 r">i</span>++)
+				<a href="@1@System.Runtime/A.html#a0629dbd0f63a60e" class="i property">Items</a>.<a href="@1@System.Runtime/A.html#11453faf8022b027" class="i method">Insert</a>(<span class="r16 r">index</span> + <span class="r17 r">i</span>, <span class="r13 r">items</span><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r17 r">i</span>]);
+ 
+			<span class="i method">OnCollectionChanged</span>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Move</span>, <span class="r13 r">items</span>, <span class="r11 r">newIndex</span>, <span class="r10 r">oldIndex</span>));
+		}
+ 
+		<b>public void</b> <a id="2f7e81a4898bb681" href="R/2f7e81a4898bb681.html" target="n" data-glyph="72,1" class="i method">RemoveAt</a>(<b>int</b> <span id="r18 rd" class="r18 r">index</span>, <b>int</b> <span id="r19 rd" class="r19 r">count</span>)
+		{
+			<b>if</b> (<span class="r18 r">index</span> &lt; 0 || <span class="r18 r">index</span> + <span class="r19 r">count</span> &gt; <a href="@1@System.Runtime/A.html#f2419069e9890f5d" class="i property">Count</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;index&quot;</span>);
+ 
+			<span class="r0 r t">T</span>[] <span id="r20 rd" class="r20 r">items</span> = <a href="@1@System.Runtime/A.html#a0629dbd0f63a60e" class="i property">Items</a>.<span class="i method">Skip</span>(<span class="r18 r">index</span>).<span class="i method">Take</span>(<span class="r19 r">count</span>).<span class="i method">ToArray</span>();
+			<b>for</b> (<b>int</b> <span id="r21 rd" class="r21 r">i</span> = <span class="r18 r">index</span>; <span class="r21 r">i</span> &lt; <span class="r19 r">count</span>; <span class="r21 r">i</span>++)
+				<a href="@1@System.Runtime/A.html#a0629dbd0f63a60e" class="i property">Items</a>.<a href="@1@System.Runtime/A.html#3d7a8bddfaa22596" class="i method">RemoveAt</a>(<span class="r21 r">i</span>);
+ 
+			<span class="i method">OnCollectionChanged</span>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>, <span class="r20 r">items</span>, <span class="r18 r">index</span>));
+		}
+ 
+		<b>public void</b> <a id="0d5f2a782146c4c5" href="R/0d5f2a782146c4c5.html" target="n" data-glyph="72,1" class="i method">RemoveRange</a>(<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="r0 r t">T</span>&gt; <span id="r22 rd" class="r22 r">range</span>)
+		{
+			<b>if</b> (<span class="r22 r">range</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;range&quot;</span>);
+ 
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<span class="r0 r t">T</span>&gt; <span id="r23 rd" class="r23 r">items</span> = <span class="r22 r">range</span>.<span class="i method">ToList</span>();
+			<b>foreach</b> (<span class="r0 r t">T</span> <span id="r24 rd" class="r24 r">item</span> <b>in</b> <span class="r23 r">items</span>)
+				<a href="@1@System.Runtime/A.html#a0629dbd0f63a60e" class="i property">Items</a>.<a href="@1@System.Runtime/A.html#12ab6cfa5ca2ceec" class="i method">Remove</a>(<span class="r24 r">item</span>);
+ 
+			<span class="i method">OnCollectionChanged</span>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>, <span class="r23 r">items</span>));
+		}
+ 
+		<b>public void</b> <a id="28f07ace0930f4fc" href="R/28f07ace0930f4fc.html" target="n" data-glyph="72,1" class="i method">ReplaceRange</a>(<b>int</b> <span id="r25 rd" class="r25 r">startIndex</span>, <a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="r0 r t">T</span>&gt; <span id="r26 rd" class="r26 r">items</span>)
+		{
+			<b>if</b> (<span class="r26 r">items</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;items&quot;</span>);
+ 
+			<span class="r0 r t">T</span>[] <span id="r27 rd" class="r27 r">ritems</span> = <span class="r26 r">items</span>.<span class="i method">ToArray</span>();
+ 
+			<b>if</b> (<span class="r25 r">startIndex</span> &lt; 0 || <span class="r25 r">startIndex</span> + <span class="r27 r">ritems</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; <a href="@1@System.Runtime/A.html#f2419069e9890f5d" class="i property">Count</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;startIndex&quot;</span>);
+ 
+			<b>var</b> <span id="r28 rd" class="r28 r">oldItems</span> = <b>new</b> <span class="r0 r t">T</span>[<span class="r27 r">ritems</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a>];
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r29 rd" class="r29 r">i</span> = 0; <span class="r29 r">i</span> &lt; <span class="r27 r">ritems</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a>; <span class="r29 r">i</span>++)
+			{
+				<span class="r28 r">oldItems</span>[<span class="r29 r">i</span>] = <a href="@1@System.Runtime/A.html#a0629dbd0f63a60e" class="i property">Items</a><a href="@1@System.Runtime/A.html#396bb785d31f5979">[</a><span class="r29 r">i</span> + <span class="r25 r">startIndex</span>];
+				<a href="@1@System.Runtime/A.html#a0629dbd0f63a60e" class="i property">Items</a><a href="@1@System.Runtime/A.html#396bb785d31f5979">[</a><span class="r29 r">i</span> + <span class="r25 r">startIndex</span>] = <span class="r27 r">ritems</span>[<span class="r29 r">i</span>];
+			}
+ 
+			<span class="i method">OnCollectionChanged</span>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>, <span class="r27 r">ritems</span>, <span class="r28 r">oldItems</span>, <span class="r25 r">startIndex</span>));
+		}
+	}
+}</pre></td></tr></table></div></body></html>

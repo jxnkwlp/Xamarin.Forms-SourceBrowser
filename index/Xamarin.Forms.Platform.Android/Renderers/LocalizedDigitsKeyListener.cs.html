@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+<html><head><title>LocalizedDigitsKeyListener.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(215);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Renderers/LocalizedDigitsKeyListener.cs" target="_top">Renderers\LocalizedDigitsKeyListener.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Text</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Text</span>.<span class="i">Method</span>;
+<b>using</b> <span class="i n">Java</span>.<span class="i">Lang</span>;
+<b>using</b> <span class="i n">Java</span>.<span class="i">Text</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>internal class</b> <a id="df718cade1999c08" href="../R/df718cade1999c08.html" target="n" data-glyph="2,0" class="t t">LocalizedDigitsKeyListener</a> : <span class="i">NumberKeyListener</span>
+	{
+		<b>readonly char</b> <a id="498edce7f1e27465" href="../R/498edce7f1e27465.html" target="n" data-glyph="46,1" class="i field">_decimalSeparator</a>;
+ 
+		<span class="c">// I&#39;m not aware of a situation/locale where this would need to be something different, </span>
+		<span class="c">// but we&#39;ll make it easy to localize the sign in the future just in case</span>
+		<b>const char</b> <a id="249febcee7074a14" href="../R/249febcee7074a14.html" target="n" data-glyph="10,1" class="i field">SignCharacter</a> = <span class="s">&#39;-&#39;</span>;
+ 
+		<b>static</b> <span class="i">Dictionary</span>&lt;<b>char</b>, <a href="#df718cade1999c08" class="t t">LocalizedDigitsKeyListener</a>&gt; <a id="6c057c454f6c1d4e" href="../R/6c057c454f6c1d4e.html" target="n" data-glyph="46,1" class="i field">s_unsignedCache</a>;
+		<b>static</b> <span class="i">Dictionary</span>&lt;<b>char</b>, <a href="#df718cade1999c08" class="t t">LocalizedDigitsKeyListener</a>&gt; <a id="40c7072f73b58296" href="../R/40c7072f73b58296.html" target="n" data-glyph="46,1" class="i field">s_signedCache</a>;
+ 
+		<b>static char</b> <a id="4ba2fffad1432cd4" href="../R/4ba2fffad1432cd4.html" target="n" data-glyph="76,1" class="i method">GetDecimalSeparator</a>()
+		{
+			<b>var</b> <span id="r0 rd" class="r0 r">format</span> = <span class="i">NumberFormat</span>.<span class="i">Instance</span> <b>as</b> <span class="i">DecimalFormat</span>;
+			<b>if</b> (<span class="r0 r">format</span> == <b>null</b>)
+			{
+				<b>return</b> <span class="s">&#39;.&#39;</span>;
+			}
+ 
+			<span class="i">DecimalFormatSymbols</span> <span id="r1 rd" class="r1 r">sym</span> = <span class="r0 r">format</span>.<span class="i">DecimalFormatSymbols</span>;
+			<b>return</b> <span class="r1 r">sym</span>.<span class="i">DecimalSeparator</span>;
+		}
+ 
+		<b>public static</b> <span class="i">NumberKeyListener</span> <a id="4008b01e5e20712b" href="../R/4008b01e5e20712b.html" target="n" data-glyph="72,1" class="i method">Create</a>(<span class="i">InputTypes</span> <span id="r2 rd" class="r2 r">inputTypes</span>)
+		{
+			<b>if</b> ((<span class="r2 r">inputTypes</span> &amp; <span class="i">InputTypes</span>.<span class="i">NumberFlagDecimal</span>) == 0)
+			{
+				<span class="c">// If decimal isn&#39;t allowed, we can just use the Android version</span>
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 0618
+				<b>return</b> <span class="i">DigitsKeyListener</span>.<span class="i">GetInstance</span>(<span class="r2 r">inputTypes</span>.<span class="i">HasFlag</span>(<span class="i">InputTypes</span>.<span class="i">NumberFlagSigned</span>), <b>false</b>);
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 0618
+			}
+ 
+			<span class="c">// Figure out what the decimal separator is for the current locale</span>
+			<b>char</b> <span id="r3 rd" class="r3 r">decimalSeparator</span> = <a href="#4ba2fffad1432cd4" class="i method">GetDecimalSeparator</a>();
+ 
+			<b>if</b> (<span class="r3 r">decimalSeparator</span> == <span class="s">&#39;.&#39;</span>)
+			{
+				<span class="c">// If it&#39;s &#39;.&#39;, then we can just use the default Android version</span>
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 0618
+				<b>return</b> <span class="i">DigitsKeyListener</span>.<span class="i">GetInstance</span>(<span class="r2 r">inputTypes</span>.<span class="i">HasFlag</span>(<span class="i">InputTypes</span>.<span class="i">NumberFlagSigned</span>), <b>true</b>);
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 0618
+			}
+ 
+			<span class="c">// If decimals are enabled and the locale&#39;s decimal separator is not &#39;.&#39;</span>
+			<span class="c">// (which is hard-coded in the Android DigitKeyListener), then use </span>
+			<span class="c">// our custom one with a configurable decimal separator</span>
+			<b>return</b> <a href="#9a66c270b62f9e45" class="i method">GetInstance</a>(<span class="r2 r">inputTypes</span>, <span class="r3 r">decimalSeparator</span>);
+		}
+ 
+		<b>public static</b> <a href="#df718cade1999c08" class="t t">LocalizedDigitsKeyListener</a> <a id="9a66c270b62f9e45" href="../R/9a66c270b62f9e45.html" target="n" data-glyph="72,1" class="i method">GetInstance</a>(<span class="i">InputTypes</span> <span id="r4 rd" class="r4 r">inputTypes</span>, <b>char</b> <span id="r5 rd" class="r5 r">decimalSeparator</span>)
+		{
+			<b>if</b> ((<span class="r4 r">inputTypes</span> &amp; <span class="i">InputTypes</span>.<span class="i">NumberFlagSigned</span>) != 0)
+			{
+				<b>return</b> <a href="#dad93280696cce7d" class="i method">GetInstance</a>(<span class="r4 r">inputTypes</span>, <span class="r5 r">decimalSeparator</span>, <b>ref</b> <a href="#40c7072f73b58296" class="i field">s_signedCache</a>);
+			}
+ 
+			<b>return</b> <a href="#dad93280696cce7d" class="i method">GetInstance</a>(<span class="r4 r">inputTypes</span>, <span class="r5 r">decimalSeparator</span>, <b>ref</b> <a href="#6c057c454f6c1d4e" class="i field">s_unsignedCache</a>);
+		}
+ 
+		<b>static</b> <a href="#df718cade1999c08" class="t t">LocalizedDigitsKeyListener</a> <a id="dad93280696cce7d" href="../R/dad93280696cce7d.html" target="n" data-glyph="76,1" class="i method">GetInstance</a>(<span class="i">InputTypes</span> <span id="r6 rd" class="r6 r">inputTypes</span>, <b>char</b> <span id="r7 rd" class="r7 r">decimalSeparator</span>, <b>ref</b> <span class="i">Dictionary</span>&lt;<b>char</b>, <a href="#df718cade1999c08" class="t t">LocalizedDigitsKeyListener</a>&gt; <span id="r8 rd" class="r8 r">cache</span>)
+		{
+			<b>if</b> (<span class="r8 r">cache</span> == <b>null</b>)
+			{
+				<span class="r8 r">cache</span> = <b>new</b> <span class="i">Dictionary</span>&lt;<b>char</b>, <a href="#df718cade1999c08" class="t t">LocalizedDigitsKeyListener</a>&gt;(1);
+			}
+ 
+			<b>if</b> (!<span class="r8 r">cache</span>.<span class="i">ContainsKey</span>(<span class="r7 r">decimalSeparator</span>))
+			{
+				<span class="r8 r">cache</span>.<span class="i">Add</span>(<span class="r7 r">decimalSeparator</span>, <b>new</b> <a href="#5efe3e56979b5a69" class="t constructor">LocalizedDigitsKeyListener</a>(<span class="r6 r">inputTypes</span>, <span class="r7 r">decimalSeparator</span>));
+			}
+ 
+			<b>return</b> <span class="r8 r">cache</span>[<span class="r7 r">decimalSeparator</span>];
+		}
+ 
+		<b>protected</b> <a id="5efe3e56979b5a69" href="../R/5efe3e56979b5a69.html" target="n" data-glyph="75,1" class="i constructor">LocalizedDigitsKeyListener</a>(<span class="i">InputTypes</span> <span id="r9 rd" class="r9 r">inputTypes</span>, <b>char</b> <span id="r10 rd" class="r10 r">decimalSeparator</span>)
+		{
+			<a href="#498edce7f1e27465" class="i field">_decimalSeparator</a> = <span class="r10 r">decimalSeparator</span>;
+			<a href="#0527cc09b09dc85e" class="i property">InputType</a> = <span class="r9 r">inputTypes</span>;
+		}
+ 
+		<b>public override</b> <span class="i">InputTypes</span> <a id="0527cc09b09dc85e" href="../R/0527cc09b09dc85e.html" target="n" data-glyph="102,1" class="i property">InputType</a> { <b>get</b>; }
+ 
+		<b>char</b>[] <a id="6786983d9637c0ce" href="../R/6786983d9637c0ce.html" target="n" data-glyph="46,1" class="i field">_acceptedChars</a>;
+ 
+		<b>protected override char</b>[] <a id="3011104424ec0521" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">GetAcceptedChars</a>()
+		{
+			<b>if</b> ((<a href="#0527cc09b09dc85e" class="i property">InputType</a> &amp; <span class="i">InputTypes</span>.<span class="i">NumberFlagSigned</span>) == 0)
+			{
+				<b>return</b> <a href="#6786983d9637c0ce" class="i field">_acceptedChars</a> ??
+				       (<a href="#6786983d9637c0ce" class="i field">_acceptedChars</a> = <b>new</b>[] { <span class="s">&#39;0&#39;</span>, <span class="s">&#39;1&#39;</span>, <span class="s">&#39;2&#39;</span>, <span class="s">&#39;3&#39;</span>, <span class="s">&#39;4&#39;</span>, <span class="s">&#39;5&#39;</span>, <span class="s">&#39;6&#39;</span>, <span class="s">&#39;7&#39;</span>, <span class="s">&#39;8&#39;</span>, <span class="s">&#39;9&#39;</span>, <a href="#498edce7f1e27465" class="i field">_decimalSeparator</a> });
+			}
+ 
+			<b>return</b> <a href="#6786983d9637c0ce" class="i field">_acceptedChars</a> ??
+			       (<a href="#6786983d9637c0ce" class="i field">_acceptedChars</a> = <b>new</b>[] { <span class="s">&#39;0&#39;</span>, <span class="s">&#39;1&#39;</span>, <span class="s">&#39;2&#39;</span>, <span class="s">&#39;3&#39;</span>, <span class="s">&#39;4&#39;</span>, <span class="s">&#39;5&#39;</span>, <span class="s">&#39;6&#39;</span>, <span class="s">&#39;7&#39;</span>, <span class="s">&#39;8&#39;</span>, <span class="s">&#39;9&#39;</span>, <a href="#249febcee7074a14" class="i field">SignCharacter</a>, <a href="#498edce7f1e27465" class="i field">_decimalSeparator</a> });
+		}
+ 
+		<b>static bool</b> <a id="2c723e0732506e59" href="../R/2c723e0732506e59.html" target="n" data-glyph="76,1" class="i method">IsSignChar</a>(<b>char</b> <span id="r11 rd" class="r11 r">c</span>)
+		{
+			<b>return</b> <span class="r11 r">c</span> == <a href="#249febcee7074a14" class="i field">SignCharacter</a>;
+		}
+ 
+		<b>bool</b> <a id="b600ee809e8cd1e9" href="../R/b600ee809e8cd1e9.html" target="n" data-glyph="76,1" class="i method">IsDecimalPointChar</a>(<b>char</b> <span id="r12 rd" class="r12 r">c</span>)
+		{
+			<b>return</b> <span class="r12 r">c</span> == <a href="#498edce7f1e27465" class="i field">_decimalSeparator</a>;
+		}
+ 
+		<b>public override</b> <span class="i">ICharSequence</span> <a id="88ed375552dc1a34" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">FilterFormatted</a>(<span class="i">ICharSequence</span> <span id="r13 rd" class="r13 r">source</span>, <b>int</b> <span id="r14 rd" class="r14 r">start</span>, <b>int</b> <span id="r15 rd" class="r15 r">end</span>, <span class="i">ISpanned</span> <span id="r16 rd" class="r16 r">dest</span>, <b>int</b> <span id="r17 rd" class="r17 r">dstart</span>,
+			<b>int</b> <span id="r18 rd" class="r18 r">dend</span>)
+		{
+			<span class="c">// Borrowed heavily from the Android source</span>
+			<span class="i">ICharSequence</span> <span id="r19 rd" class="r19 r">filterFormatted</span> = <b>base</b>.<span class="i">FilterFormatted</span>(<span class="r13 r">source</span>, <span class="r14 r">start</span>, <span class="r15 r">end</span>, <span class="r16 r">dest</span>, <span class="r17 r">dstart</span>, <span class="r18 r">dend</span>);
+ 
+			<b>if</b> (<span class="r19 r">filterFormatted</span> != <b>null</b>)
+			{
+				<span class="r13 r">source</span> = <span class="r19 r">filterFormatted</span>;
+				<span class="r14 r">start</span> = 0;
+				<span class="r15 r">end</span> = <span class="r19 r">filterFormatted</span>.<span class="i">Length</span>();
+			}
+ 
+			<b>int</b> <span id="r20 rd" class="r20 r">sign</span> = -1;
+			<b>int</b> <span id="r21 rd" class="r21 r">dec</span> = -1;
+			<b>int</b> <span id="r22 rd" class="r22 r">dlen</span> = <span class="r16 r">dest</span>.<span class="i">Length</span>();
+ 
+			<span class="c">// Find out if the existing text has a sign or decimal point characters.</span>
+			<b>for</b> (<b>var</b> <span id="r23 rd" class="r23 r">i</span> = 0; <span class="r23 r">i</span> &lt; <span class="r17 r">dstart</span>; <span class="r23 r">i</span>++)
+			{
+				<b>char</b> <span id="r24 rd" class="r24 r">c</span> = <span class="r16 r">dest</span>.<span class="i">CharAt</span>(<span class="r23 r">i</span>);
+				<b>if</b> (<a href="#2c723e0732506e59" class="i method">IsSignChar</a>(<span class="r24 r">c</span>))
+				{
+					<span class="r20 r">sign</span> = <span class="r23 r">i</span>;
+				}
+				<b>else if</b> (<a href="#b600ee809e8cd1e9" class="i method">IsDecimalPointChar</a>(<span class="r24 r">c</span>))
+				{
+					<span class="r21 r">dec</span> = <span class="r23 r">i</span>;
+				}
+			}
+ 
+			<b>for</b> (<b>int</b> <span id="r25 rd" class="r25 r">i</span> = <span class="r18 r">dend</span>; <span class="r25 r">i</span> &lt; <span class="r22 r">dlen</span>; <span class="r25 r">i</span>++)
+			{
+				<b>char</b> <span id="r26 rd" class="r26 r">c</span> = <span class="r16 r">dest</span>.<span class="i">CharAt</span>(<span class="r25 r">i</span>);
+				<b>if</b> (<a href="#2c723e0732506e59" class="i method">IsSignChar</a>(<span class="r26 r">c</span>))
+				{
+					<b>return</b> <b>new</b> <span class="i">String</span>(<span class="s">&quot;&quot;</span>); <span class="c">// Nothing can be inserted in front of a sign character.</span>
+				}
+ 
+				<b>if</b> (<a href="#b600ee809e8cd1e9" class="i method">IsDecimalPointChar</a>(<span class="r26 r">c</span>))
+				{
+					<span class="r21 r">dec</span> = <span class="r25 r">i</span>;
+				}
+			}
+ 
+			<span class="c">// If it does, we must strip them out from the source.</span>
+			<span class="c">// In addition, a sign character must be the very first character,</span>
+			<span class="c">// and nothing can be inserted before an existing sign character.</span>
+			<span class="c">// Go in reverse order so the offsets are stable.</span>
+			<span class="i">SpannableStringBuilder</span> <span id="r27 rd" class="r27 r">stripped</span> = <b>null</b>;
+			<b>for</b> (<b>int</b> <span id="r28 rd" class="r28 r">i</span> = <span class="r15 r">end</span> - 1; <span class="r28 r">i</span> &gt;= <span class="r14 r">start</span>; <span class="r28 r">i</span>--)
+			{
+				<b>char</b> <span id="r29 rd" class="r29 r">c</span> = <span class="r13 r">source</span>.<span class="i">CharAt</span>(<span class="r28 r">i</span>);
+				<b>var</b> <span id="r30 rd" class="r30 r">strip</span> = <b>false</b>;
+ 
+				<b>if</b> (<a href="#2c723e0732506e59" class="i method">IsSignChar</a>(<span class="r29 r">c</span>))
+				{
+					<b>if</b> (<span class="r28 r">i</span> != <span class="r14 r">start</span> || <span class="r17 r">dstart</span> != 0)
+					{
+						<span class="r30 r">strip</span> = <b>true</b>;
+					}
+					<b>else if</b> (<span class="r20 r">sign</span> &gt;= 0)
+					{
+						<span class="r30 r">strip</span> = <b>true</b>;
+					}
+					<b>else</b>
+					{
+						<span class="r20 r">sign</span> = <span class="r28 r">i</span>;
+					}
+				}
+				<b>else if</b> (<a href="#b600ee809e8cd1e9" class="i method">IsDecimalPointChar</a>(<span class="r29 r">c</span>))
+				{
+					<b>if</b> (<span class="r21 r">dec</span> &gt;= 0)
+					{
+						<span class="r30 r">strip</span> = <b>true</b>;
+					}
+					<b>else</b>
+					{
+						<span class="r21 r">dec</span> = <span class="r28 r">i</span>;
+					}
+				}
+ 
+				<b>if</b> (<span class="r30 r">strip</span>)
+				{
+					<b>if</b> (<span class="r15 r">end</span> == <span class="r14 r">start</span> + 1)
+					{
+						<b>return</b> <b>new</b> <span class="i">String</span>(<span class="s">&quot;&quot;</span>); <span class="c">// Only one character, and it was stripped.</span>
+					}
+					<b>if</b> (<span class="r27 r">stripped</span> == <b>null</b>)
+					{
+						<span class="r27 r">stripped</span> = <b>new</b> <span class="i">SpannableStringBuilder</span>(<span class="r13 r">source</span>, <span class="r14 r">start</span>, <span class="r15 r">end</span>);
+					}
+					<span class="r27 r">stripped</span>.<span class="i">Delete</span>(<span class="r28 r">i</span> - <span class="r14 r">start</span>, <span class="r28 r">i</span> + 1 - <span class="r14 r">start</span>);
+				}
+			}
+ 
+			<b>return</b> <span class="r27 r">stripped</span> ?? <span class="r19 r">filterFormatted</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

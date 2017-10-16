@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html><head><title>Deserializer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(95);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/Deserializer.cs" target="_top">Deserializer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>.<span class="i n">IsolatedStorage</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Runtime</span>.<span class="i n">Serialization</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.MacOS
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal class</b> <a id="a02f6fb0e5f346b3" href="R/a02f6fb0e5f346b3.html" target="n" data-glyph="2,0" class="t t"><span id="0a1e9106f63f7756">Deserializer</span></a> : <a href="/Xamarin.Forms.Core/A.html#4485832055b9ed19" class="t t">IDeserializer</a>
+	{
+		<b>const string</b> <a id="2ab6b2a50a2c1a28" href="R/2ab6b2a50a2c1a28.html" target="n" data-glyph="10,1" class="i field">PropertyStoreFile</a> = <span class="s">&quot;PropertyStore.forms&quot;</span>;
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<a href="@0@mscorlib/A.html#20343df0c96b629b" class="t t">IDictionary</a>&lt;<b>string</b>, <b>object</b>&gt;&gt; <a id="0e14b4cd6783662f" href="R/0e14b4cd6783662f.html" target="n" data-glyph="72,1" class="i method">DeserializePropertiesAsync</a>()
+		{
+			<span class="c">// Deserialize property dictionary to local storage</span>
+			<span class="c">// Make sure to use Internal</span>
+			<b>return</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a>.<a href="@0@mscorlib/A.html#c3e0ffe470f08b7b" class="i method">Run</a>(() =&gt;
+			{
+				<b>using</b> (<a href="@0@mscorlib/A.html#a535e123427a84ae" class="k">var</a> <span id="r0 rd" class="r0 r">store</span> = <a href="@0@mscorlib/A.html#a535e123427a84ae" class="t t">IsolatedStorageFile</a>.<a href="@0@mscorlib/A.html#cd4cafef41b07a73" class="i method">GetUserStoreForApplication</a>())
+				<b>using</b> (<a href="@0@mscorlib/A.html#3170da5a80264939" class="k">var</a> <span id="r1 rd" class="r1 r">stream</span> = <span class="r0 r">store</span>.<a href="@0@mscorlib/A.html#fa3b7540294cfe6b" class="i method">OpenFile</a>(<a href="#2ab6b2a50a2c1a28" class="i field">PropertyStoreFile</a>, <span class="i n">System</span>.<span class="i n">IO</span>.<a href="@0@mscorlib/A.html#c0cb6ba6af625b3a" class="t t">FileMode</a>.<a href="@0@mscorlib/A.html#80a500db887477f8" class="i field">OpenOrCreate</a>))
+				<b>using</b> (<a href="@0@System.Runtime.Serialization/A.html#4f7c1bf88e21d40e" class="k">var</a> <span id="r2 rd" class="r2 r">reader</span> = <a href="@0@System.Runtime.Serialization/A.html#4f7c1bf88e21d40e" class="t t">XmlDictionaryReader</a>.<a href="@0@System.Runtime.Serialization/A.html#c2d655f4968512db" class="i method">CreateBinaryReader</a>(<span class="r1 r">stream</span>, <a href="@0@System.Runtime.Serialization/A.html#bc0bafeafb10f995" class="t t">XmlDictionaryReaderQuotas</a>.<a href="@0@System.Runtime.Serialization/A.html#2d6b2cd6516dadf2" class="i property">Max</a>))
+				{
+					<b>if</b> (<span class="r1 r">stream</span>.<a href="@0@mscorlib/A.html#a8ba99c0d39c4e96" class="i property">Length</a> == 0)
+						<b>return null</b>;
+ 
+					<b>try</b>
+					{
+						<a href="@0@System.Runtime.Serialization/A.html#6cc682dea94de0b8" class="k">var</a> <span id="r3 rd" class="r3 r">dcs</span> = <b>new</b> <a href="@0@System.Runtime.Serialization/A.html#445c1f543d14db7a" class="t constructor">DataContractSerializer</a>(<b>typeof</b>(<a href="@0@mscorlib/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<b>string</b>, <b>object</b>&gt;));
+						<b>return</b> (<a href="@0@mscorlib/A.html#20343df0c96b629b" class="t t">IDictionary</a>&lt;<b>string</b>, <b>object</b>&gt;)<span class="r3 r">dcs</span>.<a href="@0@System.Runtime.Serialization/A.html#39d6f0ffa6f19310" class="i method">ReadObject</a>(<span class="r2 r">reader</span>);
+					}
+					<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r4 rd" class="r4 r">e</span>)
+					{
+						<a href="@0@System/A.html#632c6da37ce825df" class="t t">Debug</a>.<a href="@0@System/A.html#73de7bb60da320d3" class="i method">WriteLine</a>(<span class="s">&quot;Could not deserialize properties: &quot;</span> + <span class="r4 r">e</span>.<a href="@0@mscorlib/A.html#5fba0e16215b42a3" class="i property">Message</a>);
+						<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;Xamarin.Forms PropertyStore&quot;</span>, <span class="s">$&quot;</span><span class="s">Exception while reading Application properties: </span>{<span class="r4 r">e</span>}<span class="s">&quot;</span>);
+					}
+				}
+ 
+				<b>return null</b>;
+			});
+		}
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a> <a id="503cbe6ba8d83dc9" href="R/503cbe6ba8d83dc9.html" target="n" data-glyph="72,1" class="i method">SerializePropertiesAsync</a>(<a href="@0@mscorlib/A.html#20343df0c96b629b" class="t t">IDictionary</a>&lt;<b>string</b>, <b>object</b>&gt; <span id="r5 rd" class="r5 r">properties</span>)
+		{
+			<span class="r5 r">properties</span> = <b>new</b> <a href="@0@mscorlib/A.html#6009e5bfe5f70341" class="t constructor">Dictionary</a>&lt;<b>string</b>, <b>object</b>&gt;(<span class="r5 r">properties</span>);
+			<span class="c">// Serialize property dictionary to local storage</span>
+			<span class="c">// Make sure to use Internal</span>
+			<b>return</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a>.<a href="@0@mscorlib/A.html#89fc01f3bb88eed9" class="i method">Run</a>(() =&gt;
+			{
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r6 rd" class="r6 r">success</span> = <b>false</b>;
+				<b>using</b> (<a href="@0@mscorlib/A.html#a535e123427a84ae" class="k">var</a> <span id="r7 rd" class="r7 r">store</span> = <a href="@0@mscorlib/A.html#a535e123427a84ae" class="t t">IsolatedStorageFile</a>.<a href="@0@mscorlib/A.html#cd4cafef41b07a73" class="i method">GetUserStoreForApplication</a>())
+				<b>using</b> (<a href="@0@mscorlib/A.html#3170da5a80264939" class="k">var</a> <span id="r8 rd" class="r8 r">stream</span> = <span class="r7 r">store</span>.<a href="@0@mscorlib/A.html#fa3b7540294cfe6b" class="i method">OpenFile</a>(<a href="#2ab6b2a50a2c1a28" class="i field">PropertyStoreFile</a> + <span class="s">&quot;.tmp&quot;</span>, <span class="i n">System</span>.<span class="i n">IO</span>.<a href="@0@mscorlib/A.html#c0cb6ba6af625b3a" class="t t">FileMode</a>.<a href="@0@mscorlib/A.html#80a500db887477f8" class="i field">OpenOrCreate</a>))
+				<b>using</b> (<a href="@0@System.Runtime.Serialization/A.html#60dd75fd0ec1aee9" class="k">var</a> <span id="r9 rd" class="r9 r">writer</span> = <a href="@0@System.Runtime.Serialization/A.html#60dd75fd0ec1aee9" class="t t">XmlDictionaryWriter</a>.<a href="@0@System.Runtime.Serialization/A.html#a143b2c0968153bc" class="i method">CreateBinaryWriter</a>(<span class="r8 r">stream</span>))
+				{
+					<b>try</b>
+					{
+						<a href="@0@System.Runtime.Serialization/A.html#6cc682dea94de0b8" class="k">var</a> <span id="r10 rd" class="r10 r">dcs</span> = <b>new</b> <a href="@0@System.Runtime.Serialization/A.html#445c1f543d14db7a" class="t constructor">DataContractSerializer</a>(<b>typeof</b>(<a href="@0@mscorlib/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<b>string</b>, <b>object</b>&gt;));
+						<span class="r10 r">dcs</span>.<a href="@0@System.Runtime.Serialization/A.html#a779774f6d5ee7ca" class="i method">WriteObject</a>(<span class="r9 r">writer</span>, <span class="r5 r">properties</span>);
+						<span class="r9 r">writer</span>.<a href="@0@System.Xml/A.html#007c788926a822cb" class="i method">Flush</a>();
+						<span class="r6 r">success</span> = <b>true</b>;
+					}
+					<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r11 rd" class="r11 r">e</span>)
+					{
+						<a href="@0@System/A.html#632c6da37ce825df" class="t t">Debug</a>.<a href="@0@System/A.html#73de7bb60da320d3" class="i method">WriteLine</a>(<span class="s">&quot;Could not serialize properties: &quot;</span> + <span class="r11 r">e</span>.<a href="@0@mscorlib/A.html#5fba0e16215b42a3" class="i property">Message</a>);
+						<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;Xamarin.Forms PropertyStore&quot;</span>, <span class="s">$&quot;</span><span class="s">Exception while writing Application properties: </span>{<span class="r11 r">e</span>}<span class="s">&quot;</span>);
+					}
+				}
+ 
+				<b>if</b> (!<span class="r6 r">success</span>)
+					<b>return</b>;
+				<b>using</b> (<a href="@0@mscorlib/A.html#a535e123427a84ae" class="k">var</a> <span id="r12 rd" class="r12 r">store</span> = <a href="@0@mscorlib/A.html#a535e123427a84ae" class="t t">IsolatedStorageFile</a>.<a href="@0@mscorlib/A.html#cd4cafef41b07a73" class="i method">GetUserStoreForApplication</a>())
+				{
+					<b>try</b>
+					{
+						<b>if</b> (<span class="r12 r">store</span>.<a href="@0@mscorlib/A.html#96406fbff43a24cf" class="i method">FileExists</a>(<a href="#2ab6b2a50a2c1a28" class="i field">PropertyStoreFile</a>))
+							<span class="r12 r">store</span>.<a href="@0@mscorlib/A.html#25c61a7d2ad89943" class="i method">DeleteFile</a>(<a href="#2ab6b2a50a2c1a28" class="i field">PropertyStoreFile</a>);
+						<span class="r12 r">store</span>.<a href="@0@mscorlib/A.html#c762793000dd32bc" class="i method">MoveFile</a>(<a href="#2ab6b2a50a2c1a28" class="i field">PropertyStoreFile</a> + <span class="s">&quot;.tmp&quot;</span>, <a href="#2ab6b2a50a2c1a28" class="i field">PropertyStoreFile</a>);
+					}
+					<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r13 rd" class="r13 r">e</span>)
+					{
+						<a href="@0@System/A.html#632c6da37ce825df" class="t t">Debug</a>.<a href="@0@System/A.html#73de7bb60da320d3" class="i method">WriteLine</a>(<span class="s">&quot;Could not move new serialized property file over old: &quot;</span> + <span class="r13 r">e</span>.<a href="@0@mscorlib/A.html#5fba0e16215b42a3" class="i property">Message</a>);
+						<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;Xamarin.Forms PropertyStore&quot;</span>, <span class="s">$&quot;</span><span class="s">Exception while writing Application properties: </span>{<span class="r13 r">e</span>}<span class="s">&quot;</span>);
+					}
+				}
+			});
+		}
+	}
+}</pre></td></tr></table></div></body></html>

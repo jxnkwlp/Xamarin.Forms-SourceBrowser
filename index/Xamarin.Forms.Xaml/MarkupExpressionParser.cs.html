@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+<html><head><title>MarkupExpressionParser.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(227);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Xaml/MarkupExpressionParser.cs" target="_top">MarkupExpressionParser.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Xaml" target="_top">Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj</a> (Xamarin.Forms.Xaml)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<span class="c">//</span>
+<span class="c">// MarkupExpressionParser.cs</span>
+<span class="c">//</span>
+<span class="c">// This code is partly salvaged from moonlight. Following licence apply.</span>
+<span class="c">//</span>
+<span class="c">//</span>
+<span class="c">// Author(s):</span>
+<span class="c">//   Moonlight List (moonlight-list@lists.ximian.com)</span>
+<span class="c">//   Stephane Delcroix (stephane@mi8.be)</span>
+<span class="c">//</span>
+<span class="c">// Copyright 2009 Novell, Inc.</span>
+<span class="c">// Copyright 2013 Xamarin, Inc.</span>
+<span class="c">//</span>
+<span class="c">// Permission is hereby granted, free of charge, to any person obtaining</span>
+<span class="c">// a copy of this software and associated documentation files (the</span>
+<span class="c">// &quot;Software&quot;), to deal in the Software without restriction, including</span>
+<span class="c">// without limitation the rights to use, copy, modify, merge, publish,</span>
+<span class="c">// distribute, sublicense, and/or sell copies of the Software, and to</span>
+<span class="c">// permit persons to whom the Software is furnished to do so, subject to</span>
+<span class="c">// the following conditions:</span>
+<span class="c">// </span>
+<span class="c">// The above copyright notice and this permission notice shall be</span>
+<span class="c">// included in all copies or substantial portions of the Software.</span>
+<span class="c">// </span>
+<span class="c">// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,</span>
+<span class="c">// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</span>
+<span class="c">// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</span>
+<span class="c">// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE</span>
+<span class="c">// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION</span>
+<span class="c">// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION</span>
+<span class="c">// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c">//</span>
+ 
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Text</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>
+{
+	<b>internal abstract class</b> <a id="ede638ca290763d2" href="R/ede638ca290763d2.html" target="n" data-glyph="2,0" class="t t"><span id="e1110b77519f0855">MarkupExpressionParser</span></a>
+	{
+		<b>public object</b> <a id="5cf4bd4e7aa1c8be" href="R/5cf4bd4e7aa1c8be.html" target="n" data-glyph="72,1" class="i method">ParseExpression</a>(<b>ref string</b> <span id="r0 rd" class="r0 r">expression</span>, <span class="t t">IServiceProvider</span> <span id="r1 rd" class="r1 r">serviceProvider</span>)
+		{
+			<b>if</b> (<span class="r1 r">serviceProvider</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;serviceProvider&quot;</span>);
+			<b>if</b> (<span class="r0 r">expression</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;{}&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+				<b>return</b> <span class="r0 r">expression</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(2);
+ 
+			<b>if</b> (<span class="r0 r">expression</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r0 r">expression</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> - 1] != <span class="s">&#39;}&#39;</span>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#df2d82d91ca29e40" class="t constructor">Exception</a>(<span class="s">&quot;Expression must end with &#39;}&#39;&quot;</span>);
+ 
+			<b>int</b> <span id="r2 rd" class="r2 r">len</span>;
+			<b>string</b> <span id="r3 rd" class="r3 r">match</span>;
+			<b>if</b> (!<a href="#ca5b20768f2f1cb2" class="i method">MatchMarkup</a>(<b>out</b> <span class="r3 r">match</span>, <span class="r0 r">expression</span>, <b>out</b> <span class="r2 r">len</span>))
+				<b>return false</b>;
+			<span class="r0 r">expression</span> = <span class="r0 r">expression</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(<span class="r2 r">len</span>).<a href="@1@System.Runtime/A.html#5137a6065a1c1234" class="i method">TrimStart</a>();
+			<b>if</b> (<span class="r0 r">expression</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> == 0)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#df2d82d91ca29e40" class="t constructor">Exception</a>(<span class="s">&quot;Expression did not end in &#39;}&#39;&quot;</span>);
+ 
+			<a href="IExpressionParser.cs.html#3f7bc43818ac6803" class="k">var</a> <span id="r4 rd" class="r4 r">parser</span> = <a href="@1@System.Runtime/A.html#955a7437554c8efc" class="t t">Activator</a>.<a href="@1@System.Runtime/A.html#4c7b92371a93f246" class="i method">CreateInstance</a>(<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>()) <b>as</b> <a href="IExpressionParser.cs.html#3f7bc43818ac6803" class="t t">IExpressionParser</a>;
+			<b>return</b> <span class="r4 r">parser</span>.<a href="IExpressionParser.cs.html#899cdaa0b9220fa5" class="i method">Parse</a>(<span class="r3 r">match</span>, <b>ref</b> <span class="r0 r">expression</span>, <span class="r1 r">serviceProvider</span>);
+		}
+ 
+		<b>internal static bool</b> <a id="ca5b20768f2f1cb2" href="R/ca5b20768f2f1cb2.html" target="n" data-glyph="74,1" class="i method">MatchMarkup</a>(<b>out string</b> <span id="r5 rd" class="r5 r">match</span>, <b>string</b> <span id="r6 rd" class="r6 r">expression</span>, <b>out int</b> <span id="r7 rd" class="r7 r">end</span>)
+		{
+			<b>if</b> (<span class="r6 r">expression</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> &lt; 2)
+			{
+				<span class="r7 r">end</span> = 1;
+				<span class="r5 r">match</span> = <b>null</b>;
+				<b>return false</b>;
+			}
+ 
+			<b>if</b> (<span class="r6 r">expression</span>[0] != <span class="s">&#39;{&#39;</span>)
+			{
+				<span class="r7 r">end</span> = 2;
+				<span class="r5 r">match</span> = <b>null</b>;
+				<b>return false</b>;
+			}
+ 
+			<b>int</b> <span id="r8 rd" class="r8 r">i</span>;
+			<b>bool</b> <span id="r9 rd" class="r9 r">found</span> = <b>false</b>;
+			<b>for</b> (<span class="r8 r">i</span> = 1; <span class="r8 r">i</span> &lt; <span class="r6 r">expression</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a>; <span class="r8 r">i</span>++)
+			{
+				<b>if</b> (<span class="r6 r">expression</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r8 r">i</span>] == <span class="s">&#39; &#39;</span>)
+					<b>continue</b>;
+				<span class="r9 r">found</span> = <b>true</b>;
+				<b>break</b>;
+			}
+ 
+			<b>if</b> (!<span class="r9 r">found</span>)
+			{
+				<span class="r7 r">end</span> = 3;
+				<span class="r5 r">match</span> = <b>null</b>;
+				<b>return false</b>;
+			}
+ 
+			<b>int</b> <span id="r10 rd" class="r10 r">c</span>;
+			<b>for</b> (<span class="r10 r">c</span> = 0; <span class="r10 r">c</span> + <span class="r8 r">i</span> &lt; <span class="r6 r">expression</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a>; <span class="r10 r">c</span>++)
+			{
+				<b>if</b> (<span class="r6 r">expression</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r8 r">i</span> + <span class="r10 r">c</span>] == <span class="s">&#39; &#39;</span> || <span class="r6 r">expression</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r8 r">i</span> + <span class="r10 r">c</span>] == <span class="s">&#39;}&#39;</span>)
+					<b>break</b>;
+			}
+ 
+			<b>if</b> (<span class="r8 r">i</span> + <span class="r10 r">c</span> == <span class="r6 r">expression</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a>)
+			{
+				<span class="r7 r">end</span> = 6;
+				<span class="r5 r">match</span> = <b>null</b>;
+				<b>return false</b>;
+			}
+ 
+			<span class="r7 r">end</span> = <span class="r8 r">i</span> + <span class="r10 r">c</span>;
+			<span class="r5 r">match</span> = <span class="r6 r">expression</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(<span class="r8 r">i</span>, <span class="r10 r">c</span>);
+			<b>return true</b>;
+		}
+ 
+		<b>protected void</b> <a id="a7e5527a5364e337" href="R/a7e5527a5364e337.html" target="n" data-glyph="75,1" class="i method">HandleProperty</a>(<b>string</b> <span id="r11 rd" class="r11 r">prop</span>, <span class="t t">IServiceProvider</span> <span id="r12 rd" class="r12 r">serviceProvider</span>, <b>ref string</b> <span id="r13 rd" class="r13 r">remaining</span>, <b>bool</b> <span id="r14 rd" class="r14 r">isImplicit</span>)
+		{
+			<b>char</b> <span id="r15 rd" class="r15 r">next</span>;
+			<b>object</b> <span id="r16 rd" class="r16 r">value</span> = <b>null</b>;
+			<b>string</b> <span id="r17 rd" class="r17 r">str_value</span>;
+ 
+			<b>if</b> (<span class="r14 r">isImplicit</span>)
+			{
+				<a href="#30c7436e2ec2f438" class="i method">SetPropertyValue</a>(<b>null</b>, <span class="r11 r">prop</span>, <b>null</b>, <span class="r12 r">serviceProvider</span>);
+				<b>return</b>;
+			}
+			<span class="r13 r">remaining</span> = <span class="r13 r">remaining</span>.<a href="@1@System.Runtime/A.html#5137a6065a1c1234" class="i method">TrimStart</a>();
+			<b>if</b> (<span class="r13 r">remaining</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;{&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+			{
+				<span class="r16 r">value</span> = <a href="#5cf4bd4e7aa1c8be" class="i method">ParseExpression</a>(<b>ref</b> <span class="r13 r">remaining</span>, <span class="r12 r">serviceProvider</span>);
+				<span class="r13 r">remaining</span> = <span class="r13 r">remaining</span>.<a href="@1@System.Runtime/A.html#5137a6065a1c1234" class="i method">TrimStart</a>();
+ 
+				<b>if</b> (<span class="r13 r">remaining</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> &gt; 0 &amp;&amp; <span class="r13 r">remaining</span>[0] == <span class="s">&#39;,&#39;</span>)
+					<span class="r13 r">remaining</span> = <span class="r13 r">remaining</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(1);
+ 
+				<span class="r17 r">str_value</span> = <span class="r16 r">value</span> <b>as string</b>;
+			}
+			<b>else</b>
+				<span class="r17 r">str_value</span> = <a href="#2e63e57ed89db678" class="i method">GetNextPiece</a>(<b>ref</b> <span class="r13 r">remaining</span>, <b>out</b> <span class="r15 r">next</span>);
+ 
+			<a href="#30c7436e2ec2f438" class="i method">SetPropertyValue</a>(<span class="r11 r">prop</span>, <span class="r17 r">str_value</span>, <span class="r16 r">value</span>, <span class="r12 r">serviceProvider</span>);
+		}
+ 
+		<b>protected abstract void</b> <a id="30c7436e2ec2f438" href="R/30c7436e2ec2f438.html" target="n" data-glyph="75,1" class="i method">SetPropertyValue</a>(<b>string</b> <span id="r18 rd" class="r18 r">prop</span>, <b>string</b> <span id="r19 rd" class="r19 r">strValue</span>, <b>object</b> <span id="r20 rd" class="r20 r">value</span>, <span class="t t">IServiceProvider</span> <span id="r21 rd" class="r21 r">serviceProvider</span>);
+ 
+		<b>protected string</b> <a id="2e63e57ed89db678" href="R/2e63e57ed89db678.html" target="n" data-glyph="75,1" class="i method">GetNextPiece</a>(<b>ref string</b> <span id="r22 rd" class="r22 r">remaining</span>, <b>out char</b> <span id="r23 rd" class="r23 r">next</span>)
+		{
+			<b>bool</b> <span id="r24 rd" class="r24 r">inString</span> = <b>false</b>;
+			<b>int</b> <span id="r25 rd" class="r25 r">end</span> = 0;
+			<b>char</b> <span id="r26 rd" class="r26 r">stringTerminator</span> = <span class="s">&#39;\0&#39;</span>;
+			<span class="r22 r">remaining</span> = <span class="r22 r">remaining</span>.<a href="@1@System.Runtime/A.html#5137a6065a1c1234" class="i method">TrimStart</a>();
+			<b>if</b> (<span class="r22 r">remaining</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> == 0)
+			{
+				<span class="r23 r">next</span> = <a href="@1@System.Runtime/A.html#02f2b1a33b09362d" class="t t">Char</a>.<a href="@1@System.Runtime/A.html#186288adac0364b2" class="i field">MaxValue</a>;
+				<b>return null</b>;
+			}
+ 
+			<a href="@1@System.Runtime/A.html#adf60ee46ebd299f" class="k">var</a> <span id="r27 rd" class="r27 r">piece</span> = <b>new</b> <a href="@1@System.Runtime/A.html#6e631639c1e2746b" class="t constructor">StringBuilder</a>();
+			<span class="c">// If we&#39;re inside a quoted string we append all chars to our piece until we hit the ending quote.</span>
+			<b>while</b> (<span class="r25 r">end</span> &lt; <span class="r22 r">remaining</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> &amp;&amp;
+			       (<span class="r24 r">inString</span> || (<span class="r22 r">remaining</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r25 r">end</span>] != <span class="s">&#39;}&#39;</span> &amp;&amp; <span class="r22 r">remaining</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r25 r">end</span>] != <span class="s">&#39;,&#39;</span> &amp;&amp; <span class="r22 r">remaining</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r25 r">end</span>] != <span class="s">&#39;=&#39;</span>)))
+			{
+				<b>if</b> (<span class="r24 r">inString</span>)
+				{
+					<b>if</b> (<span class="r22 r">remaining</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r25 r">end</span>] == <span class="r26 r">stringTerminator</span>)
+					{
+						<span class="r24 r">inString</span> = <b>false</b>;
+						<span class="r25 r">end</span> ++;
+						<b>break</b>;
+					}
+				}
+				<b>else</b>
+				{
+					<b>if</b> (<span class="r22 r">remaining</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r25 r">end</span>] == <span class="s">&#39;\&#39;&#39;</span> || <span class="r22 r">remaining</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r25 r">end</span>] == <span class="s">&#39;&quot;&#39;</span>)
+					{
+						<span class="r24 r">inString</span> = <b>true</b>;
+						<span class="r26 r">stringTerminator</span> = <span class="r22 r">remaining</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r25 r">end</span>];
+						<span class="r25 r">end</span> ++;
+						<b>continue</b>;
+					}
+				}
+ 
+				<span class="c">// If this is an escape char, consume it and append the next char to our piece.</span>
+				<b>if</b> (<span class="r22 r">remaining</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r25 r">end</span>] == <span class="s">&#39;\\&#39;</span>)
+				{
+					<span class="r25 r">end</span> ++;
+					<b>if</b> (<span class="r25 r">end</span> == <span class="r22 r">remaining</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a>)
+						<b>break</b>;
+				}
+				<span class="r27 r">piece</span>.<a href="@1@System.Runtime/A.html#a2e7c78d85807da5" class="i method">Append</a>(<span class="r22 r">remaining</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r25 r">end</span>]);
+				<span class="r25 r">end</span>++;
+			}
+ 
+			<b>if</b> (<span class="r24 r">inString</span> &amp;&amp; <span class="r25 r">end</span> == <span class="r22 r">remaining</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#df2d82d91ca29e40" class="t constructor">Exception</a>(<span class="s">&quot;Unterminated quoted string&quot;</span>);
+ 
+			<b>if</b> (<span class="r25 r">end</span> == <span class="r22 r">remaining</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> &amp;&amp; !<span class="r22 r">remaining</span>.<a href="@1@System.Runtime/A.html#41a31e4feec3ef41" class="i method">EndsWith</a>(<span class="s">&quot;}&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#df2d82d91ca29e40" class="t constructor">Exception</a>(<span class="s">&quot;Expression did not end with &#39;}&#39;&quot;</span>);
+ 
+			<b>if</b> (<span class="r25 r">end</span> == 0)
+			{
+				<span class="r23 r">next</span> = <a href="@1@System.Runtime/A.html#02f2b1a33b09362d" class="t t">Char</a>.<a href="@1@System.Runtime/A.html#186288adac0364b2" class="i field">MaxValue</a>;
+				<b>return null</b>;
+			}
+ 
+			<span class="r23 r">next</span> = <span class="r22 r">remaining</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r25 r">end</span>];
+			<span class="r22 r">remaining</span> = <span class="r22 r">remaining</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(<span class="r25 r">end</span> + 1);
+ 
+			<span class="c">// Whitespace is trimmed from the end of the piece before stripping</span>
+			<span class="c">// quote chars from the start/end of the string. </span>
+			<b>while</b> (<span class="r27 r">piece</span>.<a href="@1@System.Runtime/A.html#7d7729bd88adac53" class="i property">Length</a> &gt; 0 &amp;&amp; <b>char</b>.<a href="@1@System.Runtime/A.html#cda2cc9b76535970" class="i method">IsWhiteSpace</a>(<span class="r27 r">piece</span><a href="@1@System.Runtime/A.html#fdc8eb61b5bf468a">[</a><span class="r27 r">piece</span>.<a href="@1@System.Runtime/A.html#7d7729bd88adac53" class="i property">Length</a> - 1]))
+				<span class="r27 r">piece</span>.<a href="@1@System.Runtime/A.html#7d7729bd88adac53" class="i property">Length</a> --;
+ 
+			<b>if</b> (<span class="r27 r">piece</span>.<a href="@1@System.Runtime/A.html#7d7729bd88adac53" class="i property">Length</a> &gt;= 2)
+			{
+				<b>char</b> <span id="r28 rd" class="r28 r">first</span> = <span class="r27 r">piece</span>[0];
+				<b>char</b> <span id="r29 rd" class="r29 r">last</span> = <span class="r27 r">piece</span><a href="@1@System.Runtime/A.html#fdc8eb61b5bf468a">[</a><span class="r27 r">piece</span>.<a href="@1@System.Runtime/A.html#7d7729bd88adac53" class="i property">Length</a> - 1];
+				<b>if</b> ((<span class="r28 r">first</span> == <span class="s">&#39;\&#39;&#39;</span> &amp;&amp; <span class="r29 r">last</span> == <span class="s">&#39;\&#39;&#39;</span>) || (<span class="r28 r">first</span> == <span class="s">&#39;&quot;&#39;</span> &amp;&amp; <span class="r29 r">last</span> == <span class="s">&#39;&quot;&#39;</span>))
+				{
+					<span class="r27 r">piece</span>.<a href="@1@System.Runtime/A.html#db619a22e1b3d912" class="i method">Remove</a>(<span class="r27 r">piece</span>.<a href="@1@System.Runtime/A.html#7d7729bd88adac53" class="i property">Length</a> - 1, 1);
+					<span class="r27 r">piece</span>.<a href="@1@System.Runtime/A.html#db619a22e1b3d912" class="i method">Remove</a>(0, 1);
+				}
+			}
+ 
+			<b>return</b> <span class="r27 r">piece</span>.<a href="@1@System.Runtime/A.html#5a97da49a158a3c9" class="i method">ToString</a>();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

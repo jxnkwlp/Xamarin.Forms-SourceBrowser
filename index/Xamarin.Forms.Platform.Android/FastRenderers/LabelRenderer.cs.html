@@ -1,0 +1,310 @@
+﻿<!DOCTYPE html>
+<html><head><title>LabelRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(301);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/FastRenderers/LabelRenderer.cs" target="_top">FastRenderers\LabelRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>.<span class="i">Res</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Graphics</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Text</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Util</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">AView</span> = <span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>.<span class="i n">FastRenderers</span>
+{
+	<b>internal sealed class</b> <a id="09b1860152a8a4ef" href="../R/09b1860152a8a4ef.html" target="n" data-glyph="2,0" class="t t">LabelRenderer</a> : <a href="../Renderers/FormsTextView.cs.html#73a5b8500e952f94" class="t t">FormsTextView</a>, <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>
+	{
+		<b>int</b>? <a id="d877ac7c9e12bfe1" href="../R/d877ac7c9e12bfe1.html" target="n" data-glyph="46,1" class="i field">_defaultLabelFor</a>;
+		<b>bool</b> <a id="8f10ebd7d2a4ce70" href="../R/8f10ebd7d2a4ce70.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+		<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <a id="c5ce2c24482d12eb" href="../R/c5ce2c24482d12eb.html" target="n" data-glyph="46,1" class="i field">_element</a>;
+		<b>readonly</b> <span class="i">ColorStateList</span> <a id="032e3fcf0112a998" href="../R/032e3fcf0112a998.html" target="n" data-glyph="46,1" class="i field">_labelTextColorDefault</a>;
+		<b>int</b> <a id="ccdbb7f20231fc5f" href="../R/ccdbb7f20231fc5f.html" target="n" data-glyph="46,1" class="i field">_lastConstraintHeight</a>;
+		<b>int</b> <a id="03db93dcfec0cd4a" href="../R/03db93dcfec0cd4a.html" target="n" data-glyph="46,1" class="i field">_lastConstraintWidth</a>;
+		<a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a>? <a id="21d63dd6e6b1fc5a" href="../R/21d63dd6e6b1fc5a.html" target="n" data-glyph="46,1" class="i field">_lastSizeRequest</a>;
+		<b>float</b> <a id="e3bd57138a434816" href="../R/e3bd57138a434816.html" target="n" data-glyph="46,1" class="i field">_lastTextSize</a> = -1f;
+		<span class="i">Typeface</span> <a id="b500d8ba04a46cec" href="../R/b500d8ba04a46cec.html" target="n" data-glyph="46,1" class="i field">_lastTypeface</a>;
+		<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <a id="0014c76b83d95c0e" href="../R/0014c76b83d95c0e.html" target="n" data-glyph="46,1" class="i field">_lastUpdateColor</a> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#78f150ac7d83a2c8" class="i property">Default</a>;
+		<a href="../VisualElementTracker.cs.html#d538081d9f94da4d" class="t t">VisualElementTracker</a> <a id="1e0a39f6d7f7e40d" href="../R/1e0a39f6d7f7e40d.html" target="n" data-glyph="46,1" class="i field">_visualElementTracker</a>;
+		<a href="VisualElementRenderer.cs.html#e7cf429857787087" class="t t">VisualElementRenderer</a> <a id="29284f5249ac8269" href="../R/29284f5249ac8269.html" target="n" data-glyph="46,1" class="i field">_visualElementRenderer</a>;
+		<b>readonly</b> <a href="../Renderers/MotionEventHelper.cs.html#cc0d68295adb8939" class="t t">MotionEventHelper</a> <a id="01dc79faf3826d18" href="../R/01dc79faf3826d18.html" target="n" data-glyph="46,1" class="i field">_motionEventHelper</a> = <b>new</b> <a href="../Renderers/MotionEventHelper.cs.html#cc0d68295adb8939" class="t constructor">MotionEventHelper</a>();
+ 
+		<b>bool</b> <a id="805576451b2b0d95" href="../R/805576451b2b0d95.html" target="n" data-glyph="46,1" class="i field">_wasFormatted</a>;
+ 
+		<b>public</b> <a id="311d287b414f5cae" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">LabelRenderer</a>() : <a href="../Renderers/FormsTextView.cs.html#9bd6934ed01df979" class="k">base</a>(<a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>)
+		{
+			<a href="#032e3fcf0112a998" class="i field">_labelTextColorDefault</a> = <span class="i">TextColors</span>;
+			<a href="#29284f5249ac8269" class="i field">_visualElementRenderer</a> = <b>new</b> <a href="VisualElementRenderer.cs.html#926d7cc17f848648" class="t constructor">VisualElementRenderer</a>(<a href="#09b1860152a8a4ef" class="k">this</a>);
+		}
+ 
+		<b>public event</b> <span class="i">EventHandler</span>&lt;<a href="../VisualElementChangedEventArgs.cs.html#af6d54330067744b" class="t t">VisualElementChangedEventArgs</a>&gt; <a id="9915a2dbdc018111" href="../R/9915a2dbdc018111.html" target="n" data-glyph="30,1" class="i">ElementChanged</a>;
+		<b>public event</b> <span class="i">EventHandler</span>&lt;<span class="i">PropertyChangedEventArgs</span>&gt; <a id="4594fd0bcef5bed6" href="../R/4594fd0bcef5bed6.html" target="n" data-glyph="30,1" class="i">ElementPropertyChanged</a>;
+ 
+		<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a> =&gt; <a href="#5d8825ffe798323d" class="i property">Element</a>;
+ 
+		<a href="../VisualElementTracker.cs.html#d538081d9f94da4d" class="t t">VisualElementTracker</a> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#cfa32eccc8f34910" class="i property">Tracker</a> =&gt; <a href="#1e0a39f6d7f7e40d" class="i field">_visualElementTracker</a>;
+ 
+		<span class="i">AView</span> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a> =&gt; <a href="#09b1860152a8a4ef" class="k">this</a>;
+ 
+		<span class="i">ViewGroup</span> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#9e8dee2b480dc4e6" class="i property">ViewGroup</a> =&gt; <b>null</b>;
+ 
+		<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <a id="5d8825ffe798323d" href="../R/5d8825ffe798323d.html" target="n" data-glyph="106,1" class="i property">Element</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#c5ce2c24482d12eb" class="i field">_element</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#c5ce2c24482d12eb" class="i field">_element</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <span id="r0 rd" class="r0 r">oldElement</span> = <a href="#c5ce2c24482d12eb" class="i field">_element</a>;
+				<a href="#c5ce2c24482d12eb" class="i field">_element</a> = <b>value</b>;
+ 
+				<a href="#823817386c23e7b0" class="i method">OnElementChanged</a>(<b>new</b> <a href="../ElementChangedEventArgs.cs.html#af39acd48262b8b2" class="t constructor">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>&gt;(<span class="r0 r">oldElement</span>, <a href="#c5ce2c24482d12eb" class="i field">_element</a>));
+ 
+			    <a href="#c5ce2c24482d12eb" class="i field">_element</a>?.<span class="i">SendViewInitialized</span>(<a href="#09b1860152a8a4ef" class="k">this</a>);
+			}
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#bb0c64306434c3a0" class="i method">GetDesiredSize</a>(<b>int</b> <span id="r1 rd" class="r1 r">widthConstraint</span>, <b>int</b> <span id="r2 rd" class="r2 r">heightConstraint</span>)
+		{
+		 	<b>if</b> (<a href="#8f10ebd7d2a4ce70" class="i field">_disposed</a>)
+ 			{
+ 				<b>return</b> <b>new</b> <span class="t">SizeRequest</span>();
+ 			}
+		
+			<b>if</b> (<a href="#21d63dd6e6b1fc5a" class="i field">_lastSizeRequest</a>.<span class="i">HasValue</span>)
+			{
+				<span class="c">// if we are measuring the same thing, no need to waste the time</span>
+				<b>bool</b> <span id="r3 rd" class="r3 r">canRecycleLast</span> = <span class="r1 r">widthConstraint</span> == <a href="#03db93dcfec0cd4a" class="i field">_lastConstraintWidth</a> &amp;&amp; <span class="r2 r">heightConstraint</span> == <a href="#ccdbb7f20231fc5f" class="i field">_lastConstraintHeight</a>;
+ 
+				<b>if</b> (!<span class="r3 r">canRecycleLast</span>)
+				{
+					<span class="c">// if the last time we measured the returned size was all around smaller than the passed constraint</span>
+					<span class="c">// and the constraint is bigger than the last size request, we can assume the newly measured size request</span>
+					<span class="c">// will not change either.</span>
+					<b>int</b> <span id="r4 rd" class="r4 r">lastConstraintWidthSize</span> = <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<a href="../MeasureSpecFactory.cs.html#788566b1e44871c4" class="i method">GetSize</a>(<a href="#03db93dcfec0cd4a" class="i field">_lastConstraintWidth</a>);
+					<b>int</b> <span id="r5 rd" class="r5 r">lastConstraintHeightSize</span> = <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<a href="../MeasureSpecFactory.cs.html#788566b1e44871c4" class="i method">GetSize</a>(<a href="#ccdbb7f20231fc5f" class="i field">_lastConstraintHeight</a>);
+ 
+					<b>int</b> <span id="r6 rd" class="r6 r">currentConstraintWidthSize</span> = <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<a href="../MeasureSpecFactory.cs.html#788566b1e44871c4" class="i method">GetSize</a>(<span class="r1 r">widthConstraint</span>);
+					<b>int</b> <span id="r7 rd" class="r7 r">currentConstraintHeightSize</span> = <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<a href="../MeasureSpecFactory.cs.html#788566b1e44871c4" class="i method">GetSize</a>(<span class="r2 r">heightConstraint</span>);
+ 
+					<b>bool</b> <span id="r8 rd" class="r8 r">lastWasSmallerThanConstraints</span> = <a href="#21d63dd6e6b1fc5a" class="i field">_lastSizeRequest</a>.<span class="i">Value</span>.<span class="i">Request</span>.<span class="i">Width</span> &lt; <span class="r4 r">lastConstraintWidthSize</span> &amp;&amp; <a href="#21d63dd6e6b1fc5a" class="i field">_lastSizeRequest</a>.<span class="i">Value</span>.<span class="i">Request</span>.<span class="i">Height</span> &lt; <span class="r5 r">lastConstraintHeightSize</span>;
+ 
+					<b>bool</b> <span id="r9 rd" class="r9 r">currentConstraintsBiggerThanLastRequest</span> = <span class="r6 r">currentConstraintWidthSize</span> &gt;= <a href="#21d63dd6e6b1fc5a" class="i field">_lastSizeRequest</a>.<span class="i">Value</span>.<span class="i">Request</span>.<span class="i">Width</span> &amp;&amp; <span class="r7 r">currentConstraintHeightSize</span> &gt;= <a href="#21d63dd6e6b1fc5a" class="i field">_lastSizeRequest</a>.<span class="i">Value</span>.<span class="i">Request</span>.<span class="i">Height</span>;
+ 
+					<span class="r3 r">canRecycleLast</span> = <span class="r8 r">lastWasSmallerThanConstraints</span> &amp;&amp; <span class="r9 r">currentConstraintsBiggerThanLastRequest</span>;
+				}
+ 
+				<b>if</b> (<span class="r3 r">canRecycleLast</span>)
+					<b>return</b> <a href="#21d63dd6e6b1fc5a" class="i field">_lastSizeRequest</a>.<span class="i">Value</span>;
+			}
+ 
+			<span class="i">Measure</span>(<span class="r1 r">widthConstraint</span>, <span class="r2 r">heightConstraint</span>);
+			<a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <span id="r10 rd" class="r10 r">result</span> = <b>new</b> <span class="t">SizeRequest</span>(<b>new</b> <span class="t">Size</span>(<span class="i">MeasuredWidth</span>, <span class="i">MeasuredHeight</span>), <b>new</b> <span class="t">Size</span>());
+			<span class="r10 r">result</span>.<span class="i">Minimum</span> = <b>new</b> <span class="t">Size</span>(<span class="i">Math</span>.<span class="i">Min</span>(<span class="i">Context</span>.<span class="i">ToPixels</span>(10), <span class="r10 r">result</span>.<a href="/Xamarin.Forms.Core/A.html#18756f69c7ccde74" class="i property">Request</a>.<a href="/Xamarin.Forms.Core/A.html#6207d8e3826352f7" class="i property">Width</a>), <span class="r10 r">result</span>.<a href="/Xamarin.Forms.Core/A.html#18756f69c7ccde74" class="i property">Request</a>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a>);
+ 
+			<a href="#03db93dcfec0cd4a" class="i field">_lastConstraintWidth</a> = <span class="r1 r">widthConstraint</span>;
+			<a href="#ccdbb7f20231fc5f" class="i field">_lastConstraintHeight</a> = <span class="r2 r">heightConstraint</span>;
+			<a href="#21d63dd6e6b1fc5a" class="i field">_lastSizeRequest</a> = <span class="r10 r">result</span>;
+ 
+			<b>return</b> <span class="r10 r">result</span>;
+		}
+ 
+		<b>void</b> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#149302ec71c12b79" class="i method">SetElement</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r11 rd" class="r11 r">element</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="k">var</a> <span id="r12 rd" class="r12 r">label</span> = <span class="r11 r">element</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>;
+			<b>if</b> (<span class="r12 r">label</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentException</span>(<span class="s">&quot;Element must be of type Label&quot;</span>);
+ 
+			<a href="#5d8825ffe798323d" class="i property">Element</a> = <span class="r12 r">label</span>;
+			<a href="#01dc79faf3826d18" class="i field">_motionEventHelper</a>.<a href="../Renderers/MotionEventHelper.cs.html#dbb9b1a5610d7f41" class="i method">UpdateElement</a>(<span class="r11 r">element</span>);
+		}
+ 
+		<b>void</b> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#cad9af341c40f73b" class="i method">SetLabelFor</a>(<b>int</b>? <span id="r13 rd" class="r13 r">id</span>)
+		{
+			<b>if</b> (<a href="#d877ac7c9e12bfe1" class="i field">_defaultLabelFor</a> == <b>null</b>)
+				<a href="#d877ac7c9e12bfe1" class="i field">_defaultLabelFor</a> = <span class="i">LabelFor</span>;
+ 
+			<span class="i">LabelFor</span> = (<b>int</b>)(<span class="r13 r">id</span> ?? <a href="#d877ac7c9e12bfe1" class="i field">_defaultLabelFor</a>);
+		}
+ 
+		<b>void</b> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#45d0cfa8761dcd6c" class="i method">UpdateLayout</a>()
+		{
+			<a href="../VisualElementTracker.cs.html#d538081d9f94da4d" class="t t">VisualElementTracker</a> <span id="r14 rd" class="r14 r">tracker</span> = <a href="#1e0a39f6d7f7e40d" class="i field">_visualElementTracker</a>;
+			<span class="r14 r">tracker</span>?.<a href="../VisualElementTracker.cs.html#0e37e7edf6aa3434" class="i method">UpdateLayout</a>();
+		}
+ 
+		<b>protected override void</b> <a id="148dc1639524cb72" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r15 rd" class="r15 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#8f10ebd7d2a4ce70" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<a href="#8f10ebd7d2a4ce70" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<b>if</b> (<span class="r15 r">disposing</span>)
+			{
+				<b>if</b> (<a href="#1e0a39f6d7f7e40d" class="i field">_visualElementTracker</a> != <b>null</b>)
+				{
+					<a href="#1e0a39f6d7f7e40d" class="i field">_visualElementTracker</a>.<a href="../VisualElementTracker.cs.html#10977b30ca8b0186" class="i method">Dispose</a>();
+					<a href="#1e0a39f6d7f7e40d" class="i field">_visualElementTracker</a> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<a href="#29284f5249ac8269" class="i field">_visualElementRenderer</a> != <b>null</b>)
+				{
+					<a href="#29284f5249ac8269" class="i field">_visualElementRenderer</a>.<a href="VisualElementRenderer.cs.html#1ae0cb620666331d" class="i method">Dispose</a>();
+					<a href="#29284f5249ac8269" class="i field">_visualElementRenderer</a> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<a href="#5d8825ffe798323d" class="i property">Element</a> != <b>null</b>)
+				{
+					<a href="#5d8825ffe798323d" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <span class="i">OnElementPropertyChanged</span>;
+ 
+					<b>if</b> (<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<a href="#5d8825ffe798323d" class="i property">Element</a>) == <a href="#09b1860152a8a4ef" class="k">this</a>)
+						<a href="#5d8825ffe798323d" class="i property">Element</a>.<span class="i">ClearValue</span>(<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#cda3e6f7841c17d4" class="i field">RendererProperty</a>);
+				}
+			}
+ 
+			<a href="../Renderers/FormsTextView.cs.html#73a5b8500e952f94" class="k">base</a>.<span class="i">Dispose</span>(<span class="r15 r">disposing</span>);
+		}
+ 
+        <b>public override bool</b> <a id="ce884e00f11975f4" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnTouchEvent</a>(<span class="i">MotionEvent</span> <span id="r16 rd" class="r16 r">e</span>)
+        {
+	        <b>if</b> (<a href="#29284f5249ac8269" class="i field">_visualElementRenderer</a>.<a href="VisualElementRenderer.cs.html#5e6448cb94a7bca2" class="i method">OnTouchEvent</a>(<span class="r16 r">e</span>))
+	        {
+		        <b>return true</b>;
+	        }
+ 
+	        <b>return</b> <a href="#01dc79faf3826d18" class="i field">_motionEventHelper</a>.<span class="i">HandleMotionEvent</span>(<span class="i">Parent</span>, <span class="r16 r">e</span>);
+        }
+ 
+        <b>void</b> <a id="823817386c23e7b0" href="../R/823817386c23e7b0.html" target="n" data-glyph="76,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#9a1366c2961f4fde" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>&gt; <span id="r17 rd" class="r17 r">e</span>)
+		{
+			<a href="#9915a2dbdc018111" class="i">ElementChanged</a>?.<span class="i">Invoke</span>(<a href="#09b1860152a8a4ef" class="k">this</a>, <b>new</b> <a href="../VisualElementChangedEventArgs.cs.html#6a37702d575e1b52" class="t constructor">VisualElementChangedEventArgs</a>(<span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>, <span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>));
+ 
+			<b>if</b> (<span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a> != <b>null</b>)
+			{
+				<span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <span class="i">OnElementPropertyChanged</span>;
+			}
+ 
+			<b>if</b> (<span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<a href="#09b1860152a8a4ef" class="k">this</a>.<span class="i">EnsureId</span>();
+ 
+				<b>if</b> (<a href="#1e0a39f6d7f7e40d" class="i field">_visualElementTracker</a> == <b>null</b>)
+				{
+					<a href="#1e0a39f6d7f7e40d" class="i field">_visualElementTracker</a> = <b>new</b> <a href="../VisualElementTracker.cs.html#4656ffbcfdf6338a" class="t constructor">VisualElementTracker</a>(<a href="#09b1860152a8a4ef" class="k">this</a>);
+				}
+ 
+				<span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <span class="i">OnElementPropertyChanged</span>;
+ 
+				<a href="../Renderers/FormsTextView.cs.html#0c76448f1a6c5adc" class="i method">SkipNextInvalidate</a>();
+				<a href="#806e592c4590dd14" class="i method">UpdateText</a>();
+				<b>if</b> (<span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>?.<a href="/Xamarin.Forms.Core/A.html#db1aea97d5bb7d42" class="i property">LineBreakMode</a> != <span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#db1aea97d5bb7d42" class="i property">LineBreakMode</a>)
+					<a href="#ba7be07e13bda7ec" class="i method">UpdateLineBreakMode</a>();
+				<b>if</b> (<span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>?.<a href="/Xamarin.Forms.Core/A.html#a6dc09c3324e43d8" class="i property">HorizontalTextAlignment</a> != <span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#a6dc09c3324e43d8" class="i property">HorizontalTextAlignment</a>
+				 || <span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>?.<a href="/Xamarin.Forms.Core/A.html#36595bd577d1442d" class="i property">VerticalTextAlignment</a> != <span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#36595bd577d1442d" class="i property">VerticalTextAlignment</a>)
+					<a href="#6295d12311a36feb" class="i method">UpdateGravity</a>();
+ 
+				<a href="../Elevation.cs.html#4878da890f34a431" class="t t">ElevationHelper</a>.<span class="i">SetElevation</span>(<a href="#09b1860152a8a4ef" class="k">this</a>, <span class="r17 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>);
+			}
+		}
+ 
+		<b>void</b> <a id="292e146b9e984f85" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r18 rd" class="r18 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r19 rd" class="r19 r">e</span>)
+		{
+			<a href="#4594fd0bcef5bed6" class="i">ElementPropertyChanged</a>?.<span class="i">Invoke</span>(<a href="#09b1860152a8a4ef" class="k">this</a>, <span class="r19 r">e</span>);
+ 
+			<b>if</b> (<span class="r19 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#0d5fd302c38d5eca" class="i field">HorizontalTextAlignmentProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r19 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#52bedb1fc81c3d5f" class="i field">VerticalTextAlignmentProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#6295d12311a36feb" class="i method">UpdateGravity</a>();
+			<b>else if</b> (<span class="r19 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#2502a6653e6e612e" class="i field">TextColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#806e592c4590dd14" class="i method">UpdateText</a>();
+			<b>else if</b> (<span class="r19 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#3ef066f9eeed737b" class="i field">FontProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#806e592c4590dd14" class="i method">UpdateText</a>();
+			<b>else if</b> (<span class="r19 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#e05287a7d222f88b" class="i field">LineBreakModeProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#ba7be07e13bda7ec" class="i method">UpdateLineBreakMode</a>();
+			<b>else if</b> (<span class="r19 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#208bde7cd8e27200" class="i field">TextProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r19 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#092f3eaf5ebdb8b0" class="i field">FormattedTextProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#806e592c4590dd14" class="i method">UpdateText</a>();
+		}
+ 
+		<b>void</b> <a id="2665a73dde6f3a35" href="../R/2665a73dde6f3a35.html" target="n" data-glyph="76,1" class="i method">UpdateColor</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r20 rd" class="r20 r">c</span> = <a href="#5d8825ffe798323d" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#aaad449f55c3186b" class="i property">TextColor</a>;
+			<b>if</b> (<span class="r20 r">c</span> == <a href="#0014c76b83d95c0e" class="i field">_lastUpdateColor</a>)
+				<b>return</b>;
+			<a href="#0014c76b83d95c0e" class="i field">_lastUpdateColor</a> = <span class="r20 r">c</span>;
+ 
+			<b>if</b> (<span class="r20 r">c</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a>)
+				<span class="i">SetTextColor</span>(<a href="#032e3fcf0112a998" class="i field">_labelTextColorDefault</a>);
+			<b>else</b>
+				<span class="i">SetTextColor</span>(<span class="r20 r">c</span>.<a href="../ColorExtensions.cs.html#268d9eb79e3a1fda" class="i method">ToAndroid</a>());
+		}
+ 
+		<b>void</b> <a id="ec2931c17984483a" href="../R/ec2931c17984483a.html" target="n" data-glyph="76,1" class="i method">UpdateFont</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 618 <span class="c">// We will need to update this when .Font goes away</span>
+			<a href="/Xamarin.Forms.Core/A.html#6e454cde35d8a0cf" class="t t">Font</a> <span id="r21 rd" class="r21 r">f</span> = <a href="#5d8825ffe798323d" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#1199920843c44161" class="i property">Font</a>;
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 618
+ 
+			<span class="i">Typeface</span> <span id="r22 rd" class="r22 r">newTypeface</span> = <span class="r21 r">f</span>.<span class="i">ToTypeface</span>();
+			<b>if</b> (<span class="r22 r">newTypeface</span> != <a href="#b500d8ba04a46cec" class="i field">_lastTypeface</a>)
+			{
+				<span class="i">Typeface</span> = <span class="r22 r">newTypeface</span>;
+				<a href="#b500d8ba04a46cec" class="i field">_lastTypeface</a> = <span class="r22 r">newTypeface</span>;
+			}
+ 
+			<b>float</b> <span id="r23 rd" class="r23 r">newTextSize</span> = <span class="r21 r">f</span>.<a href="../Renderers/FontExtensions.cs.html#ccc5de1fd46cbca0" class="i method">ToScaledPixel</a>();
+			<b>if</b> (<span class="r23 r">newTextSize</span> != <a href="#e3bd57138a434816" class="i field">_lastTextSize</a>)
+			{
+				<span class="i">SetTextSize</span>(<span class="i">ComplexUnitType</span>.<span class="i">Sp</span>, <span class="r23 r">newTextSize</span>);
+				<a href="#e3bd57138a434816" class="i field">_lastTextSize</a> = <span class="r23 r">newTextSize</span>;
+			}
+		}
+ 
+		<b>void</b> <a id="6295d12311a36feb" href="../R/6295d12311a36feb.html" target="n" data-glyph="76,1" class="i method">UpdateGravity</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <span id="r24 rd" class="r24 r">label</span> = <a href="#5d8825ffe798323d" class="i property">Element</a>;
+ 
+			<span class="i">Gravity</span> = <span class="r24 r">label</span>.<a href="/Xamarin.Forms.Core/A.html#a6dc09c3324e43d8" class="i property">HorizontalTextAlignment</a>.<a href="../Renderers/AlignmentExtensions.cs.html#b3eecf8a4957dcdb" class="i method">ToHorizontalGravityFlags</a>() | <span class="r24 r">label</span>.<a href="/Xamarin.Forms.Core/A.html#36595bd577d1442d" class="i property">VerticalTextAlignment</a>.<a href="../Renderers/AlignmentExtensions.cs.html#5ab6428e0acd5f39" class="i method">ToVerticalGravityFlags</a>();
+ 
+			<a href="#21d63dd6e6b1fc5a" class="i field">_lastSizeRequest</a> = <b>null</b>;
+		}
+ 
+		<b>void</b> <a id="ba7be07e13bda7ec" href="../R/ba7be07e13bda7ec.html" target="n" data-glyph="76,1" class="i method">UpdateLineBreakMode</a>()
+		{
+			<a href="#09b1860152a8a4ef" class="k">this</a>.<span class="i">SetLineBreakMode</span>(<a href="#5d8825ffe798323d" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#db1aea97d5bb7d42" class="i property">LineBreakMode</a>);
+			<a href="#21d63dd6e6b1fc5a" class="i field">_lastSizeRequest</a> = <b>null</b>;
+		}
+ 
+		<b>void</b> <a id="806e592c4590dd14" href="../R/806e592c4590dd14.html" target="n" data-glyph="76,1" class="i method">UpdateText</a>()
+		{
+			<b>if</b> (<a href="#5d8825ffe798323d" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#0f680c737e07dd37" class="i property">FormattedText</a> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#92912ce984b52eea" class="t t">FormattedString</a> <span id="r25 rd" class="r25 r">formattedText</span> = <a href="#5d8825ffe798323d" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#0f680c737e07dd37" class="i property">FormattedText</a> ?? <a href="#5d8825ffe798323d" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a>;
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 618 <span class="c">// We will need to update this when .Font goes away</span>
+				<span class="i">TextFormatted</span> = <span class="r25 r">formattedText</span>.<span class="i">ToAttributed</span>(<a href="#5d8825ffe798323d" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#1199920843c44161" class="i property">Font</a>, <a href="#5d8825ffe798323d" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#aaad449f55c3186b" class="i property">TextColor</a>, <a href="#09b1860152a8a4ef" class="k">this</a>);
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 618
+				<a href="#805576451b2b0d95" class="i field">_wasFormatted</a> = <b>true</b>;
+			}
+			<b>else</b>
+			{
+				<b>if</b> (<a href="#805576451b2b0d95" class="i field">_wasFormatted</a>)
+				{
+					<span class="i">SetTextColor</span>(<a href="#032e3fcf0112a998" class="i field">_labelTextColorDefault</a>);
+					<a href="#0014c76b83d95c0e" class="i field">_lastUpdateColor</a> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#78f150ac7d83a2c8" class="i property">Default</a>;
+				}
+				<span class="i">Text</span> = <a href="#5d8825ffe798323d" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a>;
+				<a href="#2665a73dde6f3a35" class="i method">UpdateColor</a>();
+				<a href="#ec2931c17984483a" class="i method">UpdateFont</a>();
+ 
+				<a href="#805576451b2b0d95" class="i field">_wasFormatted</a> = <b>false</b>;
+			}
+ 
+			<a href="#21d63dd6e6b1fc5a" class="i field">_lastSizeRequest</a> = <b>null</b>;
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

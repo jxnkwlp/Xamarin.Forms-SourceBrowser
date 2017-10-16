@@ -1,0 +1,122 @@
+﻿<!DOCTYPE html>
+<html><head><title>PropertyCondition.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(113);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/Interactivity/PropertyCondition.cs" target="_top">Interactivity\PropertyCondition.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	[<a href="../ProvideCompiledAttribute.cs.html#3e16327cfcc56276" class="t constructor">ProvideCompiled</a>(<span class="s">&quot;Xamarin.Forms.Core.XamlC.PassthroughValueProvider&quot;</span>)]
+	[<a href="../IMarkupExtension.cs.html#ce2a85ae7c9444c4" class="t constructor">AcceptEmptyServiceProvider</a>]
+	<b>public sealed class</b> <a id="9bb8e0f81cdbb680" href="../R/9bb8e0f81cdbb680.html" target="n" data-glyph="0,0" class="t t">PropertyCondition</a> : <a href="Condition.cs.html#b2e41905d7bf564c" class="t t">Condition</a>, <a href="../IValueProvider.cs.html#e42955e05b2a950d" class="t t">IValueProvider</a>
+	{
+		<b>readonly</b> <a href="../BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="3aa4597d80f8eadf" href="../R/3aa4597d80f8eadf.html" target="n" data-glyph="46,1" class="i field">_stateProperty</a>;
+ 
+		<a href="../BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="45b014ab4bdb841c" href="../R/45b014ab4bdb841c.html" target="n" data-glyph="46,1" class="i field">_property</a>;
+		<b>object</b> <a id="237fa65b57fd0e18" href="../R/237fa65b57fd0e18.html" target="n" data-glyph="46,1" class="i field">_triggerValue</a>;
+ 
+		<b>public</b> <a id="b5e90d0c25af2f61" href="../R/b5e90d0c25af2f61.html" target="n" data-glyph="72,1" class="i constructor">PropertyCondition</a>()
+		{
+			<a href="#3aa4597d80f8eadf" class="i field">_stateProperty</a> = <a href="../BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="../BindableProperty.cs.html#85f89c6bab9ae593" class="i method">CreateAttached</a>(<span class="s">&quot;State&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#9bb8e0f81cdbb680" class="t t">PropertyCondition</a>), <b>false</b>, <span class="r0 r">propertyChanged</span>: <a href="#801d54fe994d88b3" class="i method">OnStatePropertyChanged</a>);
+		}
+ 
+		<b>public</b> <a href="../BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="6c83f3e184235458" href="../R/6c83f3e184235458.html" target="n" data-glyph="102,1" class="i property">Property</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#45b014ab4bdb841c" class="i field">_property</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#45b014ab4bdb841c" class="i field">_property</a> == <b>value</b>)
+					<b>return</b>;
+				<b>if</b> (<a href="Condition.cs.html#c5b32ab6fc65742d" class="i property">IsSealed</a>)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;Can not change Property once the Trigger has been applied.&quot;</span>);
+				<a href="#45b014ab4bdb841c" class="i field">_property</a> = <b>value</b>;
+ 
+				<span class="c">//convert the value</span>
+				<b>if</b> (<a href="#45b014ab4bdb841c" class="i field">_property</a> != <b>null</b> &amp;&amp; <a href="#b6cbc56a1859686a" class="i field">s_valueConverter</a> != <b>null</b>)
+				{
+					<a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<span class="t t">MemberInfo</span>&gt; <span id="r1 rd" class="r1 r">minforetriever</span> = () =&gt; <a href="#6c83f3e184235458" class="i property">Property</a>.<a href="../BindableProperty.cs.html#7a0e7c9a8e08c999" class="i property">DeclaringType</a>.<span class="i method">GetRuntimeProperty</span>(<a href="#6c83f3e184235458" class="i property">Property</a>.<a href="../BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>);
+					<a href="#adeef42c772342c4" class="i property">Value</a> = <a href="#b6cbc56a1859686a" class="i field">s_valueConverter</a>.<a href="../IValueConverterProvider.cs.html#b5bdc6a3d912f33b" class="i method">Convert</a>(<a href="#adeef42c772342c4" class="i property">Value</a>, <a href="#6c83f3e184235458" class="i property">Property</a>.<a href="../BindableProperty.cs.html#3a88e13a70e1553a" class="i property">ReturnType</a>, <span class="r1 r">minforetriever</span>, <b>null</b>);
+				}
+			}
+		}
+ 
+		<b>public object</b> <a id="adeef42c772342c4" href="../R/adeef42c772342c4.html" target="n" data-glyph="102,1" class="i property">Value</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#237fa65b57fd0e18" class="i field">_triggerValue</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#237fa65b57fd0e18" class="i field">_triggerValue</a> == <b>value</b>)
+					<b>return</b>;
+				<b>if</b> (<a href="Condition.cs.html#c5b32ab6fc65742d" class="i property">IsSealed</a>)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;Can not change Value once the Trigger has been applied.&quot;</span>);
+ 
+				<span class="c">//convert the value</span>
+				<b>if</b> (<a href="#45b014ab4bdb841c" class="i field">_property</a> != <b>null</b> &amp;&amp; <a href="#b6cbc56a1859686a" class="i field">s_valueConverter</a> != <b>null</b>)
+				{
+					<a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<span class="t t">MemberInfo</span>&gt; <span id="r2 rd" class="r2 r">minforetriever</span> = () =&gt; <a href="#6c83f3e184235458" class="i property">Property</a>.<a href="../BindableProperty.cs.html#7a0e7c9a8e08c999" class="i property">DeclaringType</a>.<span class="i method">GetRuntimeProperty</span>(<a href="#6c83f3e184235458" class="i property">Property</a>.<a href="../BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>);
+					<b>value</b> = <a href="#b6cbc56a1859686a" class="i field">s_valueConverter</a>.<a href="../IValueConverterProvider.cs.html#b5bdc6a3d912f33b" class="i method">Convert</a>(<b>value</b>, <a href="#6c83f3e184235458" class="i property">Property</a>.<a href="../BindableProperty.cs.html#3a88e13a70e1553a" class="i property">ReturnType</a>, <span class="r2 r">minforetriever</span>, <b>null</b>);
+				}
+				<a href="#237fa65b57fd0e18" class="i field">_triggerValue</a> = <b>value</b>;
+			}
+		}
+ 
+		<b>object</b> <a href="../IValueProvider.cs.html#e42955e05b2a950d" class="t t">IValueProvider</a>.<a href="../IValueProvider.cs.html#f88eed7114b436af" class="i method">ProvideValue</a>(<span class="t t">IServiceProvider</span> <span id="r3 rd" class="r3 r">serviceProvider</span>)
+		{
+			<span class="c">//This is no longer required</span>
+			<b>return</b> <a href="#9bb8e0f81cdbb680" class="k">this</a>;
+		}
+ 
+		<b>internal override bool</b> <a id="9a543bbc691ab20e" href="../R/9a543bbc691ab20e.html" target="n" data-glyph="74,1" class="i method">GetState</a>(<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r4 rd" class="r4 r">bindable</span>)
+		{
+			<b>return</b> (<b>bool</b>)<span class="r4 r">bindable</span>.<a href="../BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#3aa4597d80f8eadf" class="i field">_stateProperty</a>);
+		}
+ 
+		<b>static</b> <a href="../IValueConverterProvider.cs.html#dd2dd164a839bd8d" class="t t">IValueConverterProvider</a> <a id="b6cbc56a1859686a" href="../R/b6cbc56a1859686a.html" target="n" data-glyph="46,1" class="i field">s_valueConverter</a> = <a href="../DependencyService.cs.html#8d311a81ee952ba4" class="t t">DependencyService</a>.<a href="../DependencyService.cs.html#ac938f0fb30da4e5" class="i method">Get</a>&lt;<a href="../IValueConverterProvider.cs.html#dd2dd164a839bd8d" class="t t">IValueConverterProvider</a>&gt;();
+ 
+		<b>internal override void</b> <a id="b650a0fbb505d2e3" href="../R/b650a0fbb505d2e3.html" target="n" data-glyph="74,1" class="i method">SetUp</a>(<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r5 rd" class="r5 r">bindable</span>)
+		{
+			<b>object</b> <span id="r6 rd" class="r6 r">newvalue</span> = <span class="r5 r">bindable</span>.<a href="../BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#6c83f3e184235458" class="i property">Property</a>);
+			<b>bool</b> <span id="r7 rd" class="r7 r">newState</span> = (<span class="r6 r">newvalue</span> == <a href="#adeef42c772342c4" class="i property">Value</a>) || (<span class="r6 r">newvalue</span> != <b>null</b> &amp;&amp; <span class="r6 r">newvalue</span>.<a href="@1@System.Runtime/A.html#517682d5f6f4f8b4" class="i method">Equals</a>(<a href="#adeef42c772342c4" class="i property">Value</a>));
+			<span class="r5 r">bindable</span>.<a href="../BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#3aa4597d80f8eadf" class="i field">_stateProperty</a>, <span class="r7 r">newState</span>);
+			<span class="r5 r">bindable</span>.<a href="../BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#ab8fedfadccb5a9c" class="i method">OnAttachedObjectPropertyChanged</a>;
+		}
+ 
+		<b>internal override void</b> <a id="f39ab888cf2b13c0" href="../R/f39ab888cf2b13c0.html" target="n" data-glyph="74,1" class="i method">TearDown</a>(<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r8 rd" class="r8 r">bindable</span>)
+		{
+			<span class="r8 r">bindable</span>.<a href="../BindableObject.cs.html#4b4f85fcc1a48118" class="i method">ClearValue</a>(<a href="#3aa4597d80f8eadf" class="i field">_stateProperty</a>);
+			<span class="r8 r">bindable</span>.<a href="../BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#ab8fedfadccb5a9c" class="i method">OnAttachedObjectPropertyChanged</a>;
+		}
+ 
+		<b>void</b> <a id="ab8fedfadccb5a9c" href="../R/ab8fedfadccb5a9c.html" target="n" data-glyph="76,1" class="i method">OnAttachedObjectPropertyChanged</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="k">var</a> <span id="r11 rd" class="r11 r">bindable</span> = (<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>)<span class="r9 r">sender</span>;
+			<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r12 rd" class="r12 r">oldState</span> = (<b>bool</b>)<span class="r11 r">bindable</span>.<a href="../BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#3aa4597d80f8eadf" class="i field">_stateProperty</a>);
+ 
+			<b>if</b> (<a href="#6c83f3e184235458" class="i property">Property</a> == <b>null</b>)
+				<b>return</b>;
+			<b>if</b> (<span class="r10 r">e</span>.<span class="i property">PropertyName</span> != <a href="#6c83f3e184235458" class="i property">Property</a>.<a href="../BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<b>return</b>;
+			<b>object</b> <span id="r13 rd" class="r13 r">newvalue</span> = <span class="r11 r">bindable</span>.<a href="../BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#6c83f3e184235458" class="i property">Property</a>);
+			<b>bool</b> <span id="r14 rd" class="r14 r">newstate</span> = (<span class="r13 r">newvalue</span> == <a href="#adeef42c772342c4" class="i property">Value</a>) || (<span class="r13 r">newvalue</span> != <b>null</b> &amp;&amp; <span class="r13 r">newvalue</span>.<a href="@1@System.Runtime/A.html#517682d5f6f4f8b4" class="i method">Equals</a>(<a href="#adeef42c772342c4" class="i property">Value</a>));
+			<b>if</b> (<span class="r12 r">oldState</span> != <span class="r14 r">newstate</span>)
+				<span class="r11 r">bindable</span>.<a href="../BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#3aa4597d80f8eadf" class="i field">_stateProperty</a>, <span class="r14 r">newstate</span>);
+		}
+ 
+		<b>void</b> <a id="801d54fe994d88b3" href="../R/801d54fe994d88b3.html" target="n" data-glyph="76,1" class="i method">OnStatePropertyChanged</a>(<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r15 rd" class="r15 r">bindable</span>, <b>object</b> <span id="r16 rd" class="r16 r">oldValue</span>, <b>object</b> <span id="r17 rd" class="r17 r">newValue</span>)
+		{
+			<b>if</b> ((<b>bool</b>)<span class="r16 r">oldValue</span> == (<b>bool</b>)<span class="r17 r">newValue</span>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="Condition.cs.html#7c7d603ba218f670" class="i property">ConditionChanged</a> != <b>null</b>)
+				<a href="Condition.cs.html#7c7d603ba218f670" class="i property">ConditionChanged</a>(<span class="r15 r">bindable</span>, (<b>bool</b>)<span class="r16 r">oldValue</span>, (<b>bool</b>)<span class="r17 r">newValue</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

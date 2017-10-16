@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html>
+<html><head><title>PickerRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(189);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Renderers/PickerRenderer.cs" target="_top">Renderers\PickerRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">App</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>.<span class="i">Res</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Widget</span>;
+<b>using</b> <span class="i">ADatePicker</span> = <span class="i">Android</span>.<span class="i">Widget</span>.<span class="i">DatePicker</span>;
+<b>using</b> <span class="i">ATimePicker</span> = <span class="i">Android</span>.<span class="i">Widget</span>.<span class="i">TimePicker</span>;
+<b>using</b> <span class="i">Object</span> = <span class="i n">Java</span>.<span class="i">Lang</span>.<span class="i">Object</span>;
+<b>using</b> <span class="i">Orientation</span> = <span class="i">Android</span>.<span class="i">Widget</span>.<span class="i">Orientation</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Specialized</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>public class</b> <a id="6792a28b026a1f85" href="../R/6792a28b026a1f85.html" target="n" data-glyph="0,0" class="t t">PickerRenderer</a> : <a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>, <span class="i">EditText</span>&gt;
+	{
+		<span class="i">AlertDialog</span> <a id="4707e692c3af41bf" href="../R/4707e692c3af41bf.html" target="n" data-glyph="46,1" class="i field">_dialog</a>;
+		<b>bool</b> <a id="42720f1ed6edca6a" href="../R/42720f1ed6edca6a.html" target="n" data-glyph="46,1" class="i field">_isDisposed</a>;
+		<a href="../TextColorSwitcher.cs.html#63d27b3d47d6237e" class="t t">TextColorSwitcher</a> <a id="a1b29e750b04ec39" href="../R/a1b29e750b04ec39.html" target="n" data-glyph="46,1" class="i field">_textColorSwitcher</a>;
+ 
+		<b>public</b> <a id="bef0407a30aea2e6" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">PickerRenderer</a>()
+		{
+			<a href="../VisualElementRenderer.cs.html#51c5d397dcb4f87a" class="i property">AutoPackage</a> = <b>false</b>;
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a> <a id="1baf479e0c7efb42" href="../R/1baf479e0c7efb42.html" target="n" data-glyph="106,1" class="i property">ElementController</a> =&gt; <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a>;
+ 
+		<b>protected override void</b> <a id="f22802ae0e997d31" href="../R/f22802ae0e997d31.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r0 rd" class="r0 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r0 r">disposing</span> &amp;&amp; !<a href="#42720f1ed6edca6a" class="i field">_isDisposed</a>)
+			{
+				<a href="#42720f1ed6edca6a" class="i field">_isDisposed</a> = <b>true</b>;
+				((<span class="i">INotifyCollectionChanged</span>)<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>).<span class="i">CollectionChanged</span> -= <span class="i">RowsCollectionChanged</span>;
+			}
+ 
+			<a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="k">base</a>.<a href="../ViewRenderer.cs.html#2257743d08fe8ebc" class="i method">Dispose</a>(<span class="r0 r">disposing</span>);
+		}
+ 
+		<b>protected override</b> <span class="i">EditText</span> <a id="fc94df6d0cd0ac35" href="../R/fc94df6d0cd0ac35.html" target="n" data-glyph="75,1" class="i method">CreateNativeControl</a>()
+		{
+			<b>return</b> <b>new</b> <span class="i">EditText</span>(<span class="i">Context</span>) { <span class="i">Focusable</span> = <b>false</b>, <span class="i">Clickable</span> = <b>true</b>, <span class="i">Tag</span> = <a href="#6792a28b026a1f85" class="k">this</a> };
+		}
+ 
+		<b>protected override void</b> <a id="47a59bb267741bfc" href="../R/47a59bb267741bfc.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#9a1366c2961f4fde" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>&gt; <span id="r1 rd" class="r1 r">e</span>)
+		{
+			<b>if</b> (<span class="r1 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a> != <b>null</b>)
+				((<span class="i">INotifyCollectionChanged</span>)<span class="r1 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>).<span class="i">CollectionChanged</span> -= <span class="i">RowsCollectionChanged</span>;
+ 
+			<b>if</b> (<span class="r1 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a> != <b>null</b>)
+			{
+				((<span class="i">INotifyCollectionChanged</span>)<span class="r1 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>).<span class="i">CollectionChanged</span> += <span class="i">RowsCollectionChanged</span>;
+				<b>if</b> (<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a> == <b>null</b>)
+				{
+					<b>var</b> <span id="r2 rd" class="r2 r">textField</span> = <a href="#fc94df6d0cd0ac35" class="i method">CreateNativeControl</a>();
+					<span class="r2 r">textField</span>.<span class="i">SetOnClickListener</span>(<a href="#07b1bf0cc933b242" class="t t">PickerListener</a>.<a href="#82e8f68322191ed6" class="i field">Instance</a>);
+					<a href="#a1b29e750b04ec39" class="i field">_textColorSwitcher</a> = <b>new</b> <span class="t">TextColorSwitcher</span>(<span class="r2 r">textField</span>.<span class="i">TextColors</span>);
+					<a href="../ViewRenderer.cs.html#b428fe451327a704" class="i method">SetNativeControl</a>(<span class="r2 r">textField</span>);
+				}
+				<a href="#3b7f1b8d2244c499" class="i method">UpdatePicker</a>();
+				<a href="#4e0a67ca7b72c1d5" class="i method">UpdateTextColor</a>();
+			}
+ 
+			<a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="k">base</a>.<a href="../ViewRenderer.cs.html#5d5d3ece35573040" class="i method">OnElementChanged</a>(<span class="r1 r">e</span>);
+		}
+ 
+		<b>protected override void</b> <a id="01620d357b0df714" href="../R/01620d357b0df714.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r3 rd" class="r3 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r4 rd" class="r4 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="k">base</a>.<a href="../ViewRenderer.cs.html#84343e2467a361c4" class="i method">OnElementPropertyChanged</a>(<span class="r3 r">sender</span>, <span class="r4 r">e</span>);
+ 
+			<b>if</b> (<span class="r4 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>.<a href="/Xamarin.Forms.Core/A.html#5573ce67f57c099b" class="i field">TitleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#3b7f1b8d2244c499" class="i method">UpdatePicker</a>();
+			<b>if</b> (<span class="r4 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>.<a href="/Xamarin.Forms.Core/A.html#4cc8ed30ae38dc2c" class="i field">SelectedIndexProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#3b7f1b8d2244c499" class="i method">UpdatePicker</a>();
+			<b>if</b> (<span class="r4 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>.<a href="/Xamarin.Forms.Core/A.html#660c507935b16122" class="i field">TextColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#4e0a67ca7b72c1d5" class="i method">UpdateTextColor</a>();
+		}
+ 
+		<b>internal override void</b> <a id="bd1448b1bbb96776" href="../R/bd1448b1bbb96776.html" target="n" data-glyph="74,1" class="i method">OnFocusChangeRequested</a>(<b>object</b> <span id="r5 rd" class="r5 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#d3cc4b3d19a5200c" class="t t">FocusRequestArgs</a> <span id="r6 rd" class="r6 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="k">base</a>.<a href="../ViewRenderer.cs.html#244a1df7f955e482" class="i method">OnFocusChangeRequested</a>(<span class="r5 r">sender</span>, <span class="r6 r">e</span>);
+ 
+			<b>if</b> (<span class="r6 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#5aa73c2ca3b38302" class="i property">Focus</a>)
+				<a href="#3dc84296cc34f57d" class="i method">OnClick</a>();
+			<b>else if</b> (<a href="#4707e692c3af41bf" class="i field">_dialog</a> != <b>null</b>)
+			{
+				<a href="#4707e692c3af41bf" class="i field">_dialog</a>.<span class="i">Hide</span>();
+				<a href="#1baf479e0c7efb42" class="i property">ElementController</a>.<span class="i">SetValueFromRenderer</span>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <b>false</b>);
+				<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">ClearFocus</span>();
+				<a href="#4707e692c3af41bf" class="i field">_dialog</a> = <b>null</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="3dc84296cc34f57d" href="../R/3dc84296cc34f57d.html" target="n" data-glyph="76,1" class="i method">OnClick</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a> <span id="r7 rd" class="r7 r">model</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>;
+ 
+			<b>var</b> <span id="r8 rd" class="r8 r">picker</span> = <b>new</b> <span class="i">NumberPicker</span>(<span class="i">Context</span>);
+			<b>if</b> (<span class="r7 r">model</span>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a> != <b>null</b> &amp;&amp; <span class="r7 r">model</span>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>.<span class="i">Any</span>())
+			{
+				<span class="r8 r">picker</span>.<span class="i">MaxValue</span> = <span class="r7 r">model</span>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>.<span class="i">Count</span> - 1;
+				<span class="r8 r">picker</span>.<span class="i">MinValue</span> = 0;
+				<span class="r8 r">picker</span>.<span class="i">SetDisplayedValues</span>(<span class="r7 r">model</span>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>.<span class="i">ToArray</span>());
+				<span class="r8 r">picker</span>.<span class="i">WrapSelectorWheel</span> = <b>false</b>;
+				<span class="r8 r">picker</span>.<span class="i">DescendantFocusability</span> = <span class="i">DescendantFocusability</span>.<span class="i">BlockDescendants</span>;
+				<span class="r8 r">picker</span>.<span class="i">Value</span> = <span class="r7 r">model</span>.<a href="/Xamarin.Forms.Core/A.html#2a86e2fcc8f3e266" class="i property">SelectedIndex</a>;
+			}
+ 
+			<b>var</b> <span id="r9 rd" class="r9 r">layout</span> = <b>new</b> <span class="i">LinearLayout</span>(<span class="i">Context</span>) { <span class="i">Orientation</span> = <span class="i">Orientation</span>.<span class="i">Vertical</span> };
+			<span class="r9 r">layout</span>.<span class="i">AddView</span>(<span class="r8 r">picker</span>);
+ 
+			<a href="#1baf479e0c7efb42" class="i property">ElementController</a>.<span class="i">SetValueFromRenderer</span>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <b>true</b>);
+ 
+			<b>var</b> <span id="r10 rd" class="r10 r">builder</span> = <b>new</b> <span class="i">AlertDialog</span>.<span class="i">Builder</span>(<span class="i">Context</span>);
+			<span class="r10 r">builder</span>.<span class="i">SetView</span>(<span class="r9 r">layout</span>);
+			<span class="r10 r">builder</span>.<span class="i">SetTitle</span>(<span class="r7 r">model</span>.<a href="/Xamarin.Forms.Core/A.html#f944f721fe11576b" class="i property">Title</a> ?? <span class="s">&quot;&quot;</span>);
+			<span class="r10 r">builder</span>.<span class="i">SetNegativeButton</span>(<b>global</b>::<span class="i">Android</span>.<span class="i">Resource</span>.<span class="i">String</span>.<span class="i">Cancel</span>, (<span id="r11 rd" class="r11 r">s</span>, <span id="r12 rd" class="r12 r">a</span>) =&gt;
+			{
+				<a href="#1baf479e0c7efb42" class="i property">ElementController</a>.<span class="i">SetValueFromRenderer</span>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <b>false</b>);
+				<span class="c">// It is possible for the Content of the Page to be changed when Focus is changed.</span>
+				<span class="c">// In this case, we&#39;ll lose our Control.</span>
+				<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>?.<span class="i">ClearFocus</span>();
+				<a href="#4707e692c3af41bf" class="i field">_dialog</a> = <b>null</b>;
+			});
+			<span class="r10 r">builder</span>.<span class="i">SetPositiveButton</span>(<b>global</b>::<span class="i">Android</span>.<span class="i">Resource</span>.<span class="i">String</span>.<span class="i">Ok</span>, (<span id="r13 rd" class="r13 r">s</span>, <span id="r14 rd" class="r14 r">a</span>) =&gt;
+			{
+				<a href="#1baf479e0c7efb42" class="i property">ElementController</a>.<span class="i">SetValueFromRenderer</span>(<a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>.<a href="/Xamarin.Forms.Core/A.html#4cc8ed30ae38dc2c" class="i field">SelectedIndexProperty</a>, <span class="r8 r">picker</span>.<span class="i">Value</span>);
+				<span class="c">// It is possible for the Content of the Page to be changed on SelectedIndexChanged. </span>
+				<span class="c">// In this case, the Element &amp; Control will no longer exist.</span>
+				<b>if</b> (<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a> != <b>null</b>)
+				{
+					<b>if</b> (<span class="r7 r">model</span>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>.<span class="i">Count</span> &gt; 0 &amp;&amp; <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2a86e2fcc8f3e266" class="i property">SelectedIndex</a> &gt;= 0)
+						<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">Text</span> = <span class="r7 r">model</span>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>[<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2a86e2fcc8f3e266" class="i property">SelectedIndex</a>];
+					<a href="#1baf479e0c7efb42" class="i property">ElementController</a>.<span class="i">SetValueFromRenderer</span>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <b>false</b>);
+					<span class="c">// It is also possible for the Content of the Page to be changed when Focus is changed.</span>
+					<span class="c">// In this case, we&#39;ll lose our Control.</span>
+					<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>?.<span class="i">ClearFocus</span>();
+				}
+				<a href="#4707e692c3af41bf" class="i field">_dialog</a> = <b>null</b>;
+			});
+ 
+			<a href="#4707e692c3af41bf" class="i field">_dialog</a> = <span class="r10 r">builder</span>.<span class="i">Create</span>();
+			<a href="#4707e692c3af41bf" class="i field">_dialog</a>.<span class="i">DismissEvent</span> += (<span id="r15 rd" class="r15 r">sender</span>, <span id="r16 rd" class="r16 r">args</span>) =&gt;
+			{
+				<a href="#1baf479e0c7efb42" class="i property">ElementController</a>?.<span class="i">SetValueFromRenderer</span>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <b>false</b>);
+			};
+			<a href="#4707e692c3af41bf" class="i field">_dialog</a>.<span class="i">Show</span>();
+		}
+ 
+		<b>void</b> <a id="03c0683b4302030a" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">RowsCollectionChanged</a>(<b>object</b> <span id="r17 rd" class="r17 r">sender</span>, <span class="i">EventArgs</span> <span id="r18 rd" class="r18 r">e</span>)
+		{
+			<a href="#3b7f1b8d2244c499" class="i method">UpdatePicker</a>();
+		}
+ 
+		<b>void</b> <a id="3b7f1b8d2244c499" href="../R/3b7f1b8d2244c499.html" target="n" data-glyph="76,1" class="i method">UpdatePicker</a>()
+		{
+			<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">Hint</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#f944f721fe11576b" class="i property">Title</a>;
+ 
+			<b>string</b> <span id="r19 rd" class="r19 r">oldText</span> = <a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">Text</span>;
+ 
+			<b>if</b> (<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2a86e2fcc8f3e266" class="i property">SelectedIndex</a> == -1 || <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a> == <b>null</b>)
+				<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">Text</span> = <b>null</b>;
+			<b>else</b>
+				<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">Text</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>[<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2a86e2fcc8f3e266" class="i property">SelectedIndex</a>];
+ 
+			<b>if</b> (<span class="r19 r">oldText</span> != <a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">Text</span>)
+				((<a href="/Xamarin.Forms.Core/A.html#d605b7264f63ff57" class="t t">IVisualElementController</a>)<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>).<span class="i">NativeSizeChanged</span>();
+		}
+ 
+		<b>void</b> <a id="4e0a67ca7b72c1d5" href="../R/4e0a67ca7b72c1d5.html" target="n" data-glyph="76,1" class="i method">UpdateTextColor</a>()
+		{
+			<a href="#a1b29e750b04ec39" class="i field">_textColorSwitcher</a>?.<span class="i">UpdateTextColor</span>(<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>, <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d4fea928c5d48f63" class="i property">TextColor</a>);
+		}
+ 
+		<b>class</b> <a id="07b1bf0cc933b242" href="../R/07b1bf0cc933b242.html" target="n" data-glyph="4,1" class="t t"><span id="8daebe23b25d6626">PickerListener</span></a> : <span class="i">Object</span>, <span class="i">IOnClickListener</span>
+		{
+			<b>public static readonly</b> <a href="#07b1bf0cc933b242" class="t t">PickerListener</a> <a id="82e8f68322191ed6" href="../R/82e8f68322191ed6.html" target="n" data-glyph="42,2" class="i field">Instance</a> = <b>new</b> <a href="#07b1bf0cc933b242" class="t constructor">PickerListener</a>();
+ 
+			<b>public void</b> <a id="68edfbc6cd035a71" href="../R/../../0000000000.html" target="n" data-glyph="72,2" class="i method">OnClick</a>(<b>global</b>::<span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span> <span id="r20 rd" class="r20 r">v</span>)
+			{
+				<a href="#6792a28b026a1f85" class="k">var</a> <span id="r21 rd" class="r21 r">renderer</span> = <span class="r20 r">v</span>.<span class="i">Tag</span> <b>as</b> <a href="#6792a28b026a1f85" class="t t">PickerRenderer</a>;
+				<b>if</b> (<span class="r21 r">renderer</span> == <b>null</b>)
+					<b>return</b>;
+ 
+				<span class="r21 r">renderer</span>.<a href="#3dc84296cc34f57d" class="i method">OnClick</a>();
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

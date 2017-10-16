@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html><head><title>TypeTypeConverter.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(44);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/CompiledConverters/TypeTypeConverter.cs" target="_top">CompiledConverters\TypeTypeConverter.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+ 
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Cil</span>;
+ 
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Core</span>.<span class="i n">XamlC</span>
+{
+	<b>class</b> <a id="8bc0074baaed3368" href="../R/../../0000000000.html" target="n" data-glyph="2,0" class="t t"><span id="930388dc991e79df">TypeTypeConverter</span></a> : <a href="ICompiledTypeConverter.cs.html#9cd7e0046f235fb3" class="t t">ICompiledTypeConverter</a>
+	{
+		<b>public</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <a id="eda9f67d1659618f" href="../R/eda9f67d1659618f.html" target="n" data-glyph="72,1" class="i method">ConvertFromString</a>(<b>string</b> <span id="r0 rd" class="r0 r">value</span>, <span class="i">ModuleDefinition</span> <span id="r1 rd" class="r1 r">module</span>, <a href="/Xamarin.Forms.Xaml/A.html#aee785270197d5f3" class="t t">BaseNode</a> <span id="r2 rd" class="r2 r">node</span>)
+		{
+			<b>if</b> (<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r0 r">value</span>))
+				<b>goto</b> <span class="i">error</span>;
+ 
+			<b>var</b> <span id="r3 rd" class="r3 r">split</span> = <span class="r0 r">value</span>.<a href="@0@mscorlib/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;:&#39;</span>);
+			<b>if</b> (<span class="r3 r">split</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 2)
+				<b>goto</b> <span class="i">error</span>;
+ 
+			<a href="/Xamarin.Forms.Xaml/A.html#944154aac15f45be" class="t t">XmlType</a> <span id="r4 rd" class="r4 r">xmlType</span>;
+			<b>if</b> (<span class="r3 r">split</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> == 2)
+				<span class="r4 r">xmlType</span> = <b>new</b> <a href="/Xamarin.Forms.Xaml/A.html#0a1740224b8aaa73" class="t constructor">XmlType</a>(<span class="r2 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#4c29fc7211aeb588" class="i property">NamespaceResolver</a>.<a href="@0@System.Xml/A.html#5a346754cfdb27f6" class="i method">LookupNamespace</a>(<span class="r3 r">split</span>[0]), <span class="r3 r">split</span>[1], <b>null</b>);
+			<b>else</b>
+				<span class="r4 r">xmlType</span> = <b>new</b> <a href="/Xamarin.Forms.Xaml/A.html#0a1740224b8aaa73" class="t constructor">XmlType</a>(<span class="r2 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#4c29fc7211aeb588" class="i property">NamespaceResolver</a>.<a href="@0@System.Xml/A.html#5a346754cfdb27f6" class="i method">LookupNamespace</a>(<span class="s">&quot;&quot;</span>), <span class="r3 r">split</span>[0], <b>null</b>);
+ 
+			<b>var</b> <span id="r5 rd" class="r5 r">typeRef</span> = <span class="r4 r">xmlType</span>.<a href="../XmlTypeExtensions.cs.html#bd43fe0cd1312d17" class="i method">GetTypeReference</a>(<span class="r1 r">module</span>, (<a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a>)<span class="r2 r">node</span>);
+			<b>if</b> (<span class="r5 r">typeRef</span> == <b>null</b>)
+				<b>goto</b> <span class="i">error</span>;
+ 
+			<b>var</b> <span id="r6 rd" class="r6 r">getTypeFromHandle</span> = <span class="r1 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>).<a href="@0@mscorlib/A.html#d43a8d0bb16a0b39" class="i method">GetMethod</a>(<span class="s">&quot;GetTypeFromHandle&quot;</span>, <b>new</b>[] { <b>typeof</b>(<a href="@0@mscorlib/A.html#0701d28060985e94" class="t t">RuntimeTypeHandle</a>) }));
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldtoken</span>, <span class="r1 r">module</span>.<span class="i">ImportReference</span>(<span class="r5 r">typeRef</span>));
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r1 r">module</span>.<span class="i">ImportReference</span>(<span class="r6 r">getTypeFromHandle</span>));
+			<b>yield break</b>;
+ 
+		<span class="i">error</span>:
+			<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r0 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>)}<span class="s">&quot;</span>, <span class="r2 r">node</span>);
+		}
+	}
+ 
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,222 @@
+﻿<!DOCTYPE html>
+<html><head><title>Cell.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(213);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/Cells/Cell.cs" target="_top">Cells\Cell.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>public abstract class</b> <a id="7706486019503b22" href="../R/7706486019503b22.html" target="n" data-glyph="0,0" class="t t"><span id="27af08ab4ff47c2d">Cell</span></a> : <a href="../Element.cs.html#76098df8350c0484" class="t t">Element</a>, <a href="ICellController.cs.html#445c706db7510364" class="t t">ICellController</a>
+	{
+		<b>public const int</b> <a id="586d91e08ec7fc0a" href="../R/586d91e08ec7fc0a.html" target="n" data-glyph="6,1" class="i field">DefaultCellHeight</a> = 40;
+		<b>public static readonly</b> <a href="../BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="e3706ad0430ea431" href="../R/e3706ad0430ea431.html" target="n" data-glyph="42,1" class="i field">IsEnabledProperty</a> = <a href="../BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="../BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;IsEnabled&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#7706486019503b22" class="t t">Cell</a>), <b>true</b>, <span class="r0 r">propertyChanged</span>: <a href="#e379c86def47ca75" class="i method">OnIsEnabledPropertyChanged</a>);
+ 
+		<span class="t t">ObservableCollection</span>&lt;<a href="../MenuItem.cs.html#36ded754cef116fb" class="t t">MenuItem</a>&gt; <a id="dfcdff1ba1a054bb" href="../R/dfcdff1ba1a054bb.html" target="n" data-glyph="46,1" class="i field">_contextActions</a>;
+ 
+		<b>double</b> <a id="c755a2735332b157" href="../R/c755a2735332b157.html" target="n" data-glyph="46,1" class="i field">_height</a> = -1;
+ 
+		<b>bool</b> <a id="512ceff338477339" href="../R/512ceff338477339.html" target="n" data-glyph="46,1" class="i field">_nextCallToForceUpdateSizeQueued</a>;
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="../MenuItem.cs.html#36ded754cef116fb" class="t t">MenuItem</a>&gt; <a id="df6ab09b8d06612c" href="../R/df6ab09b8d06612c.html" target="n" data-glyph="102,1" class="i property">ContextActions</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<a href="#dfcdff1ba1a054bb" class="i field">_contextActions</a> == <b>null</b>)
+				{
+					<a href="#dfcdff1ba1a054bb" class="i field">_contextActions</a> = <b>new</b> <span class="t constructor">ObservableCollection</span>&lt;<a href="../MenuItem.cs.html#36ded754cef116fb" class="t t">MenuItem</a>&gt;();
+					<a href="#dfcdff1ba1a054bb" class="i field">_contextActions</a>.<span class="i">CollectionChanged</span> += <a href="#06cd5f7bd717a20d" class="i method">OnContextActionsChanged</a>;
+				}
+ 
+				<b>return</b> <a href="#dfcdff1ba1a054bb" class="i field">_contextActions</a>;
+			}
+		}
+ 
+		<b>public bool</b> <a id="c18f293b9c4fd7e6" href="../R/c18f293b9c4fd7e6.html" target="n" data-glyph="102,1" class="i property">HasContextActions</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#dfcdff1ba1a054bb" class="i field">_contextActions</a> != <b>null</b> &amp;&amp; <a href="#dfcdff1ba1a054bb" class="i field">_contextActions</a>.<a href="@1@System.Runtime/A.html#f2419069e9890f5d" class="i property">Count</a> &gt; 0 &amp;&amp; <a href="#b8771aed49c9b0ce" class="i property">IsEnabled</a>; }
+		}
+ 
+		<b>public double</b> <a id="0eedd908bf3c7b03" href="../R/0eedd908bf3c7b03.html" target="n" data-glyph="102,1" class="i property">Height</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#c755a2735332b157" class="i field">_height</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#c755a2735332b157" class="i field">_height</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<a href="#8f4c536d3a3fbb42" class="i method">OnPropertyChanging</a>(<span class="s">&quot;Height&quot;</span>);
+				<a href="#8f4c536d3a3fbb42" class="i method">OnPropertyChanging</a>(<span class="s">&quot;RenderHeight&quot;</span>);
+				<a href="#c755a2735332b157" class="i field">_height</a> = <b>value</b>;
+				<a href="../Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>(<span class="s">&quot;Height&quot;</span>);
+				<a href="../Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>(<span class="s">&quot;RenderHeight&quot;</span>);
+			}
+		}
+ 
+		<b>public bool</b> <a id="b8771aed49c9b0ce" href="../R/b8771aed49c9b0ce.html" target="n" data-glyph="102,1" class="i property">IsEnabled</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<a href="../BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#e3706ad0430ea431" class="i field">IsEnabledProperty</a>); }
+			<b>set</b> { <a href="../BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#e3706ad0430ea431" class="i field">IsEnabledProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public double</b> <a id="f9c815e81f5597b4" href="../R/f9c815e81f5597b4.html" target="n" data-glyph="102,1" class="i property">RenderHeight</a>
+		{
+			<b>get</b>
+			{
+				<a href="../TableView.cs.html#3fe8bdf9289cb986" class="k">var</a> <span id="r1 rd" class="r1 r">table</span> = <a href="../Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a> <b>as</b> <a href="../TableView.cs.html#3fe8bdf9289cb986" class="t t">TableView</a>;
+				<b>if</b> (<span class="r1 r">table</span> != <b>null</b>)
+					<b>return</b> <span class="r1 r">table</span>.<a href="../TableView.cs.html#07cb3a003aadce3c" class="i property">HasUnevenRows</a> &amp;&amp; <a href="#0eedd908bf3c7b03" class="i property">Height</a> &gt; 0 ? <a href="#0eedd908bf3c7b03" class="i property">Height</a> : <span class="r1 r">table</span>.<a href="../TableView.cs.html#40d3d3e29e1caa3c" class="i property">RowHeight</a>;
+ 
+				<a href="../ListView.cs.html#bde8d740ed7039c7" class="k">var</a> <span id="r2 rd" class="r2 r">list</span> = <a href="../Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a> <b>as</b> <a href="../ListView.cs.html#bde8d740ed7039c7" class="t t">ListView</a>;
+				<b>if</b> (<span class="r2 r">list</span> != <b>null</b>)
+					<b>return</b> <span class="r2 r">list</span>.<a href="../ListView.cs.html#7d4655a3bc00be9b" class="i property">HasUnevenRows</a> &amp;&amp; <a href="#0eedd908bf3c7b03" class="i property">Height</a> &gt; 0 ? <a href="#0eedd908bf3c7b03" class="i property">Height</a> : <span class="r2 r">list</span>.<a href="../ListView.cs.html#873f0e107de1f075" class="i property">RowHeight</a>;
+ 
+				<b>return</b> <a href="#586d91e08ec7fc0a" class="i field">DefaultCellHeight</a>;
+			}
+		}
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="9476e1260c81445a" href="../R/9476e1260c81445a.html" target="n" data-glyph="30,1" class="i">Appearing</a>;
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="ff59aa940d4ac06d" href="../R/ff59aa940d4ac06d.html" target="n" data-glyph="30,1" class="i">Disappearing</a>;
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="12dffc1d628823a4" href="../R/12dffc1d628823a4.html" target="n" data-glyph="30,1" class="i">ForceUpdateSizeRequested</a>;
+ 
+		<b>public void</b> <a id="d892fc1c479541e0" href="../R/d892fc1c479541e0.html" target="n" data-glyph="72,1" class="i method">ForceUpdateSize</a>()
+		{
+			<b>if</b> (<a href="#512ceff338477339" class="i field">_nextCallToForceUpdateSizeQueued</a>)
+				<b>return</b>;
+ 
+			<b>if</b> ((<a href="../Element.cs.html#c4bf3d030cd32fe9" class="i property">Parent</a> <b>as</b> <a href="../ListView.cs.html#bde8d740ed7039c7" class="t t">ListView</a>)?.<a href="../ListView.cs.html#7d4655a3bc00be9b" class="i property">HasUnevenRows</a> == <b>true</b>)
+			{
+				<a href="#512ceff338477339" class="i field">_nextCallToForceUpdateSizeQueued</a> = <b>true</b>;
+				<a href="#f2083bfe522be48a" class="i method">OnForceUpdateSizeRequested</a>();
+			}
+		}
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="43295653c135121b" href="../R/43295653c135121b.html" target="n" data-glyph="30,1" class="i">Tapped</a>;
+ 
+		<b>protected internal virtual void</b> <a id="46c544c4c018868a" href="../R/46c544c4c018868a.html" target="n" data-glyph="75,1" class="i method">OnTapped</a>()
+		{
+			<b>if</b> (<a href="#43295653c135121b" class="i">Tapped</a> != <b>null</b>)
+				<a href="#43295653c135121b" class="i">Tapped</a>(<a href="#7706486019503b22" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+ 
+		<b>protected virtual void</b> <a id="fd8ca5188781af3f" href="../R/fd8ca5188781af3f.html" target="n" data-glyph="75,1" class="i method">OnAppearing</a>()
+		{
+			<a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <span id="r3 rd" class="r3 r">handler</span> = <a href="#9476e1260c81445a" class="i">Appearing</a>;
+			<b>if</b> (<span class="r3 r">handler</span> != <b>null</b>)
+				<span class="r3 r">handler</span>(<a href="#7706486019503b22" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+ 
+		<b>protected override void</b> <a id="95e298b747436b2f" href="../R/95e298b747436b2f.html" target="n" data-glyph="75,1" class="i method">OnBindingContextChanged</a>()
+		{
+			<a href="../Element.cs.html#76098df8350c0484" class="k">base</a>.<a href="../Element.cs.html#abc3ca4fb6965b1f" class="i method">OnBindingContextChanged</a>();
+ 
+			<b>if</b> (<a href="#c18f293b9c4fd7e6" class="i property">HasContextActions</a>)
+			{
+				<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r4 rd" class="r4 r">i</span> = 0; <span class="r4 r">i</span> &lt; <a href="#dfcdff1ba1a054bb" class="i field">_contextActions</a>.<a href="@1@System.Runtime/A.html#f2419069e9890f5d" class="i property">Count</a>; <span class="r4 r">i</span>++)
+					<a href="../BindableObject.cs.html#530fa4630449540e" class="i method">SetInheritedBindingContext</a>(<a href="#dfcdff1ba1a054bb" class="i field">_contextActions</a><a href="@1@System.Runtime/A.html#e39c46878aa03f65">[</a><span class="r4 r">i</span>], <a href="../BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>);
+			}
+		}
+ 
+		<b>protected virtual void</b> <a id="7524e5e813786229" href="../R/7524e5e813786229.html" target="n" data-glyph="75,1" class="i method">OnDisappearing</a>()
+		{
+			<a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <span id="r5 rd" class="r5 r">handler</span> = <a href="#ff59aa940d4ac06d" class="i">Disappearing</a>;
+			<b>if</b> (<span class="r5 r">handler</span> != <b>null</b>)
+				<span class="r5 r">handler</span>(<a href="#7706486019503b22" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+ 
+		<b>protected override void</b> <a id="a1d9fdeb1e5f3f7e" href="../R/a1d9fdeb1e5f3f7e.html" target="n" data-glyph="75,1" class="i method">OnParentSet</a>()
+		{
+			<b>if</b> (<a href="../Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a> != <b>null</b>)
+			{
+				<a href="../Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a>.<a href="../BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#32c18d7623e3e5d6" class="i method">OnParentPropertyChanged</a>;
+				<a href="../Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a>.<a href="../BindableObject.cs.html#5da2d9db45bb399f" class="i">PropertyChanging</a> += <a href="#5673fb150f4bcd45" class="i method">OnParentPropertyChanging</a>;
+			}
+ 
+			<a href="../Element.cs.html#76098df8350c0484" class="k">base</a>.<a href="../Element.cs.html#8c65167ae48acdb8" class="i method">OnParentSet</a>();
+		}
+ 
+		<b>protected override void</b> <a id="8f4c536d3a3fbb42" href="../R/8f4c536d3a3fbb42.html" target="n" data-glyph="75,1" class="i method">OnPropertyChanging</a>(<b>string</b> <span id="r6 rd" class="r6 r">propertyName</span> = <b>null</b>)
+		{
+			<b>if</b> (<span class="r6 r">propertyName</span> == <span class="s">&quot;Parent&quot;</span>)
+			{
+				<b>if</b> (<a href="../Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a> != <b>null</b>)
+				{
+					<a href="../Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a>.<a href="../BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#32c18d7623e3e5d6" class="i method">OnParentPropertyChanged</a>;
+					<a href="../Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a>.<a href="../BindableObject.cs.html#5da2d9db45bb399f" class="i">PropertyChanging</a> -= <a href="#5673fb150f4bcd45" class="i method">OnParentPropertyChanging</a>;
+				}
+			}
+ 
+			<a href="../Element.cs.html#76098df8350c0484" class="k">base</a>.<a href="../BindableObject.cs.html#e5d2d1b731820b1b" class="i method">OnPropertyChanging</a>(<span class="r6 r">propertyName</span>);
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public void</b> <a id="884674abe59f9ab2" href="../R/884674abe59f9ab2.html" target="n" data-glyph="72,1" class="i method">SendAppearing</a>()
+		{
+			<a href="#fd8ca5188781af3f" class="i method">OnAppearing</a>();
+ 
+			<a href="../ListView.cs.html#bde8d740ed7039c7" class="k">var</a> <span id="r7 rd" class="r7 r">container</span> = <a href="../Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a> <b>as</b> <a href="../ListView.cs.html#bde8d740ed7039c7" class="t t">ListView</a>;
+			<b>if</b> (<span class="r7 r">container</span> != <b>null</b>)
+				<span class="r7 r">container</span>.<a href="../ListView.cs.html#e9088f68f576d800" class="i method">SendCellAppearing</a>(<a href="#7706486019503b22" class="k">this</a>);
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public void</b> <a id="9a269aae86b7756c" href="../R/9a269aae86b7756c.html" target="n" data-glyph="72,1" class="i method">SendDisappearing</a>()
+		{
+			<a href="#7524e5e813786229" class="i method">OnDisappearing</a>();
+ 
+			<a href="../ListView.cs.html#bde8d740ed7039c7" class="k">var</a> <span id="r8 rd" class="r8 r">container</span> = <a href="../Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a> <b>as</b> <a href="../ListView.cs.html#bde8d740ed7039c7" class="t t">ListView</a>;
+			<b>if</b> (<span class="r8 r">container</span> != <b>null</b>)
+				<span class="r8 r">container</span>.<a href="../ListView.cs.html#eb73fc0e944267d2" class="i method">SendCellDisappearing</a>(<a href="#7706486019503b22" class="k">this</a>);
+		}
+ 
+		<b>void</b> <a id="06cd5f7bd717a20d" href="../R/06cd5f7bd717a20d.html" target="n" data-glyph="76,1" class="i method">OnContextActionsChanged</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r11 rd" class="r11 r">i</span> = 0; <span class="r11 r">i</span> &lt; <a href="#dfcdff1ba1a054bb" class="i field">_contextActions</a>.<a href="@1@System.Runtime/A.html#f2419069e9890f5d" class="i property">Count</a>; <span class="r11 r">i</span>++)
+				<a href="../BindableObject.cs.html#530fa4630449540e" class="i method">SetInheritedBindingContext</a>(<a href="#dfcdff1ba1a054bb" class="i field">_contextActions</a><a href="@1@System.Runtime/A.html#e39c46878aa03f65">[</a><span class="r11 r">i</span>], <a href="../BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>);
+ 
+			<a href="../Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>(<span class="s">&quot;HasContextActions&quot;</span>);
+		}
+ 
+		<b>async void</b> <a id="f2083bfe522be48a" href="../R/f2083bfe522be48a.html" target="n" data-glyph="76,1" class="i method">OnForceUpdateSizeRequested</a>()
+		{
+			<span class="c">// don&#39;t run more than once per 16 milliseconds</span>
+			<b>await</b> <span class="t t">Task</span>.<span class="i method">Delay</span>(<a href="@1@System.Runtime/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>.<a href="@1@System.Runtime/A.html#668d91d771bce54b" class="i method">FromMilliseconds</a>(16));
+			<a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <span id="r12 rd" class="r12 r">handler</span> = <a href="#12dffc1d628823a4" class="i">ForceUpdateSizeRequested</a>;
+			<b>if</b> (<span class="r12 r">handler</span> != <b>null</b>)
+				<span class="r12 r">handler</span>(<a href="#7706486019503b22" class="k">this</a>, <b>null</b>);
+ 
+			<a href="#512ceff338477339" class="i field">_nextCallToForceUpdateSizeQueued</a> = <b>false</b>;
+		}
+ 
+		<b>static void</b> <a id="e379c86def47ca75" href="../R/e379c86def47ca75.html" target="n" data-glyph="76,1" class="i method">OnIsEnabledPropertyChanged</a>(<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r13 rd" class="r13 r">bindable</span>, <b>object</b> <span id="r14 rd" class="r14 r">oldvalue</span>, <b>object</b> <span id="r15 rd" class="r15 r">newvalue</span>)
+		{
+			(<span class="r13 r">bindable</span> <b>as</b> <a href="#7706486019503b22" class="t t">Cell</a>).<a href="../Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>(<span class="s">&quot;HasContextActions&quot;</span>);
+		}
+ 
+		<b>void</b> <a id="32c18d7623e3e5d6" href="../R/32c18d7623e3e5d6.html" target="n" data-glyph="76,1" class="i method">OnParentPropertyChanged</a>(<b>object</b> <span id="r16 rd" class="r16 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r17 rd" class="r17 r">e</span>)
+		{
+			<span class="c">// Technically we might be raising this even if it didn&#39;t change, but I&#39;m taking the bet that</span>
+			<span class="c">// its uncommon enough that we don&#39;t want to take the penalty of N GetValue calls to verify.</span>
+			<b>if</b> (<span class="r17 r">e</span>.<span class="i property">PropertyName</span> == <span class="s">&quot;RowHeight&quot;</span>)
+				<a href="../Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>(<span class="s">&quot;RenderHeight&quot;</span>);
+		}
+ 
+		<b>void</b> <a id="5673fb150f4bcd45" href="../R/5673fb150f4bcd45.html" target="n" data-glyph="76,1" class="i method">OnParentPropertyChanging</a>(<b>object</b> <span id="r18 rd" class="r18 r">sender</span>, <a href="../PropertyChangingEventArgs.cs.html#93f853bd01f998f1" class="t t">PropertyChangingEventArgs</a> <span id="r19 rd" class="r19 r">e</span>)
+		{
+			<b>if</b> (<span class="r19 r">e</span>.<a href="../PropertyChangingEventArgs.cs.html#c528626f60218b0c" class="i property">PropertyName</a> == <span class="s">&quot;RowHeight&quot;</span>)
+				<a href="#8f4c536d3a3fbb42" class="i method">OnPropertyChanging</a>(<span class="s">&quot;RenderHeight&quot;</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

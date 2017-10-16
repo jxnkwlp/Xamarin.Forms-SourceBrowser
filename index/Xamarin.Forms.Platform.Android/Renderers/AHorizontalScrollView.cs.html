@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html><head><title>AHorizontalScrollView.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(71);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Renderers/AHorizontalScrollView.cs" target="_top">Renderers\AHorizontalScrollView.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Widget</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>public class</b> <a id="a82eb3df5ef6efa2" href="../R/a82eb3df5ef6efa2.html" target="n" data-glyph="0,0" class="t t">AHorizontalScrollView</a> : <span class="i">HorizontalScrollView</span>
+	{
+		<b>readonly</b> <a href="ScrollViewRenderer.cs.html#ffefb095af72852e" class="t t">ScrollViewRenderer</a> <a id="26f67cf49a33b02c" href="../R/26f67cf49a33b02c.html" target="n" data-glyph="46,1" class="i field">_renderer</a>;
+ 
+		<b>public</b> <a id="51102b84880c0b7e" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">AHorizontalScrollView</a>(<span class="i">Context</span> <span id="r0 rd" class="r0 r">context</span>, <a href="ScrollViewRenderer.cs.html#ffefb095af72852e" class="t t">ScrollViewRenderer</a> <span id="r1 rd" class="r1 r">renderer</span>) : <b>base</b>(<span class="r0 r">context</span>)
+		{
+			<a href="#26f67cf49a33b02c" class="i field">_renderer</a> = <span class="r1 r">renderer</span>;
+		}
+ 
+		<b>internal bool</b> <a id="3d4c37081126815d" href="../R/3d4c37081126815d.html" target="n" data-glyph="104,1" class="i property">IsBidirectional</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public override bool</b> <a id="caa53e74db452bb6" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnInterceptTouchEvent</a>(<span class="i">MotionEvent</span> <span id="r2 rd" class="r2 r">ev</span>)
+		{
+			<span class="c">// set the start point for the bidirectional scroll; </span>
+			<span class="c">// Down is swallowed by other controls, so we&#39;ll just sneak this in here without actually preventing</span>
+			<span class="c">// other controls from getting the event.</span>
+			<b>if</b> (<a href="#3d4c37081126815d" class="i property">IsBidirectional</a> &amp;&amp; <span class="r2 r">ev</span>.<span class="i">Action</span> == <span class="i">MotionEventActions</span>.<span class="i">Down</span>)
+			{
+				<a href="#26f67cf49a33b02c" class="i field">_renderer</a>.<a href="ScrollViewRenderer.cs.html#6b146ec4d295a31b" class="i property">LastY</a> = <span class="r2 r">ev</span>.<span class="i">RawY</span>;
+				<a href="#26f67cf49a33b02c" class="i field">_renderer</a>.<a href="ScrollViewRenderer.cs.html#7b20b41e3fb6a163" class="i property">LastX</a> = <span class="r2 r">ev</span>.<span class="i">RawX</span>;
+			}
+ 
+			<b>return</b> <b>base</b>.<span class="i">OnInterceptTouchEvent</span>(<span class="r2 r">ev</span>);
+		}
+ 
+		<b>public override bool</b> <a id="46ccd6375e7df060" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnTouchEvent</a>(<span class="i">MotionEvent</span> <span id="r3 rd" class="r3 r">ev</span>)
+		{
+			<span class="c">// If the touch is caught by the horizontal scrollview, forward it to the parent so custom renderers can be notified of the touch.</span>
+			<a href="ScrollViewRenderer.cs.html#ffefb095af72852e" class="k">var</a> <span id="r4 rd" class="r4 r">verticalScrollViewerRenderer</span> = <span class="i">Parent</span> <b>as</b> <a href="ScrollViewRenderer.cs.html#ffefb095af72852e" class="t t">ScrollViewRenderer</a>;
+			<b>if</b> (<span class="r4 r">verticalScrollViewerRenderer</span> != <b>null</b>)
+			{
+				<span class="r4 r">verticalScrollViewerRenderer</span>.<a href="ScrollViewRenderer.cs.html#064f8ffba70319e2" class="i field">ShouldSkipOnTouch</a> = <b>true</b>;
+				<span class="r4 r">verticalScrollViewerRenderer</span>.<a href="ScrollViewRenderer.cs.html#84de80aaf75d98fd" class="i method">OnTouchEvent</a>(<span class="r3 r">ev</span>);
+			}
+ 
+			<span class="c">// The nested ScrollViews will allow us to scroll EITHER vertically OR horizontally in a single gesture.</span>
+			<span class="c">// This will allow us to also scroll diagonally.</span>
+			<span class="c">// We&#39;ll fall through to the base event so we still get the fling from the ScrollViews.</span>
+			<span class="c">// We have to do this in both ScrollViews, since a single gesture will be owned by one or the other, depending</span>
+			<span class="c">// on the initial direction of movement (i.e., horizontal/vertical).</span>
+			<b>if</b> (<a href="#3d4c37081126815d" class="i property">IsBidirectional</a>)
+			{
+				<b>float</b> <span id="r5 rd" class="r5 r">dX</span> = <a href="#26f67cf49a33b02c" class="i field">_renderer</a>.<a href="ScrollViewRenderer.cs.html#7b20b41e3fb6a163" class="i property">LastX</a> - <span class="r3 r">ev</span>.<span class="i">RawX</span>;
+				<b>float</b> <span id="r6 rd" class="r6 r">dY</span> = <a href="#26f67cf49a33b02c" class="i field">_renderer</a>.<a href="ScrollViewRenderer.cs.html#6b146ec4d295a31b" class="i property">LastY</a> - <span class="r3 r">ev</span>.<span class="i">RawY</span>;
+				<a href="#26f67cf49a33b02c" class="i field">_renderer</a>.<a href="ScrollViewRenderer.cs.html#6b146ec4d295a31b" class="i property">LastY</a> = <span class="r3 r">ev</span>.<span class="i">RawY</span>;
+				<a href="#26f67cf49a33b02c" class="i field">_renderer</a>.<a href="ScrollViewRenderer.cs.html#7b20b41e3fb6a163" class="i property">LastX</a> = <span class="r3 r">ev</span>.<span class="i">RawX</span>;
+				<b>if</b> (<span class="r3 r">ev</span>.<span class="i">Action</span> == <span class="i">MotionEventActions</span>.<span class="i">Move</span>)
+				{
+					<b>var</b> <span id="r7 rd" class="r7 r">parent</span> = (<b>global</b>::<span class="i">Android</span>.<span class="i">Widget</span>.<span class="i">ScrollView</span>)<span class="i">Parent</span>;
+					<span class="r7 r">parent</span>.<span class="i">ScrollBy</span>(0, (<b>int</b>)<span class="r6 r">dY</span>);
+					<span class="i">ScrollBy</span>((<b>int</b>)<span class="r5 r">dX</span>, 0);
+				}
+			}
+ 
+			<b>return</b> <b>base</b>.<span class="i">OnTouchEvent</span>(<span class="r3 r">ev</span>);
+		}
+ 
+		<b>protected override void</b> <a id="36ba751a04ab18e3" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnScrollChanged</a>(<b>int</b> <span id="r8 rd" class="r8 r">l</span>, <b>int</b> <span id="r9 rd" class="r9 r">t</span>, <b>int</b> <span id="r10 rd" class="r10 r">oldl</span>, <b>int</b> <span id="r11 rd" class="r11 r">oldt</span>)
+		{
+			<b>base</b>.<span class="i">OnScrollChanged</span>(<span class="r8 r">l</span>, <span class="r9 r">t</span>, <span class="r10 r">oldl</span>, <span class="r11 r">oldt</span>);
+ 
+			<a href="#26f67cf49a33b02c" class="i field">_renderer</a>.<a href="ScrollViewRenderer.cs.html#0bd3945df4e3fcc0" class="i method">UpdateScrollPosition</a>(<a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<a href="../ContextExtensions.cs.html#cce5139585f8ebc7" class="i method">FromPixels</a>(<span class="r8 r">l</span>), <a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<a href="../ContextExtensions.cs.html#cce5139585f8ebc7" class="i method">FromPixels</a>(<span class="r9 r">t</span>));
+		}
+	}
+}</pre></td></tr></table></div></body></html>

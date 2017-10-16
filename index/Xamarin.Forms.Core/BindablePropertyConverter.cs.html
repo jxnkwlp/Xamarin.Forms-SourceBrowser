@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html><head><title>BindablePropertyConverter.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(105);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/BindablePropertyConverter.cs" target="_top">BindablePropertyConverter.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Globalization</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	[<span class="i n">Xaml</span>.<a href="ProvideCompiledAttribute.cs.html#3e16327cfcc56276" class="t constructor">ProvideCompiled</a>(<span class="s">&quot;Xamarin.Forms.Core.XamlC.BindablePropertyConverter&quot;</span>)]
+	<b>public sealed class</b> <a id="f73fd035254cac08" href="R/f73fd035254cac08.html" target="n" data-glyph="0,0" class="t t"><span id="7b5d89d4d3b03d31">BindablePropertyConverter</span></a> : <a href="TypeConverter.cs.html#07b618880a109e92" class="t t">TypeConverter</a>, <a href="IExtendedTypeConverter.cs.html#bbb7fd1931680a0e" class="t t">IExtendedTypeConverter</a>
+	{
+		<b>object</b> <a href="IExtendedTypeConverter.cs.html#bbb7fd1931680a0e" class="t t">IExtendedTypeConverter</a>.<a href="IExtendedTypeConverter.cs.html#9f385b3662830d82" class="i method">ConvertFrom</a>(<span class="t t">CultureInfo</span> <span id="r0 rd" class="r0 r">culture</span>, <b>object</b> <span id="r1 rd" class="r1 r">value</span>, <span class="t t">IServiceProvider</span> <span id="r2 rd" class="r2 r">serviceProvider</span>)
+		{
+			<b>return</b> ((<a href="IExtendedTypeConverter.cs.html#bbb7fd1931680a0e" class="t t">IExtendedTypeConverter</a>)<a href="#f73fd035254cac08" class="k">this</a>).<a href="IExtendedTypeConverter.cs.html#7fde9e679a0edec5" class="i method">ConvertFromInvariantString</a>(<span class="r1 r">value</span> <b>as string</b>, <span class="r2 r">serviceProvider</span>);
+		}
+ 
+		<b>object</b> <a href="IExtendedTypeConverter.cs.html#bbb7fd1931680a0e" class="t t">IExtendedTypeConverter</a>.<a href="IExtendedTypeConverter.cs.html#7fde9e679a0edec5" class="i method">ConvertFromInvariantString</a>(<b>string</b> <span id="r3 rd" class="r3 r">value</span>, <span class="t t">IServiceProvider</span> <span id="r4 rd" class="r4 r">serviceProvider</span>)
+		{
+			<b>if</b> (<b>string</b>.<a href="@1@System.Runtime/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(<span class="r3 r">value</span>))
+				<b>return null</b>;
+			<b>if</b> (<span class="r4 r">serviceProvider</span> == <b>null</b>)
+				<b>return null</b>;
+			<a href="IProvideParentValues.cs.html#8b8c7d1e8a1282e4" class="k">var</a> <span id="r5 rd" class="r5 r">parentValuesProvider</span> = <span class="r4 r">serviceProvider</span>.<span class="i method">GetService</span>(<b>typeof</b>(<a href="IProvideValueTarget.cs.html#89e12b7a1b32f354" class="t t">IProvideValueTarget</a>)) <b>as</b> <a href="IProvideParentValues.cs.html#8b8c7d1e8a1282e4" class="t t">IProvideParentValues</a>;
+			<a href="IXamlTypeResolver.cs.html#d05cb618ccf24dce" class="k">var</a> <span id="r6 rd" class="r6 r">typeResolver</span> = <span class="r4 r">serviceProvider</span>.<span class="i method">GetService</span>(<b>typeof</b>(<a href="IXamlTypeResolver.cs.html#d05cb618ccf24dce" class="t t">IXamlTypeResolver</a>)) <b>as</b> <a href="IXamlTypeResolver.cs.html#d05cb618ccf24dce" class="t t">IXamlTypeResolver</a>;
+			<b>if</b> (<span class="r6 r">typeResolver</span> == <b>null</b>)
+				<b>return null</b>;
+			<span class="t t">IXmlLineInfo</span> <span id="r7 rd" class="r7 r">lineinfo</span> = <b>null</b>;
+			<a href="IXmlLineInfoProvider.cs.html#17842d11cf09e875" class="k">var</a> <span id="r8 rd" class="r8 r">xmlLineInfoProvider</span> = <span class="r4 r">serviceProvider</span>.<span class="i method">GetService</span>(<b>typeof</b>(<a href="IXmlLineInfoProvider.cs.html#17842d11cf09e875" class="t t">IXmlLineInfoProvider</a>)) <b>as</b> <a href="IXmlLineInfoProvider.cs.html#17842d11cf09e875" class="t t">IXmlLineInfoProvider</a>;
+			<b>if</b> (<span class="r8 r">xmlLineInfoProvider</span> != <b>null</b>)
+				<span class="r7 r">lineinfo</span> = <span class="r8 r">xmlLineInfoProvider</span>.<a href="IXmlLineInfoProvider.cs.html#33daa4514b972f6e" class="i property">XmlLineInfo</a>;
+			<b>string</b>[] <span id="r9 rd" class="r9 r">parts</span> = <span class="r3 r">value</span>.<a href="@1@System.Runtime/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;.&#39;</span>);
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r10 rd" class="r10 r">type</span> = <b>null</b>;
+			<b>if</b> (<span class="r9 r">parts</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 1)
+			{
+				<b>if</b> (<span class="r5 r">parentValuesProvider</span> == <b>null</b>)
+				{
+					<b>string</b> <span id="r11 rd" class="r11 r">msg</span> = <b>string</b>.<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;Can&#39;t resolve {0}&quot;</span>, <span class="r9 r">parts</span>[0]);
+					<b>throw</b> <b>new</b> <a href="XamlParseException.cs.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="r11 r">msg</span>, <span class="r7 r">lineinfo</span>);
+				}
+				<b>object</b> <span id="r12 rd" class="r12 r">parent</span> = <span class="r5 r">parentValuesProvider</span>.<a href="IProvideParentValues.cs.html#c55a9ff9f0f1c0e6" class="i property">ParentObjects</a>.<span class="i method">Skip</span>(1).<span class="i method">FirstOrDefault</span>();
+				<b>if</b> (<span class="r5 r">parentValuesProvider</span>.<a href="IProvideValueTarget.cs.html#7dea72671fa70d16" class="i property">TargetObject</a> <b>is</b> <a href="Setter.cs.html#f05634778c907e07" class="t t">Setter</a>)
+				{
+					<a href="Style.cs.html#18d854577c3c5901" class="k">var</a> <span id="r13 rd" class="r13 r">style</span> = <span class="r12 r">parent</span> <b>as</b> <a href="Style.cs.html#18d854577c3c5901" class="t t">Style</a>;
+					<a href="Interactivity/TriggerBase.cs.html#c26b184b7439d738" class="k">var</a> <span id="r14 rd" class="r14 r">triggerBase</span> = <span class="r12 r">parent</span> <b>as</b> <a href="Interactivity/TriggerBase.cs.html#c26b184b7439d738" class="t t">TriggerBase</a>;
+					<b>if</b> (<span class="r13 r">style</span> != <b>null</b>)
+						<span class="r10 r">type</span> = <span class="r13 r">style</span>.<a href="Style.cs.html#14eef24de994dea8" class="i property">TargetType</a>;
+					<b>else if</b> (<span class="r14 r">triggerBase</span> != <b>null</b>)
+						<span class="r10 r">type</span> = <span class="r14 r">triggerBase</span>.<a href="Interactivity/TriggerBase.cs.html#93329e078fa45c5a" class="i property">TargetType</a>;
+				}
+				<b>else if</b> (<span class="r5 r">parentValuesProvider</span>.<a href="IProvideValueTarget.cs.html#7dea72671fa70d16" class="i property">TargetObject</a> <b>is</b> <a href="Interactivity/Trigger.cs.html#7254d11980594d95" class="t t">Trigger</a>)
+					<span class="r10 r">type</span> = (<span class="r5 r">parentValuesProvider</span>.<a href="IProvideValueTarget.cs.html#7dea72671fa70d16" class="i property">TargetObject</a> <b>as</b> <a href="Interactivity/Trigger.cs.html#7254d11980594d95" class="t t">Trigger</a>).<a href="Interactivity/TriggerBase.cs.html#93329e078fa45c5a" class="i property">TargetType</a>;
+				<b>else if</b> (<span class="r5 r">parentValuesProvider</span>.<a href="IProvideValueTarget.cs.html#7dea72671fa70d16" class="i property">TargetObject</a> <b>is</b> <a href="Interactivity/PropertyCondition.cs.html#9bb8e0f81cdbb680" class="t t">PropertyCondition</a> &amp;&amp; (<span class="r12 r">parent</span> <b>as</b> <a href="Interactivity/TriggerBase.cs.html#c26b184b7439d738" class="t t">TriggerBase</a>) != <b>null</b>)
+					<span class="r10 r">type</span> = (<span class="r12 r">parent</span> <b>as</b> <a href="Interactivity/TriggerBase.cs.html#c26b184b7439d738" class="t t">TriggerBase</a>).<a href="Interactivity/TriggerBase.cs.html#93329e078fa45c5a" class="i property">TargetType</a>;
+ 
+				<b>if</b> (<span class="r10 r">type</span> == <b>null</b>)
+					<b>throw</b> <b>new</b> <a href="XamlParseException.cs.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Can&#39;t resolve </span>{<span class="r9 r">parts</span> [0]}<span class="s">&quot;</span>, <span class="r7 r">lineinfo</span>);
+ 
+				<b>return</b> <a href="#0977c8726ed816cd" class="i method">ConvertFrom</a>(<span class="r10 r">type</span>, <span class="r9 r">parts</span>[0], <span class="r7 r">lineinfo</span>);
+			}
+			<b>if</b> (<span class="r9 r">parts</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 2)
+			{
+				<b>if</b> (!<span class="r6 r">typeResolver</span>.<a href="IXamlTypeResolver.cs.html#0c3fe2005c0f104b" class="i method">TryResolve</a>(<span class="r9 r">parts</span>[0], <b>out</b> <span class="r10 r">type</span>))
+				{
+					<b>string</b> <span id="r15 rd" class="r15 r">msg</span> = <b>string</b>.<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;Can&#39;t resolve {0}&quot;</span>, <span class="r9 r">parts</span>[0]);
+					<b>throw</b> <b>new</b> <a href="XamlParseException.cs.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="r15 r">msg</span>, <span class="r7 r">lineinfo</span>);
+				}
+				<b>return</b> <a href="#0977c8726ed816cd" class="i method">ConvertFrom</a>(<span class="r10 r">type</span>, <span class="r9 r">parts</span>[1], <span class="r7 r">lineinfo</span>);
+			}
+			<b>throw</b> <b>new</b> <a href="XamlParseException.cs.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Can&#39;t resolve </span>{<span class="r3 r">value</span>}<span class="s">. Syntax is [[prefix:]Type.]PropertyName.</span><span class="s">&quot;</span>, <span class="r7 r">lineinfo</span>);
+		}
+ 
+		<b>public override object</b> <a id="fb8a691ef4f01742" href="R/fb8a691ef4f01742.html" target="n" data-glyph="72,1" class="i method">ConvertFromInvariantString</a>(<b>string</b> <span id="r16 rd" class="r16 r">value</span>)
+		{
+			<b>if</b> (<b>string</b>.<a href="@1@System.Runtime/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(<span class="r16 r">value</span>))
+				<b>return null</b>;
+			<b>if</b> (<span class="r16 r">value</span>.<a href="@1@System.Runtime/A.html#428c5c9954dea844" class="i method">Contains</a>(<span class="s">&quot;:&quot;</span>))
+			{
+				<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#6ed81695ef8a87b6" class="i method">Warning</a>(<b>null</b>, <span class="s">&quot;Can&#39;t resolve properties with xml namespace prefix.&quot;</span>);
+				<b>return null</b>;
+			}
+			<b>string</b>[] <span id="r17 rd" class="r17 r">parts</span> = <span class="r16 r">value</span>.<a href="@1@System.Runtime/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;.&#39;</span>);
+			<b>if</b> (<span class="r17 r">parts</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> != 2)
+			{
+				<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#6ed81695ef8a87b6" class="i method">Warning</a>(<b>null</b>, <span class="s">$&quot;</span><span class="s">Can&#39;t resolve </span>{<span class="r16 r">value</span>}<span class="s">. Accepted syntax is Type.PropertyName.</span><span class="s">&quot;</span>);
+				<b>return null</b>;
+			}
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r18 rd" class="r18 r">type</span> = <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>.<a href="@1@System.Runtime/A.html#ba8d29b0ddf9aaa0" class="i method">GetType</a>(<span class="s">&quot;Xamarin.Forms.&quot;</span> + <span class="r17 r">parts</span>[0]);
+			<b>return</b> <a href="#0977c8726ed816cd" class="i method">ConvertFrom</a>(<span class="r18 r">type</span>, <span class="r17 r">parts</span>[1], <b>null</b>);
+		}
+ 
+		<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="0977c8726ed816cd" href="R/0977c8726ed816cd.html" target="n" data-glyph="76,1" class="i method">ConvertFrom</a>(<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r19 rd" class="r19 r">type</span>, <b>string</b> <span id="r20 rd" class="r20 r">propertyName</span>, <span class="t t">IXmlLineInfo</span> <span id="r21 rd" class="r21 r">lineinfo</span>)
+		{
+			<b>string</b> <span id="r22 rd" class="r22 r">name</span> = <span class="r20 r">propertyName</span> + <span class="s">&quot;Property&quot;</span>;
+			<span class="t t">FieldInfo</span> <span id="r23 rd" class="r23 r">bpinfo</span> = <span class="r19 r">type</span>.<a href="ReflectionExtensions.cs.html#bd27ca1f6c556878" class="i method">GetField</a>(<span id="r24 rd" class="r24 r">fi</span> =&gt; <span class="r24 r">fi</span>.<span class="i property">Name</span> == <span class="r22 r">name</span> &amp;&amp; <span class="r24 r">fi</span>.<span class="i property">IsStatic</span> &amp;&amp; <span class="r24 r">fi</span>.<span class="i property">IsPublic</span> &amp;&amp; <span class="r24 r">fi</span>.<span class="i property">FieldType</span> == <b>typeof</b>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>));
+			<b>if</b> (<span class="r23 r">bpinfo</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="XamlParseException.cs.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Can&#39;t resolve </span>{<span class="r22 r">name</span>}<span class="s"> on </span>{<span class="r19 r">type</span>.<a href="@1@System.Runtime/A.html#6068b0ba926a961b" class="i property">Name</a>}<span class="s">&quot;</span>, <span class="r21 r">lineinfo</span>);
+			<a href="BindableProperty.cs.html#743d6dd5177e1828" class="k">var</a> <span id="r25 rd" class="r25 r">bp</span> = <span class="r23 r">bpinfo</span>.<span class="i method">GetValue</span>(<b>null</b>) <b>as</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>;
+			<b>if</b> (<span class="r25 r">bp</span>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> != <span class="r20 r">propertyName</span>)
+				<b>throw</b> <b>new</b> <a href="XamlParseException.cs.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">The PropertyName of </span>{<span class="r19 r">type</span>.<a href="@1@System.Runtime/A.html#6068b0ba926a961b" class="i property">Name</a>}<span class="s">.</span>{<span class="r22 r">name</span>}<span class="s"> is not </span>{<span class="r20 r">propertyName</span>}<span class="s">&quot;</span>, <span class="r21 r">lineinfo</span>);
+			<b>return</b> <span class="r25 r">bp</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html><head><title>MethodReferenceExtensions.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(62);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/MethodReferenceExtensions.cs" target="_top">MethodReferenceExtensions.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>
+{
+	<b>static class</b> <a id="123c62fbaccd2e19" href="R/../../0000000000.html" target="n" data-glyph="2,0" class="t t">MethodReferenceExtensions</a>
+	{
+		<b>public static</b> <span class="i">MethodReference</span> <a id="8200a964640b833f" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">ResolveGenericParameters</a>(<b>this</b> <span class="i">MethodReference</span> <span id="r0 rd" class="r0 r">self</span>, <span class="i">TypeReference</span> <span id="r1 rd" class="r1 r">declaringTypeRef</span>,
+			<span class="i">ModuleDefinition</span> <span id="r2 rd" class="r2 r">module</span>)
+		{
+			<b>if</b> (<span class="r0 r">self</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r0 r">self</span>));
+			<b>if</b> (<span class="r1 r">declaringTypeRef</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r1 r">declaringTypeRef</span>));
+ 
+			<b>var</b> <span id="r3 rd" class="r3 r">reference</span> = <b>new</b> <span class="i">MethodReference</span>(<span class="r0 r">self</span>.<span class="i">Name</span>, <span class="r2 r">module</span>.<span class="i">ImportReference</span>(<span class="r0 r">self</span>.<span class="i">ReturnType</span>))
+			{
+				<span class="i">DeclaringType</span> = <span class="r2 r">module</span>.<span class="i">ImportReference</span>(<span class="r1 r">declaringTypeRef</span>),
+				<span class="i">HasThis</span> = <span class="r0 r">self</span>.<span class="i">HasThis</span>,
+				<span class="i">ExplicitThis</span> = <span class="r0 r">self</span>.<span class="i">ExplicitThis</span>,
+				<span class="i">CallingConvention</span> = <span class="r0 r">self</span>.<span class="i">CallingConvention</span>
+			};
+ 
+			<b>foreach</b> (<b>var</b> <span id="r4 rd" class="r4 r">parameter</span> <b>in</b> <span class="r0 r">self</span>.<span class="i">Parameters</span>) {
+				<b>var</b> <span id="r5 rd" class="r5 r">p</span> = <span class="r4 r">parameter</span>.<span class="i">ParameterType</span>.<span class="i">IsGenericParameter</span> ? <span class="r4 r">parameter</span>.<span class="i">ParameterType</span> : <span class="r2 r">module</span>.<span class="i">ImportReference</span>(<span class="r4 r">parameter</span>.<span class="i">ParameterType</span>);
+				<span class="r3 r">reference</span>.<span class="i">Parameters</span>.<span class="i">Add</span>(<b>new</b> <span class="i">ParameterDefinition</span>(<span class="r5 r">p</span>));
+			}
+ 
+			<b>foreach</b> (<b>var</b> <span id="r6 rd" class="r6 r">generic_parameter</span> <b>in</b> <span class="r0 r">self</span>.<span class="i">GenericParameters</span>)
+				<span class="r3 r">reference</span>.<span class="i">GenericParameters</span>.<span class="i">Add</span>(<b>new</b> <span class="i">GenericParameter</span>(<span class="r6 r">generic_parameter</span>.<span class="i">Name</span>, <span class="r3 r">reference</span>));
+ 
+			<b>return</b> <span class="r3 r">reference</span>;
+		}
+ 
+		<b>public static void</b> <a id="d15716ec90abe2f0" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">ImportTypes</a>(<b>this</b> <span class="i">MethodReference</span> <span id="r7 rd" class="r7 r">self</span>, <span class="i">ModuleDefinition</span> <span id="r8 rd" class="r8 r">module</span>)
+		{
+			<b>if</b> (!<span class="r7 r">self</span>.<span class="i">HasParameters</span>)
+				<b>return</b>;
+ 
+			<b>for</b> (<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r9 rd" class="r9 r">i</span> = 0; <span class="r9 r">i</span> &lt; <span class="r7 r">self</span>.<span class="i">Parameters</span>.<span class="i">Count</span>; <span class="r9 r">i</span>++)
+				<span class="r7 r">self</span>.<span class="i">Parameters</span>[<span class="r9 r">i</span>].<span class="i">ParameterType</span> = <span class="r8 r">module</span>.<span class="i">ImportReference</span>(<span class="r7 r">self</span>.<span class="i">Parameters</span>[<span class="r9 r">i</span>].<span class="i">ParameterType</span>);
+		}
+ 
+		<b>public static</b> <span class="i">MethodReference</span> <a id="4868242e1dbb4003" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">MakeGeneric</a>(<b>this</b> <span class="i">MethodReference</span> <span id="r10 rd" class="r10 r">self</span>, <span class="i">TypeReference</span> <span id="r11 rd" class="r11 r">declaringType</span>, <b>params</b> <span class="i">TypeReference</span> [] <span id="r12 rd" class="r12 r">arguments</span>)
+		{
+			<b>var</b> <span id="r13 rd" class="r13 r">reference</span> = <b>new</b> <span class="i">MethodReference</span>(<span class="r10 r">self</span>.<span class="i">Name</span>, <span class="r10 r">self</span>.<span class="i">ReturnType</span>) {
+				<span class="i">DeclaringType</span> = <span class="r11 r">declaringType</span>,
+				<span class="i">HasThis</span> = <span class="r10 r">self</span>.<span class="i">HasThis</span>,
+				<span class="i">ExplicitThis</span> = <span class="r10 r">self</span>.<span class="i">ExplicitThis</span>,
+				<span class="i">CallingConvention</span> = <span class="r10 r">self</span>.<span class="i">CallingConvention</span>,
+			};
+ 
+			<b>foreach</b> (<b>var</b> <span id="r14 rd" class="r14 r">parameter</span> <b>in</b> <span class="r10 r">self</span>.<span class="i">Parameters</span>)
+				<span class="r13 r">reference</span>.<span class="i">Parameters</span>.<span class="i">Add</span>(<b>new</b> <span class="i">ParameterDefinition</span>(<span class="r14 r">parameter</span>.<span class="i">ParameterType</span>));
+ 
+			<b>foreach</b> (<b>var</b> <span id="r15 rd" class="r15 r">generic_parameter</span> <b>in</b> <span class="r10 r">self</span>.<span class="i">GenericParameters</span>)
+				<span class="r13 r">reference</span>.<span class="i">GenericParameters</span>.<span class="i">Add</span>(<b>new</b> <span class="i">GenericParameter</span>(<span class="r15 r">generic_parameter</span>.<span class="i">Name</span>, <span class="r13 r">reference</span>));
+ 
+			<b>return</b> <span class="r13 r">reference</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

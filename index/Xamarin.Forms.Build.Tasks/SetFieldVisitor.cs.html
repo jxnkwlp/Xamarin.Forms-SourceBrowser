@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html><head><title>SetFieldVisitor.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(62);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/SetFieldVisitor.cs" target="_top">SetFieldVisitor.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Cil</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>
+{
+	<b>class</b> <a id="dfee8e648097db1c" href="R/dfee8e648097db1c.html" target="n" data-glyph="2,0" class="t t">SetFieldVisitor</a> : <a href="/Xamarin.Forms.Xaml/A.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a>
+	{
+		<b>public</b> <a id="b7a60075814d5d31" href="R/b7a60075814d5d31.html" target="n" data-glyph="72,1" class="i constructor">SetFieldVisitor</a>(<a href="ILContext.cs.html#cfeae44d09d495a0" class="t t">ILContext</a> <span id="r0 rd" class="r0 r">context</span>)
+		{
+			<a href="#502420595255c747" class="i property">Context</a> = <span class="r0 r">context</span>;
+		}
+ 
+		<b>public</b> <a href="ILContext.cs.html#cfeae44d09d495a0" class="t t">ILContext</a> <a id="502420595255c747" href="R/502420595255c747.html" target="n" data-glyph="102,1" class="i property">Context</a> { <b>get</b>; }
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Xaml/A.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a> <a id="374f45c2b69349c6" href="R/374f45c2b69349c6.html" target="n" data-glyph="102,1" class="i property">VisitingMode</a> =&gt; <a href="/Xamarin.Forms.Xaml/A.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a>.<a href="/Xamarin.Forms.Xaml/A.html#1b46e9674a8c0601" class="i field">TopDown</a>;
+		<b>public bool</b> <a id="ef5b1471cfe79440" href="R/ef5b1471cfe79440.html" target="n" data-glyph="102,1" class="i property">StopOnDataTemplate</a> =&gt; <b>true</b>;
+		<b>public bool</b> <a id="5cd8527c7cf9545a" href="R/5cd8527c7cf9545a.html" target="n" data-glyph="102,1" class="i property">StopOnResourceDictionary</a> =&gt; <b>false</b>;
+		<b>public bool</b> <a id="ef783622935bd709" href="R/ef783622935bd709.html" target="n" data-glyph="102,1" class="i property">VisitNodeOnDataTemplate</a> =&gt; <b>false</b>;
+ 
+		<b>public void</b> <a id="97202d70a41594fb" href="R/97202d70a41594fb.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a> <span id="r1 rd" class="r1 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r2 rd" class="r2 r">parentNode</span>)
+		{
+			<b>if</b> (!<a href="#a0c7ae1e3ebcc675" class="i method">IsXNameProperty</a>(<span class="r1 r">node</span>, <span class="r2 r">parentNode</span>))
+				<b>return</b>;
+			<b>if</b> (!(<span class="r2 r">parentNode</span> <b>is</b> <a href="/Xamarin.Forms.Xaml/A.html#539c4bdaedfa22a3" class="t t">RootNode</a>))
+			{
+				<span class="c">//no variable assigned for root </span>
+				<b>var</b> <span id="r3 rd" class="r3 r">field</span> = <a href="#502420595255c747" class="i property">Context</a>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">DeclaringType</span>.<span class="i">Fields</span>.<span class="i">SingleOrDefault</span>(<span id="r4 rd" class="r4 r">fd</span> =&gt; <span class="r4 r">fd</span>.<span class="i">Name</span> == (<b>string</b>)<span class="r1 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#5fa72a93b49782e1" class="i property">Value</a>);
+				<b>if</b> (<span class="r3 r">field</span> == <b>null</b>)
+					<b>return</b>;
+				<a href="#502420595255c747" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldarg_0</span>);
+				<a href="#502420595255c747" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <a href="#502420595255c747" class="i property">Context</a>.<a href="ILContext.cs.html#3a594383a1a7a590" class="i property">Variables</a>[(<a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a>)<span class="r2 r">parentNode</span>]);
+				<a href="#502420595255c747" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Stfld</span>, <span class="r3 r">field</span>);
+			}
+		}
+ 
+		<b>public void</b> <a id="c0ee3140f91f4221" href="R/c0ee3140f91f4221.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="/Xamarin.Forms.Xaml/A.html#429a1b2e0cd22849" class="t t">MarkupNode</a> <span id="r5 rd" class="r5 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r6 rd" class="r6 r">parentNode</span>)
+		{
+		}
+ 
+		<b>public void</b> <a id="28b5c3cc67ded424" href="R/28b5c3cc67ded424.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="t t">ElementNode</a> <span id="r7 rd" class="r7 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r8 rd" class="r8 r">parentNode</span>)
+		{
+		}
+ 
+		<b>public void</b> <a id="75f11c9f1dfc067a" href="R/75f11c9f1dfc067a.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="/Xamarin.Forms.Xaml/A.html#539c4bdaedfa22a3" class="t t">RootNode</a> <span id="r9 rd" class="r9 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r10 rd" class="r10 r">parentNode</span>)
+		{
+		}
+ 
+		<b>public void</b> <a id="b71d4e869276d3e9" href="R/b71d4e869276d3e9.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="/Xamarin.Forms.Xaml/A.html#0a483d0bd41cadb6" class="t t">ListNode</a> <span id="r11 rd" class="r11 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r12 rd" class="r12 r">parentNode</span>)
+		{
+		}
+ 
+		<b>static bool</b> <a id="a0c7ae1e3ebcc675" href="R/a0c7ae1e3ebcc675.html" target="n" data-glyph="76,1" class="i method">IsXNameProperty</a>(<a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a> <span id="r13 rd" class="r13 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r14 rd" class="r14 r">parentNode</span>)
+		{
+			<a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="k">var</a> <span id="r15 rd" class="r15 r">parentElement</span> = <span class="r14 r">parentNode</span> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a>;
+			<a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r16 rd" class="r16 r">xNameNode</span>;
+			<b>if</b> (<span class="r15 r">parentElement</span> != <b>null</b> &amp;&amp; <span class="r15 r">parentElement</span>.<a href="/Xamarin.Forms.Xaml/A.html#ca11b3b288ccdec1" class="i property">Properties</a>.<a href="@0@mscorlib/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<a href="/Xamarin.Forms.Xaml/A.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="/Xamarin.Forms.Xaml/A.html#4dd36ca233878b27" class="i field">xName</a>, <b>out</b> <span class="r16 r">xNameNode</span>) &amp;&amp; <span class="r16 r">xNameNode</span> == <span class="r13 r">node</span>)
+				<b>return true</b>;
+			<b>return false</b>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

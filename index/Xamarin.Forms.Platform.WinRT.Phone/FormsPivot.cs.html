@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html><head><title>FormsPivot.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(91);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.WinRT.Phone/FormsPivot.cs" target="_top">FormsPivot.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.WinRT.Phone" target="_top">Xamarin.Forms.Platform.WinRT.Phone\Xamarin.Forms.Platform.WinRT.Phone.csproj</a> (Xamarin.Forms.Platform.WinRT.Phone)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i">Windows</span>.<span class="i">UI</span>.<span class="i">Xaml</span>;
+<b>using</b> <span class="i">Windows</span>.<span class="i">UI</span>.<span class="i">Xaml</span>.<span class="i">Controls</span>;
+<b>using</b> <span class="i">Windows</span>.<span class="i">UI</span>.<span class="i">Xaml</span>.<span class="i">Media</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">WindowsSpecific</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public class</b> <a id="eeb40ff8991a63ed" href="R/eeb40ff8991a63ed.html" target="n" data-glyph="0,0" class="t t"><span id="0fd5a8ef7e4ff8d1">FormsPivot</span></a> : <span class="i">Pivot</span>, <a href="/Xamarin.Forms.Platform.WinRT/A.html#96543f8a9be2a963" class="t t">IToolbarProvider</a>
+	{
+		<b>public static readonly</b> <span class="i">DependencyProperty</span> <a id="23978e9f03a60c26" href="R/23978e9f03a60c26.html" target="n" data-glyph="42,1" class="i field">TitleVisibilityProperty</a> = <span class="i">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#8ea9df3d03ba0ae2" class="i property">TitleVisibility</a>), <b>typeof</b>(<span class="i">Visibility</span>), <b>typeof</b>(<a href="#eeb40ff8991a63ed" class="t t">FormsPivot</a>),
+			<b>new</b> <span class="i">PropertyMetadata</span>(<span class="i">Visibility</span>.<span class="i">Collapsed</span>));
+ 
+		<b>public static readonly</b> <span class="i">DependencyProperty</span> <a id="e7264ad24a0219fd" href="R/e7264ad24a0219fd.html" target="n" data-glyph="42,1" class="i field">ToolbarForegroundProperty</a> = <span class="i">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#1c78019c7003ea8a" class="i property">ToolbarForeground</a>), <b>typeof</b>(<span class="i">Brush</span>), <b>typeof</b>(<a href="#eeb40ff8991a63ed" class="t t">FormsPivot</a>), <b>new</b> <span class="i">PropertyMetadata</span>(<b>default</b>(<span class="i">Brush</span>)));
+ 
+		<b>public static readonly</b> <span class="i">DependencyProperty</span> <a id="753ffd7c95c299fb" href="R/753ffd7c95c299fb.html" target="n" data-glyph="42,1" class="i field">ToolbarBackgroundProperty</a> = <span class="i">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#b63b966a91e28521" class="i property">ToolbarBackground</a>), <b>typeof</b>(<span class="i">Brush</span>), <b>typeof</b>(<a href="#eeb40ff8991a63ed" class="t t">FormsPivot</a>), <b>new</b> <span class="i">PropertyMetadata</span>(<b>default</b>(<span class="i">Brush</span>)));
+ 
+		<span class="i">CommandBar</span> <a id="bbad38b247782ace" href="R/bbad38b247782ace.html" target="n" data-glyph="46,1" class="i field">_commandBar</a>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">		readonly ToolbarPlacementHelper _toolbarPlacementHelper = new ToolbarPlacementHelper();
+ 
+		public bool ShouldShowToolbar
+		{
+			get { return _toolbarPlacementHelper.ShouldShowToolBar; }
+			set { _toolbarPlacementHelper.ShouldShowToolBar = value; }
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		<span class="i">TaskCompletionSource</span>&lt;<span class="i">CommandBar</span>&gt; <a id="cab9b7079dc06771" href="R/cab9b7079dc06771.html" target="n" data-glyph="46,1" class="i field">_commandBarTcs</a>;
+	    <a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a> <a id="bc4f95f24f2b960e" href="R/bc4f95f24f2b960e.html" target="n" data-glyph="46,1" class="i field">_toolbarPlacement</a>;
+		
+ 
+		<b>public</b> <span class="i">Brush</span> <a id="b63b966a91e28521" href="R/b63b966a91e28521.html" target="n" data-glyph="102,1" class="i property">ToolbarBackground</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="i">Brush</span>)<span class="i">GetValue</span>(<a href="#753ffd7c95c299fb" class="i field">ToolbarBackgroundProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#753ffd7c95c299fb" class="i field">ToolbarBackgroundProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="i">Brush</span> <a id="1c78019c7003ea8a" href="R/1c78019c7003ea8a.html" target="n" data-glyph="102,1" class="i property">ToolbarForeground</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="i">Brush</span>)<span class="i">GetValue</span>(<a href="#e7264ad24a0219fd" class="i field">ToolbarForegroundProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#e7264ad24a0219fd" class="i field">ToolbarForegroundProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="i">Visibility</span> <a id="8ea9df3d03ba0ae2" href="R/8ea9df3d03ba0ae2.html" target="n" data-glyph="102,1" class="i property">TitleVisibility</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="i">Visibility</span>)<span class="i">GetValue</span>(<a href="#23978e9f03a60c26" class="i field">TitleVisibilityProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#23978e9f03a60c26" class="i field">TitleVisibilityProperty</a>, <b>value</b>); }
+		}
+ 
+        <b>public</b> <a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a> <a id="93e81d4b4801bc6c" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">ToolbarPlacement</a>
+	    {
+	        <b>get</b> { <b>return</b> <a href="#bc4f95f24f2b960e" class="i field">_toolbarPlacement</a>; }
+	        <b>set</b>
+	        {
+	            <a href="#bc4f95f24f2b960e" class="i field">_toolbarPlacement</a> = <b>value</b>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">				_toolbarPlacementHelper. UpdateToolbarPlacement();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+	        }
+	    }
+ 
+		<span class="i">Task</span>&lt;<span class="i">CommandBar</span>&gt; <a href="/Xamarin.Forms.Platform.WinRT/A.html#96543f8a9be2a963" class="t t">IToolbarProvider</a>.<a id="e549043b576b8c81" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">GetCommandBarAsync</a>()
+		{
+			<b>if</b> (<a href="#bbad38b247782ace" class="i field">_commandBar</a> != <b>null</b>)
+				<b>return</b> <span class="i">Task</span>.<span class="i">FromResult</span>(<a href="#bbad38b247782ace" class="i field">_commandBar</a>);
+ 
+			<a href="#cab9b7079dc06771" class="i field">_commandBarTcs</a> = <b>new</b> <span class="i">TaskCompletionSource</span>&lt;<span class="i">CommandBar</span>&gt;();
+			<span class="i">ApplyTemplate</span>();
+			<b>return</b> <a href="#cab9b7079dc06771" class="i field">_commandBarTcs</a>.<span class="i">Task</span>;
+		}
+ 
+		<b>protected override void</b> <a id="b14fdf7d7b378ed8" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnApplyTemplate</a>()
+		{
+			<b>base</b>.<span class="i">OnApplyTemplate</span>();
+			
+			<a href="#bbad38b247782ace" class="i field">_commandBar</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;CommandBar&quot;</span>) <b>as</b> <span class="i">CommandBar</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">			_toolbarPlacementHelper.Initialize(_commandBar, () =&gt; ToolbarPlacement, GetTemplateChild);
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+			<span class="i">TaskCompletionSource</span>&lt;<span class="i">CommandBar</span>&gt; <span id="r0 rd" class="r0 r">tcs</span> = <a href="#cab9b7079dc06771" class="i field">_commandBarTcs</a>;
+		    <span class="r0 r">tcs</span>?.<span class="i">SetResult</span>(<a href="#bbad38b247782ace" class="i field">_commandBar</a>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

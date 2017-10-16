@@ -1,0 +1,506 @@
+﻿<!DOCTYPE html>
+<html><head><title>ListProxy.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(497);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/ListProxy.cs" target="_top">ListProxy.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Runtime</span>.<span class="i n">CompilerServices</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>internal sealed class</b> <a id="6ab833c687aa0814" href="R/6ab833c687aa0814.html" target="n" data-glyph="2,0" class="t t">ListProxy</a> : <a href="@1@System.Runtime/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<b>object</b>&gt;, <a href="IListProxy.cs.html#bb08d2d17017b22f" class="t t">IListProxy</a>, <span class="t t">INotifyCollectionChanged</span>
+	{
+		<b>readonly</b> <a href="@1@System.Runtime/A.html#cde8022b6e680e40" class="t t">ICollection</a> <a id="8b778395f4a149b3" href="R/8b778395f4a149b3.html" target="n" data-glyph="46,1" class="i field">_collection</a>;
+		<b>readonly</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a> <a id="421132007c891f0c" href="R/421132007c891f0c.html" target="n" data-glyph="46,1" class="i field">_list</a>;
+		<b>readonly int</b> <a id="40ac52eab0a23cfd" href="R/40ac52eab0a23cfd.html" target="n" data-glyph="46,1" class="i field">_windowSize</a>;
+		<b>readonly</b> <span class="t t">ConditionalWeakTable</span>&lt;<a href="#6ab833c687aa0814" class="t t">ListProxy</a>, <a href="#ccb3c52470536452" class="t t">WeakNotifyProxy</a>&gt; <a id="d686401e32b8f010" href="R/d686401e32b8f010.html" target="n" data-glyph="46,1" class="i field">_sourceToWeakHandlers</a>;
+ 
+		<a href="@1@System.Runtime/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a id="94eacc593e11cf0b" href="R/94eacc593e11cf0b.html" target="n" data-glyph="46,1" class="i field">_enumerator</a>;
+		<b>int</b> <a id="3a2f5fc7123c53d3" href="R/3a2f5fc7123c53d3.html" target="n" data-glyph="46,1" class="i field">_enumeratorIndex</a>;
+ 
+		<b>bool</b> <a id="02802ebc20889450" href="R/02802ebc20889450.html" target="n" data-glyph="46,1" class="i field">_finished</a>;
+		<a href="@1@System.Collections/A.html#2d265edc718b158b" class="t t">HashSet</a>&lt;<b>int</b>&gt; <a id="b6f15259f9df75b6" href="R/b6f15259f9df75b6.html" target="n" data-glyph="46,1" class="i field">_indexesCounted</a>;
+ 
+		<a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<b>int</b>, <b>object</b>&gt; <a id="b75238958b2cdb1a" href="R/b75238958b2cdb1a.html" target="n" data-glyph="46,1" class="i field">_items</a>;
+		<b>int</b> <a id="10f3f2d2109b587d" href="R/10f3f2d2109b587d.html" target="n" data-glyph="46,1" class="i field">_version</a>;
+ 
+		<b>int</b> <a id="29571feb1db44093" href="R/29571feb1db44093.html" target="n" data-glyph="46,1" class="i field">_windowIndex</a>;
+ 
+		<b>internal</b> <a id="75e74a4f1b974a3a" href="R/75e74a4f1b974a3a.html" target="n" data-glyph="74,1" class="i constructor">ListProxy</a>(<a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a> <span id="r0 rd" class="r0 r">enumerable</span>, <b>int</b> <span id="r1 rd" class="r1 r">windowSize</span> = <b>int</b>.<a href="@1@System.Runtime/A.html#c45153c0501d7122" class="i field">MaxValue</a>)
+		{
+			<a href="#40ac52eab0a23cfd" class="i field">_windowSize</a> = <span class="r1 r">windowSize</span>;
+ 
+			<a href="#6df5ead2af7a02e2" class="i property">ProxiedEnumerable</a> = <span class="r0 r">enumerable</span>;
+			<a href="#8b778395f4a149b3" class="i field">_collection</a> = <span class="r0 r">enumerable</span> <b>as</b> <a href="@1@System.Runtime/A.html#cde8022b6e680e40" class="t t">ICollection</a>;
+			<a href="#d686401e32b8f010" class="i field">_sourceToWeakHandlers</a> = <b>new</b> <span class="t constructor">ConditionalWeakTable</span>&lt;<a href="#6ab833c687aa0814" class="t t">ListProxy</a>, <a href="#ccb3c52470536452" class="t t">WeakNotifyProxy</a>&gt;();
+ 
+			<b>if</b> (<a href="#8b778395f4a149b3" class="i field">_collection</a> == <b>null</b> &amp;&amp; <span class="r0 r">enumerable</span> <b>is</b> <a href="@1@System.Runtime/A.html#7103bd3a82c9f352" class="t t">IReadOnlyCollection</a>&lt;<b>object</b>&gt;)
+				<a href="#8b778395f4a149b3" class="i field">_collection</a> = <b>new</b> <a href="ReadOnlyListAdapter.cs.html#17b9e024745cf989" class="t constructor">ReadOnlyListAdapter</a>((<a href="@1@System.Runtime/A.html#7103bd3a82c9f352" class="t t">IReadOnlyCollection</a>&lt;<b>object</b>&gt;)<span class="r0 r">enumerable</span>);
+ 
+			<a href="#421132007c891f0c" class="i field">_list</a> = <span class="r0 r">enumerable</span> <b>as</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>;
+			<b>if</b> (<a href="#421132007c891f0c" class="i field">_list</a> == <b>null</b> &amp;&amp; <span class="r0 r">enumerable</span> <b>is</b> <a href="@1@System.Runtime/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<b>object</b>&gt;)
+				<a href="#421132007c891f0c" class="i field">_list</a> = <b>new</b> <a href="ReadOnlyListAdapter.cs.html#4dbe8fa9bea854e3" class="t constructor">ReadOnlyListAdapter</a>((<a href="@1@System.Runtime/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<b>object</b>&gt;)<span class="r0 r">enumerable</span>);
+ 
+			<b>var</b> <span id="r2 rd" class="r2 r">changed</span> = <span class="r0 r">enumerable</span> <b>as</b> <span class="t t">INotifyCollectionChanged</span>;
+			<b>if</b> (<span class="r2 r">changed</span> != <b>null</b>)
+				<a href="#d686401e32b8f010" class="i field">_sourceToWeakHandlers</a>.<span class="i method">Add</span>(<a href="#6ab833c687aa0814" class="k">this</a>, <b>new</b> <a href="#46943765d169dae4" class="t constructor">WeakNotifyProxy</a>(<a href="#6ab833c687aa0814" class="k">this</a>, <span class="r2 r">changed</span>));
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a> <a id="6df5ead2af7a02e2" href="R/6df5ead2af7a02e2.html" target="n" data-glyph="102,1" class="i property">ProxiedEnumerable</a> { <b>get</b>; }
+ 
+		<a href="@1@System.Runtime/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>.<a href="@1@System.Runtime/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <a href="#0cae90c144c83260" class="i method">GetEnumerator</a>();
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<b>object</b>&gt; <a id="0cae90c144c83260" href="R/0cae90c144c83260.html" target="n" data-glyph="72,1" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <b>new</b> <a href="#688292735a80ff04" class="t constructor">ProxyEnumerator</a>(<a href="#6ab833c687aa0814" class="k">this</a>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets whether or not the current window contains the </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r3 r">item</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c">.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r3 r">item</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The item to search for.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">true</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c"> if the item was found in a list or the current window, </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">false</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c"> otherwise.</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<b>public bool</b> <a id="984bc75375f169ad" href="R/984bc75375f169ad.html" target="n" data-glyph="72,1" class="i method">Contains</a>(<b>object</b> <span id="r3 rd" class="r3 r">item</span>)
+		{
+			<b>if</b> (<a href="#421132007c891f0c" class="i field">_list</a> != <b>null</b>)
+				<b>return</b> <a href="#421132007c891f0c" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#ffcdcc091fb8c1ef" class="i method">Contains</a>(<span class="r3 r">item</span>);
+ 
+			<a href="#848532e645752179" class="i method">EnsureWindowCreated</a>();
+ 
+			<b>if</b> (<a href="#b75238958b2cdb1a" class="i field">_items</a> != <b>null</b>)
+				<b>return</b> <a href="#b75238958b2cdb1a" class="i field">_items</a>.<a href="@1@System.Collections/A.html#4367dd1e300ae797" class="i property">Values</a>.<span class="i method">Contains</span>(<span class="r3 r">item</span>);
+ 
+			<b>return false</b>;
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets the index for the </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r4 r">item</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> if in a list or the current window.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r4 r">item</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The item to search for.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">The index of the item if in a list or the current window, -1 otherwise.</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<b>public int</b> <a id="e42e2781241beb85" href="R/e42e2781241beb85.html" target="n" data-glyph="72,1" class="i method">IndexOf</a>(<b>object</b> <span id="r4 rd" class="r4 r">item</span>)
+		{
+			<b>if</b> (<a href="#421132007c891f0c" class="i field">_list</a> != <b>null</b>)
+				<b>return</b> <a href="#421132007c891f0c" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#de5de69de55c396f" class="i method">IndexOf</a>(<span class="r4 r">item</span>);
+ 
+			<a href="#848532e645752179" class="i method">EnsureWindowCreated</a>();
+ 
+			<b>if</b> (<a href="#b75238958b2cdb1a" class="i field">_items</a> != <b>null</b>)
+			{
+				<b>foreach</b> (<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>int</b>, <b>object</b>&gt; <span id="r5 rd" class="r5 r">kvp</span> <b>in</b> <a href="#b75238958b2cdb1a" class="i field">_items</a>)
+				{
+					<b>if</b> (<a href="@1@System.Runtime/A.html#f2a579c50b414717" class="i method">Equals</a>(<span class="r5 r">kvp</span>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>, <span class="r4 r">item</span>))
+						<b>return</b> <span class="r5 r">kvp</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>;
+				}
+			}
+ 
+			<b>return</b> -1;
+		}
+ 
+		<b>public event</b> <span class="t t">NotifyCollectionChangedEventHandler</span> <a id="fdf4fc0bfa78a657" href="R/fdf4fc0bfa78a657.html" target="n" data-glyph="30,1" class="i">CollectionChanged</a>;
+ 
+		<b>public int</b> <a id="ac7152824ff840dc" href="R/ac7152824ff840dc.html" target="n" data-glyph="102,1" class="i property">Count</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<a href="#8b778395f4a149b3" class="i field">_collection</a> != <b>null</b>)
+					<b>return</b> <a href="#8b778395f4a149b3" class="i field">_collection</a>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>;
+ 
+				<a href="#848532e645752179" class="i method">EnsureWindowCreated</a>();
+ 
+				<b>if</b> (<a href="#b6f15259f9df75b6" class="i field">_indexesCounted</a> != <b>null</b>)
+					<b>return</b> <a href="#b6f15259f9df75b6" class="i field">_indexesCounted</a>.<a href="@1@System.Collections/A.html#905bec8c22644c82" class="i property">Count</a>;
+ 
+				<b>return</b> 0;
+			}
+		}
+ 
+		<b>public object</b> <a id="7fc1a92bc2758a5d" href="R/7fc1a92bc2758a5d.html" target="n" data-glyph="102,1" class="k">this</a>[<b>int</b> <span id="r6 rd" class="r6 r">index</span>]
+		{
+			<b>get</b>
+			{
+				<b>object</b> <span id="r7 rd" class="r7 r">value</span>;
+				<b>if</b> (!<a href="#8dc67f3bef8ab863" class="i method">TryGetValue</a>(<span class="r6 r">index</span>, <b>out</b> <span class="r7 r">value</span>))
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;index&quot;</span>);
+ 
+				<b>return</b> <span class="r7 r">value</span>;
+			}
+		}
+ 
+		<b>public void</b> <a id="3452cdb0eb6efd5b" href="R/3452cdb0eb6efd5b.html" target="n" data-glyph="72,1" class="i method">Clear</a>()
+		{
+			<a href="#10f3f2d2109b587d" class="i field">_version</a>++;
+			<a href="#02802ebc20889450" class="i field">_finished</a> = <b>false</b>;
+			<a href="#29571feb1db44093" class="i field">_windowIndex</a> = 0;
+			<a href="#3a2f5fc7123c53d3" class="i field">_enumeratorIndex</a> = 0;
+ 
+			<b>if</b> (<a href="#94eacc593e11cf0b" class="i field">_enumerator</a> != <b>null</b>)
+			{
+				<a href="@1@System.Runtime/A.html#1f55292c3174123d" class="k">var</a> <span id="r8 rd" class="r8 r">dispose</span> = <a href="#94eacc593e11cf0b" class="i field">_enumerator</a> <b>as</b> <a href="@1@System.Runtime/A.html#1f55292c3174123d" class="t t">IDisposable</a>;
+				<b>if</b> (<span class="r8 r">dispose</span> != <b>null</b>)
+					<span class="r8 r">dispose</span>.<a href="@1@System.Runtime/A.html#4e23fed29bd598fa" class="i method">Dispose</a>();
+ 
+				<a href="#94eacc593e11cf0b" class="i field">_enumerator</a> = <b>null</b>;
+			}
+ 
+			<b>if</b> (<a href="#b75238958b2cdb1a" class="i field">_items</a> != <b>null</b>)
+				<a href="#b75238958b2cdb1a" class="i field">_items</a>.<a href="@1@System.Collections/A.html#36b30e4c0708a88c" class="i method">Clear</a>();
+			<b>if</b> (<a href="#b6f15259f9df75b6" class="i field">_indexesCounted</a> != <b>null</b>)
+				<a href="#b6f15259f9df75b6" class="i field">_indexesCounted</a>.<a href="@1@System.Collections/A.html#f090852f4e10b06f" class="i method">Clear</a>();
+ 
+			<a href="#2fa1fd01407646b6" class="i method">OnCountChanged</a>();
+			<a href="#c9ca2e06fab3d55d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>));
+		}
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="e6b705375c8dd84c" href="R/e6b705375c8dd84c.html" target="n" data-glyph="30,1" class="i">CountChanged</a>;
+ 
+		<b>void</b> <a id="ad6323903b7c2f4d" href="R/ad6323903b7c2f4d.html" target="n" data-glyph="76,1" class="i method">ClearRange</a>(<b>int</b> <span id="r9 rd" class="r9 r">index</span>, <b>int</b> <span id="r10 rd" class="r10 r">clearCount</span>)
+		{
+			<b>if</b> (<a href="#b75238958b2cdb1a" class="i field">_items</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>for</b> (<b>int</b> <span id="r11 rd" class="r11 r">i</span> = <span class="r9 r">index</span>; <span class="r11 r">i</span> &lt; <span class="r9 r">index</span> + <span class="r10 r">clearCount</span>; <span class="r11 r">i</span>++)
+				<a href="#b75238958b2cdb1a" class="i field">_items</a>.<a href="@1@System.Collections/A.html#a6db5ffdec557169" class="i method">Remove</a>(<span class="r11 r">i</span>);
+		}
+ 
+		<b>bool</b> <a id="e9da11b9c8fcbad6" href="R/e9da11b9c8fcbad6.html" target="n" data-glyph="76,1" class="i method">CountIndex</a>(<b>int</b> <span id="r12 rd" class="r12 r">index</span>)
+		{
+			<b>if</b> (<a href="#8b778395f4a149b3" class="i field">_collection</a> != <b>null</b>)
+				<b>return false</b>;
+ 
+			<span class="c">// A collection is used in case TryGetValue is called out of order.</span>
+			<b>if</b> (<a href="#b6f15259f9df75b6" class="i field">_indexesCounted</a> == <b>null</b>)
+				<a href="#b6f15259f9df75b6" class="i field">_indexesCounted</a> = <b>new</b> <a href="@1@System.Collections/A.html#eca9ea30fa3b2c28" class="t constructor">HashSet</a>&lt;<b>int</b>&gt;();
+ 
+			<b>if</b> (<a href="#b6f15259f9df75b6" class="i field">_indexesCounted</a>.<a href="@1@System.Collections/A.html#06d905a0ac76e4f5" class="i method">Contains</a>(<span class="r12 r">index</span>))
+				<b>return false</b>;
+ 
+			<a href="#b6f15259f9df75b6" class="i field">_indexesCounted</a>.<a href="@1@System.Collections/A.html#43a2b651926474a7" class="i method">Add</a>(<span class="r12 r">index</span>);
+			<b>return true</b>;
+		}
+ 
+		<b>void</b> <a id="848532e645752179" href="R/848532e645752179.html" target="n" data-glyph="76,1" class="i method">EnsureWindowCreated</a>()
+		{
+			<b>if</b> (<a href="#b75238958b2cdb1a" class="i field">_items</a> != <b>null</b> &amp;&amp; <a href="#b75238958b2cdb1a" class="i field">_items</a>.<a href="@1@System.Collections/A.html#12b9bba2a1f9c3e2" class="i property">Count</a> &gt; 0)
+				<b>return</b>;
+ 
+			<b>object</b> <span id="r13 rd" class="r13 r">value</span>;
+			<a href="#8dc67f3bef8ab863" class="i method">TryGetValue</a>(0, <b>out</b> <span class="r13 r">value</span>);
+		}
+ 
+		<b>void</b> <a id="5a43672c6a4a4391" href="R/5a43672c6a4a4391.html" target="n" data-glyph="76,1" class="i method">OnCollectionChanged</a>(<b>object</b> <span id="r14 rd" class="r14 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r15 rd" class="r15 r">e</span>)
+		{
+			<a href="@1@System.Runtime/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r16 rd" class="r16 r">action</span>;
+			<b>if</b> (<a href="#421132007c891f0c" class="i field">_list</a> == <b>null</b>)
+			{
+				<span class="r16 r">action</span> = <a href="#3452cdb0eb6efd5b" class="i method">Clear</a>;
+			}
+			<b>else</b>
+			{
+				<span class="r16 r">action</span> = () =&gt;
+				{
+					<a href="#10f3f2d2109b587d" class="i field">_version</a>++;
+					<a href="#c9ca2e06fab3d55d" class="i method">OnCollectionChanged</a>(<span class="r15 r">e</span>);
+				};
+			}
+ 
+			<a href="CollectionSynchronizationContext.cs.html#0438f3958d813516" class="t t">CollectionSynchronizationContext</a> <span id="r17 rd" class="r17 r">sync</span>;
+			<b>if</b> (<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a>.<a href="BindingBase.cs.html#835a252dd90d747a" class="i method">TryGetSynchronizedCollection</a>(<a href="#6df5ead2af7a02e2" class="i property">ProxiedEnumerable</a>, <b>out</b> <span class="r17 r">sync</span>))
+			{
+				<span class="r17 r">sync</span>.<a href="CollectionSynchronizationContext.cs.html#3281b23ea32bb059" class="i property">Callback</a>(<a href="#6df5ead2af7a02e2" class="i property">ProxiedEnumerable</a>, <span class="r17 r">sync</span>.<a href="CollectionSynchronizationContext.cs.html#c46fe38d29f8409b" class="i property">Context</a>, () =&gt;
+				{
+					<span class="r15 r">e</span> = <span class="r15 r">e</span>.<a href="Internals/NotifyCollectionChangedEventArgsExtensions.cs.html#9137a27b5a1e1585" class="i method">WithCount</a>(<a href="#ac7152824ff840dc" class="i property">Count</a>);
+					<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#c01f48f642e0b305" class="i method">BeginInvokeOnMainThread</a>(<span class="r16 r">action</span>);
+				}, <b>false</b>);
+			}
+			<b>else</b>
+			{
+				<span class="r15 r">e</span> = <span class="r15 r">e</span>.<a href="Internals/NotifyCollectionChangedEventArgsExtensions.cs.html#9137a27b5a1e1585" class="i method">WithCount</a>(<a href="#ac7152824ff840dc" class="i property">Count</a>);
+				<b>if</b> (<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#5d83ac629978e91e" class="i property">IsInvokeRequired</a>)
+					<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#c01f48f642e0b305" class="i method">BeginInvokeOnMainThread</a>(<span class="r16 r">action</span>);
+				<b>else</b>
+					<span class="r16 r">action</span>();
+			}
+		}
+ 
+		<b>void</b> <a id="c9ca2e06fab3d55d" href="R/c9ca2e06fab3d55d.html" target="n" data-glyph="76,1" class="i method">OnCollectionChanged</a>(<span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r18 rd" class="r18 r">e</span>)
+		{
+			<span class="t t">NotifyCollectionChangedEventHandler</span> <span id="r19 rd" class="r19 r">changed</span> = <a href="#fdf4fc0bfa78a657" class="i">CollectionChanged</a>;
+			<b>if</b> (<span class="r19 r">changed</span> != <b>null</b>)
+				<span class="r19 r">changed</span>(<a href="#6ab833c687aa0814" class="k">this</a>, <span class="r18 r">e</span>);
+		}
+ 
+		<b>void</b> <a id="2fa1fd01407646b6" href="R/2fa1fd01407646b6.html" target="n" data-glyph="76,1" class="i method">OnCountChanged</a>()
+		{
+			<a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <span id="r20 rd" class="r20 r">changed</span> = <a href="#e6b705375c8dd84c" class="i">CountChanged</a>;
+			<b>if</b> (<span class="r20 r">changed</span> != <b>null</b>)
+				<span class="r20 r">changed</span>(<a href="#6ab833c687aa0814" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+ 
+		<b>bool</b> <a id="8dc67f3bef8ab863" href="R/8dc67f3bef8ab863.html" target="n" data-glyph="76,1" class="i method">TryGetValue</a>(<b>int</b> <span id="r21 rd" class="r21 r">index</span>, <b>out object</b> <span id="r22 rd" class="r22 r">value</span>)
+		{
+			<span class="r22 r">value</span> = <b>null</b>;
+ 
+			<a href="CollectionSynchronizationContext.cs.html#0438f3958d813516" class="t t">CollectionSynchronizationContext</a> <span id="r23 rd" class="r23 r">syncContext</span>;
+			<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a>.<a href="BindingBase.cs.html#835a252dd90d747a" class="i method">TryGetSynchronizedCollection</a>(<a href="#6df5ead2af7a02e2" class="i property">ProxiedEnumerable</a>, <b>out</b> <span class="r23 r">syncContext</span>);
+ 
+			<b>if</b> (<a href="#421132007c891f0c" class="i field">_list</a> != <b>null</b>)
+			{
+				<b>object</b> <span id="r24 rd" class="r24 r">indexedValue</span> = <b>null</b>;
+				<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r25 rd" class="r25 r">inRange</span> = <b>false</b>;
+				<a href="@1@System.Runtime/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r26 rd" class="r26 r">getFromList</span> = () =&gt;
+				{
+					<b>if</b> (<span class="r21 r">index</span> &gt;= <a href="#421132007c891f0c" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>)
+						<b>return</b>;
+ 
+					<span class="r24 r">indexedValue</span> = <a href="#421132007c891f0c" class="i field">_list</a><a href="@1@System.Runtime/A.html#32c1ca862ea365e7">[</a><span class="r21 r">index</span>];
+					<span class="r25 r">inRange</span> = <b>true</b>;
+				};
+ 
+				<b>if</b> (<span class="r23 r">syncContext</span> != <b>null</b>)
+					<span class="r23 r">syncContext</span>.<a href="CollectionSynchronizationContext.cs.html#3281b23ea32bb059" class="i property">Callback</a>(<a href="#6df5ead2af7a02e2" class="i property">ProxiedEnumerable</a>, <span class="r23 r">syncContext</span>.<a href="CollectionSynchronizationContext.cs.html#c46fe38d29f8409b" class="i property">Context</a>, <span class="r26 r">getFromList</span>, <b>false</b>);
+				<b>else</b>
+					<span class="r26 r">getFromList</span>();
+ 
+				<span class="r22 r">value</span> = <span class="r24 r">indexedValue</span>;
+				<b>return</b> <span class="r25 r">inRange</span>;
+			}
+ 
+			<b>if</b> (<a href="#8b778395f4a149b3" class="i field">_collection</a> != <b>null</b> &amp;&amp; <span class="r21 r">index</span> &gt;= <a href="#8b778395f4a149b3" class="i field">_collection</a>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a>)
+				<b>return false</b>;
+			<b>if</b> (<a href="#b75238958b2cdb1a" class="i field">_items</a> != <b>null</b>)
+			{
+				<b>bool</b> <span id="r27 rd" class="r27 r">found</span> = <a href="#b75238958b2cdb1a" class="i field">_items</a>.<a href="@1@System.Collections/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<span class="r21 r">index</span>, <b>out</b> <span class="r22 r">value</span>);
+				<b>if</b> (<span class="r27 r">found</span> || <a href="#02802ebc20889450" class="i field">_finished</a>)
+					<b>return</b> <span class="r27 r">found</span>;
+			}
+ 
+			<b>if</b> (<span class="r21 r">index</span> &gt;= <a href="#29571feb1db44093" class="i field">_windowIndex</a> + <a href="#40ac52eab0a23cfd" class="i field">_windowSize</a>)
+			{
+				<b>int</b> <span id="r28 rd" class="r28 r">newIndex</span> = <span class="r21 r">index</span> - <a href="#40ac52eab0a23cfd" class="i field">_windowSize</a> / 2;
+				<a href="#ad6323903b7c2f4d" class="i method">ClearRange</a>(<a href="#29571feb1db44093" class="i field">_windowIndex</a>, <span class="r28 r">newIndex</span> - <a href="#29571feb1db44093" class="i field">_windowIndex</a>);
+				<a href="#29571feb1db44093" class="i field">_windowIndex</a> = <span class="r28 r">newIndex</span>;
+			}
+			<b>else if</b> (<span class="r21 r">index</span> &lt; <a href="#29571feb1db44093" class="i field">_windowIndex</a>)
+			{
+				<b>int</b> <span id="r29 rd" class="r29 r">clearIndex</span> = <a href="#29571feb1db44093" class="i field">_windowIndex</a>;
+				<b>int</b> <span id="r30 rd" class="r30 r">clearSize</span> = <a href="#40ac52eab0a23cfd" class="i field">_windowSize</a>;
+				<b>if</b> (<span class="r29 r">clearIndex</span> &lt;= <span class="r21 r">index</span> + <span class="r30 r">clearSize</span>)
+				{
+					<b>int</b> <span id="r31 rd" class="r31 r">diff</span> = <span class="r21 r">index</span> + <span class="r30 r">clearSize</span> - <span class="r29 r">clearIndex</span>;
+					<span class="r29 r">clearIndex</span> += <span class="r31 r">diff</span> + 1;
+					<span class="r30 r">clearSize</span> -= <span class="r31 r">diff</span>;
+				}
+ 
+				<a href="#ad6323903b7c2f4d" class="i method">ClearRange</a>(<span class="r29 r">clearIndex</span>, <span class="r30 r">clearSize</span>);
+				<a href="#29571feb1db44093" class="i field">_windowIndex</a> = 0;
+ 
+				<a href="@1@System.Runtime/A.html#1f55292c3174123d" class="k">var</a> <span id="r32 rd" class="r32 r">dispose</span> = <a href="#94eacc593e11cf0b" class="i field">_enumerator</a> <b>as</b> <a href="@1@System.Runtime/A.html#1f55292c3174123d" class="t t">IDisposable</a>;
+				<b>if</b> (<span class="r32 r">dispose</span> != <b>null</b>)
+					<span class="r32 r">dispose</span>.<a href="@1@System.Runtime/A.html#4e23fed29bd598fa" class="i method">Dispose</a>();
+ 
+				<a href="#94eacc593e11cf0b" class="i field">_enumerator</a> = <b>null</b>;
+				<a href="#3a2f5fc7123c53d3" class="i field">_enumeratorIndex</a> = 0;
+			}
+ 
+			<b>if</b> (<a href="#94eacc593e11cf0b" class="i field">_enumerator</a> == <b>null</b>)
+				<a href="#94eacc593e11cf0b" class="i field">_enumerator</a> = <a href="#6df5ead2af7a02e2" class="i property">ProxiedEnumerable</a>.<a href="@1@System.Runtime/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>();
+			<b>if</b> (<a href="#b75238958b2cdb1a" class="i field">_items</a> == <b>null</b>)
+				<a href="#b75238958b2cdb1a" class="i field">_items</a> = <b>new</b> <a href="@1@System.Collections/A.html#bf6849e410b43c4c" class="t constructor">Dictionary</a>&lt;<b>int</b>, <b>object</b>&gt;();
+ 
+			<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r33 rd" class="r33 r">countChanged</span> = <b>false</b>;
+			<b>int</b> <span id="r34 rd" class="r34 r">end</span> = <a href="#29571feb1db44093" class="i field">_windowIndex</a> + <a href="#40ac52eab0a23cfd" class="i field">_windowSize</a>;
+ 
+			<b>for</b> (; <a href="#3a2f5fc7123c53d3" class="i field">_enumeratorIndex</a> &lt; <span class="r34 r">end</span>; <a href="#3a2f5fc7123c53d3" class="i field">_enumeratorIndex</a>++)
+			{
+				<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r35 rd" class="r35 r">moved</span> = <b>false</b>;
+				<a href="@1@System.Runtime/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r36 rd" class="r36 r">move</span> = () =&gt;
+				{
+					<b>try</b>
+					{
+						<span class="r35 r">moved</span> = <a href="#94eacc593e11cf0b" class="i field">_enumerator</a>.<a href="@1@System.Runtime/A.html#116c28c0f6355e3f" class="i method">MoveNext</a>();
+					}
+					<b>catch</b> (<a href="@1@System.Runtime/A.html#beac22dfca574cd4" class="t t">InvalidOperationException</a> <span id="r37 rd" class="r37 r">ioex</span>)
+					{
+						<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#34e9967ccd840525" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;You must call UpdateNonNotifyingList() after updating a list that does not implement INotifyCollectionChanged&quot;</span>, <span class="r37 r">ioex</span>);
+					}
+ 
+					<b>if</b> (!<span class="r35 r">moved</span>)
+					{
+						<a href="@1@System.Runtime/A.html#1f55292c3174123d" class="k">var</a> <span id="r38 rd" class="r38 r">dispose</span> = <a href="#94eacc593e11cf0b" class="i field">_enumerator</a> <b>as</b> <a href="@1@System.Runtime/A.html#1f55292c3174123d" class="t t">IDisposable</a>;
+						<b>if</b> (<span class="r38 r">dispose</span> != <b>null</b>)
+							<span class="r38 r">dispose</span>.<a href="@1@System.Runtime/A.html#4e23fed29bd598fa" class="i method">Dispose</a>();
+ 
+						<a href="#94eacc593e11cf0b" class="i field">_enumerator</a> = <b>null</b>;
+						<a href="#3a2f5fc7123c53d3" class="i field">_enumeratorIndex</a> = 0;
+						<a href="#02802ebc20889450" class="i field">_finished</a> = <b>true</b>;
+					}
+				};
+ 
+				<b>if</b> (<span class="r23 r">syncContext</span> == <b>null</b>)
+					<span class="r36 r">move</span>();
+				<b>else</b>
+					<span class="r23 r">syncContext</span>.<a href="CollectionSynchronizationContext.cs.html#3281b23ea32bb059" class="i property">Callback</a>(<a href="#6df5ead2af7a02e2" class="i property">ProxiedEnumerable</a>, <span class="r23 r">syncContext</span>.<a href="CollectionSynchronizationContext.cs.html#c46fe38d29f8409b" class="i property">Context</a>, <span class="r36 r">move</span>, <b>false</b>);
+ 
+				<b>if</b> (!<span class="r35 r">moved</span>)
+					<b>break</b>;
+ 
+				<b>if</b> (<a href="#e9da11b9c8fcbad6" class="i method">CountIndex</a>(<a href="#3a2f5fc7123c53d3" class="i field">_enumeratorIndex</a>))
+					<span class="r33 r">countChanged</span> = <b>true</b>;
+ 
+				<b>if</b> (<a href="#3a2f5fc7123c53d3" class="i field">_enumeratorIndex</a> &gt;= <a href="#29571feb1db44093" class="i field">_windowIndex</a>)
+					<a href="#b75238958b2cdb1a" class="i field">_items</a>.<a href="@1@System.Collections/A.html#a7861da7aaa500fe" class="i method">Add</a>(<a href="#3a2f5fc7123c53d3" class="i field">_enumeratorIndex</a>, <a href="#94eacc593e11cf0b" class="i field">_enumerator</a>.<a href="@1@System.Runtime/A.html#3f12a86aa5b0da2b" class="i property">Current</a>);
+			}
+ 
+			<b>if</b> (<span class="r33 r">countChanged</span>)
+				<a href="#2fa1fd01407646b6" class="i method">OnCountChanged</a>();
+ 
+			<b>return</b> <a href="#b75238958b2cdb1a" class="i field">_items</a>.<a href="@1@System.Collections/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<span class="r21 r">index</span>, <b>out</b> <span class="r22 r">value</span>);
+		}
+ 
+		<b>class</b> <a id="ccb3c52470536452" href="R/ccb3c52470536452.html" target="n" data-glyph="4,1" class="t t">WeakNotifyProxy</a>
+		{
+			<b>readonly</b> <a href="@1@System.Runtime/A.html#809df5135c2bec67" class="t t">WeakReference</a>&lt;<span class="t t">INotifyCollectionChanged</span>&gt; <a id="2539500a6721c9f5" href="R/2539500a6721c9f5.html" target="n" data-glyph="46,2" class="i field">_weakCollection</a>;
+			<b>readonly</b> <a href="@1@System.Runtime/A.html#809df5135c2bec67" class="t t">WeakReference</a>&lt;<a href="#6ab833c687aa0814" class="t t">ListProxy</a>&gt; <a id="fdb50d4d98e23b11" href="R/fdb50d4d98e23b11.html" target="n" data-glyph="46,2" class="i field">_weakProxy</a>;
+			<b>readonly</b> <span class="t t">ConditionalWeakTable</span>&lt;<a href="#6ab833c687aa0814" class="t t">ListProxy</a>, <span class="t t">NotifyCollectionChangedEventHandler</span>&gt; <a id="a0f41412126c282e" href="R/a0f41412126c282e.html" target="n" data-glyph="46,2" class="i field">_sourceToWeakHandlers</a>;
+ 
+			<b>public</b> <a id="46943765d169dae4" href="R/46943765d169dae4.html" target="n" data-glyph="72,2" class="i constructor">WeakNotifyProxy</a>(<a href="#6ab833c687aa0814" class="t t">ListProxy</a> <span id="r39 rd" class="r39 r">proxy</span>, <span class="t t">INotifyCollectionChanged</span> <span id="r40 rd" class="r40 r">incc</span>)
+			{
+				<a href="#a0f41412126c282e" class="i field">_sourceToWeakHandlers</a> = <b>new</b> <span class="t constructor">ConditionalWeakTable</span>&lt;<a href="#6ab833c687aa0814" class="t t">ListProxy</a>, <span class="t t">NotifyCollectionChangedEventHandler</span>&gt;();
+				<span class="t t">NotifyCollectionChangedEventHandler</span> <span id="r41 rd" class="r41 r">handler</span> = <b>new</b> <span class="t">NotifyCollectionChangedEventHandler</span>(<a href="#dcd2e46e3440e6a5" class="i method">OnCollectionChanged</a>);
+ 
+				<a href="#a0f41412126c282e" class="i field">_sourceToWeakHandlers</a>.<span class="i method">Add</span>(<span class="r39 r">proxy</span>, <span class="r41 r">handler</span>);
+				<span class="r40 r">incc</span>.<span class="i">CollectionChanged</span> += <span class="r41 r">handler</span>;
+ 
+				<a href="#fdb50d4d98e23b11" class="i field">_weakProxy</a> = <b>new</b> <a href="@1@System.Runtime/A.html#0bcc5ece65ea67eb" class="t constructor">WeakReference</a>&lt;<a href="#6ab833c687aa0814" class="t t">ListProxy</a>&gt;(<span class="r39 r">proxy</span>);
+				<a href="#2539500a6721c9f5" class="i field">_weakCollection</a> = <b>new</b> <a href="@1@System.Runtime/A.html#0bcc5ece65ea67eb" class="t constructor">WeakReference</a>&lt;<span class="t t">INotifyCollectionChanged</span>&gt;(<span class="r40 r">incc</span>);
+			}
+ 
+			<b>void</b> <a id="dcd2e46e3440e6a5" href="R/dcd2e46e3440e6a5.html" target="n" data-glyph="76,2" class="i method">OnCollectionChanged</a>(<b>object</b> <span id="r42 rd" class="r42 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r43 rd" class="r43 r">e</span>)
+			{
+				<a href="#6ab833c687aa0814" class="t t">ListProxy</a> <span id="r44 rd" class="r44 r">proxy</span>;
+				<b>if</b> (!<a href="#fdb50d4d98e23b11" class="i field">_weakProxy</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r44 r">proxy</span>))
+				{
+					<span class="t t">INotifyCollectionChanged</span> <span id="r45 rd" class="r45 r">collection</span>;
+					<b>if</b> (<a href="#2539500a6721c9f5" class="i field">_weakCollection</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r45 r">collection</span>))
+						<span class="r45 r">collection</span>.<span class="i">CollectionChanged</span> -= <a href="#dcd2e46e3440e6a5" class="i method">OnCollectionChanged</a>;
+ 
+					<b>return</b>;
+				}
+ 
+				<span class="r44 r">proxy</span>.<a href="#5a43672c6a4a4391" class="i method">OnCollectionChanged</a>(<span class="r42 r">sender</span>, <span class="r43 r">e</span>);
+			}
+		}
+ 
+		<b>class</b> <a id="fac4a3b10332b1e3" href="R/fac4a3b10332b1e3.html" target="n" data-glyph="4,1" class="t t">ProxyEnumerator</a> : <a href="@1@System.Runtime/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<b>object</b>&gt;
+		{
+			<b>readonly</b> <a href="#6ab833c687aa0814" class="t t">ListProxy</a> <a id="19ca5e2db84e884f" href="R/19ca5e2db84e884f.html" target="n" data-glyph="46,2" class="i field">_proxy</a>;
+			<b>readonly int</b> <a id="d60814aa304428f7" href="R/d60814aa304428f7.html" target="n" data-glyph="46,2" class="i field">_version</a>;
+ 
+			<b>int</b> <a id="534ecb10a1ea08a3" href="R/534ecb10a1ea08a3.html" target="n" data-glyph="46,2" class="i field">_index</a>;
+ 
+			<b>public</b> <a id="688292735a80ff04" href="R/688292735a80ff04.html" target="n" data-glyph="72,2" class="i constructor">ProxyEnumerator</a>(<a href="#6ab833c687aa0814" class="t t">ListProxy</a> <span id="r46 rd" class="r46 r">proxy</span>)
+			{
+				<a href="#19ca5e2db84e884f" class="i field">_proxy</a> = <span class="r46 r">proxy</span>;
+				<a href="#d60814aa304428f7" class="i field">_version</a> = <span class="r46 r">proxy</span>.<a href="#10f3f2d2109b587d" class="i field">_version</a>;
+			}
+ 
+			<b>public void</b> <a id="ee206a6b50573cff" href="R/ee206a6b50573cff.html" target="n" data-glyph="72,2" class="i method">Dispose</a>()
+			{
+			}
+ 
+			<b>public bool</b> <a id="fbe2ceb05566b638" href="R/fbe2ceb05566b638.html" target="n" data-glyph="72,2" class="i method">MoveNext</a>()
+			{
+				<b>if</b> (<a href="#19ca5e2db84e884f" class="i field">_proxy</a>.<a href="#10f3f2d2109b587d" class="i field">_version</a> != <a href="#d60814aa304428f7" class="i field">_version</a>)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8d6a52a5496ce078" class="t constructor">InvalidOperationException</a>();
+ 
+				<b>object</b> <span id="r47 rd" class="r47 r">value</span>;
+				<b>bool</b> <span id="r48 rd" class="r48 r">next</span> = <a href="#19ca5e2db84e884f" class="i field">_proxy</a>.<a href="#8dc67f3bef8ab863" class="i method">TryGetValue</a>(<a href="#534ecb10a1ea08a3" class="i field">_index</a>++, <b>out</b> <span class="r47 r">value</span>);
+				<b>if</b> (<span class="r48 r">next</span>)
+					<a href="#461202f2b15d9e92" class="i property">Current</a> = <span class="r47 r">value</span>;
+ 
+				<b>return</b> <span class="r48 r">next</span>;
+			}
+ 
+			<b>public void</b> <a id="4f0697c2477ec328" href="R/4f0697c2477ec328.html" target="n" data-glyph="72,2" class="i method">Reset</a>()
+			{
+				<a href="#534ecb10a1ea08a3" class="i field">_index</a> = 0;
+				<a href="#461202f2b15d9e92" class="i property">Current</a> = <b>null</b>;
+			}
+ 
+			<b>public object</b> <a id="461202f2b15d9e92" href="R/461202f2b15d9e92.html" target="n" data-glyph="102,2" class="i property">Current</a> { <b>get</b>; <b>private set</b>; }
+		}
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">region</span> IList
+ 
+		<b>object</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#32c1ca862ea365e7" class="k">this</a>[<b>int</b> <span id="r49 rd" class="r49 r">index</span>]
+		{
+			<b>get</b> { <b>return</b> <a href="#6ab833c687aa0814" class="k">this</a><a href="#7fc1a92bc2758a5d">[</a><span class="r49 r">index</span>]; }
+			<b>set</b> { <b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>(); }
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#0cbac8352fc2d8c4" class="i property">IsReadOnly</a>
+		{
+			<b>get</b> { <b>return true</b>; }
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#62b7ec4ff8eabfbc" class="i property">IsFixedSize</a>
+		{
+			<b>get</b> { <b>return false</b>; }
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#cde8022b6e680e40" class="t t">ICollection</a>.<a href="@1@System.Runtime/A.html#99438469a9a77b4f" class="i property">IsSynchronized</a>
+		{
+			<b>get</b> { <b>return false</b>; }
+		}
+ 
+		<b>object</b> <a href="@1@System.Runtime/A.html#cde8022b6e680e40" class="t t">ICollection</a>.<a href="@1@System.Runtime/A.html#67322104fb933552" class="i property">SyncRoot</a>
+		{
+			<b>get</b> { <b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>(); }
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#cde8022b6e680e40" class="t t">ICollection</a>.<a href="@1@System.Runtime/A.html#39497d2d50b3f663" class="i method">CopyTo</a>(<a href="@1@System.Runtime/A.html#156e066ecc4ccedf" class="t t">Array</a> <span id="r50 rd" class="r50 r">array</span>, <b>int</b> <span id="r51 rd" class="r51 r">index</span>)
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+		}
+ 
+		<b>int</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#bded9f03433a53d4" class="i method">Add</a>(<b>object</b> <span id="r52 rd" class="r52 r">item</span>)
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#36e262a0820371fd" class="i method">Remove</a>(<b>object</b> <span id="r53 rd" class="r53 r">item</span>)
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#11f7bb96fc6ac350" class="i method">Insert</a>(<b>int</b> <span id="r54 rd" class="r54 r">index</span>, <b>object</b> <span id="r55 rd" class="r55 r">item</span>)
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#1c03bac1b91e9406" class="i method">RemoveAt</a>(<b>int</b> <span id="r56 rd" class="r56 r">index</span>)
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@1@System.Runtime/A.html#11fee9febe020c7c" class="i method">Clear</a>()
+		{
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+		}
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">endregion</span>
+	}
+}</pre></td></tr></table></div></body></html>

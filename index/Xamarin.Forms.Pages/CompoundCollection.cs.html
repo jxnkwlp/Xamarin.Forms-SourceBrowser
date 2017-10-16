@@ -1,0 +1,233 @@
+﻿<!DOCTYPE html>
+<html><head><title>CompoundCollection.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(224);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Pages/CompoundCollection.cs" target="_top">CompoundCollection.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Pages" target="_top">Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj</a> (Xamarin.Forms.Pages)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">ObjectModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Specialized</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Pages</span>
+{
+	<b>public class</b> <a id="853b9190d5c6e9ea" href="R/853b9190d5c6e9ea.html" target="n" data-glyph="0,0" class="t t">CompoundCollection</a> : <a href="/Xamarin.Forms.Core/A.html#76098df8350c0484" class="t t">Element</a>, <span class="i">IList</span>, <span class="i">INotifyCollectionChanged</span>
+	{
+		<b>public static readonly</b> <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="ee7669da01d73026" href="R/ee7669da01d73026.html" target="n" data-glyph="42,1" class="i field">MainListProperty</a> = <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<span class="i">Create</span>(<b>nameof</b>(<a href="#0584991349681a74" class="i property">MainList</a>), <b>typeof</b>(<span class="i">IReadOnlyList</span>&lt;<b>object</b>&gt;), <b>typeof</b>(<a href="#853b9190d5c6e9ea" class="t t">CompoundCollection</a>), <b>default</b>(<span class="i">IReadOnlyList</span>&lt;<b>object</b>&gt;),
+			<span class="i">propertyChanged</span>: <span class="i">OnMainListPropertyChanged</span>);
+ 
+		<b>readonly</b> <span class="i">ObservableCollection</span>&lt;<b>object</b>&gt; <a id="f49a155c64545a42" href="R/f49a155c64545a42.html" target="n" data-glyph="46,1" class="i field">_appendList</a> = <b>new</b> <span class="i">ObservableCollection</span>&lt;<b>object</b>&gt;();
+ 
+		<b>readonly</b> <span class="i">ObservableCollection</span>&lt;<b>object</b>&gt; <a id="a117c6486fc13900" href="R/a117c6486fc13900.html" target="n" data-glyph="46,1" class="i field">_prependList</a> = <b>new</b> <span class="i">ObservableCollection</span>&lt;<b>object</b>&gt;();
+ 
+		<b>public</b> <a id="c3180b59410d82fc" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">CompoundCollection</a>()
+		{
+			<a href="#a117c6486fc13900" class="i field">_prependList</a>.<span class="i">CollectionChanged</span> += <span class="i">OnPrependCollectionChanged</span>;
+			<a href="#f49a155c64545a42" class="i field">_appendList</a>.<span class="i">CollectionChanged</span> += <span class="i">OnAppendCollectionChanged</span>;
+		}
+ 
+		<b>public</b> <span class="i">IList</span> <a id="d8a805063475a156" href="R/d8a805063475a156.html" target="n" data-glyph="102,1" class="i property">AppendList</a> =&gt; <a href="#f49a155c64545a42" class="i field">_appendList</a>;
+ 
+		<b>public</b> <span class="i">IReadOnlyList</span>&lt;<b>object</b>&gt; <a id="0584991349681a74" href="R/0584991349681a74.html" target="n" data-glyph="102,1" class="i property">MainList</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="i">IReadOnlyList</span>&lt;<b>object</b>&gt;)<span class="i">GetValue</span>(<a href="#ee7669da01d73026" class="i field">MainListProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#ee7669da01d73026" class="i field">MainListProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="i">IList</span> <a id="207234dfbb118b64" href="R/207234dfbb118b64.html" target="n" data-glyph="102,1" class="i property">PrependList</a> =&gt; <a href="#a117c6486fc13900" class="i field">_prependList</a>;
+ 
+		<b>public void</b> <a id="46264370e8989a9b" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">CopyTo</a>(<span class="i">Array</span> <span id="r0 rd" class="r0 r">array</span>, <b>int</b> <span id="r1 rd" class="r1 r">index</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<b>public int</b> <a id="6e47754d622a5b4a" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Count</a> =&gt; <a href="#d8a805063475a156" class="i property">AppendList</a>.<span class="i">Count</span> + <a href="#207234dfbb118b64" class="i property">PrependList</a>.<span class="i">Count</span> + (<a href="#0584991349681a74" class="i property">MainList</a>?.<span class="i">Count</span> ?? 0);
+ 
+		<b>public bool</b> <a id="ab9da2fa5e8d7375" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">IsSynchronized</a> =&gt; <b>false</b>;
+ 
+		<b>public object</b> <a id="cf89dd46f4737c0c" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">SyncRoot</a> =&gt; <b>null</b>;
+ 
+		<b>public</b> <span class="i">IEnumerator</span> <a id="d0bd84778b2c5e20" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetEnumerator</a>()
+		{
+			<b>foreach</b> (<b>object</b> <span id="r2 rd" class="r2 r">item</span> <b>in</b> <a href="#207234dfbb118b64" class="i property">PrependList</a>)
+				<b>yield return</b> <span class="r2 r">item</span>;
+			<b>foreach</b> (<b>object</b> <span id="r3 rd" class="r3 r">item</span> <b>in</b> <a href="#0584991349681a74" class="i property">MainList</a>)
+				<b>yield return</b> <span class="r3 r">item</span>;
+			<b>foreach</b> (<b>object</b> <span id="r4 rd" class="r4 r">item</span> <b>in</b> <a href="#d8a805063475a156" class="i property">AppendList</a>)
+				<b>yield return</b> <span class="r4 r">item</span>;
+		}
+ 
+		<b>public int</b> <a id="a778f2fbb44afac2" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Add</a>(<b>object</b> <span id="r5 rd" class="r5 r">value</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<b>public void</b> <a id="7a35d284bf806b24" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Clear</a>()
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<b>public bool</b> <a id="0fe147afe38f5858" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Contains</a>(<b>object</b> <span id="r6 rd" class="r6 r">value</span>)
+		{
+			<span class="i">IReadOnlyList</span>&lt;<b>object</b>&gt; <span id="r7 rd" class="r7 r">mainList</span> = <a href="#0584991349681a74" class="i property">MainList</a>;
+			<b>bool</b> <span id="r8 rd" class="r8 r">masterContains</span>;
+			<b>var</b> <span id="r9 rd" class="r9 r">masterList</span> = <span class="r7 r">mainList</span> <b>as</b> <span class="i">IList</span>;
+			<b>if</b> (<span class="r9 r">masterList</span> != <b>null</b>)
+			{
+				<span class="r8 r">masterContains</span> = <span class="r9 r">masterList</span>.<span class="i">Contains</span>(<span class="r6 r">value</span>);
+			}
+			<b>else</b>
+			{
+				<span class="r8 r">masterContains</span> = <span class="r7 r">mainList</span>.<span class="i">Contains</span>(<span class="r6 r">value</span>);
+			}
+			<b>return</b> <span class="r8 r">masterContains</span> || <a href="#207234dfbb118b64" class="i property">PrependList</a>.<span class="i">Contains</span>(<span class="r6 r">value</span>) || <a href="#d8a805063475a156" class="i property">AppendList</a>.<span class="i">Contains</span>(<span class="r6 r">value</span>);
+		}
+ 
+		<b>public int</b> <a id="7f594f3490161ebf" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">IndexOf</a>(<b>object</b> <span id="r10 rd" class="r10 r">value</span>)
+		{
+			<b>int</b> <span id="r11 rd" class="r11 r">result</span>;
+			<span class="r11 r">result</span> = <a href="#207234dfbb118b64" class="i property">PrependList</a>.<span class="i">IndexOf</span>(<span class="r10 r">value</span>);
+			<b>if</b> (<span class="r11 r">result</span> &gt;= 0)
+				<b>return</b> <span class="r11 r">result</span>;
+			<span class="r11 r">result</span> = <a href="#0584991349681a74" class="i property">MainList</a>.<span class="i">IndexOf</span>(<span class="r10 r">value</span>);
+			<b>if</b> (<span class="r11 r">result</span> &gt;= 0)
+				<b>return</b> <span class="r11 r">result</span> + <a href="#207234dfbb118b64" class="i property">PrependList</a>.<span class="i">Count</span>;
+ 
+			<span class="r11 r">result</span> = <a href="#d8a805063475a156" class="i property">AppendList</a>.<span class="i">IndexOf</span>(<span class="r10 r">value</span>);
+			<b>if</b> (<span class="r11 r">result</span> &gt;= 0)
+				<b>return</b> <span class="r11 r">result</span> + <a href="#207234dfbb118b64" class="i property">PrependList</a>.<span class="i">Count</span> + <a href="#0584991349681a74" class="i property">MainList</a>.<span class="i">Count</span>;
+			<b>return</b> -1;
+		}
+ 
+		<b>public void</b> <a id="9f0ca7e14c0403b5" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Insert</a>(<b>int</b> <span id="r12 rd" class="r12 r">index</span>, <b>object</b> <span id="r13 rd" class="r13 r">value</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<b>public bool</b> <a id="8fd1055e9b8a03a0" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">IsFixedSize</a> =&gt; <b>false</b>;
+ 
+		<b>public bool</b> <a id="208a5a285a5051a6" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">IsReadOnly</a> =&gt; <b>true</b>;
+ 
+		<b>public object</b> <a id="45d5813e9435cb8c" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="k">this</a>[<b>int</b> <span id="r14 rd" class="r14 r">index</span>]
+		{
+			<b>get</b>
+			{
+				<span class="i">IReadOnlyList</span>&lt;<b>object</b>&gt; <span id="r15 rd" class="r15 r">mainList</span> = <a href="#0584991349681a74" class="i property">MainList</a>;
+				<b>int</b> <span id="r16 rd" class="r16 r">prependSize</span> = <a href="#207234dfbb118b64" class="i property">PrependList</a>.<span class="i">Count</span>;
+				<b>if</b> (<span class="r14 r">index</span> &lt; <span class="r16 r">prependSize</span>)
+					<b>return</b> <a href="#207234dfbb118b64" class="i property">PrependList</a>[<span class="r14 r">index</span>];
+				<span class="r14 r">index</span> -= <span class="r16 r">prependSize</span>;
+ 
+				<b>if</b> (<span class="r15 r">mainList</span> != <b>null</b>)
+				{
+					<b>if</b> (<span class="r14 r">index</span> &lt; <span class="r15 r">mainList</span>.<span class="i">Count</span>)
+						<b>return</b> <span class="r15 r">mainList</span>[<span class="r14 r">index</span>];
+					<span class="r14 r">index</span> -= <span class="r15 r">mainList</span>.<span class="i">Count</span>;
+				}
+ 
+				<b>if</b> (<span class="r14 r">index</span> &gt;= <a href="#d8a805063475a156" class="i property">AppendList</a>.<span class="i">Count</span>)
+					<b>throw</b> <b>new</b> <span class="i">IndexOutOfRangeException</span>();
+				<b>return</b> <a href="#d8a805063475a156" class="i property">AppendList</a>[<span class="r14 r">index</span>];
+			}
+			<b>set</b> { <b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>(); }
+		}
+ 
+		<b>public void</b> <a id="99c02235efcf2c71" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Remove</a>(<b>object</b> <span id="r17 rd" class="r17 r">value</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<b>public void</b> <a id="223b644ddce66ce8" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">RemoveAt</a>(<b>int</b> <span id="r18 rd" class="r18 r">index</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<b>public event</b> <span class="i">NotifyCollectionChangedEventHandler</span> <a id="8640bac0f88b94bd" href="R/8640bac0f88b94bd.html" target="n" data-glyph="30,1" class="i">CollectionChanged</a>;
+ 
+		<b>void</b> <a id="f3c44c086a04b513" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnAppendCollectionChanged</a>(<b>object</b> <span id="r19 rd" class="r19 r">sender</span>, <span class="i">NotifyCollectionChangedEventArgs</span> <span id="r20 rd" class="r20 r">args</span>)
+		{
+			<b>int</b> <span id="r21 rd" class="r21 r">offset</span> = <a href="#a117c6486fc13900" class="i field">_prependList</a>.<span class="i">Count</span> + (<a href="#0584991349681a74" class="i property">MainList</a>?.<span class="i">Count</span> ?? 0);
+			<span class="c">// here we just need to calculate the offset for the index, everything else is the same</span>
+			<b>switch</b> (<span class="r20 r">args</span>.<span class="i">Action</span>)
+			{
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Add</span>:
+					<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Add</span>, <span class="r20 r">args</span>.<span class="i">NewItems</span>, <span class="r21 r">offset</span> + <span class="r20 r">args</span>.<span class="i">NewStartingIndex</span>));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Move</span>:
+					<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Move</span>, <span class="r20 r">args</span>.<span class="i">OldItems</span>, <span class="r21 r">offset</span> + <span class="r20 r">args</span>.<span class="i">NewStartingIndex</span>, <span class="r21 r">offset</span> + <span class="r20 r">args</span>.<span class="i">OldStartingIndex</span>));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Remove</span>:
+					<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Remove</span>, <span class="r20 r">args</span>.<span class="i">OldItems</span>, <span class="r21 r">offset</span> + <span class="r20 r">args</span>.<span class="i">OldStartingIndex</span>));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Replace</span>:
+					<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Replace</span>, <span class="r20 r">args</span>.<span class="i">NewItems</span>, <span class="r20 r">args</span>.<span class="i">OldItems</span>, <span class="r21 r">offset</span> + <span class="r20 r">args</span>.<span class="i">OldStartingIndex</span>));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>:
+					<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>));
+					<b>break</b>;
+				<b>default</b>:
+					<b>throw</b> <b>new</b> <span class="i">ArgumentOutOfRangeException</span>();
+			}
+		}
+ 
+		<b>void</b> <a id="3ec40ca4ed96373d" href="R/3ec40ca4ed96373d.html" target="n" data-glyph="76,1" class="i method">OnCollectionChanged</a>(<span class="i">NotifyCollectionChangedEventArgs</span> <span id="r22 rd" class="r22 r">args</span>)
+		{
+			<a href="#8640bac0f88b94bd" class="i">CollectionChanged</a>?.<span class="i">Invoke</span>(<a href="#853b9190d5c6e9ea" class="k">this</a>, <span class="r22 r">args</span>);
+		}
+ 
+		<b>void</b> <a id="9801f5bd310cc54f" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnMainCollectionChanged</a>(<b>object</b> <span id="r23 rd" class="r23 r">sender</span>, <span class="i">NotifyCollectionChangedEventArgs</span> <span id="r24 rd" class="r24 r">args</span>)
+		{
+			<span class="c">// much complexity to be had here</span>
+			<b>switch</b> (<span class="r24 r">args</span>.<span class="i">Action</span>)
+			{
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Add</span>:
+					<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Add</span>, <span class="r24 r">args</span>.<span class="i">NewItems</span>, <span class="i">PublicIndexFromMainIndex</span>(<span class="r24 r">args</span>.<span class="i">NewStartingIndex</span>)));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Move</span>:
+					<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Move</span>, <span class="r24 r">args</span>.<span class="i">OldItems</span>, <span class="i">PublicIndexFromMainIndex</span>(<span class="r24 r">args</span>.<span class="i">NewStartingIndex</span>),
+						<span class="i">PublicIndexFromMainIndex</span>(<span class="r24 r">args</span>.<span class="i">OldStartingIndex</span>)));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Remove</span>:
+					<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Remove</span>, <span class="r24 r">args</span>.<span class="i">OldItems</span>, <span class="i">PublicIndexFromMainIndex</span>(<span class="r24 r">args</span>.<span class="i">OldStartingIndex</span>)));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Replace</span>:
+					<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Replace</span>, <span class="r24 r">args</span>.<span class="i">NewItems</span>, <span class="r24 r">args</span>.<span class="i">OldItems</span>, <span class="i">PublicIndexFromMainIndex</span>(<span class="r24 r">args</span>.<span class="i">OldStartingIndex</span>)));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>:
+					<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>));
+					<b>break</b>;
+				<b>default</b>:
+					<b>throw</b> <b>new</b> <span class="i">ArgumentOutOfRangeException</span>();
+			}
+		}
+ 
+		<b>static void</b> <a id="09d3157785922048" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnMainListPropertyChanged</a>(<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r25 rd" class="r25 r">bindable</span>, <b>object</b> <span id="r26 rd" class="r26 r">oldValue</span>, <b>object</b> <span id="r27 rd" class="r27 r">newValue</span>)
+		{
+			<a href="#853b9190d5c6e9ea" class="k">var</a> <span id="r28 rd" class="r28 r">self</span> = (<a href="#853b9190d5c6e9ea" class="t t">CompoundCollection</a>)<span class="r25 r">bindable</span>;
+			<b>var</b> <span id="r29 rd" class="r29 r">observable</span> = <span class="r26 r">oldValue</span> <b>as</b> <span class="i">INotifyCollectionChanged</span>;
+			<b>if</b> (<span class="r29 r">observable</span> != <b>null</b>)
+				<span class="r29 r">observable</span>.<span class="i">CollectionChanged</span> -= <span class="r28 r">self</span>.<span class="i">OnMainCollectionChanged</span>;
+			<span class="r29 r">observable</span> = <span class="r27 r">newValue</span> <b>as</b> <span class="i">INotifyCollectionChanged</span>;
+			<b>if</b> (<span class="r29 r">observable</span> != <b>null</b>)
+				<span class="r29 r">observable</span>.<span class="i">CollectionChanged</span> += <span class="r28 r">self</span>.<span class="i">OnMainCollectionChanged</span>;
+			<span class="r28 r">self</span>.<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>));
+		}
+ 
+		<b>void</b> <a id="111c34c665d2e0ad" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnPrependCollectionChanged</a>(<b>object</b> <span id="r30 rd" class="r30 r">sender</span>, <span class="i">NotifyCollectionChangedEventArgs</span> <span id="r31 rd" class="r31 r">args</span>)
+		{
+			<span class="c">// this can basically be a passthrough as prepend has no masking and identical indexing</span>
+			<a href="#3ec40ca4ed96373d" class="i method">OnCollectionChanged</a>(<span class="r31 r">args</span>);
+		}
+ 
+		<b>int</b> <a id="ece2e58dc43a489e" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PublicIndexFromMainIndex</a>(<b>int</b> <span id="r32 rd" class="r32 r">index</span>)
+		{
+			<b>return</b> <a href="#207234dfbb118b64" class="i property">PrependList</a>.<span class="i">Count</span> + <span class="r32 r">index</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

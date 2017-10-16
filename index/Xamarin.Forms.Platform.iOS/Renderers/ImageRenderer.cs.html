@@ -1,0 +1,260 @@
+﻿<!DOCTYPE html>
+<html><head><title>ImageRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(251);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/Renderers/ImageRenderer.cs" target="_top">Renderers\ImageRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Foundation</span>;
+<b>using</b> <span class="i n">UIKit</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="t">RectangleF</span> = <span class="i n">CoreGraphics</span>.<span class="t t">CGRect</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+{
+	<b>public static class</b> <a id="894d925beba9859c" href="../R/../../0000000000.html" target="n" data-glyph="0,0" class="t t">ImageExtensions</a>
+	{
+		<b>public static</b> <span class="t t">UIViewContentMode</span> <a id="57757b214423d638" href="../R/57757b214423d638.html" target="n" data-glyph="220,1" class="i method">ToUIViewContentMode</a>(<b>this</b> <a href="/Xamarin.Forms.Core/A.html#aa2595e74151573d" class="t t">Aspect</a> <span id="r0 rd" class="r0 r">aspect</span>)
+		{
+			<b>switch</b> (<span class="r0 r">aspect</span>)
+			{
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#aa2595e74151573d" class="t t">Aspect</a>.<a href="/Xamarin.Forms.Core/A.html#c63d19d0a93f800b" class="i field">AspectFill</a>:
+					<b>return</b> <span class="t t">UIViewContentMode</span>.<span class="i field">ScaleAspectFill</span>;
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#aa2595e74151573d" class="t t">Aspect</a>.<a href="/Xamarin.Forms.Core/A.html#ef8766a9da7a69ee" class="i field">Fill</a>:
+					<b>return</b> <span class="t t">UIViewContentMode</span>.<span class="i field">ScaleToFill</span>;
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#aa2595e74151573d" class="t t">Aspect</a>.<a href="/Xamarin.Forms.Core/A.html#29713b880ffacd91" class="i field">AspectFit</a>:
+				<b>default</b>:
+					<b>return</b> <span class="t t">UIViewContentMode</span>.<span class="i field">ScaleAspectFit</span>;
+			}
+		}
+	}
+ 
+	<b>public class</b> <a id="e8ce784467d39956" href="../R/e8ce784467d39956.html" target="n" data-glyph="0,0" class="t t"><span id="bde447eca7097be4">ImageRenderer</span></a> : <a href="../ViewRenderer.cs.html#a26bff279160b03e" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>, <span class="t t">UIImageView</span>&gt;
+	{
+		<b>bool</b> <a id="a5dcfdf17e3f4fa4" href="../R/a5dcfdf17e3f4fa4.html" target="n" data-glyph="46,1" class="i field">_isDisposed</a>;
+ 
+		<b>protected override void</b> <a id="1829daab1075764d" href="../R/1829daab1075764d.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r1 rd" class="r1 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#a5dcfdf17e3f4fa4" class="i field">_isDisposed</a>)
+				<b>return</b>;
+ 
+			<b>if</b> (<span class="r1 r">disposing</span>)
+			{
+				<span class="t t">UIImage</span> <span id="r2 rd" class="r2 r">oldUIImage</span>;
+				<b>if</b> (<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> != <b>null</b> &amp;&amp; (<span class="r2 r">oldUIImage</span> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Image</span>) != <b>null</b>)
+				{
+					<span class="r2 r">oldUIImage</span>.<span class="i method">Dispose</span>();
+				}
+			}
+ 
+			<a href="#a5dcfdf17e3f4fa4" class="i field">_isDisposed</a> = <b>true</b>;
+ 
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#0263ff95aef8d32c" class="i method">Dispose</a>(<span class="r1 r">disposing</span>);
+		}
+ 
+		<b>protected override async void</b> <a id="b60bf133561e69f1" href="../R/b60bf133561e69f1.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#8cd59c48d876c811" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>&gt; <span id="r3 rd" class="r3 r">e</span>)
+		{
+			<b>if</b> (<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> == <b>null</b>)
+			{
+				<b>var</b> <span id="r4 rd" class="r4 r">imageView</span> = <b>new</b> <span class="t constructor">UIImageView</span>(<span class="t t">RectangleF</span>.<span class="i field">Empty</span>);
+				<span class="r4 r">imageView</span>.<span class="i property">ContentMode</span> = <span class="t t">UIViewContentMode</span>.<span class="i field">ScaleAspectFit</span>;
+				<span class="r4 r">imageView</span>.<span class="i property">ClipsToBounds</span> = <b>true</b>;
+				<a href="../ViewRenderer.cs.html#5a05fd07ede87b4f" class="i method">SetNativeControl</a>(<span class="r4 r">imageView</span>);
+			}
+ 
+			<b>if</b> (<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<a href="#c6be40bbda5fd38e" class="i method">SetAspect</a>();
+				<b>await</b> <a href="#1c71a445589b60b0" class="i method">TrySetImage</a>(<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#4f3197519f522690" class="i property">OldElement</a>);
+				<a href="#a6a36dfc62ebf95f" class="i method">SetOpacity</a>();
+			}
+ 
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#8d6908150c52ef88" class="i method">OnElementChanged</a>(<span class="r3 r">e</span>);
+		}
+ 
+		<b>protected override async void</b> <a id="b0ffb0673b934518" href="../R/b0ffb0673b934518.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r5 rd" class="r5 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r6 rd" class="r6 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#9d8f9c1b9a699acd" class="i method">OnElementPropertyChanged</a>(<span class="r5 r">sender</span>, <span class="r6 r">e</span>);
+			<b>if</b> (<span class="r6 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>.<a href="/Xamarin.Forms.Core/A.html#c12a3e7016107bf8" class="i field">SourceProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<b>await</b> <a href="#1c71a445589b60b0" class="i method">TrySetImage</a>();
+			<b>else if</b> (<span class="r6 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>.<a href="/Xamarin.Forms.Core/A.html#9c3c65a240887219" class="i field">IsOpaqueProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#a6a36dfc62ebf95f" class="i method">SetOpacity</a>();
+			<b>else if</b> (<span class="r6 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>.<a href="/Xamarin.Forms.Core/A.html#f8b94d8bc734379f" class="i field">AspectProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#c6be40bbda5fd38e" class="i method">SetAspect</a>();
+		}
+ 
+		<b>void</b> <a id="c6be40bbda5fd38e" href="../R/c6be40bbda5fd38e.html" target="n" data-glyph="76,1" class="i method">SetAspect</a>()
+		{
+			<b>if</b> (<a href="#a5dcfdf17e3f4fa4" class="i field">_isDisposed</a> || <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a> == <b>null</b> || <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">ContentMode</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ee4d50419878101a" class="i property">Aspect</a>.<a href="#57757b214423d638" class="i method">ToUIViewContentMode</a>();
+		}
+ 
+		<b>protected virtual async</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a> <a id="1c71a445589b60b0" href="../R/1c71a445589b60b0.html" target="n" data-glyph="75,1" class="i method">TrySetImage</a>(<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a> <span id="r7 rd" class="r7 r">previous</span> = <b>null</b>)
+		{
+			<span class="c">// By default we&#39;ll just catch and log any exceptions thrown by SetImage so they don&#39;t bring down</span>
+			<span class="c">// the application; a custom renderer can override this method and handle exceptions from</span>
+			<span class="c">// SetImage differently if it wants to</span>
+ 
+			<b>try</b>
+			{
+				<b>await</b> <a href="#f7043cab0d0cb17e" class="i method">SetImage</a>(<span class="r7 r">previous</span>).<a href="@0@mscorlib/A.html#9ca6b2f012ce7587" class="i method">ConfigureAwait</a>(<b>false</b>);
+			}
+			<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r8 rd" class="r8 r">ex</span>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#1776263ebad4afea" class="i method">Warning</a>(<b>nameof</b>(<a href="#e8ce784467d39956" class="t t">ImageRenderer</a>), <span class="s">&quot;Error loading image: {0}&quot;</span>, <span class="r8 r">ex</span>);
+			}
+			<b>finally</b>
+			{
+				((<a href="/Xamarin.Forms.Core/A.html#23cbcc80dd868d05" class="t t">IImageController</a>)<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>)?.<a href="/Xamarin.Forms.Core/A.html#88bf1e533c225645" class="i method">SetIsLoading</a>(<b>false</b>);
+			}
+		}
+ 
+		<b>protected async</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a> <a id="f7043cab0d0cb17e" href="../R/f7043cab0d0cb17e.html" target="n" data-glyph="75,1" class="i method">SetImage</a>(<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a> <span id="r9 rd" class="r9 r">oldElement</span> = <b>null</b>)
+		{
+			<b>if</b> (<a href="#a5dcfdf17e3f4fa4" class="i field">_isDisposed</a> || <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a> == <b>null</b> || <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="k">var</a> <span id="r10 rd" class="r10 r">source</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a>;
+ 
+			<b>if</b> (<span class="r9 r">oldElement</span> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="k">var</a> <span id="r11 rd" class="r11 r">oldSource</span> = <span class="r9 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a>;
+				<b>if</b> (<a href="@0@mscorlib/A.html#f2a579c50b414717" class="i method">Equals</a>(<span class="r11 r">oldSource</span>, <span class="r10 r">source</span>))
+					<b>return</b>;
+ 
+				<b>if</b> (<span class="r11 r">oldSource</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a> &amp;&amp; <span class="r10 r">source</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a> &amp;&amp; ((<a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a>)<span class="r11 r">oldSource</span>).<a href="/Xamarin.Forms.Core/A.html#a7a7e7a7e3b9cdb3" class="i property">File</a> == ((<a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a>)<span class="r10 r">source</span>).<a href="/Xamarin.Forms.Core/A.html#a7a7e7a7e3b9cdb3" class="i property">File</a>)
+					<b>return</b>;
+ 
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Image</span> = <b>null</b>;
+			}
+ 
+			<a href="#31399c2e7660bf34" class="t t">IImageSourceHandler</a> <span id="r12 rd" class="r12 r">handler</span>;
+ 
+			<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#f51cce94bd777fa3" class="i method">SetIsLoading</a>(<b>true</b>);
+ 
+			<b>if</b> (<span class="r10 r">source</span> != <b>null</b> &amp;&amp;
+			    (<span class="r12 r">handler</span> = <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="/Xamarin.Forms.Core/A.html#5f29d2ac0e30bd81" class="i property">Registered</a>.<a href="/Xamarin.Forms.Core/A.html#af776dc3bf4e03c2" class="i method">GetHandlerForObject</a>&lt;<a href="#31399c2e7660bf34" class="t t">IImageSourceHandler</a>&gt;(<span class="r10 r">source</span>)) != <b>null</b>)
+			{
+				<span class="t t">UIImage</span> <span id="r13 rd" class="r13 r">uiimage</span>;
+				<b>try</b>
+				{
+					<span class="r13 r">uiimage</span> = <b>await</b> <span class="r12 r">handler</span>.<a href="#affc040d634a63d1" class="i method">LoadImageAsync</a>(<span class="r10 r">source</span>, <span class="r14 r">scale</span>: (<b>float</b>)<span class="t t">UIScreen</span>.<span class="i property">MainScreen</span>.<span class="i property">Scale</span>);
+				}
+				<b>catch</b> (<a href="@0@mscorlib/A.html#a0a8b79c277cf327" class="t t">OperationCanceledException</a>)
+				{
+					<span class="r13 r">uiimage</span> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<a href="#a5dcfdf17e3f4fa4" class="i field">_isDisposed</a>)
+					<b>return</b>;
+ 
+				<b>var</b> <span id="r15 rd" class="r15 r">imageView</span> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>;
+				<b>if</b> (<span class="r15 r">imageView</span> != <b>null</b>)
+					<span class="r15 r">imageView</span>.<span class="i property">Image</span> = <span class="r13 r">uiimage</span>;
+ 
+				((<a href="/Xamarin.Forms.Core/A.html#d605b7264f63ff57" class="t t">IVisualElementController</a>)<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#b12b5140a1053cdd" class="i method">NativeSizeChanged</a>();
+			}
+			<b>else</b>
+			{
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Image</span> = <b>null</b>;
+			}
+ 
+			<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#f51cce94bd777fa3" class="i method">SetIsLoading</a>(<b>false</b>);
+		}
+ 
+		<b>void</b> <a id="a6a36dfc62ebf95f" href="../R/a6a36dfc62ebf95f.html" target="n" data-glyph="76,1" class="i method">SetOpacity</a>()
+		{
+			<b>if</b> (<a href="#a5dcfdf17e3f4fa4" class="i field">_isDisposed</a> || <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a> == <b>null</b> || <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Opaque</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ed08f3555e8f6370" class="i property">IsOpaque</a>;
+		}
+	}
+ 
+	<b>public interface</b> <a id="31399c2e7660bf34" href="../R/31399c2e7660bf34.html" target="n" data-glyph="48,0" class="t t">IImageSourceHandler</a> : <a href="/Xamarin.Forms.Core/A.html#7954845ad809eeba" class="t t">IRegisterable</a>
+	{
+		<a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<span class="t t">UIImage</span>&gt; <a id="affc040d634a63d1" href="../R/affc040d634a63d1.html" target="n" data-glyph="72,1" class="i method">LoadImageAsync</a>(<a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="t t">ImageSource</a> <span id="r16 rd" class="r16 r">imagesource</span>, <a href="@0@mscorlib/A.html#36b17ded8b1a228c" class="t t">CancellationToken</a> <span id="r17 rd" class="r17 r">cancelationToken</span> = <b>default</b>(<a href="@0@mscorlib/A.html#36b17ded8b1a228c" class="t t">CancellationToken</a>), <b>float</b> <span id="r14 rd" class="r14 r">scale</span> = 1);
+	}
+ 
+	<b>public sealed class</b> <a id="2fd216f1232e5be1" href="../R/2fd216f1232e5be1.html" target="n" data-glyph="0,0" class="t t"><span id="08732edb839a1226">FileImageSourceHandler</span></a> : <a href="#31399c2e7660bf34" class="t t">IImageSourceHandler</a>
+	{
+		<b>public</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<span class="t t">UIImage</span>&gt; <a id="491cf29d83c536cc" href="../R/491cf29d83c536cc.html" target="n" data-glyph="72,1" class="i method">LoadImageAsync</a>(<a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="t t">ImageSource</a> <span id="r18 rd" class="r18 r">imagesource</span>, <a href="@0@mscorlib/A.html#36b17ded8b1a228c" class="t t">CancellationToken</a> <span id="r19 rd" class="r19 r">cancelationToken</span> = <b>default</b>(<a href="@0@mscorlib/A.html#36b17ded8b1a228c" class="t t">CancellationToken</a>), <b>float</b> <span id="r20 rd" class="r20 r">scale</span> = 1f)
+		{
+			<span class="t t">UIImage</span> <span id="r21 rd" class="r21 r">image</span> = <b>null</b>;
+			<a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="k">var</a> <span id="r22 rd" class="r22 r">filesource</span> = <span class="r18 r">imagesource</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a>;
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r23 rd" class="r23 r">file</span> = <span class="r22 r">filesource</span>?.<a href="/Xamarin.Forms.Core/A.html#a7a7e7a7e3b9cdb3" class="i property">File</a>;
+			<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r23 r">file</span>))
+				<span class="r21 r">image</span> = <a href="@0@mscorlib/A.html#1c7421e464f67b7e" class="t t">File</a>.<a href="@0@mscorlib/A.html#3360368484a9f131" class="i method">Exists</a>(<span class="r23 r">file</span>) ? <b>new</b> <span class="t constructor">UIImage</span>(<span class="r23 r">file</span>) : <span class="t t">UIImage</span>.<span class="i method">FromBundle</span>(<span class="r23 r">file</span>);
+ 
+			<b>if</b> (<span class="r21 r">image</span> == <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#1776263ebad4afea" class="i method">Warning</a>(<b>nameof</b>(<a href="#2fd216f1232e5be1" class="t t">FileImageSourceHandler</a>), <span class="s">&quot;Could not find image: {0}&quot;</span>, <span class="r18 r">imagesource</span>);
+			}
+ 
+			<b>return</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a>.<a href="@0@mscorlib/A.html#11a386e7d7cae64a" class="i method">FromResult</a>(<span class="r21 r">image</span>);
+		}
+	}
+ 
+	<b>public sealed class</b> <a id="a99cbc1ed29ce601" href="../R/a99cbc1ed29ce601.html" target="n" data-glyph="0,0" class="t t"><span id="7062cdc6bd25e148">StreamImagesourceHandler</span></a> : <a href="#31399c2e7660bf34" class="t t">IImageSourceHandler</a>
+	{
+		<b>public async</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<span class="t t">UIImage</span>&gt; <a id="c74473b99aaaddcd" href="../R/c74473b99aaaddcd.html" target="n" data-glyph="72,1" class="i method">LoadImageAsync</a>(<a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="t t">ImageSource</a> <span id="r24 rd" class="r24 r">imagesource</span>, <a href="@0@mscorlib/A.html#36b17ded8b1a228c" class="t t">CancellationToken</a> <span id="r25 rd" class="r25 r">cancelationToken</span> = <b>default</b>(<a href="@0@mscorlib/A.html#36b17ded8b1a228c" class="t t">CancellationToken</a>), <b>float</b> <span id="r26 rd" class="r26 r">scale</span> = 1f)
+		{
+			<span class="t t">UIImage</span> <span id="r27 rd" class="r27 r">image</span> = <b>null</b>;
+			<a href="/Xamarin.Forms.Core/A.html#714e87519cce391d" class="k">var</a> <span id="r28 rd" class="r28 r">streamsource</span> = <span class="r24 r">imagesource</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#714e87519cce391d" class="t t">StreamImageSource</a>;
+			<b>if</b> (<span class="r28 r">streamsource</span>?.<a href="/Xamarin.Forms.Core/A.html#77ba82fc5b2b3198" class="i property">Stream</a> != <b>null</b>)
+			{
+				<b>using</b> (<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="k">var</a> <span id="r29 rd" class="r29 r">streamImage</span> = <b>await</b> ((<a href="/Xamarin.Forms.Core/A.html#b0d0a9e4400f0493" class="t t">IStreamImageSource</a>)<span class="r28 r">streamsource</span>).<a href="/Xamarin.Forms.Core/A.html#c7fb2263e8295ed1" class="i method">GetStreamAsync</a>(<span class="r25 r">cancelationToken</span>).<a href="@0@mscorlib/A.html#07ef75a8fa372c94" class="i method">ConfigureAwait</a>(<b>false</b>))
+				{
+					<b>if</b> (<span class="r29 r">streamImage</span> != <b>null</b>)
+						<span class="r27 r">image</span> = <span class="t t">UIImage</span>.<span class="i method">LoadFromData</span>(<span class="t t">NSData</span>.<span class="i method">FromStream</span>(<span class="r29 r">streamImage</span>), <span class="r26 r">scale</span>);
+				}
+			}
+ 
+			<b>if</b> (<span class="r27 r">image</span> == <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#1776263ebad4afea" class="i method">Warning</a>(<b>nameof</b>(<a href="#a99cbc1ed29ce601" class="t t">StreamImagesourceHandler</a>), <span class="s">&quot;Could not load image: {0}&quot;</span>, <span class="r28 r">streamsource</span>);
+			}
+ 
+			<b>return</b> <span class="r27 r">image</span>;
+		}
+	}
+ 
+	<b>public sealed class</b> <a id="747d8a36b886137c" href="../R/747d8a36b886137c.html" target="n" data-glyph="0,0" class="t t"><span id="78998640f51574d5">ImageLoaderSourceHandler</span></a> : <a href="#31399c2e7660bf34" class="t t">IImageSourceHandler</a>
+	{
+		<b>public async</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<span class="t t">UIImage</span>&gt; <a id="8a9c60f506a48cd8" href="../R/8a9c60f506a48cd8.html" target="n" data-glyph="72,1" class="i method">LoadImageAsync</a>(<a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="t t">ImageSource</a> <span id="r30 rd" class="r30 r">imagesource</span>, <a href="@0@mscorlib/A.html#36b17ded8b1a228c" class="t t">CancellationToken</a> <span id="r31 rd" class="r31 r">cancelationToken</span> = <b>default</b>(<a href="@0@mscorlib/A.html#36b17ded8b1a228c" class="t t">CancellationToken</a>), <b>float</b> <span id="r32 rd" class="r32 r">scale</span> = 1f)
+		{
+			<span class="t t">UIImage</span> <span id="r33 rd" class="r33 r">image</span> = <b>null</b>;
+			<a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="k">var</a> <span id="r34 rd" class="r34 r">imageLoader</span> = <span class="r30 r">imagesource</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="t t">UriImageSource</a>;
+			<b>if</b> (<span class="r34 r">imageLoader</span>?.<a href="/Xamarin.Forms.Core/A.html#081f21e8d9c61f56" class="i property">Uri</a> != <b>null</b>)
+			{
+				<b>using</b> (<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="k">var</a> <span id="r35 rd" class="r35 r">streamImage</span> = <b>await</b> <span class="r34 r">imageLoader</span>.<a href="/Xamarin.Forms.Core/A.html#6753618618a01e98" class="i method">GetStreamAsync</a>(<span class="r31 r">cancelationToken</span>).<a href="@0@mscorlib/A.html#07ef75a8fa372c94" class="i method">ConfigureAwait</a>(<b>false</b>))
+				{
+					<b>if</b> (<span class="r35 r">streamImage</span> != <b>null</b>)
+						<span class="r33 r">image</span> = <span class="t t">UIImage</span>.<span class="i method">LoadFromData</span>(<span class="t t">NSData</span>.<span class="i method">FromStream</span>(<span class="r35 r">streamImage</span>), <span class="r32 r">scale</span>);
+				}
+			}
+ 
+			<b>if</b> (<span class="r33 r">image</span> == <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#1776263ebad4afea" class="i method">Warning</a>(<b>nameof</b>(<a href="#747d8a36b886137c" class="t t">ImageLoaderSourceHandler</a>), <span class="s">&quot;Could not load image: {0}&quot;</span>, <span class="r34 r">imageLoader</span>);
+			}
+ 
+			<b>return</b> <span class="r33 r">image</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

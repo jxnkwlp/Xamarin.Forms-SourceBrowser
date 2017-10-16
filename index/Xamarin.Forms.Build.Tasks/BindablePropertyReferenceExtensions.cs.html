@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html><head><title>BindablePropertyReferenceExtensions.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(61);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/BindablePropertyReferenceExtensions.cs" target="_top">BindablePropertyReferenceExtensions.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+ 
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>;
+ 
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>
+{
+	<b>static class</b> <a id="c9e78c8dc3d3bf35" href="R/../../0000000000.html" target="n" data-glyph="2,0" class="t t">BindablePropertyReferenceExtensions</a>
+	{
+		<b>public static</b> <span class="i">TypeReference</span> <a id="f66f198213f2cfa4" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">GetBindablePropertyType</a>(<b>this</b> <span class="i">FieldReference</span> <span id="r0 rd" class="r0 r">bpRef</span>, <a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a> <span id="r1 rd" class="r1 r">iXmlLineInfo</span>, <span class="i">ModuleDefinition</span> <span id="r2 rd" class="r2 r">module</span>)
+		{
+			<b>if</b> (!<span class="r0 r">bpRef</span>.<span class="i">Name</span>.<span class="i">EndsWith</span>(<span class="s">&quot;Property&quot;</span>, <a href="@0@mscorlib/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@0@mscorlib/A.html#eb6ce9ac0dbf4269" class="i field">InvariantCulture</a>))
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">The name of the bindable property </span>{<span class="r0 r">bpRef</span>.<span class="i">Name</span>}<span class="s"> does not ends with \&quot;Property\&quot;. This is the kind of convention the world is build upon, a bit like Planck&#39;s constant.</span><span class="s">&quot;</span>, <span class="r1 r">iXmlLineInfo</span>);
+			<b>var</b> <span id="r3 rd" class="r3 r">bpName</span> = <span class="r0 r">bpRef</span>.<span class="i">Name</span>.<span class="i">Substring</span>(0, <span class="r0 r">bpRef</span>.<span class="i">Name</span>.<span class="i">Length</span> - 8);
+			<b>var</b> <span id="r4 rd" class="r4 r">owner</span> = <span class="r0 r">bpRef</span>.<span class="i">DeclaringType</span>;
+			<span class="i">TypeReference</span> <span id="r5 rd" class="r5 r">declaringTypeRef</span> = <b>null</b>;
+ 
+			<b>var</b> <span id="r6 rd" class="r6 r">getter</span> = <span class="r4 r">owner</span>.<span class="i">GetProperty</span>(<span id="r7 rd" class="r7 r">pd</span> =&gt; <span class="r7 r">pd</span>.<span class="i">Name</span> == <span class="r3 r">bpName</span>, <b>out</b> <span class="r5 r">declaringTypeRef</span>)?.<span class="i">GetMethod</span>;
+			<b>if</b> (<span class="r6 r">getter</span> == <b>null</b> || <span class="r6 r">getter</span>.<span class="i">IsStatic</span> || !<span class="r6 r">getter</span>.<span class="i">IsPublic</span>)
+				<span class="r6 r">getter</span> = <b>null</b>;
+			<span class="r6 r">getter</span> = <span class="r6 r">getter</span> ?? <span class="r4 r">owner</span>.<span class="i">GetMethods</span>(<span id="r8 rd" class="r8 r">md</span> =&gt; <span class="r8 r">md</span>.<span class="i">Name</span> == <span class="s">$&quot;</span><span class="s">Get</span>{<span class="r3 r">bpName</span>}<span class="s">&quot;</span> &amp;&amp;
+												<span class="r8 r">md</span>.<span class="i">IsStatic</span> &amp;&amp;
+												<span class="r8 r">md</span>.<span class="i">IsPublic</span> &amp;&amp;
+												<span class="r8 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 1 &amp;&amp;
+												<span class="r8 r">md</span>.<span class="i">Parameters</span>[0].<span class="i">ParameterType</span>.<span class="i">InheritsFromOrImplements</span>(<span class="r2 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a>))), <span class="r2 r">module</span>).<a href="@0@System.Core/A.html#9cd0418fc9042fbe" class="i method">SingleOrDefault</a>()?.<a href="@0@mscorlib/A.html#d1922db1cf9dcd03" class="i property">Item1</a>;
+			<b>if</b> (<span class="r6 r">getter</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Missing a public static Get</span>{<span class="r3 r">bpName</span>}<span class="s"> or a public instance property getter for the attached property \&quot;</span>{<span class="r0 r">bpRef</span>.<span class="i">DeclaringType</span>}<span class="s">.</span>{<span class="r0 r">bpRef</span>.<span class="i">Name</span>}<span class="s">\&quot;</span><span class="s">&quot;</span>, <span class="r1 r">iXmlLineInfo</span>);
+			<b>return</b> <span class="r6 r">getter</span>.<span class="i">ResolveGenericReturnType</span>(<span class="r5 r">declaringTypeRef</span>, <span class="r2 r">module</span>);
+		}
+ 
+		<b>public static</b> <span class="i">TypeReference</span> <a id="6a84e35ae6c1025e" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">GetBindablePropertyTypeConverter</a>(<b>this</b> <span class="i">FieldReference</span> <span id="r9 rd" class="r9 r">bpRef</span>, <span class="i">ModuleDefinition</span> <span id="r10 rd" class="r10 r">module</span>)
+		{
+			<span class="i">TypeReference</span> <span id="r11 rd" class="r11 r">propertyDeclaringType</span>;
+			<b>var</b> <span id="r12 rd" class="r12 r">owner</span> = <span class="r9 r">bpRef</span>.<span class="i">DeclaringType</span>;
+			<b>var</b> <span id="r13 rd" class="r13 r">bpName</span> = <span class="r9 r">bpRef</span>.<span class="i">Name</span>.<span class="i">EndsWith</span>(<span class="s">&quot;Property&quot;</span>, <a href="@0@mscorlib/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@0@mscorlib/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>) ? <span class="r9 r">bpRef</span>.<span class="i">Name</span>.<span class="i">Substring</span>(0, <span class="r9 r">bpRef</span>.<span class="i">Name</span>.<span class="i">Length</span> - 8) : <span class="r9 r">bpRef</span>.<span class="i">Name</span>;
+			<b>var</b> <span id="r14 rd" class="r14 r">property</span> = <span class="r12 r">owner</span>.<span class="i">GetProperty</span>(<span id="r15 rd" class="r15 r">pd</span> =&gt; <span class="r15 r">pd</span>.<span class="i">Name</span> == <span class="r13 r">bpName</span>, <b>out</b> <span class="r11 r">propertyDeclaringType</span>);
+			<b>var</b> <span id="r16 rd" class="r16 r">propertyType</span> = <span class="r14 r">property</span>?.<a href="PropertyDefinitionExtensions.cs.html#a62e10c2a0987606" class="i method">ResolveGenericPropertyType</a>(<span class="r11 r">propertyDeclaringType</span>, <span class="r10 r">module</span>);
+			<b>var</b> <span id="r17 rd" class="r17 r">staticGetter</span> = <span class="r12 r">owner</span>.<span class="i">GetMethods</span>(<span id="r18 rd" class="r18 r">md</span> =&gt; <span class="r18 r">md</span>.<span class="i">Name</span> == <span class="s">$&quot;</span><span class="s">Get</span>{<span class="r13 r">bpName</span>}<span class="s">&quot;</span> &amp;&amp;
+												<span class="r18 r">md</span>.<span class="i">IsStatic</span> &amp;&amp;
+												<span class="r18 r">md</span>.<span class="i">IsPublic</span> &amp;&amp;
+												<span class="r18 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 1 &amp;&amp;
+												<span class="r18 r">md</span>.<span class="i">Parameters</span>[0].<span class="i">ParameterType</span>.<span class="i">InheritsFromOrImplements</span>(<span class="r10 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a>))), <span class="r10 r">module</span>).<a href="@0@System.Core/A.html#9cd0418fc9042fbe" class="i method">SingleOrDefault</a>()?.<a href="@0@mscorlib/A.html#d1922db1cf9dcd03" class="i property">Item1</a>;
+ 
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r19 rd" class="r19 r">attributes</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i">CustomAttribute</span>&gt;();
+			<b>if</b> (<span class="r14 r">property</span> != <b>null</b> &amp;&amp; <span class="r14 r">property</span>.<span class="i">HasCustomAttributes</span>)
+				<span class="r19 r">attributes</span>.<span class="i">AddRange</span>(<span class="r14 r">property</span>.<span class="i">CustomAttributes</span>);
+			<b>if</b> (<span class="r16 r">propertyType</span> != <b>null</b> &amp;&amp; <span class="r16 r">propertyType</span>.<span class="i">Resolve</span>().<span class="i">HasCustomAttributes</span>)
+				<span class="r19 r">attributes</span>.<span class="i">AddRange</span>(<span class="r16 r">propertyType</span>.<span class="i">Resolve</span>().<span class="i">CustomAttributes</span>);
+			<b>if</b> (<span class="r17 r">staticGetter</span> != <b>null</b> &amp;&amp; <span class="r17 r">staticGetter</span>.<span class="i">HasCustomAttributes</span>)
+				<span class="r19 r">attributes</span>.<span class="i">AddRange</span>(<span class="r17 r">staticGetter</span>.<span class="i">CustomAttributes</span>);
+			<b>if</b> (<span class="r17 r">staticGetter</span> != <b>null</b> &amp;&amp; <span class="r17 r">staticGetter</span>.<span class="i">ReturnType</span>.<span class="i">Resolve</span>().<span class="i">HasCustomAttributes</span>)
+				<span class="r19 r">attributes</span>.<span class="i">AddRange</span>(<span class="r17 r">staticGetter</span>.<span class="i">ReturnType</span>.<span class="i">Resolve</span>().<span class="i">CustomAttributes</span>);
+ 
+			<b>return</b> <span class="r19 r">attributes</span>.<a href="@0@System.Core/A.html#b7e5965cab68b1cf" class="i method">FirstOrDefault</a>(<span id="r20 rd" class="r20 r">cad</span> =&gt; <a href="/Xamarin.Forms.Core/A.html#214107ffee4f0359" class="t t">TypeConverterAttribute</a>.<a href="/Xamarin.Forms.Core/A.html#042fa2175542ffdd" class="i field">TypeConvertersType</a>.<span class="i">Contains</span>(<span class="r20 r">cad</span>.<span class="i">AttributeType</span>.<span class="i">FullName</span>))?.<span class="i">ConstructorArguments</span> [0].<span class="i">Value</span> <b>as</b> <span class="i">TypeReference</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

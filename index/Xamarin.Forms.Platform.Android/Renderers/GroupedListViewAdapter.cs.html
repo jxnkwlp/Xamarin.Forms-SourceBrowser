@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html><head><title>GroupedListViewAdapter.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(83);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Renderers/GroupedListViewAdapter.cs" target="_top">Renderers\GroupedListViewAdapter.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Widget</span>;
+<b>using</b> <span class="i">AListView</span> = <span class="i">Android</span>.<span class="i">Widget</span>.<span class="i">ListView</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+ 
+	<b>internal class</b> <a id="41c5e1d1861925a7" href="../R/../../0000000000.html" target="n" data-glyph="2,0" class="t t">GroupedListViewAdapter</a> : <a href="ListViewAdapter.cs.html#b87f4edfd60d1b0d" class="t t">ListViewAdapter</a>, <span class="i">ISectionIndexer</span>
+	{
+		<b>class</b> <a id="f22d30f0158887dc" href="../R/f22d30f0158887dc.html" target="n" data-glyph="4,1" class="t t"><span id="58feab1db4d0d366">SectionData</span></a>
+		{
+			<b>public int</b> <a id="7f483f3c865eb132" href="../R/7f483f3c865eb132.html" target="n" data-glyph="102,2" class="i property">Index</a> { <b>get</b>; <b>set</b>; }
+			<b>public int</b> <a id="40988f4c87d5e856" href="../R/40988f4c87d5e856.html" target="n" data-glyph="102,2" class="i property">Length</a> { <b>get</b>; <b>set</b>; }
+			<b>public int</b> <a id="66e13c00aac6c5a5" href="../R/66e13c00aac6c5a5.html" target="n" data-glyph="102,2" class="i property">Start</a> { <b>get</b>; <b>set</b>; }
+			<b>public int</b> <a id="6310ea515cd4a86b" href="../R/6310ea515cd4a86b.html" target="n" data-glyph="102,2" class="i property">End</a> =&gt; <a href="#66e13c00aac6c5a5" class="i property">Start</a> + <a href="#40988f4c87d5e856" class="i property">Length</a>;
+		}
+		<b>public</b> <a id="9b9878f4c1202359" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">GroupedListViewAdapter</a>(<span class="i">Context</span> <span id="r0 rd" class="r0 r">context</span>, <span class="i">AListView</span> <span id="r1 rd" class="r1 r">realListView</span>, <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a> <span id="r2 rd" class="r2 r">listView</span>) : <a href="ListViewAdapter.cs.html#68f680272636384d" class="k">base</a>(<span class="r0 r">context</span>, <span class="r1 r">realListView</span>, <span class="r2 r">listView</span>)
+		{
+ 
+		}
+		<b>bool</b> <a id="3d2b0a3ca77bb7bd" href="../R/3d2b0a3ca77bb7bd.html" target="n" data-glyph="46,1" class="i field">sectionDataValid</a> = <b>false</b>;
+ 
+		<a href="#f22d30f0158887dc" class="t t">SectionData</a>[] <a id="40e0e49ddc03b8fc" href="../R/40e0e49ddc03b8fc.html" target="n" data-glyph="46,1" class="i field">Sections</a>;
+		<span class="i n">Java</span>.<span class="i">Lang</span>.<span class="i">Object</span>[] <a id="ce1472cbd35f0520" href="../R/ce1472cbd35f0520.html" target="n" data-glyph="46,1" class="i field">nativeSections</a>;
+		<b>public int</b> <a id="fcca5e5b5a4319a4" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetPositionForSection</a>(<b>int</b> <span id="r3 rd" class="r3 r">sectionIndex</span>)
+		{
+			<a href="#6ba29177e12e5624" class="i method">ValidateSectionData</a>();
+			<b>return</b> <a href="#40e0e49ddc03b8fc" class="i field">Sections</a>[<span class="r3 r">sectionIndex</span>].<a href="#66e13c00aac6c5a5" class="i property">Start</a>;
+		}
+ 
+		<b>public int</b> <a id="1b965610a70b3150" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetSectionForPosition</a>(<b>int</b> <span id="r4 rd" class="r4 r">position</span>)
+		{
+			<a href="#6ba29177e12e5624" class="i method">ValidateSectionData</a>();
+			<b>foreach</b> (<a href="#f22d30f0158887dc" class="k">var</a> <span id="r5 rd" class="r5 r">section</span> <b>in</b> <a href="#40e0e49ddc03b8fc" class="i field">Sections</a>)
+			{
+				<b>if</b> (<span class="r5 r">section</span>.<a href="#66e13c00aac6c5a5" class="i property">Start</a> &gt;= <span class="r4 r">position</span> &amp;&amp; <span class="r5 r">section</span>.<a href="#6310ea515cd4a86b" class="i property">End</a> &lt;= <span class="r4 r">position</span>)
+					<b>return</b> <span class="r5 r">section</span>.<a href="#7f483f3c865eb132" class="i property">Index</a>;
+			}
+			<b>return</b> 0;
+		}
+ 
+		<b>public</b> <span class="i n">Java</span>.<span class="i">Lang</span>.<span class="i">Object</span>[] <a id="d79eb1f58861d82f" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetSections</a>()
+		{
+			<a href="#6ba29177e12e5624" class="i method">ValidateSectionData</a>();
+			<b>return</b> <a href="#ce1472cbd35f0520" class="i field">nativeSections</a>;
+		}
+ 
+		<b>void</b> <a id="6ba29177e12e5624" href="../R/6ba29177e12e5624.html" target="n" data-glyph="76,1" class="i method">ValidateSectionData</a>()
+		{
+			<b>if</b> (<a href="#3d2b0a3ca77bb7bd" class="i field">sectionDataValid</a>)
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r6 rd" class="r6 r">templatedItems</span> = <a href="ListViewAdapter.cs.html#c031c4a6b8882eb9" class="i property">TemplatedItemsView</a>.<a href="/Xamarin.Forms.Core/A.html#5c03fae343562417" class="i property">TemplatedItems</a>;
+			<b>int</b> <span id="r7 rd" class="r7 r">count</span> = 0;
+ 
+			<b>var</b> <span id="r8 rd" class="r8 r">sectionData</span> = <b>new</b> <span class="i">List</span>&lt;<a href="#f22d30f0158887dc" class="t t">SectionData</a>&gt;();
+			<b>for</b> (<b>var</b> <span id="r9 rd" class="r9 r">i</span> = 0; <span class="r9 r">i</span> &lt; <span class="r6 r">templatedItems</span>.<span class="i">Count</span>; <span class="r9 r">i</span>++)
+			{
+				<b>var</b> <span id="r10 rd" class="r10 r">groupCount</span> = <span class="r6 r">templatedItems</span>.<span class="i">GetGroup</span>(<span class="r9 r">i</span>).<span class="i">Count</span>;
+				<span class="r8 r">sectionData</span>.<span class="i">Add</span>(<b>new</b> <a href="#f22d30f0158887dc" class="t constructor">SectionData</a> { <a href="#7f483f3c865eb132" class="i property">Index</a> = <span class="r9 r">i</span>, <a href="#40988f4c87d5e856" class="i property">Length</a> = <span class="r10 r">groupCount</span>, <a href="#66e13c00aac6c5a5" class="i property">Start</a> = <span class="r7 r">count</span> });
+				<span class="r7 r">count</span> += <span class="r10 r">groupCount</span>;
+			}
+			<a href="#40e0e49ddc03b8fc" class="i field">Sections</a> = <span class="r8 r">sectionData</span>.<span class="i">ToArray</span>();
+ 
+			<b>var</b> <span id="r11 rd" class="r11 r">shortNames</span> = <span class="r6 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#698b3d0a651f405a" class="i property">ShortNames</a>;
+			<b>if</b> (<span class="r11 r">shortNames</span> != <b>null</b>)
+			{
+				<a href="#ce1472cbd35f0520" class="i field">nativeSections</a> = <span class="r11 r">shortNames</span>.<span class="i">Select</span>(<span id="r12 rd" class="r12 r">x</span> =&gt; <b>new</b> <span class="i n">Java</span>.<span class="i">Lang</span>.<span class="i">String</span>(<span class="r12 r">x</span>)).<span class="i">ToArray</span>();
+			}
+			<a href="#3d2b0a3ca77bb7bd" class="i field">sectionDataValid</a> = <b>true</b>;
+		}
+ 
+		<b>protected override void</b> <a id="8769e13996d5b1c5" href="../R/8769e13996d5b1c5.html" target="n" data-glyph="75,1" class="i method">InvalidateCount</a>()
+		{
+			<a href="ListViewAdapter.cs.html#b87f4edfd60d1b0d" class="k">base</a>.<a href="ListViewAdapter.cs.html#8cdf734c44cd57a3" class="i method">InvalidateCount</a>();
+			<a href="#3d2b0a3ca77bb7bd" class="i field">sectionDataValid</a> = <b>false</b>;
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

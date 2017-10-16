@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html><head><title>NativeEventWrapper.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(47);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.WinRT/NativeEventWrapper.cs" target="_top">NativeEventWrapper.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.WinRT" target="_top">Xamarin.Forms.Platform.WinRT\Xamarin.Forms.Platform.WinRT.csproj</a> (Xamarin.Forms.Platform.WinRT)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Runtime</span>.<span class="i n">InteropServices</span>.<span class="i n">WindowsRuntime</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">namespace Xamarin.Forms.Platform.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>class</b> <a id="6e41b3c907eea4b9" href="R/6e41b3c907eea4b9.html" target="n" data-glyph="2,0" class="t t">NativeEventWrapper</a> : <span class="t t">INotifyPropertyChanged</span>
+	{
+		<b>static string</b> <a id="b4acc0d8529799ef" href="R/b4acc0d8529799ef.html" target="n" data-glyph="106,1" class="i property">TargetProperty</a> { <b>get</b>; <b>set</b>; }
+		<b>static readonly</b> <span class="t t">MethodInfo</span> <a id="02e66de7e781fc32" href="R/02e66de7e781fc32.html" target="n" data-glyph="46,1" class="i field">s_handlerinfo</a> = <b>typeof</b>(<a href="#6e41b3c907eea4b9" class="t t">NativeEventWrapper</a>).<span class="i method">GetRuntimeMethods</span>().<span class="i method">Single</span>(<span id="r0 rd" class="r0 r">mi</span> =&gt; <span class="r0 r">mi</span>.<span class="i property">Name</span> == <b>nameof</b>(<span class="i">OnPropertyChanged</span>) &amp;&amp; <span class="r0 r">mi</span>.<span class="i property">IsPublic</span> == <b>false</b>);
+ 
+		<b>public</b> <a id="075d7d6161ec827f" href="R/075d7d6161ec827f.html" target="n" data-glyph="72,1" class="i constructor">NativeEventWrapper</a>(<b>object</b> <span id="r1 rd" class="r1 r">target</span>, <b>string</b> <span id="r2 rd" class="r2 r">targetProperty</span>, <b>string</b> <span id="r3 rd" class="r3 r">updateSourceEventName</span>)
+		{
+			<a href="#b4acc0d8529799ef" class="i property">TargetProperty</a> = <span class="r2 r">targetProperty</span>;
+			<b>try</b> {
+				<b>var</b> <span id="r4 rd" class="r4 r">updateSourceEvent</span> = <span class="r1 r">target</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetRuntimeEvent</span>(<span class="r3 r">updateSourceEventName</span>);
+				<span class="t t">MethodInfo</span> <span id="r5 rd" class="r5 r">addMethod</span> = <span class="r4 r">updateSourceEvent</span>.<span class="i property">AddMethod</span>;
+				<span class="t t">MethodInfo</span> <span id="r6 rd" class="r6 r">removeMethod</span> = <span class="r4 r">updateSourceEvent</span>.<span class="i property">RemoveMethod</span>;
+				<span class="t t">ParameterInfo</span>[] <span id="r7 rd" class="r7 r">addParameters</span> = <span class="r5 r">addMethod</span>.<span class="i method">GetParameters</span>();
+				<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r8 rd" class="r8 r">delegateType</span> = <span class="r7 r">addParameters</span>[0].<span class="i property">ParameterType</span>;
+				<a href="@1@System.Runtime/A.html#0dd8585ba1833ad7" class="k">var</a> <span id="r9 rd" class="r9 r">handlerDelegate</span> = <a href="#02e66de7e781fc32" class="i field">s_handlerinfo</a>.<span class="i method">CreateDelegate</span>(<span class="r8 r">delegateType</span>, <a href="#6e41b3c907eea4b9" class="k">this</a>);
+				<a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>object</b>, <span class="t t">EventRegistrationToken</span>&gt; <span id="r10 rd" class="r10 r">add</span> = <span id="r11 rd" class="r11 r">a</span> =&gt; (<span class="t t">EventRegistrationToken</span>)<span class="r5 r">addMethod</span>.<span class="i method">Invoke</span>(<span class="r1 r">target</span>, <b>new</b> <b>object</b>[] { <span class="r9 r">handlerDelegate</span> });
+				<a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="t t">EventRegistrationToken</span>&gt; <span id="r12 rd" class="r12 r">remove</span> = <span id="r13 rd" class="r13 r">t</span> =&gt; <span class="r6 r">removeMethod</span>.<span class="i method">Invoke</span>(<span class="r1 r">target</span>, <b>new</b> <b>object</b>[] { <span class="r13 r">t</span> });
+				<span class="t t">WindowsRuntimeMarshal</span>.<span class="i method">AddEventHandler</span>(<span class="r10 r">add</span>, <span class="r12 r">remove</span>, <a href="#02e66de7e781fc32" class="i field">s_handlerinfo</a>);
+			}
+			<b>catch</b> (<a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a>) {
+				<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#6ed81695ef8a87b6" class="i method">Warning</a>(<b>nameof</b>(<a href="#6e41b3c907eea4b9" class="t t">NativeEventWrapper</a>), <span class="s">&quot;Can not attach NativeEventWrapper.&quot;</span>);
+			}
+		}
+ 
+		<b>void</b> <a id="f076b8a122b2d279" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnPropertyChanged</a>(<b>object</b> <span id="r14 rd" class="r14 r">sender</span>, <span class="t t">RoutedEventArgs</span> <span id="r15 rd" class="r15 r">e</span>)
+		{
+			<a href="#2117e7497a700c94" class="i">PropertyChanged</a>?.<span class="i method">Invoke</span>(<span class="r14 r">sender</span>, <b>new</b> <span class="t constructor">PropertyChangedEventArgs</span>(<a href="#b4acc0d8529799ef" class="i property">TargetProperty</a>));
+		}
+ 
+		<b>public event</b> <span class="t t">PropertyChangedEventHandler</span> <a id="2117e7497a700c94" href="R/2117e7497a700c94.html" target="n" data-glyph="30,1" class="i">PropertyChanged</a>;
+	}
+}
+</pre></td></tr></table></div></body></html>

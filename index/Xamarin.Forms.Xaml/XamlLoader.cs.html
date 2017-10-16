@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html><head><title>XamlLoader.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(278);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Xaml/XamlLoader.cs" target="_top">XamlLoader.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Xaml" target="_top">Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj</a> (Xamarin.Forms.Xaml)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<span class="c">//</span>
+<span class="c">// XamlLoader.cs</span>
+<span class="c">//</span>
+<span class="c">// Author:</span>
+<span class="c">//       Stephane Delcroix &lt;stephane@mi8.be&gt;</span>
+<span class="c">//</span>
+<span class="c">// Copyright (c) 2013 Mobile Inception</span>
+<span class="c">// Copyright (c) 2013-2014 Xamarin, Inc</span>
+<span class="c">//</span>
+<span class="c">// Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c">// of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c">// in the Software without restriction, including without limitation the rights</span>
+<span class="c">// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c">// copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c">// furnished to do so, subject to the following conditions:</span>
+<span class="c">//</span>
+<span class="c">// The above copyright notice and this permission notice shall be included in</span>
+<span class="c">// all copies or substantial portions of the Software.</span>
+<span class="c">//</span>
+<span class="c">// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c">// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c">// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c">// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c">// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c">// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span class="c">// THE SOFTWARE.</span>
+ 
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>.<span class="i n">Internals</span>
+{
+	[<a href="@1@System.Runtime/A.html#66ed4e142f4e14e7" class="t constructor">Obsolete</a> (<span class="s">&quot;Replaced by ResourceLoader&quot;</span>)]
+	<b>public static class</b> <a id="c71dcfa4049952d5" href="R/c71dcfa4049952d5.html" target="n" data-glyph="0,0" class="t t">XamlLoader</a>
+	{
+		<b>static</b> <a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <b>string</b>&gt; <a id="d13b4052d0a5ab6f" href="R/d13b4052d0a5ab6f.html" target="n" data-glyph="46,1" class="i field">xamlFileProvider</a>;
+ 
+		<b>public static</b> <a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <b>string</b>&gt; <a id="83db1e279ea9f8aa" href="R/83db1e279ea9f8aa.html" target="n" data-glyph="102,1" class="i property">XamlFileProvider</a> {
+			<b>get</b> { <b>return</b> <a href="#d13b4052d0a5ab6f" class="i field">xamlFileProvider</a>; }
+			<b>internal set</b> {
+				<a href="#d13b4052d0a5ab6f" class="i field">xamlFileProvider</a> = <b>value</b>;
+				<span class="c">//¯\_(ツ)_/¯ the previewer forgot to set that bool</span>
+				<a href="#5569dafda46dc891" class="i property">DoNotThrowOnExceptions</a> = <b>value</b> != <b>null</b>;
+			}
+		}
+ 
+		<b>internal static bool</b> <a id="5569dafda46dc891" href="R/5569dafda46dc891.html" target="n" data-glyph="104,1" class="i property">DoNotThrowOnExceptions</a> { <b>get</b>; <b>set</b>; }
+	}
+}
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>
+{
+	<b>static class</b> <a id="7971f26b0b433914" href="R/7971f26b0b433914.html" target="n" data-glyph="2,0" class="t t">XamlLoader</a>
+	{
+		<b>static readonly</b> <a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <b>string</b>&gt; <a id="64a22adde9041ecb" href="R/64a22adde9041ecb.html" target="n" data-glyph="46,1" class="i field">XamlResources</a> = <b>new</b> <a href="@1@System.Collections/A.html#bf6849e410b43c4c" class="t constructor">Dictionary</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <b>string</b>&gt;();
+ 
+		<b>public static void</b> <a id="40460025097d4f47" href="R/40460025097d4f47.html" target="n" data-glyph="72,1" class="i method">Load</a>(<b>object</b> <span id="r0 rd" class="r0 r">view</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r1 rd" class="r1 r">callingType</span>)
+		{
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r2 rd" class="r2 r">xaml</span> = <a href="#c8696d581d8a50a0" class="i method">GetXamlForType</a>(<span class="r1 r">callingType</span>);
+			<b>if</b> (<b>string</b>.<a href="@1@System.Runtime/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r2 r">xaml</span>))
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<b>string</b>.<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;No embeddedresource found for {0}&quot;</span>, <span class="r1 r">callingType</span>), <b>new</b> <a href="/Xamarin.Forms.Core/A.html#6bd51fe48cf6e68a" class="t constructor">XmlLineInfo</a>());
+			<a href="#89fc830f39035025" class="i method">Load</a>(<span class="r0 r">view</span>, <span class="r2 r">xaml</span>);
+		}
+ 
+		<b>public static void</b> <a id="89fc830f39035025" href="R/89fc830f39035025.html" target="n" data-glyph="72,1" class="i method">Load</a>(<b>object</b> <span id="r3 rd" class="r3 r">view</span>, <b>string</b> <span id="r4 rd" class="r4 r">xaml</span>)
+		{
+			<b>using</b> (<b>var</b> <span id="r5 rd" class="r5 r">textReader</span> = <b>new</b> <span class="t constructor">StringReader</span>(<span class="r4 r">xaml</span>))
+			<b>using</b> (<b>var</b> <span id="r6 rd" class="r6 r">reader</span> = <span class="t t">XmlReader</span>.<span class="i method">Create</span>(<span class="r5 r">textReader</span>))
+			{
+				<b>while</b> (<span class="r6 r">reader</span>.<span class="i method">Read</span>())
+				{
+					<span class="c">//Skip until element</span>
+					<b>if</b> (<span class="r6 r">reader</span>.<span class="i property">NodeType</span> == <span class="t t">XmlNodeType</span>.<span class="i field">Whitespace</span>)
+						<b>continue</b>;
+					<b>if</b> (<span class="r6 r">reader</span>.<span class="i property">NodeType</span> != <span class="t t">XmlNodeType</span>.<span class="i field">Element</span>)
+					{
+						<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">&quot;Unhandled node {0} {1} {2}&quot;</span>, <span class="r6 r">reader</span>.<span class="i property">NodeType</span>, <span class="r6 r">reader</span>.<span class="i property">Name</span>, <span class="r6 r">reader</span>.<span class="i property">Value</span>);
+						<b>continue</b>;
+					}
+ 
+					<a href="#96b692eafc6667a6" class="k">var</a> <span id="r7 rd" class="r7 r">rootnode</span> = <b>new</b> <a href="#19c193839b9bd9bf" class="t constructor">RuntimeRootNode</a> (<b>new</b> <a href="XamlNode.cs.html#0a1740224b8aaa73" class="t constructor">XmlType</a> (<span class="r6 r">reader</span>.<span class="i property">NamespaceURI</span>, <span class="r6 r">reader</span>.<span class="i property">Name</span>, <b>null</b>), <span class="r3 r">view</span>, (<span class="t t">IXmlNamespaceResolver</span>)<span class="r6 r">reader</span>);
+					<a href="XamlParser.cs.html#761f9f93317ccb07" class="t t">XamlParser</a>.<a href="XamlParser.cs.html#49674a818223323d" class="i method">ParseXaml</a> (<span class="r7 r">rootnode</span>, <span class="r6 r">reader</span>);
+					<a href="#076f764ad6aff0ed" class="i method">Visit</a> (<span class="r7 r">rootnode</span>, <b>new</b> <a href="HydrationContext.cs.html#33c446a3c8eb3153" class="t constructor">HydrationContext</a> {
+						<a href="HydrationContext.cs.html#85e0c98e31a53ea0" class="i property">RootElement</a> = <span class="r3 r">view</span>,
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 0618
+						<a href="HydrationContext.cs.html#68d8b9058bd97698" class="i property">ExceptionHandler</a> = <a href="/Xamarin.Forms.Core/A.html#b4dfcc2b236d937a" class="t t">ResourceLoader</a>.<a href="/Xamarin.Forms.Core/A.html#2ff1c7b8dfd741b7" class="i property">ExceptionHandler</a> ?? (<span class="i n">Internals</span>.<a href="#c71dcfa4049952d5" class="t t">XamlLoader</a>.<a href="#5569dafda46dc891" class="i property">DoNotThrowOnExceptions</a> ? <span id="r8 rd" class="r8 r">e</span> =&gt; { }: (<a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a>&gt;)<b>null</b>)
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 0618
+					});
+					<b>break</b>;
+				}
+			}
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#66ed4e142f4e14e7" class="t constructor">Obsolete</a> (<span class="s">&quot;Use the XamlFileProvider to provide xaml files. We will remove this when Cycle 8 hits Stable.&quot;</span>)]
+		<b>public static object</b> <a id="b4b123ac5e26bdfe" href="R/b4b123ac5e26bdfe.html" target="n" data-glyph="72,1" class="i method">Create</a> (<b>string</b> <span id="r9 rd" class="r9 r">xaml</span>, <b>bool</b> <span id="r10 rd" class="r10 r">doNotThrow</span> = <b>false</b>)
+		{
+			<b>object</b> <span id="r11 rd" class="r11 r">inflatedView</span> = <b>null</b>;
+			<b>using</b> (<b>var</b> <span id="r12 rd" class="r12 r">textreader</span> = <b>new</b> <span class="t constructor">StringReader</span>(<span class="r9 r">xaml</span>))
+			<b>using</b> (<b>var</b> <span id="r13 rd" class="r13 r">reader</span> = <span class="t t">XmlReader</span>.<span class="i method">Create</span> (<span class="r12 r">textreader</span>)) {
+				<b>while</b> (<span class="r13 r">reader</span>.<span class="i method">Read</span> ()) {
+					<span class="c">//Skip until element</span>
+					<b>if</b> (<span class="r13 r">reader</span>.<span class="i property">NodeType</span> == <span class="t t">XmlNodeType</span>.<span class="i field">Whitespace</span>)
+						<b>continue</b>;
+					<b>if</b> (<span class="r13 r">reader</span>.<span class="i property">NodeType</span> != <span class="t t">XmlNodeType</span>.<span class="i field">Element</span>) {
+						<span class="t t">Debug</span>.<span class="i method">WriteLine</span> (<span class="s">&quot;Unhandled node {0} {1} {2}&quot;</span>, <span class="r13 r">reader</span>.<span class="i property">NodeType</span>, <span class="r13 r">reader</span>.<span class="i property">Name</span>, <span class="r13 r">reader</span>.<span class="i property">Value</span>);
+						<b>continue</b>;
+					}
+ 
+					<a href="#96b692eafc6667a6" class="k">var</a> <span id="r14 rd" class="r14 r">rootnode</span> = <b>new</b> <a href="#19c193839b9bd9bf" class="t constructor">RuntimeRootNode</a> (<b>new</b> <a href="XamlNode.cs.html#0a1740224b8aaa73" class="t constructor">XmlType</a> (<span class="r13 r">reader</span>.<span class="i property">NamespaceURI</span>, <span class="r13 r">reader</span>.<span class="i property">Name</span>, <b>null</b>), <b>null</b>, (<span class="t t">IXmlNamespaceResolver</span>)<span class="r13 r">reader</span>);
+					<a href="XamlParser.cs.html#761f9f93317ccb07" class="t t">XamlParser</a>.<a href="XamlParser.cs.html#49674a818223323d" class="i method">ParseXaml</a> (<span class="r14 r">rootnode</span>, <span class="r13 r">reader</span>);
+					<a href="HydrationContext.cs.html#30eb9f712f99d66c" class="k">var</a> <span id="r15 rd" class="r15 r">visitorContext</span> = <b>new</b> <a href="HydrationContext.cs.html#33c446a3c8eb3153" class="t constructor">HydrationContext</a> {
+						<a href="HydrationContext.cs.html#68d8b9058bd97698" class="i property">ExceptionHandler</a> = <span class="r10 r">doNotThrow</span> ? <span id="r16 rd" class="r16 r">e</span> =&gt; { } : (<a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a>&gt;)<b>null</b>,
+					};
+					<a href="CreateValuesVisitor.cs.html#c3206fff12b944ab" class="k">var</a> <span id="r17 rd" class="r17 r">cvv</span> = <b>new</b> <a href="CreateValuesVisitor.cs.html#347bbc7ebd23b0a3" class="t constructor">CreateValuesVisitor</a> (<span class="r15 r">visitorContext</span>);
+					<span class="r17 r">cvv</span>.<a href="CreateValuesVisitor.cs.html#a91bebc2f14f5c66" class="i method">Visit</a> ((<a href="XamlNode.cs.html#6162566191bf011a" class="t t">ElementNode</a>)<span class="r14 r">rootnode</span>, <b>null</b>);
+					<span class="r11 r">inflatedView</span> = <span class="r14 r">rootnode</span>.<a href="#370b1b0a9734c6e9" class="i property">Root</a> = <span class="r15 r">visitorContext</span>.<a href="HydrationContext.cs.html#f7f6ecfaaac2a343" class="i property">Values</a> [<span class="r14 r">rootnode</span>];
+					<span class="r15 r">visitorContext</span>.<a href="HydrationContext.cs.html#85e0c98e31a53ea0" class="i property">RootElement</a> = <span class="r11 r">inflatedView</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a>;
+ 
+					<a href="#076f764ad6aff0ed" class="i method">Visit</a> (<span class="r14 r">rootnode</span>, <span class="r15 r">visitorContext</span>);
+					<b>break</b>;
+				}
+			}
+			<b>return</b> <span class="r11 r">inflatedView</span>;
+		}
+ 
+		<b>static void</b> <a id="076f764ad6aff0ed" href="R/076f764ad6aff0ed.html" target="n" data-glyph="76,1" class="i method">Visit</a> (<a href="XamlNode.cs.html#539c4bdaedfa22a3" class="t t">RootNode</a> <span id="r18 rd" class="r18 r">rootnode</span>, <a href="HydrationContext.cs.html#30eb9f712f99d66c" class="t t">HydrationContext</a> <span id="r19 rd" class="r19 r">visitorContext</span>)
+		{
+			<span class="r18 r">rootnode</span>.<a href="XamlNode.cs.html#0217a7327e7006f0" class="i method">Accept</a> (<b>new</b> <a href="XamlNodeVisitor.cs.html#80c30157d20236c0" class="t constructor">XamlNodeVisitor</a> ((<span id="r20 rd" class="r20 r">node</span>, <span id="r21 rd" class="r21 r">parent</span>) =&gt; <span class="r20 r">node</span>.<a href="XamlNode.cs.html#aaa082f00606354b" class="i property">Parent</a> = <span class="r21 r">parent</span>), <b>null</b>); <span class="c">//set parents for {StaticResource}</span>
+			<span class="r18 r">rootnode</span>.<a href="XamlNode.cs.html#0217a7327e7006f0" class="i method">Accept</a> (<b>new</b> <a href="ExpandMarkupsVisitor.cs.html#49fafd4fcff73ddd" class="t constructor">ExpandMarkupsVisitor</a> (<span class="r19 r">visitorContext</span>), <b>null</b>);
+			<span class="r18 r">rootnode</span>.<a href="XamlNode.cs.html#0217a7327e7006f0" class="i method">Accept</a> (<b>new</b> <a href="PruneIgnoredNodesVisitor.cs.html#d655f686b8f9bd95" class="t constructor">PruneIgnoredNodesVisitor</a>(), <b>null</b>);
+			<span class="r18 r">rootnode</span>.<a href="XamlNode.cs.html#0217a7327e7006f0" class="i method">Accept</a> (<b>new</b> <a href="NamescopingVisitor.cs.html#6defbe3bef4ab1a3" class="t constructor">NamescopingVisitor</a> (<span class="r19 r">visitorContext</span>), <b>null</b>); <span class="c">//set namescopes for {x:Reference}</span>
+			<span class="r18 r">rootnode</span>.<a href="XamlNode.cs.html#0217a7327e7006f0" class="i method">Accept</a> (<b>new</b> <a href="CreateValuesVisitor.cs.html#347bbc7ebd23b0a3" class="t constructor">CreateValuesVisitor</a> (<span class="r19 r">visitorContext</span>), <b>null</b>);
+			<span class="r18 r">rootnode</span>.<a href="XamlNode.cs.html#0217a7327e7006f0" class="i method">Accept</a> (<b>new</b> <a href="RegisterXNamesVisitor.cs.html#0119270b2ad477a0" class="t constructor">RegisterXNamesVisitor</a> (<span class="r19 r">visitorContext</span>), <b>null</b>);
+			<span class="r18 r">rootnode</span>.<a href="XamlNode.cs.html#0217a7327e7006f0" class="i method">Accept</a> (<b>new</b> <a href="FillResourceDictionariesVisitor.cs.html#c6fc3e271a6f6e7d" class="t constructor">FillResourceDictionariesVisitor</a> (<span class="r19 r">visitorContext</span>), <b>null</b>);
+			<span class="r18 r">rootnode</span>.<a href="XamlNode.cs.html#0217a7327e7006f0" class="i method">Accept</a> (<b>new</b> <a href="ApplyPropertiesVisitor.cs.html#7dd9e338884703ef" class="t constructor">ApplyPropertiesVisitor</a> (<span class="r19 r">visitorContext</span>, <b>true</b>), <b>null</b>);
+		}
+ 
+		<b>static string</b> <a id="c8696d581d8a50a0" href="R/c8696d581d8a50a0.html" target="n" data-glyph="76,1" class="i method">GetXamlForType</a>(<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r22 rd" class="r22 r">type</span>)
+		{
+			<span class="c">//the Previewer might want to provide it&#39;s own xaml for this... let them do that</span>
+			<span class="c">//the check at the end is preferred (using ResourceLoader). keep this until all the previewers are updated</span>
+ 
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 0618
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r23 rd" class="r23 r">xaml</span> = <span class="i n">Internals</span>.<a href="#c71dcfa4049952d5" class="t t">XamlLoader</a>.<a href="#83db1e279ea9f8aa" class="i property">XamlFileProvider</a>?.<a href="@1@System.Runtime/A.html#3c17e52b9e2c8f81" class="i method">Invoke</a>(<span class="r22 r">type</span>);
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 0618
+ 
+			<b>if</b> (<span class="r23 r">xaml</span> != <b>null</b> &amp;&amp; <a href="/Xamarin.Forms.Core/A.html#b4dfcc2b236d937a" class="t t">ResourceLoader</a>.<a href="/Xamarin.Forms.Core/A.html#71e9518ffd34e49a" class="i property">ResourceProvider</a> == <b>null</b>)
+				<b>return</b> <span class="r23 r">xaml</span>;
+ 
+			<b>var</b> <span id="r24 rd" class="r24 r">assembly</span> = <span class="r22 r">type</span>.<span class="i method">GetTypeInfo</span>().<span class="i property">Assembly</span>;
+ 
+			<b>string</b> <span id="r25 rd" class="r25 r">resourceId</span>;
+			<b>if</b> (<a href="#64a22adde9041ecb" class="i field">XamlResources</a>.<a href="@1@System.Collections/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<span class="r22 r">type</span>, <b>out</b> <span class="r25 r">resourceId</span>))
+			{
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r26 rd" class="r26 r">result</span> = <a href="#a6e26c2a195ece68" class="i method">ReadResourceAsXaml</a>(<span class="r22 r">type</span>, <span class="r24 r">assembly</span>, <span class="r25 r">resourceId</span>);
+				<b>if</b> (<span class="r26 r">result</span> != <b>null</b>)
+					<b>return</b> <span class="r26 r">result</span>;
+			}
+ 
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r27 rd" class="r27 r">likelyResourceName</span> = <span class="r22 r">type</span>.<a href="@1@System.Runtime/A.html#6068b0ba926a961b" class="i property">Name</a> + <span class="s">&quot;.xaml&quot;</span>;
+			<b>var</b> <span id="r28 rd" class="r28 r">resourceNames</span> = <span class="r24 r">assembly</span>.<span class="i method">GetManifestResourceNames</span>();
+			<b>string</b> <span id="r29 rd" class="r29 r">resourceName</span> = <b>null</b>;
+ 
+			<span class="c">// first pass, pray to find it because the user named it correctly</span>
+ 
+			<b>foreach</b> (<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r30 rd" class="r30 r">resource</span> <b>in</b> <span class="r28 r">resourceNames</span>)
+			{
+				<b>if</b> (<a href="#b3bf669209203a79" class="i method">ResourceMatchesFilename</a>(<span class="r24 r">assembly</span>, <span class="r30 r">resource</span>, <span class="r27 r">likelyResourceName</span>))
+				{
+					<span class="r29 r">resourceName</span> = <span class="r30 r">resource</span>;
+					<span class="r23 r">xaml</span> = <a href="#a6e26c2a195ece68" class="i method">ReadResourceAsXaml</a>(<span class="r22 r">type</span>, <span class="r24 r">assembly</span>, <span class="r30 r">resource</span>);
+					<b>if</b> (<span class="r23 r">xaml</span> != <b>null</b>)
+						<b>goto</b> <span class="i">end</span>;
+				}
+			}
+ 
+			<span class="c">// okay maybe they at least named it .xaml</span>
+ 
+			<b>foreach</b> (<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r31 rd" class="r31 r">resource</span> <b>in</b> <span class="r28 r">resourceNames</span>)
+			{
+				<b>if</b> (!<span class="r31 r">resource</span>.<a href="@1@System.Runtime/A.html#41a31e4feec3ef41" class="i method">EndsWith</a>(<span class="s">&quot;.xaml&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#6c3139b940557bf9" class="i field">OrdinalIgnoreCase</a>))
+					<b>continue</b>;
+ 
+				<span class="r29 r">resourceName</span> = <span class="r31 r">resource</span>;
+				<span class="r23 r">xaml</span> = <a href="#a6e26c2a195ece68" class="i method">ReadResourceAsXaml</a>(<span class="r22 r">type</span>, <span class="r24 r">assembly</span>, <span class="r31 r">resource</span>);
+				<b>if</b> (<span class="r23 r">xaml</span> != <b>null</b>)
+					<b>goto</b> <span class="i">end</span>;
+			}
+ 
+			<b>foreach</b> (<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r32 rd" class="r32 r">resource</span> <b>in</b> <span class="r28 r">resourceNames</span>)
+			{
+				<b>if</b> (<span class="r32 r">resource</span>.<a href="@1@System.Runtime/A.html#41a31e4feec3ef41" class="i method">EndsWith</a>(<span class="s">&quot;.xaml&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#6c3139b940557bf9" class="i field">OrdinalIgnoreCase</a>))
+					<b>continue</b>;
+ 
+				<span class="r29 r">resourceName</span> = <span class="r32 r">resource</span>;
+				<span class="r23 r">xaml</span> = <a href="#a6e26c2a195ece68" class="i method">ReadResourceAsXaml</a>(<span class="r22 r">type</span>, <span class="r24 r">assembly</span>, <span class="r32 r">resource</span>, <b>true</b>);
+				<b>if</b> (<span class="r23 r">xaml</span> != <b>null</b>)
+					<b>goto</b> <span class="i">end</span>;
+			}
+ 
+			<span class="i">end</span>:
+			<b>if</b> (<span class="r23 r">xaml</span> == <b>null</b>)
+				<b>return null</b>;
+ 
+			<a href="#64a22adde9041ecb" class="i field">XamlResources</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r22 r">type</span>] = <span class="r29 r">resourceName</span>;
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r33 rd" class="r33 r">alternateXaml</span> = <a href="/Xamarin.Forms.Core/A.html#b4dfcc2b236d937a" class="t t">ResourceLoader</a>.<a href="/Xamarin.Forms.Core/A.html#71e9518ffd34e49a" class="i property">ResourceProvider</a>?.<a href="@1@System.Runtime/A.html#3c17e52b9e2c8f81" class="i method">Invoke</a>(<span class="r29 r">resourceName</span>);
+			<b>return</b> <span class="r33 r">alternateXaml</span> ?? <span class="r23 r">xaml</span>;
+		}
+ 
+		<b>static bool</b> <a id="b3bf669209203a79" href="R/b3bf669209203a79.html" target="n" data-glyph="76,1" class="i method">ResourceMatchesFilename</a>(<span class="t t">Assembly</span> <span id="r34 rd" class="r34 r">assembly</span>, <b>string</b> <span id="r35 rd" class="r35 r">resource</span>, <b>string</b> <span id="r36 rd" class="r36 r">filename</span>)
+		{
+			<b>try</b>
+			{
+				<b>var</b> <span id="r37 rd" class="r37 r">info</span> = <span class="r34 r">assembly</span>.<span class="i method">GetManifestResourceInfo</span>(<span class="r35 r">resource</span>);
+ 
+				<b>if</b> (!<b>string</b>.<a href="@1@System.Runtime/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r37 r">info</span>.<span class="i property">FileName</span>) &amp;&amp;
+				    <b>string</b>.<a href="@1@System.Runtime/A.html#0be9474bc8e160b6" class="i method">Compare</a>(<span class="r37 r">info</span>.<span class="i property">FileName</span>, <span class="r36 r">filename</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#6c3139b940557bf9" class="i field">OrdinalIgnoreCase</a>) == 0)
+					<b>return true</b>;
+			}
+			<b>catch</b> (<a href="@1@System.Runtime/A.html#c5c14f954574e491" class="t t">PlatformNotSupportedException</a>)
+			{
+				<span class="c">// Because Win10 + .NET Native</span>
+			}
+ 
+			<b>if</b> (<span class="r35 r">resource</span>.<a href="@1@System.Runtime/A.html#41a31e4feec3ef41" class="i method">EndsWith</a>(<span class="s">&quot;.&quot;</span> + <span class="r36 r">filename</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#6c3139b940557bf9" class="i field">OrdinalIgnoreCase</a>) ||
+			    <b>string</b>.<a href="@1@System.Runtime/A.html#0be9474bc8e160b6" class="i method">Compare</a>(<span class="r35 r">resource</span>, <span class="r36 r">filename</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#6c3139b940557bf9" class="i field">OrdinalIgnoreCase</a>) == 0)
+				<b>return true</b>;
+ 
+			<b>return false</b>;
+		}
+ 
+		<b>static string</b> <a id="a6e26c2a195ece68" href="R/a6e26c2a195ece68.html" target="n" data-glyph="76,1" class="i method">ReadResourceAsXaml</a>(<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r38 rd" class="r38 r">type</span>, <span class="t t">Assembly</span> <span id="r39 rd" class="r39 r">assembly</span>, <b>string</b> <span id="r40 rd" class="r40 r">likelyTargetName</span>, <b>bool</b> <span id="r41 rd" class="r41 r">validate</span> = <b>false</b>)
+		{
+			<b>using</b> (<b>var</b> <span id="r42 rd" class="r42 r">stream</span> = <span class="r39 r">assembly</span>.<span class="i method">GetManifestResourceStream</span>(<span class="r40 r">likelyTargetName</span>))
+			<b>using</b> (<b>var</b> <span id="r43 rd" class="r43 r">reader</span> = <b>new</b> <span class="t constructor">StreamReader</span>(<span class="r42 r">stream</span>))
+			{
+				<b>if</b> (<span class="r41 r">validate</span>)
+				{
+					<span class="c">// terrible validation of XML. Unfortunately it will probably work most of the time since comments</span>
+					<span class="c">// also start with a &lt;. We can&#39;t bring in any real deps.</span>
+ 
+					<a href="@1@System.Runtime/A.html#02f2b1a33b09362d" class="k">var</a> <span id="r44 rd" class="r44 r">firstNonWhitespace</span> = (<b>char</b>)<span class="r43 r">reader</span>.<span class="i method">Read</span>();
+					<b>while</b> (<b>char</b>.<a href="@1@System.Runtime/A.html#cda2cc9b76535970" class="i method">IsWhiteSpace</a>(<span class="r44 r">firstNonWhitespace</span>))
+						<span class="r44 r">firstNonWhitespace</span> = (<b>char</b>)<span class="r43 r">reader</span>.<span class="i method">Read</span>();
+ 
+					<b>if</b> (<span class="r44 r">firstNonWhitespace</span> != <span class="s">&#39;&lt;&#39;</span>)
+						<b>return null</b>;
+ 
+					<span class="r42 r">stream</span>.<span class="i method">Seek</span>(0, <span class="t t">SeekOrigin</span>.<span class="i field">Begin</span>);
+				}
+ 
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r45 rd" class="r45 r">xaml</span> = <span class="r43 r">reader</span>.<span class="i method">ReadToEnd</span>();
+ 
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r46 rd" class="r46 r">pattern</span> = <a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="t t">String</a>.<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;x:Class *= *\&quot;{0}\&quot;&quot;</span>, <span class="r38 r">type</span>.<a href="@1@System.Runtime/A.html#976443bb39dc37cd" class="i property">FullName</a>);
+				<b>var</b> <span id="r47 rd" class="r47 r">regex</span> = <b>new</b> <span class="t constructor">Regex</span>(<span class="r46 r">pattern</span>, <span class="t t">RegexOptions</span>.<span class="i field">ECMAScript</span>);
+				<b>if</b> (<span class="r47 r">regex</span>.<span class="i method">IsMatch</span>(<span class="r45 r">xaml</span>) || <span class="r45 r">xaml</span>.<a href="@1@System.Runtime/A.html#428c5c9954dea844" class="i method">Contains</a>(<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="t t">String</a>.<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;x:Class=\&quot;{0}\&quot;&quot;</span>, <span class="r38 r">type</span>.<a href="@1@System.Runtime/A.html#976443bb39dc37cd" class="i property">FullName</a>)))
+					<b>return</b> <span class="r45 r">xaml</span>;
+			}
+			<b>return null</b>;
+		}
+ 
+		<b>public class</b> <a id="96b692eafc6667a6" href="R/96b692eafc6667a6.html" target="n" data-glyph="0,1" class="t t">RuntimeRootNode</a> : <a href="XamlNode.cs.html#539c4bdaedfa22a3" class="t t">RootNode</a>
+		{
+			<b>public</b> <a id="19c193839b9bd9bf" href="R/19c193839b9bd9bf.html" target="n" data-glyph="72,2" class="i constructor">RuntimeRootNode</a>(<a href="XamlNode.cs.html#944154aac15f45be" class="t t">XmlType</a> <span id="r48 rd" class="r48 r">xmlType</span>, <b>object</b> <span id="r49 rd" class="r49 r">root</span>, <span class="t t">IXmlNamespaceResolver</span> <span id="r50 rd" class="r50 r">resolver</span>) : <a href="XamlNode.cs.html#0eceb1694ab1be5d" class="k">base</a> (<span class="r48 r">xmlType</span>, <span class="r50 r">resolver</span>)
+			{
+				<a href="#370b1b0a9734c6e9" class="i property">Root</a> = <span class="r49 r">root</span>;
+			}
+ 
+			<b>public object</b> <a id="370b1b0a9734c6e9" href="R/370b1b0a9734c6e9.html" target="n" data-glyph="102,2" class="i property">Root</a> { <b>get</b>; <b>internal set</b>; }
+		}
+	}
+}</pre></td></tr></table></div></body></html>

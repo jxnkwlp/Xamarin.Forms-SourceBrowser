@@ -1,0 +1,265 @@
+﻿<!DOCTYPE html>
+<html><head><title>ObservableWrapper.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(256);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/ObservableWrapper.cs" target="_top">ObservableWrapper.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>internal class</b> <a id="8058d2a325acb547" href="R/8058d2a325acb547.html" target="n" data-glyph="2,0" class="t t">ObservableWrapper</a>&lt;<span id="r0 rd t" class="r0 r t">TTrack</span>, <span id="r1 rd t" class="r1 r t">TRestrict</span>&gt; : <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<span class="r1 r t">TRestrict</span>&gt;, <span class="t t">INotifyCollectionChanged</span> <b>where</b> <span class="r0 r t">TTrack</span> : <a href="Element.cs.html#76098df8350c0484" class="t t">Element</a> <b>where</b> <span class="r1 r t">TRestrict</span> : <span class="r0 r t">TTrack</span>
+	{
+		<b>readonly</b> <span class="t t">ObservableCollection</span>&lt;<span class="r0 r t">TTrack</span>&gt; <a id="b42ec652c2c378f7" href="R/b42ec652c2c378f7.html" target="n" data-glyph="46,1" class="i field">_list</a>;
+ 
+		<b>public</b> <a id="3ff6e6d1ed13eff1" href="R/3ff6e6d1ed13eff1.html" target="n" data-glyph="72,1" class="i constructor">ObservableWrapper</a>(<span class="t t">ObservableCollection</span>&lt;<span class="r0 r t">TTrack</span>&gt; <span id="r2 rd" class="r2 r">list</span>)
+		{
+			<b>if</b> (<span class="r2 r">list</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;list&quot;</span>);
+ 
+			<a href="#b42ec652c2c378f7" class="i field">_list</a> = <span class="r2 r">list</span>;
+ 
+			<span class="r2 r">list</span>.<span class="i">CollectionChanged</span> += <a href="#2a03b647c4664fbd" class="i method">ListOnCollectionChanged</a>;
+		}
+ 
+		<b>public void</b> <a id="38ea1260283bba64" href="R/38ea1260283bba64.html" target="n" data-glyph="72,1" class="i method">Add</a>(<span class="r1 r t">TRestrict</span> <span id="r3 rd" class="r3 r">item</span>)
+		{
+			<b>if</b> (<span class="r3 r">item</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;item&quot;</span>);
+			<b>if</b> (<a href="#6b429ccb29679051" class="i property">IsReadOnly</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#3d3c2c03118be4f8" class="t constructor">NotSupportedException</a>(<span class="s">&quot;The collection is read-only.&quot;</span>);
+ 
+			<b>if</b> (<a href="#b42ec652c2c378f7" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#bdb5717f62176a67" class="i method">Contains</a>(<span class="r3 r">item</span>))
+				<b>return</b>;
+ 
+			<span class="r3 r">item</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a> = <b>true</b>;
+			<a href="#b42ec652c2c378f7" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#5c61cc24de82f7e7" class="i method">Add</a>(<span class="r3 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="0778ffe56b736b08" href="R/0778ffe56b736b08.html" target="n" data-glyph="72,1" class="i method">Clear</a>()
+		{
+			<b>if</b> (<a href="#6b429ccb29679051" class="i property">IsReadOnly</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#3d3c2c03118be4f8" class="t constructor">NotSupportedException</a>(<span class="s">&quot;The collection is read-only.&quot;</span>);
+ 
+			<b>foreach</b> (<span class="r1 r t">TRestrict</span> <span id="r4 rd" class="r4 r">item</span> <b>in</b> <a href="#b42ec652c2c378f7" class="i field">_list</a>.<span class="i method">OfType</span>&lt;<span class="r1 r t">TRestrict</span>&gt;().<span class="i method">ToArray</span>())
+			{
+				<a href="#b42ec652c2c378f7" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#7ea53c2fa96a1c7d" class="i method">Remove</a>(<span class="r4 r">item</span>);
+				<span class="r4 r">item</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a> = <b>false</b>;
+			}
+		}
+ 
+		<b>public bool</b> <a id="5e892a12233e644a" href="R/5e892a12233e644a.html" target="n" data-glyph="72,1" class="i method">Contains</a>(<span class="r1 r t">TRestrict</span> <span id="r5 rd" class="r5 r">item</span>)
+		{
+			<b>return</b> <span class="r5 r">item</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a> &amp;&amp; <a href="#b42ec652c2c378f7" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#bdb5717f62176a67" class="i method">Contains</a>(<span class="r5 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="75dd8d5eb71cc1a9" href="R/75dd8d5eb71cc1a9.html" target="n" data-glyph="72,1" class="i method">CopyTo</a>(<span class="r1 r t">TRestrict</span>[] <span id="r6 rd" class="r6 r">array</span>, <b>int</b> <span id="r7 rd" class="r7 r">destIndex</span>)
+		{
+			<b>if</b> (<span class="r6 r">array</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> - <span class="r7 r">destIndex</span> &lt; <a href="#a22e767926f2aaab" class="i property">Count</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;Destination array was not long enough. Check destIndex and length, and the array&#39;s lower bounds.&quot;</span>);
+			<b>foreach</b> (<span class="r1 r t">TRestrict</span> <span id="r8 rd" class="r8 r">item</span> <b>in</b> <a href="#8058d2a325acb547" class="k">this</a>)
+			{
+				<span class="r6 r">array</span>[<span class="r7 r">destIndex</span>] = <span class="r8 r">item</span>;
+				<span class="r7 r">destIndex</span>++;
+			}
+		}
+ 
+		<b>public int</b> <a id="a22e767926f2aaab" href="R/a22e767926f2aaab.html" target="n" data-glyph="102,1" class="i property">Count</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#b42ec652c2c378f7" class="i field">_list</a>.<span class="i method">Where</span>(<span id="r9 rd" class="r9 r">i</span> =&gt; <span class="r9 r">i</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>).<span class="i method">OfType</span>&lt;<span class="r1 r t">TRestrict</span>&gt;().<span class="i method">Count</span>(); }
+		}
+ 
+		<b>public bool</b> <a id="6b429ccb29679051" href="R/6b429ccb29679051.html" target="n" data-glyph="102,1" class="i property">IsReadOnly</a> { <b>get</b>; <b>internal set</b>; }
+ 
+		<b>public bool</b> <a id="e77300cded14384b" href="R/e77300cded14384b.html" target="n" data-glyph="72,1" class="i method">Remove</a>(<span class="r1 r t">TRestrict</span> <span id="r10 rd" class="r10 r">item</span>)
+		{
+			<b>if</b> (<span class="r10 r">item</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;item&quot;</span>);
+			<b>if</b> (<a href="#6b429ccb29679051" class="i property">IsReadOnly</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#3d3c2c03118be4f8" class="t constructor">NotSupportedException</a>(<span class="s">&quot;The collection is read-only.&quot;</span>);
+ 
+			<b>if</b> (!<span class="r10 r">item</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>)
+				<b>return false</b>;
+ 
+			<b>if</b> (<a href="#b42ec652c2c378f7" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#7ea53c2fa96a1c7d" class="i method">Remove</a>(<span class="r10 r">item</span>))
+			{
+				<span class="r10 r">item</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a> = <b>false</b>;
+				<b>return true</b>;
+			}
+			<b>return false</b>;
+		}
+ 
+		<a href="@1@System.Runtime/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>.<a href="@1@System.Runtime/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <a href="#ff1130c0ec01c76f" class="i method">GetEnumerator</a>();
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<span class="r1 r t">TRestrict</span>&gt; <a id="ff1130c0ec01c76f" href="R/ff1130c0ec01c76f.html" target="n" data-glyph="72,1" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <a href="#b42ec652c2c378f7" class="i field">_list</a>.<span class="i method">Where</span>(<span id="r11 rd" class="r11 r">i</span> =&gt; <span class="r11 r">i</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>).<span class="i method">OfType</span>&lt;<span class="r1 r t">TRestrict</span>&gt;().<a href="@1@System.Runtime/A.html#a242475701b655b2" class="i method">GetEnumerator</a>();
+		}
+ 
+		<b>public int</b> <a id="5923f21d2a642659" href="R/5923f21d2a642659.html" target="n" data-glyph="72,1" class="i method">IndexOf</a>(<span class="r1 r t">TRestrict</span> <span id="r12 rd" class="r12 r">value</span>)
+		{
+			<b>int</b> <span id="r13 rd" class="r13 r">innerIndex</span> = <a href="#b42ec652c2c378f7" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#5f1520f6f0d504ad" class="i method">IndexOf</a>(<span class="r12 r">value</span>);
+			<b>if</b> (<span class="r13 r">innerIndex</span> == -1)
+				<b>return</b> -1;
+			<b>return</b> <a href="#1450185b1de6ea15" class="i method">ToOuterIndex</a>(<span class="r13 r">innerIndex</span>);
+		}
+ 
+		<b>public void</b> <a id="eb16b96135b9cce5" href="R/eb16b96135b9cce5.html" target="n" data-glyph="72,1" class="i method">Insert</a>(<b>int</b> <span id="r14 rd" class="r14 r">index</span>, <span class="r1 r t">TRestrict</span> <span id="r15 rd" class="r15 r">item</span>)
+		{
+			<b>if</b> (<span class="r15 r">item</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;item&quot;</span>);
+			<b>if</b> (<a href="#6b429ccb29679051" class="i property">IsReadOnly</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#3d3c2c03118be4f8" class="t constructor">NotSupportedException</a>(<span class="s">&quot;The collection is read-only.&quot;</span>);
+ 
+			<span class="r15 r">item</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a> = <b>true</b>;
+			<a href="#b42ec652c2c378f7" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#7b364e9b63700c41" class="i method">Insert</a>(<a href="#3a0f3024a2b300df" class="i method">ToInnerIndex</a>(<span class="r14 r">index</span>), <span class="r15 r">item</span>);
+		}
+ 
+		<b>public</b> <span class="r1 r t">TRestrict</span> <a id="ecffb3373ce2f919" href="R/ecffb3373ce2f919.html" target="n" data-glyph="102,1" class="k">this</a>[<b>int</b> <span id="r16 rd" class="r16 r">index</span>]
+		{
+			<b>get</b> { <b>return</b> (<span class="r1 r t">TRestrict</span>)<a href="#b42ec652c2c378f7" class="i field">_list</a><a href="@1@System.Runtime/A.html#e39c46878aa03f65">[</a><a href="#3a0f3024a2b300df" class="i method">ToInnerIndex</a>(<span class="r16 r">index</span>)]; }
+			<b>set</b>
+			{
+				<b>int</b> <span id="r17 rd" class="r17 r">innerIndex</span> = <a href="#3a0f3024a2b300df" class="i method">ToInnerIndex</a>(<span class="r16 r">index</span>);
+				<b>if</b> (<b>value</b> != <b>null</b>)
+					<b>value</b>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a> = <b>true</b>;
+				<span class="r0 r t">TTrack</span> <span id="r18 rd" class="r18 r">old</span> = <a href="#b42ec652c2c378f7" class="i field">_list</a><a href="@1@System.Runtime/A.html#e39c46878aa03f65">[</a><span class="r17 r">innerIndex</span>];
+				<a href="#b42ec652c2c378f7" class="i field">_list</a><a href="@1@System.Runtime/A.html#e39c46878aa03f65">[</a><span class="r17 r">innerIndex</span>] = <b>value</b>;
+ 
+				<b>if</b> (<span class="r18 r">old</span> != <b>null</b>)
+					<span class="r18 r">old</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a> = <b>false</b>;
+			}
+		}
+ 
+		<b>public void</b> <a id="6be192c7841060db" href="R/6be192c7841060db.html" target="n" data-glyph="72,1" class="i method">RemoveAt</a>(<b>int</b> <span id="r19 rd" class="r19 r">index</span>)
+		{
+			<b>if</b> (<a href="#6b429ccb29679051" class="i property">IsReadOnly</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#3d3c2c03118be4f8" class="t constructor">NotSupportedException</a>(<span class="s">&quot;The collection is read-only&quot;</span>);
+			<b>int</b> <span id="r20 rd" class="r20 r">innerIndex</span> = <a href="#3a0f3024a2b300df" class="i method">ToInnerIndex</a>(<span class="r19 r">index</span>);
+			<span class="r0 r t">TTrack</span> <span id="r21 rd" class="r21 r">item</span> = <a href="#b42ec652c2c378f7" class="i field">_list</a><a href="@1@System.Runtime/A.html#e39c46878aa03f65">[</a><span class="r20 r">innerIndex</span>];
+			<b>if</b> (<span class="r21 r">item</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>)
+			{
+				<a href="#b42ec652c2c378f7" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#f854d078ff701b74" class="i method">RemoveAt</a>(<span class="r20 r">innerIndex</span>);
+				<span class="r21 r">item</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a> = <b>false</b>;
+			}
+		}
+ 
+		<b>public event</b> <span class="t t">NotifyCollectionChangedEventHandler</span> <a id="009e2bacdacee7f4" href="R/009e2bacdacee7f4.html" target="n" data-glyph="30,1" class="i">CollectionChanged</a>;
+ 
+		<b>void</b> <a id="2a03b647c4664fbd" href="R/2a03b647c4664fbd.html" target="n" data-glyph="76,1" class="i method">ListOnCollectionChanged</a>(<b>object</b> <span id="r22 rd" class="r22 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r23 rd" class="r23 r">e</span>)
+		{
+			<span class="t t">NotifyCollectionChangedEventHandler</span> <span id="r24 rd" class="r24 r">handler</span> = <a href="#009e2bacdacee7f4" class="i">CollectionChanged</a>;
+			<b>if</b> (<span class="r24 r">handler</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>switch</b> (<span class="r23 r">e</span>.<span class="i property">Action</span>)
+			{
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>:
+					<b>if</b> (<span class="r23 r">e</span>.<span class="i property">NewStartingIndex</span> == -1 || <span class="r23 r">e</span>.<span class="i property">NewItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a> &gt; 1)
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+ 
+					<span class="r1 r t">var</span> <span id="r25 rd" class="r25 r">newItem</span> = <span class="r23 r">e</span>.<span class="i property">NewItems</span>[0] <b>as</b> <span class="r1 r t">TRestrict</span>;
+					<b>if</b> (<span class="r25 r">newItem</span> == <b>null</b> || !<span class="r25 r">newItem</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>)
+						<b>break</b>;
+ 
+					<b>int</b> <span id="r26 rd" class="r26 r">outerIndex</span> = <a href="#1450185b1de6ea15" class="i method">ToOuterIndex</a>(<span class="r23 r">e</span>.<span class="i property">NewStartingIndex</span>);
+					<span class="r24 r">handler</span>(<a href="#8058d2a325acb547" class="k">this</a>, <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Add</span>, <span class="r23 r">e</span>.<span class="i property">NewItems</span>, <span class="r26 r">outerIndex</span>));
+					<b>break</b>;
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Move</span>:
+					<b>if</b> (<span class="r23 r">e</span>.<span class="i property">NewStartingIndex</span> == -1 || <span class="r23 r">e</span>.<span class="i property">OldStartingIndex</span> == -1 || <span class="r23 r">e</span>.<span class="i property">NewItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a> &gt; 1)
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+ 
+					<span class="r1 r t">var</span> <span id="r27 rd" class="r27 r">movedItem</span> = <span class="r23 r">e</span>.<span class="i property">NewItems</span>[0] <b>as</b> <span class="r1 r t">TRestrict</span>;
+					<b>if</b> (<span class="r27 r">movedItem</span> == <b>null</b> || !<span class="r27 r">movedItem</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>)
+						<b>break</b>;
+ 
+					<b>int</b> <span id="r28 rd" class="r28 r">outerOldIndex</span> = <a href="#1450185b1de6ea15" class="i method">ToOuterIndex</a>(<span class="r23 r">e</span>.<span class="i property">OldStartingIndex</span>);
+					<b>int</b> <span id="r29 rd" class="r29 r">outerNewIndex</span> = <a href="#1450185b1de6ea15" class="i method">ToOuterIndex</a>(<span class="r23 r">e</span>.<span class="i property">NewStartingIndex</span>);
+					<span class="r24 r">handler</span>(<a href="#8058d2a325acb547" class="k">this</a>, <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Move</span>, <span class="r23 r">e</span>.<span class="i property">NewItems</span>, <span class="r29 r">outerNewIndex</span>, <span class="r28 r">outerOldIndex</span>));
+					<b>break</b>;
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>:
+					<b>if</b> (<span class="r23 r">e</span>.<span class="i property">OldStartingIndex</span> == -1 || <span class="r23 r">e</span>.<span class="i property">OldItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a> &gt; 1)
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+ 
+					<span class="r1 r t">var</span> <span id="r30 rd" class="r30 r">removedItem</span> = <span class="r23 r">e</span>.<span class="i property">OldItems</span>[0] <b>as</b> <span class="r1 r t">TRestrict</span>;
+					<b>if</b> (<span class="r30 r">removedItem</span> == <b>null</b> || !<span class="r30 r">removedItem</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>)
+						<b>break</b>;
+ 
+					<b>int</b> <span id="r31 rd" class="r31 r">outerRemovedIndex</span> = <a href="#1450185b1de6ea15" class="i method">ToOuterIndex</a>(<span class="r23 r">e</span>.<span class="i property">OldStartingIndex</span>);
+					<b>var</b> <span id="r32 rd" class="r32 r">args</span> = <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Remove</span>, <span class="r30 r">removedItem</span>, <span class="r31 r">outerRemovedIndex</span>);
+					<span class="r24 r">handler</span>(<a href="#8058d2a325acb547" class="k">this</a>, <span class="r32 r">args</span>);
+					<b>break</b>;
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>:
+					<b>if</b> (<span class="r23 r">e</span>.<span class="i property">NewStartingIndex</span> == -1 || <span class="r23 r">e</span>.<span class="i property">OldStartingIndex</span> == -1 || <span class="r23 r">e</span>.<span class="i property">NewItems</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a> &gt; 1)
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+ 
+					<span class="r1 r t">var</span> <span id="r33 rd" class="r33 r">newReplaceItem</span> = <span class="r23 r">e</span>.<span class="i property">NewItems</span>[0] <b>as</b> <span class="r1 r t">TRestrict</span>;
+					<span class="r1 r t">var</span> <span id="r34 rd" class="r34 r">oldReplaceItem</span> = <span class="r23 r">e</span>.<span class="i property">OldItems</span>[0] <b>as</b> <span class="r1 r t">TRestrict</span>;
+ 
+					<b>if</b> ((<span class="r33 r">newReplaceItem</span> == <b>null</b> || !<span class="r33 r">newReplaceItem</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>) &amp;&amp; (<span class="r34 r">oldReplaceItem</span> == <b>null</b> || !<span class="r34 r">oldReplaceItem</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>))
+					{
+						<b>break</b>;
+					}
+					<b>if</b> (<span class="r33 r">newReplaceItem</span> == <b>null</b> || !<span class="r33 r">newReplaceItem</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a> || <span class="r34 r">oldReplaceItem</span> == <b>null</b> || !<span class="r34 r">oldReplaceItem</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>)
+					{
+						<b>goto case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>;
+					}
+ 
+					<b>int</b> <span id="r35 rd" class="r35 r">index</span> = <a href="#1450185b1de6ea15" class="i method">ToOuterIndex</a>(<span class="r23 r">e</span>.<span class="i property">NewStartingIndex</span>);
+ 
+					<b>var</b> <span id="r36 rd" class="r36 r">replaceArgs</span> = <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Replace</span>, <span class="r33 r">newReplaceItem</span>, <span class="r34 r">oldReplaceItem</span>, <span class="r35 r">index</span>);
+					<span class="r24 r">handler</span>(<a href="#8058d2a325acb547" class="k">this</a>, <span class="r36 r">replaceArgs</span>);
+					<b>break</b>;
+				<b>case</b> <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>:
+					<span class="r24 r">handler</span>(<a href="#8058d2a325acb547" class="k">this</a>, <b>new</b> <span class="t constructor">NotifyCollectionChangedEventArgs</span>(<span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>));
+					<b>break</b>;
+				<b>default</b>:
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#337b690f0704f510" class="t constructor">ArgumentOutOfRangeException</a>();
+			}
+		}
+ 
+		<b>int</b> <a id="3a0f3024a2b300df" href="R/3a0f3024a2b300df.html" target="n" data-glyph="76,1" class="i method">ToInnerIndex</a>(<b>int</b> <span id="r37 rd" class="r37 r">outterIndex</span>)
+		{
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r38 rd" class="r38 r">outerIndex</span> = 0;
+			<b>int</b> <span id="r39 rd" class="r39 r">innerIndex</span>;
+			<b>for</b> (<span class="r39 r">innerIndex</span> = 0; <span class="r39 r">innerIndex</span> &lt; <a href="#b42ec652c2c378f7" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#f2419069e9890f5d" class="i property">Count</a>; <span class="r39 r">innerIndex</span>++)
+			{
+				<span class="r0 r t">TTrack</span> <span id="r40 rd" class="r40 r">item</span> = <a href="#b42ec652c2c378f7" class="i field">_list</a><a href="@1@System.Runtime/A.html#e39c46878aa03f65">[</a><span class="r39 r">innerIndex</span>];
+				<b>if</b> (<span class="r40 r">item</span> <b>is</b> <span class="r1 r t">TRestrict</span> &amp;&amp; <span class="r40 r">item</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>)
+				{
+					<b>if</b> (<span class="r38 r">outerIndex</span> == <span class="r37 r">outterIndex</span>)
+						<b>return</b> <span class="r39 r">innerIndex</span>;
+					<span class="r38 r">outerIndex</span>++;
+				}
+			}
+ 
+			<b>return</b> <span class="r39 r">innerIndex</span>;
+		}
+ 
+		<b>int</b> <a id="1450185b1de6ea15" href="R/1450185b1de6ea15.html" target="n" data-glyph="76,1" class="i method">ToOuterIndex</a>(<b>int</b> <span id="r41 rd" class="r41 r">innerIndex</span>)
+		{
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r42 rd" class="r42 r">outerIndex</span> = 0;
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r43 rd" class="r43 r">index</span> = 0; <span class="r43 r">index</span> &lt; <span class="r41 r">innerIndex</span>; <span class="r43 r">index</span>++)
+			{
+				<span class="r0 r t">TTrack</span> <span id="r44 rd" class="r44 r">item</span> = <a href="#b42ec652c2c378f7" class="i field">_list</a><a href="@1@System.Runtime/A.html#e39c46878aa03f65">[</a><span class="r43 r">index</span>];
+				<b>if</b> (<span class="r44 r">item</span> <b>is</b> <span class="r1 r t">TRestrict</span> &amp;&amp; <span class="r44 r">item</span>.<a href="Element.cs.html#c3d8c44217404d9e" class="i property">Owned</a>)
+				{
+					<span class="r42 r">outerIndex</span>++;
+				}
+			}
+ 
+			<b>return</b> <span class="r42 r">outerIndex</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

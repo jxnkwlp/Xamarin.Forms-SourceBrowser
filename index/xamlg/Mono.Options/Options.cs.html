@@ -1,0 +1,1499 @@
+﻿<!DOCTYPE html>
+<html><head><title>Options.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(1490);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="xamlg/Mono.Options/Options.cs" target="_top">Mono.Options\Options.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#xamlg" target="_top">Xamarin.Forms.Xaml.Xamlg\Xamarin.Forms.Xaml.Xamlg.csproj</a> (xamlg)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<span class="c">//</span>
+<span class="c">// Options.cs</span>
+<span class="c">//</span>
+<span class="c">// Authors:</span>
+<span class="c">//  Jonathan Pryor &lt;jpryor@novell.com&gt;</span>
+<span class="c">//  Federico Di Gregorio &lt;fog@initd.org&gt;</span>
+<span class="c">//</span>
+<span class="c">// Copyright (C) 2008 Novell (http://www.novell.com)</span>
+<span class="c">// Copyright (C) 2009 Federico Di Gregorio.</span>
+<span class="c">//</span>
+<span class="c">// Permission is hereby granted, free of charge, to any person obtaining</span>
+<span class="c">// a copy of this software and associated documentation files (the</span>
+<span class="c">// &quot;Software&quot;), to deal in the Software without restriction, including</span>
+<span class="c">// without limitation the rights to use, copy, modify, merge, publish,</span>
+<span class="c">// distribute, sublicense, and/or sell copies of the Software, and to</span>
+<span class="c">// permit persons to whom the Software is furnished to do so, subject to</span>
+<span class="c">// the following conditions:</span>
+<span class="c">// </span>
+<span class="c">// The above copyright notice and this permission notice shall be</span>
+<span class="c">// included in all copies or substantial portions of the Software.</span>
+<span class="c">// </span>
+<span class="c">// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,</span>
+<span class="c">// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</span>
+<span class="c">// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</span>
+<span class="c">// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE</span>
+<span class="c">// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION</span>
+<span class="c">// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION</span>
+<span class="c">// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c">//</span>
+ 
+<span class="c">// Compile With:</span>
+<span class="c">//   gmcs -debug+ -r:System.Core Options.cs -o:NDesk.Options.dll</span>
+<span class="c">//   gmcs -debug+ -d:LINQ -r:System.Core Options.cs -o:NDesk.Options.dll</span>
+<span class="c">//</span>
+<span class="c">// The LINQ version just changes the implementation of</span>
+<span class="c">// OptionSet.Parse(IEnumerable&lt;string&gt;), and confers no semantic changes.</span>
+ 
+<span class="c">//</span>
+<span class="c">// A Getopt::Long-inspired option parsing library for C#.</span>
+<span class="c">//</span>
+<span class="c">// NDesk.Options.OptionSet is built upon a key/value table, where the</span>
+<span class="c">// key is a option format string and the value is a delegate that is </span>
+<span class="c">// invoked when the format string is matched.</span>
+<span class="c">//</span>
+<span class="c">// Option format strings:</span>
+<span class="c">//  Regex-like BNF Grammar: </span>
+<span class="c">//    name: .+</span>
+<span class="c">//    type: [=:]</span>
+<span class="c">//    sep: ( [^{}]+ | &#39;{&#39; .+ &#39;}&#39; )?</span>
+<span class="c">//    aliases: ( name type sep ) ( &#39;|&#39; name type sep )*</span>
+<span class="c">// </span>
+<span class="c">// Each &#39;|&#39;-delimited name is an alias for the associated action.  If the</span>
+<span class="c">// format string ends in a &#39;=&#39;, it has a required value.  If the format</span>
+<span class="c">// string ends in a &#39;:&#39;, it has an optional value.  If neither &#39;=&#39; or &#39;:&#39;</span>
+<span class="c">// is present, no value is supported.  `=&#39; or `:&#39; need only be defined on one</span>
+<span class="c">// alias, but if they are provided on more than one they must be consistent.</span>
+<span class="c">//</span>
+<span class="c">// Each alias portion may also end with a &quot;key/value separator&quot;, which is used</span>
+<span class="c">// to split option values if the option accepts &gt; 1 value.  If not specified,</span>
+<span class="c">// it defaults to &#39;=&#39; and &#39;:&#39;.  If specified, it can be any character except</span>
+<span class="c">// &#39;{&#39; and &#39;}&#39; OR the *string* between &#39;{&#39; and &#39;}&#39;.  If no separator should be</span>
+<span class="c">// used (i.e. the separate values should be distinct arguments), then &quot;{}&quot;</span>
+<span class="c">// should be used as the separator.</span>
+<span class="c">//</span>
+<span class="c">// Options are extracted either from the current option by looking for</span>
+<span class="c">// the option name followed by an &#39;=&#39; or &#39;:&#39;, or is taken from the</span>
+<span class="c">// following option IFF:</span>
+<span class="c">//  - The current option does not contain a &#39;=&#39; or a &#39;:&#39;</span>
+<span class="c">//  - The current option requires a value (i.e. not a Option type of &#39;:&#39;)</span>
+<span class="c">//</span>
+<span class="c">// The `name&#39; used in the option format string does NOT include any leading</span>
+<span class="c">// option indicator, such as &#39;-&#39;, &#39;--&#39;, or &#39;/&#39;.  All three of these are</span>
+<span class="c">// permitted/required on any named option.</span>
+<span class="c">//</span>
+<span class="c">// Option bundling is permitted so long as:</span>
+<span class="c">//   - &#39;-&#39; is used to start the option group</span>
+<span class="c">//   - all of the bundled options are a single character</span>
+<span class="c">//   - at most one of the bundled options accepts a value, and the value</span>
+<span class="c">//     provided starts from the next character to the end of the string.</span>
+<span class="c">//</span>
+<span class="c">// This allows specifying &#39;-a -b -c&#39; as &#39;-abc&#39;, and specifying &#39;-D name=value&#39;</span>
+<span class="c">// as &#39;-Dname=value&#39;.</span>
+<span class="c">//</span>
+<span class="c">// Option processing is disabled by specifying &quot;--&quot;.  All options after &quot;--&quot;</span>
+<span class="c">// are returned by OptionSet.Parse() unchanged and unprocessed.</span>
+<span class="c">//</span>
+<span class="c">// Unprocessed options are returned from OptionSet.Parse().</span>
+<span class="c">//</span>
+<span class="c">// Examples:</span>
+<span class="c">//  int verbose = 0;</span>
+<span class="c">//  OptionSet p = new OptionSet ()</span>
+<span class="c">//    .Add (&quot;v&quot;, v =&gt; ++verbose)</span>
+<span class="c">//    .Add (&quot;name=|value=&quot;, v =&gt; Console.WriteLine (v));</span>
+<span class="c">//  p.Parse (new string[]{&quot;-v&quot;, &quot;--v&quot;, &quot;/v&quot;, &quot;-name=A&quot;, &quot;/name&quot;, &quot;B&quot;, &quot;extra&quot;});</span>
+<span class="c">//</span>
+<span class="c">// The above would parse the argument string array, and would invoke the</span>
+<span class="c">// lambda expression three times, setting `verbose&#39; to 3 when complete.  </span>
+<span class="c">// It would also print out &quot;A&quot; and &quot;B&quot; to standard output.</span>
+<span class="c">// The returned array would contain the string &quot;extra&quot;.</span>
+<span class="c">//</span>
+<span class="c">// C# 3.0 collection initializers are supported and encouraged:</span>
+<span class="c">//  var p = new OptionSet () {</span>
+<span class="c">//    { &quot;h|?|help&quot;, v =&gt; ShowHelp () },</span>
+<span class="c">//  };</span>
+<span class="c">//</span>
+<span class="c">// System.ComponentModel.TypeConverter is also supported, allowing the use of</span>
+<span class="c">// custom data types in the callback type; TypeConverter.ConvertFromString()</span>
+<span class="c">// is used to convert the value option to an instance of the specified</span>
+<span class="c">// type:</span>
+<span class="c">//</span>
+<span class="c">//  var p = new OptionSet () {</span>
+<span class="c">//    { &quot;foo=&quot;, (Foo f) =&gt; Console.WriteLine (f.ToString ()) },</span>
+<span class="c">//  };</span>
+<span class="c">//</span>
+<span class="c">// Random other tidbits:</span>
+<span class="c">//  - Boolean options (those w/o &#39;=&#39; or &#39;:&#39; in the option format string)</span>
+<span class="c">//    are explicitly enabled if they are followed with &#39;+&#39;, and explicitly</span>
+<span class="c">//    disabled if they are followed with &#39;-&#39;:</span>
+<span class="c">//      string a = null;</span>
+<span class="c">//      var p = new OptionSet () {</span>
+<span class="c">//        { &quot;a&quot;, s =&gt; a = s },</span>
+<span class="c">//      };</span>
+<span class="c">//      p.Parse (new string[]{&quot;-a&quot;});   // sets v != null</span>
+<span class="c">//      p.Parse (new string[]{&quot;-a+&quot;});  // sets v != null</span>
+<span class="c">//      p.Parse (new string[]{&quot;-a-&quot;});  // sets v == null</span>
+<span class="c">//</span>
+ 
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Runtime</span>.<span class="i n">Serialization</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Security</span>.<span class="i n">Permissions</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Text</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">LINQ</span>
+<span class="e">using System.Linq;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">TEST</span>
+<span class="e">using NDesk.Options;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">NDESK_OPTIONS</span>
+<span class="e">namespace NDesk.Options
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+ 
+<b>namespace</b> <span class="i n">Mono</span>.<span class="i n">Options</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal static class</b> <a id="60cda9354dfde2b8" href="../R/60cda9354dfde2b8.html" target="n" data-glyph="2,0" class="t t">StringCoda</a>
+	{
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <a id="69f7b656272372a5" href="../R/69f7b656272372a5.html" target="n" data-glyph="72,1" class="i method">WrappedLines</a>(<b>string</b> <span id="r0 rd" class="r0 r">self</span>, <b>params int</b>[] <span id="r1 rd" class="r1 r">widths</span>)
+		{
+			<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>int</b>&gt; <span id="r2 rd" class="r2 r">w</span> = <span class="r1 r">widths</span>;
+			<b>return</b> <a href="#35ac2f33603244bd" class="i method">WrappedLines</a>(<span class="r0 r">self</span>, <span class="r2 r">w</span>);
+		}
+ 
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <a id="35ac2f33603244bd" href="../R/35ac2f33603244bd.html" target="n" data-glyph="72,1" class="i method">WrappedLines</a>(<b>string</b> <span id="r3 rd" class="r3 r">self</span>, <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>int</b>&gt; <span id="r4 rd" class="r4 r">widths</span>)
+		{
+			<b>if</b> (<span class="r4 r">widths</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;widths&quot;</span>);
+			<b>return</b> <a href="#90a8d8d0f8192861" class="i method">CreateWrappedLinesIterator</a>(<span class="r3 r">self</span>, <span class="r4 r">widths</span>);
+		}
+ 
+		<b>static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <a id="90a8d8d0f8192861" href="../R/90a8d8d0f8192861.html" target="n" data-glyph="76,1" class="i method">CreateWrappedLinesIterator</a>(<b>string</b> <span id="r5 rd" class="r5 r">self</span>, <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>int</b>&gt; <span id="r6 rd" class="r6 r">widths</span>)
+		{
+			<b>if</b> (<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r5 r">self</span>))
+			{
+				<b>yield return string</b>.<a href="@0@mscorlib/A.html#c9f70a27facb27cf" class="i field">Empty</a>;
+				<b>yield break</b>;
+			}
+			<b>using</b> (<a href="@0@mscorlib/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<b>int</b>&gt; <span id="r7 rd" class="r7 r">ewidths</span> = <span class="r6 r">widths</span>.<a href="@0@mscorlib/A.html#a242475701b655b2" class="i method">GetEnumerator</a>())
+			{
+				<b>bool</b>? <span id="r8 rd" class="r8 r">hw</span> = <b>null</b>;
+				<b>int</b> <span id="r9 rd" class="r9 r">width</span> = <a href="#c92ec1de08e7ef69" class="i method">GetNextWidth</a>(<span class="r7 r">ewidths</span>, <b>int</b>.<a href="@0@mscorlib/A.html#c45153c0501d7122" class="i field">MaxValue</a>, <b>ref</b> <span class="r8 r">hw</span>);
+				<b>int</b> <span id="r10 rd" class="r10 r">start</span> = 0, <span id="r11 rd" class="r11 r">end</span>;
+				<b>do</b>
+				{
+					<span class="r11 r">end</span> = <a href="#a56fed890f530c89" class="i method">GetLineEnd</a>(<span class="r10 r">start</span>, <span class="r9 r">width</span>, <span class="r5 r">self</span>);
+					<b>char</b> <span id="r12 rd" class="r12 r">c</span> = <span class="r5 r">self</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r11 r">end</span> - 1];
+					<b>if</b> (<b>char</b>.<a href="@0@mscorlib/A.html#cda2cc9b76535970" class="i method">IsWhiteSpace</a>(<span class="r12 r">c</span>))
+						--<span class="r11 r">end</span>;
+					<b>bool</b> <span id="r13 rd" class="r13 r">needContinuation</span> = <span class="r11 r">end</span> != <span class="r5 r">self</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> &amp;&amp; !<a href="#44bdd0d5dc3eb967" class="i method">IsEolChar</a>(<span class="r12 r">c</span>);
+					<b>string</b> <span id="r14 rd" class="r14 r">continuation</span> = <span class="s">&quot;&quot;</span>;
+					<b>if</b> (<span class="r13 r">needContinuation</span>)
+					{
+						--<span class="r11 r">end</span>;
+						<span class="r14 r">continuation</span> = <span class="s">&quot;-&quot;</span>;
+					}
+					<b>string</b> <span id="r15 rd" class="r15 r">line</span> = <span class="r5 r">self</span>.<a href="@0@mscorlib/A.html#8124961f027d9ac9" class="i method">Substring</a>(<span class="r10 r">start</span>, <span class="r11 r">end</span> - <span class="r10 r">start</span>) + <span class="r14 r">continuation</span>;
+					<b>yield return</b> <span class="r15 r">line</span>;
+					<span class="r10 r">start</span> = <span class="r11 r">end</span>;
+					<b>if</b> (<b>char</b>.<a href="@0@mscorlib/A.html#cda2cc9b76535970" class="i method">IsWhiteSpace</a>(<span class="r12 r">c</span>))
+						++<span class="r10 r">start</span>;
+					<span class="r9 r">width</span> = <a href="#c92ec1de08e7ef69" class="i method">GetNextWidth</a>(<span class="r7 r">ewidths</span>, <span class="r9 r">width</span>, <b>ref</b> <span class="r8 r">hw</span>);
+				} <b>while</b> (<span class="r10 r">start</span> &lt; <span class="r5 r">self</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>);
+			}
+		}
+ 
+		<b>static int</b> <a id="c92ec1de08e7ef69" href="../R/c92ec1de08e7ef69.html" target="n" data-glyph="76,1" class="i method">GetNextWidth</a>(<a href="@0@mscorlib/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<b>int</b>&gt; <span id="r16 rd" class="r16 r">ewidths</span>, <b>int</b> <span id="r17 rd" class="r17 r">curWidth</span>, <b>ref bool</b>? <span id="r18 rd" class="r18 r">eValid</span>)
+		{
+			<b>if</b> (!<span class="r18 r">eValid</span>.<a href="@0@mscorlib/A.html#7bbe60e33e857298" class="i property">HasValue</a> || (<span class="r18 r">eValid</span>.<a href="@0@mscorlib/A.html#7bbe60e33e857298" class="i property">HasValue</a> &amp;&amp; <span class="r18 r">eValid</span>.<a href="@0@mscorlib/A.html#7b38d1fa76071c95" class="i property">Value</a>))
+			{
+				<span class="r17 r">curWidth</span> = (<span class="r18 r">eValid</span> = <span class="r16 r">ewidths</span>.<a href="@0@mscorlib/A.html#116c28c0f6355e3f" class="i method">MoveNext</a>()).<a href="@0@mscorlib/A.html#7b38d1fa76071c95" class="i property">Value</a> ? <span class="r16 r">ewidths</span>.<a href="@0@mscorlib/A.html#d231e5618becae91" class="i property">Current</a> : <span class="r17 r">curWidth</span>;
+				<span class="c">// &#39;.&#39; is any character, - is for a continuation</span>
+				<b>const string</b> <span id="r19 rd" class="r19 r">minWidth</span> = <span class="s">&quot;.-&quot;</span>;
+				<b>if</b> (<span class="r17 r">curWidth</span> &lt; <span class="r19 r">minWidth</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>)
+				{
+					<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#27138d3b17d5ff6b" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;widths&quot;</span>,
+						<b>string</b>.<a href="@0@mscorlib/A.html#7432dab173fae5fc" class="i method">Format</a>(<span class="s">&quot;Element must be &gt;= {0}, was {1}.&quot;</span>, <span class="r19 r">minWidth</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>, <span class="r17 r">curWidth</span>));
+				}
+				<b>return</b> <span class="r17 r">curWidth</span>;
+			}
+			<span class="c">// no more elements, use the last element.</span>
+			<b>return</b> <span class="r17 r">curWidth</span>;
+		}
+ 
+		<b>static bool</b> <a id="44bdd0d5dc3eb967" href="../R/44bdd0d5dc3eb967.html" target="n" data-glyph="76,1" class="i method">IsEolChar</a>(<b>char</b> <span id="r20 rd" class="r20 r">c</span>)
+		{
+			<b>return</b> !<b>char</b>.<a href="@0@mscorlib/A.html#73e61bf2c5d6ecd4" class="i method">IsLetterOrDigit</a>(<span class="r20 r">c</span>);
+		}
+ 
+		<b>static int</b> <a id="a56fed890f530c89" href="../R/a56fed890f530c89.html" target="n" data-glyph="76,1" class="i method">GetLineEnd</a>(<b>int</b> <span id="r21 rd" class="r21 r">start</span>, <b>int</b> <span id="r22 rd" class="r22 r">length</span>, <b>string</b> <span id="r23 rd" class="r23 r">description</span>)
+		{
+			<b>int</b> <span id="r24 rd" class="r24 r">end</span> = <span class="i n">System</span>.<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#f441d55c88d635ad" class="i method">Min</a>(<span class="r21 r">start</span> + <span class="r22 r">length</span>, <span class="r23 r">description</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>);
+			<b>int</b> <span id="r25 rd" class="r25 r">sep</span> = -1;
+			<b>for</b> (<b>int</b> <span id="r26 rd" class="r26 r">i</span> = <span class="r21 r">start</span>; <span class="r26 r">i</span> &lt; <span class="r24 r">end</span>; ++<span class="r26 r">i</span>)
+			{
+				<b>if</b> (<span class="r23 r">description</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r26 r">i</span>] == <span class="s">&#39;\n&#39;</span>)
+					<b>return</b> <span class="r26 r">i</span> + 1;
+				<b>if</b> (<a href="#44bdd0d5dc3eb967" class="i method">IsEolChar</a>(<span class="r23 r">description</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r26 r">i</span>]))
+					<span class="r25 r">sep</span> = <span class="r26 r">i</span> + 1;
+			}
+			<b>if</b> (<span class="r25 r">sep</span> == -1 || <span class="r24 r">end</span> == <span class="r23 r">description</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>)
+				<b>return</b> <span class="r24 r">end</span>;
+			<b>return</b> <span class="r25 r">sep</span>;
+		}
+	}
+ 
+	<b>public class</b> <a id="baf018f1aad48b20" href="../R/baf018f1aad48b20.html" target="n" data-glyph="0,0" class="t t">OptionValueCollection</a> : <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>, <a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<b>string</b>&gt;
+	{
+		<b>readonly</b> <a href="#2b15b2e105738031" class="t t">OptionContext</a> <a id="bc3a8ada8768529a" href="../R/bc3a8ada8768529a.html" target="n" data-glyph="46,1" class="i field">_c</a>;
+ 
+		<b>readonly</b> <a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>string</b>&gt; <a id="040a7dd733b1e8e0" href="../R/040a7dd733b1e8e0.html" target="n" data-glyph="46,1" class="i field">_values</a> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;();
+ 
+		<b>internal</b> <a id="4c8ef5cda0e9164f" href="../R/4c8ef5cda0e9164f.html" target="n" data-glyph="74,1" class="i constructor">OptionValueCollection</a>(<a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r27 rd" class="r27 r">c</span>)
+		{
+			<a href="#bc3a8ada8768529a" class="i field">_c</a> = <span class="r27 r">c</span>;
+		}
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">region</span> IEnumerable
+ 
+		<a href="@0@mscorlib/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a href="@0@mscorlib/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>.<a href="@0@mscorlib/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#5d3accf5b217bdbf" class="i method">GetEnumerator</a>();
+		}
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">endregion</span>
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">region</span> IEnumerable&lt;T&gt;
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<b>string</b>&gt; <a id="ef1be1b1f3c994af" href="../R/ef1be1b1f3c994af.html" target="n" data-glyph="72,1" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#5d3accf5b217bdbf" class="i method">GetEnumerator</a>();
+		}
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">endregion</span>
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>string</b>&gt; <a id="0128e0e456f73b59" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ToList</a>()
+		{
+			<b>return</b> <b>new</b> <a href="@0@mscorlib/A.html#d2ac2c19c9cf1d44" class="t constructor">List</a>&lt;<b>string</b>&gt;(<a href="#040a7dd733b1e8e0" class="i field">_values</a>);
+		}
+ 
+		<b>public string</b>[] <a id="91a7e4c2da9dae84" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ToArray</a>()
+		{
+			<b>return</b> <a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public override string</b> <a id="c7e3d466674c1449" href="../R/c7e3d466674c1449.html" target="n" data-glyph="72,1" class="i method">ToString</a>()
+		{
+			<b>return string</b>.<a href="@0@mscorlib/A.html#881354baa56fc358" class="i method">Join</a>(<span class="s">&quot;, &quot;</span>, <a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>());
+		}
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">region</span> ICollection
+ 
+		<b>void</b> <a href="@0@mscorlib/A.html#cde8022b6e680e40" class="t t">ICollection</a>.<a href="@0@mscorlib/A.html#39497d2d50b3f663" class="i method">CopyTo</a>(<a href="@0@mscorlib/A.html#156e066ecc4ccedf" class="t t">Array</a> <span id="r28 rd" class="r28 r">array</span>, <b>int</b> <span id="r29 rd" class="r29 r">index</span>)
+		{
+			(<a href="#040a7dd733b1e8e0" class="i field">_values</a> <b>as</b> <a href="@0@mscorlib/A.html#cde8022b6e680e40" class="t t">ICollection</a>).<a href="@0@mscorlib/A.html#39497d2d50b3f663" class="i method">CopyTo</a>(<span class="r28 r">array</span>, <span class="r29 r">index</span>);
+		}
+ 
+		<b>bool</b> <a href="@0@mscorlib/A.html#cde8022b6e680e40" class="t t">ICollection</a>.<a href="@0@mscorlib/A.html#99438469a9a77b4f" class="i property">IsSynchronized</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="#040a7dd733b1e8e0" class="i field">_values</a> <b>as</b> <a href="@0@mscorlib/A.html#cde8022b6e680e40" class="t t">ICollection</a>).<a href="@0@mscorlib/A.html#99438469a9a77b4f" class="i property">IsSynchronized</a>; }
+		}
+ 
+		<b>object</b> <a href="@0@mscorlib/A.html#cde8022b6e680e40" class="t t">ICollection</a>.<a href="@0@mscorlib/A.html#67322104fb933552" class="i property">SyncRoot</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="#040a7dd733b1e8e0" class="i field">_values</a> <b>as</b> <a href="@0@mscorlib/A.html#cde8022b6e680e40" class="t t">ICollection</a>).<a href="@0@mscorlib/A.html#67322104fb933552" class="i property">SyncRoot</a>; }
+		}
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">endregion</span>
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">region</span> ICollection&lt;T&gt;
+ 
+		<b>public void</b> <a id="5ed42f6f07496787" href="../R/5ed42f6f07496787.html" target="n" data-glyph="72,1" class="i method">Add</a>(<b>string</b> <span id="r30 rd" class="r30 r">item</span>)
+		{
+			<a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r30 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="2a1389c554330e7e" href="../R/2a1389c554330e7e.html" target="n" data-glyph="72,1" class="i method">Clear</a>()
+		{
+			<a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#ca7bce81a50b0aeb" class="i method">Clear</a>();
+		}
+ 
+		<b>public bool</b> <a id="191aac73ec5312a3" href="../R/191aac73ec5312a3.html" target="n" data-glyph="72,1" class="i method">Contains</a>(<b>string</b> <span id="r31 rd" class="r31 r">item</span>)
+		{
+			<b>return</b> <a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r31 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="006bef7ba1211a69" href="../R/006bef7ba1211a69.html" target="n" data-glyph="72,1" class="i method">CopyTo</a>(<b>string</b>[] <span id="r32 rd" class="r32 r">array</span>, <b>int</b> <span id="r33 rd" class="r33 r">arrayIndex</span>)
+		{
+			<a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#0c418e0fac68ada2" class="i method">CopyTo</a>(<span class="r32 r">array</span>, <span class="r33 r">arrayIndex</span>);
+		}
+ 
+		<b>public bool</b> <a id="a145d375e72d9a64" href="../R/a145d375e72d9a64.html" target="n" data-glyph="72,1" class="i method">Remove</a>(<b>string</b> <span id="r34 rd" class="r34 r">item</span>)
+		{
+			<b>return</b> <a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#db8cdd552a0bb10c" class="i method">Remove</a>(<span class="r34 r">item</span>);
+		}
+ 
+		<b>public int</b> <a id="a38fd377de337df4" href="../R/a38fd377de337df4.html" target="n" data-glyph="102,1" class="i property">Count</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a>; }
+		}
+ 
+		<b>public bool</b> <a id="8d957915a06b496f" href="../R/8d957915a06b496f.html" target="n" data-glyph="102,1" class="i property">IsReadOnly</a>
+		{
+			<b>get</b> { <b>return false</b>; }
+		}
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">endregion</span>
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">region</span> IList
+ 
+		<b>int</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@0@mscorlib/A.html#bded9f03433a53d4" class="i method">Add</a>(<b>object</b> <span id="r35 rd" class="r35 r">value</span>)
+		{
+			<b>return</b> (<a href="#040a7dd733b1e8e0" class="i field">_values</a> <b>as</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>).<a href="@0@mscorlib/A.html#bded9f03433a53d4" class="i method">Add</a>(<span class="r35 r">value</span>);
+		}
+ 
+		<b>bool</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@0@mscorlib/A.html#ffcdcc091fb8c1ef" class="i method">Contains</a>(<b>object</b> <span id="r36 rd" class="r36 r">value</span>)
+		{
+			<b>return</b> (<a href="#040a7dd733b1e8e0" class="i field">_values</a> <b>as</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>).<a href="@0@mscorlib/A.html#ffcdcc091fb8c1ef" class="i method">Contains</a>(<span class="r36 r">value</span>);
+		}
+ 
+		<b>int</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@0@mscorlib/A.html#de5de69de55c396f" class="i method">IndexOf</a>(<b>object</b> <span id="r37 rd" class="r37 r">value</span>)
+		{
+			<b>return</b> (<a href="#040a7dd733b1e8e0" class="i field">_values</a> <b>as</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>).<a href="@0@mscorlib/A.html#de5de69de55c396f" class="i method">IndexOf</a>(<span class="r37 r">value</span>);
+		}
+ 
+		<b>void</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@0@mscorlib/A.html#11f7bb96fc6ac350" class="i method">Insert</a>(<b>int</b> <span id="r38 rd" class="r38 r">index</span>, <b>object</b> <span id="r39 rd" class="r39 r">value</span>)
+		{
+			(<a href="#040a7dd733b1e8e0" class="i field">_values</a> <b>as</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>).<a href="@0@mscorlib/A.html#11f7bb96fc6ac350" class="i method">Insert</a>(<span class="r38 r">index</span>, <span class="r39 r">value</span>);
+		}
+ 
+		<b>void</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@0@mscorlib/A.html#36e262a0820371fd" class="i method">Remove</a>(<b>object</b> <span id="r40 rd" class="r40 r">value</span>)
+		{
+			(<a href="#040a7dd733b1e8e0" class="i field">_values</a> <b>as</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>).<a href="@0@mscorlib/A.html#36e262a0820371fd" class="i method">Remove</a>(<span class="r40 r">value</span>);
+		}
+ 
+		<b>void</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@0@mscorlib/A.html#1c03bac1b91e9406" class="i method">RemoveAt</a>(<b>int</b> <span id="r41 rd" class="r41 r">index</span>)
+		{
+			(<a href="#040a7dd733b1e8e0" class="i field">_values</a> <b>as</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>).<a href="@0@mscorlib/A.html#1c03bac1b91e9406" class="i method">RemoveAt</a>(<span class="r41 r">index</span>);
+		}
+ 
+		<b>bool</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@0@mscorlib/A.html#62b7ec4ff8eabfbc" class="i property">IsFixedSize</a>
+		{
+			<b>get</b> { <b>return false</b>; }
+		}
+ 
+		<b>object</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>.<a href="@0@mscorlib/A.html#32c1ca862ea365e7" class="k">this</a>[<b>int</b> <span id="r42 rd" class="r42 r">index</span>]
+		{
+			<b>get</b> { <b>return</b> <a href="#baf018f1aad48b20" class="k">this</a><a href="#54fcf7dcd6323015">[</a><span class="r42 r">index</span>]; }
+			<b>set</b> { (<a href="#040a7dd733b1e8e0" class="i field">_values</a> <b>as</b> <a href="@0@mscorlib/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>)[<span class="r42 r">index</span>] = <b>value</b>; }
+		}
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">endregion</span>
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">region</span> IList&lt;T&gt;
+ 
+		<b>public int</b> <a id="2c36999f14746eae" href="../R/2c36999f14746eae.html" target="n" data-glyph="72,1" class="i method">IndexOf</a>(<b>string</b> <span id="r43 rd" class="r43 r">item</span>)
+		{
+			<b>return</b> <a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#242756beb6e8749e" class="i method">IndexOf</a>(<span class="r43 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="b1961f31278a0638" href="../R/b1961f31278a0638.html" target="n" data-glyph="72,1" class="i method">Insert</a>(<b>int</b> <span id="r44 rd" class="r44 r">index</span>, <b>string</b> <span id="r45 rd" class="r45 r">item</span>)
+		{
+			<a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#49c519bce0cdbd82" class="i method">Insert</a>(<span class="r44 r">index</span>, <span class="r45 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="885105084e974e81" href="../R/885105084e974e81.html" target="n" data-glyph="72,1" class="i method">RemoveAt</a>(<b>int</b> <span id="r46 rd" class="r46 r">index</span>)
+		{
+			<a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#3d46113cc199059a" class="i method">RemoveAt</a>(<span class="r46 r">index</span>);
+		}
+ 
+		<b>void</b> <a id="8ed837d07c060eaf" href="../R/8ed837d07c060eaf.html" target="n" data-glyph="76,1" class="i method">AssertValid</a>(<b>int</b> <span id="r47 rd" class="r47 r">index</span>)
+		{
+			<b>if</b> (<a href="#bc3a8ada8768529a" class="i field">_c</a>.<a href="#a7206c19fa7df124" class="i property">Option</a> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;OptionContext.Option is null.&quot;</span>);
+			<b>if</b> (<span class="r47 r">index</span> &gt;= <a href="#bc3a8ada8768529a" class="i field">_c</a>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#29aec63e789a6794" class="i property">MaxValueCount</a>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;index&quot;</span>);
+			<b>if</b> (<a href="#bc3a8ada8768529a" class="i field">_c</a>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#20e8bf7141bfd912" class="i property">OptionValueType</a> == <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#81259a6a8d93fea0" class="i field">Required</a> &amp;&amp;
+			    <span class="r47 r">index</span> &gt;= <a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a>)
+			{
+				<b>throw</b> <b>new</b> <a href="#9106616f65cdf4e8" class="t constructor">OptionException</a>(<b>string</b>.<a href="@0@mscorlib/A.html#9d5604d4425b216f" class="i method">Format</a>(
+					<a href="#bc3a8ada8768529a" class="i field">_c</a>.<a href="#1bc6d4975eb24cea" class="i property">OptionSet</a>.<a href="#7b4794fe29b204ab" class="i property">MessageLocalizer</a>(<span class="s">&quot;Missing required value for option &#39;{0}&#39;.&quot;</span>), <a href="#bc3a8ada8768529a" class="i field">_c</a>.<a href="#4bf326d7465849bf" class="i property">OptionName</a>),
+					<a href="#bc3a8ada8768529a" class="i field">_c</a>.<a href="#4bf326d7465849bf" class="i property">OptionName</a>);
+			}
+		}
+ 
+		<b>public string</b> <a id="54fcf7dcd6323015" href="../R/54fcf7dcd6323015.html" target="n" data-glyph="102,1" class="k">this</a>[<b>int</b> <span id="r48 rd" class="r48 r">index</span>]
+		{
+			<b>get</b>
+			{
+				<a href="#8ed837d07c060eaf" class="i method">AssertValid</a>(<span class="r48 r">index</span>);
+				<b>return</b> <span class="r48 r">index</span> &gt;= <a href="#040a7dd733b1e8e0" class="i field">_values</a>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> ? <b>null</b> : <a href="#040a7dd733b1e8e0" class="i field">_values</a><a href="@0@mscorlib/A.html#0c65bec4d3fac21e">[</a><span class="r48 r">index</span>];
+			}
+			<b>set</b> { <a href="#040a7dd733b1e8e0" class="i field">_values</a><a href="@0@mscorlib/A.html#0c65bec4d3fac21e">[</a><span class="r48 r">index</span>] = <b>value</b>; }
+		}
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">endregion</span>
+	}
+ 
+	<b>public class</b> <a id="2b15b2e105738031" href="../R/2b15b2e105738031.html" target="n" data-glyph="0,0" class="t t">OptionContext</a>
+	{
+		<b>public</b> <a id="9430f94bef5aa8ad" href="../R/9430f94bef5aa8ad.html" target="n" data-glyph="72,1" class="i constructor">OptionContext</a>(<a href="#009bc28f77c44443" class="t t">OptionSet</a> <span id="r49 rd" class="r49 r">set</span>)
+		{
+			<a href="#1bc6d4975eb24cea" class="i property">OptionSet</a> = <span class="r49 r">set</span>;
+			<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a> = <b>new</b> <a href="#4c8ef5cda0e9164f" class="t constructor">OptionValueCollection</a>(<a href="#2b15b2e105738031" class="k">this</a>);
+		}
+ 
+		<b>public</b> <a href="#bd6987d29833d621" class="t t">Option</a> <a id="a7206c19fa7df124" href="../R/a7206c19fa7df124.html" target="n" data-glyph="102,1" class="i property">Option</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public string</b> <a id="4bf326d7465849bf" href="../R/4bf326d7465849bf.html" target="n" data-glyph="102,1" class="i property">OptionName</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public int</b> <a id="ff0ca03be698f259" href="../R/ff0ca03be698f259.html" target="n" data-glyph="102,1" class="i property">OptionIndex</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="1bc6d4975eb24cea" href="../R/1bc6d4975eb24cea.html" target="n" data-glyph="102,1" class="i property">OptionSet</a> { <b>get</b>; }
+ 
+		<b>public</b> <a href="#baf018f1aad48b20" class="t t">OptionValueCollection</a> <a id="1f4f52a33844d1bd" href="../R/1f4f52a33844d1bd.html" target="n" data-glyph="102,1" class="i property">OptionValues</a> { <b>get</b>; }
+	}
+ 
+	<b>public enum</b> <a id="b3b9b87f8bb196a2" href="../R/b3b9b87f8bb196a2.html" target="n" data-glyph="18,0" class="t t"><span id="0fb3e11f20a72a43">OptionValueType</span></a>
+	{
+		<a id="f2618b20361ec5c3" href="../R/f2618b20361ec5c3.html" target="n" data-glyph="24,1" class="i field">None</a>,
+		<a id="059af8f25c234b51" href="../R/059af8f25c234b51.html" target="n" data-glyph="24,1" class="i field">Optional</a>,
+		<a id="81259a6a8d93fea0" href="../R/81259a6a8d93fea0.html" target="n" data-glyph="24,1" class="i field">Required</a>
+	}
+ 
+	<b>public abstract class</b> <a id="bd6987d29833d621" href="../R/bd6987d29833d621.html" target="n" data-glyph="0,0" class="t t">Option</a>
+	{
+		<b>static readonly char</b>[] <a id="22b853ca30802df9" href="../R/22b853ca30802df9.html" target="n" data-glyph="46,1" class="i field">NameTerminator</a> = { <span class="s">&#39;=&#39;</span>, <span class="s">&#39;:&#39;</span> };
+ 
+		<b>protected</b> <a id="68ca408f43570e1e" href="../R/68ca408f43570e1e.html" target="n" data-glyph="75,1" class="i constructor">Option</a>(<b>string</b> <span id="r50 rd" class="r50 r">prototype</span>, <b>string</b> <span id="r51 rd" class="r51 r">description</span>)
+			: <a href="#70a6e15d6d6b23cf" class="k">this</a>(<span class="r50 r">prototype</span>, <span class="r51 r">description</span>, 1)
+		{
+		}
+ 
+		<b>protected</b> <a id="70a6e15d6d6b23cf" href="../R/70a6e15d6d6b23cf.html" target="n" data-glyph="75,1" class="i constructor">Option</a>(<b>string</b> <span id="r52 rd" class="r52 r">prototype</span>, <b>string</b> <span id="r53 rd" class="r53 r">description</span>, <b>int</b> <span id="r54 rd" class="r54 r">maxValueCount</span>)
+		{
+			<b>if</b> (<span class="r52 r">prototype</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;prototype&quot;</span>);
+			<b>if</b> (<span class="r52 r">prototype</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> == 0)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;Cannot be the empty string.&quot;</span>, <span class="s">&quot;prototype&quot;</span>);
+			<b>if</b> (<span class="r54 r">maxValueCount</span> &lt; 0)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;maxValueCount&quot;</span>);
+ 
+			<a href="#ec1216942dc0e47c" class="i property">Prototype</a> = <span class="r52 r">prototype</span>;
+			<a href="#50435f4a7733bda3" class="i property">Description</a> = <span class="r53 r">description</span>;
+			<a href="#29aec63e789a6794" class="i property">MaxValueCount</a> = <span class="r54 r">maxValueCount</span>;
+			<a href="#aef531d17f6659ce" class="i property">Names</a> = (<a href="#bd6987d29833d621" class="k">this</a> <b>is</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a>.<a href="#457a854b1f27ceda" class="t t">Category</a>)
+				<span class="c">// append GetHashCode() so that &quot;duplicate&quot; categories have distinct</span>
+				<span class="c">// names, e.g. adding multiple &quot;&quot; categories should be valid.</span>
+				? <b>new</b>[] { <span class="r52 r">prototype</span> + <a href="@0@mscorlib/A.html#4de9cf234d0d8b16" class="i method">GetHashCode</a>() }
+				: <span class="r52 r">prototype</span>.<a href="@0@mscorlib/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;|&#39;</span>);
+ 
+			<b>if</b> (<a href="#bd6987d29833d621" class="k">this</a> <b>is</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a>.<a href="#457a854b1f27ceda" class="t t">Category</a>)
+				<b>return</b>;
+ 
+			<a href="#20e8bf7141bfd912" class="i property">OptionValueType</a> = <a href="#34710228b142dcb4" class="i method">ParsePrototype</a>();
+ 
+			<b>if</b> (<a href="#29aec63e789a6794" class="i property">MaxValueCount</a> == 0 &amp;&amp; <a href="#20e8bf7141bfd912" class="i property">OptionValueType</a> != <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#f2618b20361ec5c3" class="i field">None</a>)
+			{
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(
+					<span class="s">&quot;Cannot provide maxValueCount of 0 for OptionValueType.Required or &quot;</span> +
+					<span class="s">&quot;OptionValueType.Optional.&quot;</span>,
+					<span class="s">&quot;maxValueCount&quot;</span>);
+			}
+			<b>if</b> (<a href="#20e8bf7141bfd912" class="i property">OptionValueType</a> == <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#f2618b20361ec5c3" class="i field">None</a> &amp;&amp; <span class="r54 r">maxValueCount</span> &gt; 1)
+			{
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(
+					<b>string</b>.<a href="@0@mscorlib/A.html#9d5604d4425b216f" class="i method">Format</a>(<span class="s">&quot;Cannot provide maxValueCount of {0} for OptionValueType.None.&quot;</span>, <span class="r54 r">maxValueCount</span>),
+					<span class="s">&quot;maxValueCount&quot;</span>);
+			}
+			<b>if</b> (<a href="@0@mscorlib/A.html#156e066ecc4ccedf" class="t t">Array</a>.<a href="@0@mscorlib/A.html#9dfd2c89c8d18414" class="i method">IndexOf</a>(<a href="#aef531d17f6659ce" class="i property">Names</a>, <span class="s">&quot;&lt;&gt;&quot;</span>) &gt;= 0 &amp;&amp;
+			    ((<a href="#aef531d17f6659ce" class="i property">Names</a>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> == 1 &amp;&amp; <a href="#20e8bf7141bfd912" class="i property">OptionValueType</a> != <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#f2618b20361ec5c3" class="i field">None</a>) ||
+			     (<a href="#aef531d17f6659ce" class="i property">Names</a>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 1 &amp;&amp; <a href="#29aec63e789a6794" class="i property">MaxValueCount</a> &gt; 1)))
+			{
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(
+					<span class="s">&quot;The default option handler &#39;&lt;&gt;&#39; cannot require values.&quot;</span>,
+					<span class="s">&quot;prototype&quot;</span>);
+			}
+		}
+ 
+		<b>public string</b> <a id="ec1216942dc0e47c" href="../R/ec1216942dc0e47c.html" target="n" data-glyph="102,1" class="i property">Prototype</a> { <b>get</b>; }
+ 
+		<b>public string</b> <a id="50435f4a7733bda3" href="../R/50435f4a7733bda3.html" target="n" data-glyph="102,1" class="i property">Description</a> { <b>get</b>; }
+ 
+		<b>public</b> <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a> <a id="20e8bf7141bfd912" href="../R/20e8bf7141bfd912.html" target="n" data-glyph="102,1" class="i property">OptionValueType</a> { <b>get</b>; }
+ 
+		<b>public int</b> <a id="29aec63e789a6794" href="../R/29aec63e789a6794.html" target="n" data-glyph="102,1" class="i property">MaxValueCount</a> { <b>get</b>; }
+ 
+		<b>internal string</b>[] <a id="aef531d17f6659ce" href="../R/aef531d17f6659ce.html" target="n" data-glyph="104,1" class="i property">Names</a> { <b>get</b>; }
+ 
+		<b>internal string</b>[] <a id="3aa36ac151069353" href="../R/3aa36ac151069353.html" target="n" data-glyph="104,1" class="i property">ValueSeparators</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public string</b>[] <a id="4c8c5a4b29d3e396" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetNames</a>()
+		{
+			<b>return</b> (<b>string</b>[])<a href="#aef531d17f6659ce" class="i property">Names</a>.<a href="@0@mscorlib/A.html#e71b274caef60cf0" class="i method">Clone</a>();
+		}
+ 
+		<b>public string</b>[] <a id="31addd5c12662ad0" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetValueSeparators</a>()
+		{
+			<b>if</b> (<a href="#3aa36ac151069353" class="i property">ValueSeparators</a> == <b>null</b>)
+				<b>return</b> <b>new</b> <b>string</b>[0];
+			<b>return</b> (<b>string</b>[])<a href="#3aa36ac151069353" class="i property">ValueSeparators</a>.<a href="@0@mscorlib/A.html#e71b274caef60cf0" class="i method">Clone</a>();
+		}
+ 
+		<b>protected static</b> <span class="r55 r t">T</span> <a id="233457d0f4aaf62b" href="../R/233457d0f4aaf62b.html" target="n" data-glyph="75,1" class="i method">Parse</a>&lt;<span id="r55 rd t" class="r55 r t">T</span>&gt;(<b>string</b> <span id="r56 rd" class="r56 r">value</span>, <a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r57 rd" class="r57 r">c</span>)
+		{
+			<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r58 rd" class="r58 r">tt</span> = <b>typeof</b> (<span class="r55 r t">T</span>);
+			<b>bool</b> <span id="r59 rd" class="r59 r">nullable</span> = <span class="r58 r">tt</span>.<a href="@0@mscorlib/A.html#b77b6aa39ab205fa" class="i property">IsValueType</a> &amp;&amp; <span class="r58 r">tt</span>.<a href="@0@mscorlib/A.html#b81fd50dfeabd50c" class="i property">IsGenericType</a> &amp;&amp;
+			                !<span class="r58 r">tt</span>.<a href="@0@mscorlib/A.html#6bdfd6df375a9403" class="i property">IsGenericTypeDefinition</a> &amp;&amp;
+			                <span class="r58 r">tt</span>.<a href="@0@mscorlib/A.html#7179022318447358" class="i method">GetGenericTypeDefinition</a>() == <b>typeof</b> (<a href="@0@mscorlib/A.html#ffebe438fd9cbf0e" class="t t">Nullable</a>&lt;&gt;);
+			<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r60 rd" class="r60 r">targetType</span> = <span class="r59 r">nullable</span> ? <span class="r58 r">tt</span>.<a href="@0@mscorlib/A.html#e0094047204f40ea" class="i method">GetGenericArguments</a>()[0] : <b>typeof</b> (<span class="r55 r t">T</span>);
+			<a href="@0@System/A.html#5ffdbf35aab9cd1c" class="t t">TypeConverter</a> <span id="r61 rd" class="r61 r">conv</span> = <a href="@0@System/A.html#7a0aedc986512dd3" class="t t">TypeDescriptor</a>.<a href="@0@System/A.html#977adff822336d07" class="i method">GetConverter</a>(<span class="r60 r">targetType</span>);
+			<span class="r55 r t">T</span> <span id="r62 rd" class="r62 r">t</span> = <b>default</b>(<span class="r55 r t">T</span>);
+			<b>try</b>
+			{
+				<b>if</b> (<span class="r56 r">value</span> != <b>null</b>)
+					<span class="r62 r">t</span> = (<span class="r55 r t">T</span>)<span class="r61 r">conv</span>.<a href="@0@System/A.html#798c60da4ae07b7e" class="i method">ConvertFromString</a>(<span class="r56 r">value</span>);
+			}
+			<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r63 rd" class="r63 r">e</span>)
+			{
+				<b>throw</b> <b>new</b> <a href="#b3326794b30615a1" class="t constructor">OptionException</a>(
+					<b>string</b>.<a href="@0@mscorlib/A.html#6e5f254563fed78e" class="i method">Format</a>(
+						<span class="r57 r">c</span>.<a href="#1bc6d4975eb24cea" class="i property">OptionSet</a>.<a href="#7b4794fe29b204ab" class="i property">MessageLocalizer</a>(<span class="s">&quot;Could not convert string `{0}&#39; to type {1} for option `{2}&#39;.&quot;</span>),
+						<span class="r56 r">value</span>, <span class="r60 r">targetType</span>.<a href="@0@mscorlib/A.html#aa4f112f79364b6e" class="i property">Name</a>, <span class="r57 r">c</span>.<a href="#4bf326d7465849bf" class="i property">OptionName</a>),
+					<span class="r57 r">c</span>.<a href="#4bf326d7465849bf" class="i property">OptionName</a>, <span class="r63 r">e</span>);
+			}
+			<b>return</b> <span class="r62 r">t</span>;
+		}
+ 
+		<a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a> <a id="34710228b142dcb4" href="../R/34710228b142dcb4.html" target="n" data-glyph="76,1" class="i method">ParsePrototype</a>()
+		{
+			<b>char</b> <span id="r64 rd" class="r64 r">type</span> = <span class="s">&#39;\0&#39;</span>;
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>string</b>&gt; <span id="r65 rd" class="r65 r">seps</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;();
+			<b>for</b> (<b>int</b> <span id="r66 rd" class="r66 r">i</span> = 0; <span class="r66 r">i</span> &lt; <a href="#aef531d17f6659ce" class="i property">Names</a>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a>; ++<span class="r66 r">i</span>)
+			{
+				<b>string</b> <span id="r67 rd" class="r67 r">name</span> = <a href="#aef531d17f6659ce" class="i property">Names</a>[<span class="r66 r">i</span>];
+				<b>if</b> (<span class="r67 r">name</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> == 0)
+					<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;Empty option names are not supported.&quot;</span>, <span class="s">&quot;prototype&quot;</span>);
+ 
+				<b>int</b> <span id="r68 rd" class="r68 r">end</span> = <span class="r67 r">name</span>.<a href="@0@mscorlib/A.html#299d36326434ba20" class="i method">IndexOfAny</a>(<a href="#22b853ca30802df9" class="i field">NameTerminator</a>);
+				<b>if</b> (<span class="r68 r">end</span> == -1)
+					<b>continue</b>;
+				<a href="#aef531d17f6659ce" class="i property">Names</a>[<span class="r66 r">i</span>] = <span class="r67 r">name</span>.<a href="@0@mscorlib/A.html#8124961f027d9ac9" class="i method">Substring</a>(0, <span class="r68 r">end</span>);
+				<b>if</b> (<span class="r64 r">type</span> == <span class="s">&#39;\0&#39;</span> || <span class="r64 r">type</span> == <span class="r67 r">name</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r68 r">end</span>])
+					<span class="r64 r">type</span> = <span class="r67 r">name</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r68 r">end</span>];
+				<b>else</b>
+				{
+					<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(
+						<b>string</b>.<a href="@0@mscorlib/A.html#7432dab173fae5fc" class="i method">Format</a>(<span class="s">&quot;Conflicting option types: &#39;{0}&#39; vs. &#39;{1}&#39;.&quot;</span>, <span class="r64 r">type</span>, <span class="r67 r">name</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r68 r">end</span>]),
+						<span class="s">&quot;prototype&quot;</span>);
+				}
+				<a href="#f77fcf2a5e6c0065" class="i method">AddSeparators</a>(<span class="r67 r">name</span>, <span class="r68 r">end</span>, <span class="r65 r">seps</span>);
+			}
+ 
+			<b>if</b> (<span class="r64 r">type</span> == <span class="s">&#39;\0&#39;</span>)
+				<b>return</b> <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#f2618b20361ec5c3" class="i field">None</a>;
+ 
+			<b>if</b> (<a href="#29aec63e789a6794" class="i property">MaxValueCount</a> &lt;= 1 &amp;&amp; <span class="r65 r">seps</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> != 0)
+			{
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(
+					<b>string</b>.<a href="@0@mscorlib/A.html#9d5604d4425b216f" class="i method">Format</a>(<span class="s">&quot;Cannot provide key/value separators for Options taking {0} value(s).&quot;</span>, <a href="#29aec63e789a6794" class="i property">MaxValueCount</a>),
+					<span class="s">&quot;prototype&quot;</span>);
+			}
+			<b>if</b> (<a href="#29aec63e789a6794" class="i property">MaxValueCount</a> &gt; 1)
+			{
+				<b>if</b> (<span class="r65 r">seps</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> == 0)
+					<a href="#3aa36ac151069353" class="i property">ValueSeparators</a> = <b>new</b>[] { <span class="s">&quot;:&quot;</span>, <span class="s">&quot;=&quot;</span> };
+				<b>else if</b> (<span class="r65 r">seps</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> == 1 &amp;&amp; <span class="r65 r">seps</span>[0].<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> == 0)
+					<a href="#3aa36ac151069353" class="i property">ValueSeparators</a> = <b>null</b>;
+				<b>else</b>
+					<a href="#3aa36ac151069353" class="i property">ValueSeparators</a> = <span class="r65 r">seps</span>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+			}
+ 
+			<b>return</b> <span class="r64 r">type</span> == <span class="s">&#39;=&#39;</span> ? <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#81259a6a8d93fea0" class="i field">Required</a> : <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#059af8f25c234b51" class="i field">Optional</a>;
+		}
+ 
+		<b>static void</b> <a id="f77fcf2a5e6c0065" href="../R/f77fcf2a5e6c0065.html" target="n" data-glyph="76,1" class="i method">AddSeparators</a>(<b>string</b> <span id="r69 rd" class="r69 r">name</span>, <b>int</b> <span id="r70 rd" class="r70 r">end</span>, <a href="@0@mscorlib/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<b>string</b>&gt; <span id="r71 rd" class="r71 r">seps</span>)
+		{
+			<b>int</b> <span id="r72 rd" class="r72 r">start</span> = -1;
+			<b>for</b> (<b>int</b> <span id="r73 rd" class="r73 r">i</span> = <span class="r70 r">end</span> + 1; <span class="r73 r">i</span> &lt; <span class="r69 r">name</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>; ++<span class="r73 r">i</span>)
+			{
+				<b>switch</b> (<span class="r69 r">name</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r73 r">i</span>])
+				{
+					<b>case</b> <span class="s">&#39;{&#39;</span>:
+						<b>if</b> (<span class="r72 r">start</span> != -1)
+						{
+							<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(
+								<b>string</b>.<a href="@0@mscorlib/A.html#9d5604d4425b216f" class="i method">Format</a>(<span class="s">&quot;Ill-formed name/value separator found in \&quot;{0}\&quot;.&quot;</span>, <span class="r69 r">name</span>),
+								<span class="s">&quot;prototype&quot;</span>);
+						}
+						<span class="r72 r">start</span> = <span class="r73 r">i</span> + 1;
+						<b>break</b>;
+					<b>case</b> <span class="s">&#39;}&#39;</span>:
+						<b>if</b> (<span class="r72 r">start</span> == -1)
+						{
+							<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(
+								<b>string</b>.<a href="@0@mscorlib/A.html#9d5604d4425b216f" class="i method">Format</a>(<span class="s">&quot;Ill-formed name/value separator found in \&quot;{0}\&quot;.&quot;</span>, <span class="r69 r">name</span>),
+								<span class="s">&quot;prototype&quot;</span>);
+						}
+						<span class="r71 r">seps</span>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r69 r">name</span>.<a href="@0@mscorlib/A.html#8124961f027d9ac9" class="i method">Substring</a>(<span class="r72 r">start</span>, <span class="r73 r">i</span> - <span class="r72 r">start</span>));
+						<span class="r72 r">start</span> = -1;
+						<b>break</b>;
+					<b>default</b>:
+						<b>if</b> (<span class="r72 r">start</span> == -1)
+							<span class="r71 r">seps</span>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r69 r">name</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r73 r">i</span>].<a href="@0@mscorlib/A.html#8da116b4ffb677f2" class="i method">ToString</a>());
+						<b>break</b>;
+				}
+			}
+			<b>if</b> (<span class="r72 r">start</span> != -1)
+			{
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(
+					<b>string</b>.<a href="@0@mscorlib/A.html#9d5604d4425b216f" class="i method">Format</a>(<span class="s">&quot;Ill-formed name/value separator found in \&quot;{0}\&quot;.&quot;</span>, <span class="r69 r">name</span>),
+					<span class="s">&quot;prototype&quot;</span>);
+			}
+		}
+ 
+		<b>public void</b> <a id="6bac25321b90a7c6" href="../R/6bac25321b90a7c6.html" target="n" data-glyph="72,1" class="i method">Invoke</a>(<a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r74 rd" class="r74 r">c</span>)
+		{
+			<a href="#161efbac25476a64" class="i method">OnParseComplete</a>(<span class="r74 r">c</span>);
+			<span class="r74 r">c</span>.<a href="#4bf326d7465849bf" class="i property">OptionName</a> = <b>null</b>;
+			<span class="r74 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a> = <b>null</b>;
+			<span class="r74 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>.<a href="#2a1389c554330e7e" class="i method">Clear</a>();
+		}
+ 
+		<b>protected abstract void</b> <a id="161efbac25476a64" href="../R/161efbac25476a64.html" target="n" data-glyph="75,1" class="i method">OnParseComplete</a>(<a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r75 rd" class="r75 r">c</span>);
+ 
+		<b>public override string</b> <a id="d8299f85acf43446" href="../R/d8299f85acf43446.html" target="n" data-glyph="72,1" class="i method">ToString</a>()
+		{
+			<b>return</b> <a href="#ec1216942dc0e47c" class="i property">Prototype</a>;
+		}
+	}
+ 
+	<b>public abstract class</b> <a id="58c11e3d3621cbe1" href="../R/58c11e3d3621cbe1.html" target="n" data-glyph="0,0" class="t t"><span id="1b344a0f9a97105a">ArgumentSource</span></a>
+	{
+		<b>public abstract string</b> <a id="386d160056b3afa2" href="../R/386d160056b3afa2.html" target="n" data-glyph="102,1" class="i property">Description</a> { <b>get</b>; }
+ 
+		<b>public abstract string</b>[] <a id="541412fe80d75bbd" href="../R/541412fe80d75bbd.html" target="n" data-glyph="72,1" class="i method">GetNames</a>();
+		<b>public abstract bool</b> <a id="2aa6268b1f8b54c7" href="../R/2aa6268b1f8b54c7.html" target="n" data-glyph="72,1" class="i method">GetArguments</a>(<b>string</b> <span id="r76 rd" class="r76 r">value</span>, <b>out</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <span id="r77 rd" class="r77 r">replacement</span>);
+ 
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <a id="efed340cc310ac11" href="../R/efed340cc310ac11.html" target="n" data-glyph="72,1" class="i method">GetArgumentsFromFile</a>(<b>string</b> <span id="r78 rd" class="r78 r">file</span>)
+		{
+			<b>return</b> <a href="#f0c972de50a5a40f" class="i method">GetArguments</a>(<a href="@0@mscorlib/A.html#1c7421e464f67b7e" class="t t">File</a>.<a href="@0@mscorlib/A.html#019a819484daf2d2" class="i method">OpenText</a>(<span class="r78 r">file</span>), <b>true</b>);
+		}
+ 
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <a id="0dd2f66c3ccad0da" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetArguments</a>(<a href="@0@mscorlib/A.html#7b5eff52b5bf1164" class="t t">TextReader</a> <span id="r79 rd" class="r79 r">reader</span>)
+		{
+			<b>return</b> <a href="#f0c972de50a5a40f" class="i method">GetArguments</a>(<span class="r79 r">reader</span>, <b>false</b>);
+		}
+ 
+		<span class="c">// Cribbed from mcs/driver.cs:LoadArgs(string)</span>
+		<b>static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <a id="f0c972de50a5a40f" href="../R/f0c972de50a5a40f.html" target="n" data-glyph="76,1" class="i method">GetArguments</a>(<a href="@0@mscorlib/A.html#7b5eff52b5bf1164" class="t t">TextReader</a> <span id="r80 rd" class="r80 r">reader</span>, <b>bool</b> <span id="r81 rd" class="r81 r">close</span>)
+		{
+			<b>try</b>
+			{
+				<a href="@0@mscorlib/A.html#adf60ee46ebd299f" class="t t">StringBuilder</a> <span id="r82 rd" class="r82 r">arg</span> = <b>new</b> <a href="@0@mscorlib/A.html#6e631639c1e2746b" class="t constructor">StringBuilder</a>();
+ 
+				<b>string</b> <span id="r83 rd" class="r83 r">line</span>;
+				<b>while</b> ((<span class="r83 r">line</span> = <span class="r80 r">reader</span>.<a href="@0@mscorlib/A.html#91b2c7adbdc4b165" class="i method">ReadLine</a>()) != <b>null</b>)
+				{
+					<b>int</b> <span id="r84 rd" class="r84 r">t</span> = <span class="r83 r">line</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>;
+ 
+					<b>for</b> (<b>int</b> <span id="r85 rd" class="r85 r">i</span> = 0; <span class="r85 r">i</span> &lt; <span class="r84 r">t</span>; <span class="r85 r">i</span>++)
+					{
+						<b>char</b> <span id="r86 rd" class="r86 r">c</span> = <span class="r83 r">line</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r85 r">i</span>];
+ 
+						<b>if</b> (<span class="r86 r">c</span> == <span class="s">&#39;&quot;&#39;</span> || <span class="r86 r">c</span> == <span class="s">&#39;\&#39;&#39;</span>)
+						{
+							<b>char</b> <span id="r87 rd" class="r87 r">end</span> = <span class="r86 r">c</span>;
+ 
+							<b>for</b> (<span class="r85 r">i</span>++; <span class="r85 r">i</span> &lt; <span class="r84 r">t</span>; <span class="r85 r">i</span>++)
+							{
+								<span class="r86 r">c</span> = <span class="r83 r">line</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r85 r">i</span>];
+ 
+								<b>if</b> (<span class="r86 r">c</span> == <span class="r87 r">end</span>)
+									<b>break</b>;
+								<span class="r82 r">arg</span>.<a href="@0@mscorlib/A.html#a2e7c78d85807da5" class="i method">Append</a>(<span class="r86 r">c</span>);
+							}
+						}
+						<b>else if</b> (<span class="r86 r">c</span> == <span class="s">&#39; &#39;</span>)
+						{
+							<b>if</b> (<span class="r82 r">arg</span>.<a href="@0@mscorlib/A.html#7d7729bd88adac53" class="i property">Length</a> &gt; 0)
+							{
+								<b>yield return</b> <span class="r82 r">arg</span>.<a href="@0@mscorlib/A.html#5a97da49a158a3c9" class="i method">ToString</a>();
+								<span class="r82 r">arg</span>.<a href="@0@mscorlib/A.html#7d7729bd88adac53" class="i property">Length</a> = 0;
+							}
+						}
+						<b>else</b>
+							<span class="r82 r">arg</span>.<a href="@0@mscorlib/A.html#a2e7c78d85807da5" class="i method">Append</a>(<span class="r86 r">c</span>);
+					}
+					<b>if</b> (<span class="r82 r">arg</span>.<a href="@0@mscorlib/A.html#7d7729bd88adac53" class="i property">Length</a> &gt; 0)
+					{
+						<b>yield return</b> <span class="r82 r">arg</span>.<a href="@0@mscorlib/A.html#5a97da49a158a3c9" class="i method">ToString</a>();
+						<span class="r82 r">arg</span>.<a href="@0@mscorlib/A.html#7d7729bd88adac53" class="i property">Length</a> = 0;
+					}
+				}
+			}
+			<b>finally</b>
+			{
+				<b>if</b> (<span class="r81 r">close</span>)
+					<span class="r80 r">reader</span>.<a href="@0@mscorlib/A.html#ce78c4b298684916" class="i method">Close</a>();
+			}
+		}
+	}
+ 
+	<b>public class</b> <a id="1f84cee674736225" href="../R/../../0000000000.html" target="n" data-glyph="0,0" class="t t"><span id="04558730bec32b36">ResponseFileSource</span></a> : <a href="#58c11e3d3621cbe1" class="t t">ArgumentSource</a>
+	{
+		<b>public override string</b> <a id="385314347550fa1b" href="../R/385314347550fa1b.html" target="n" data-glyph="102,1" class="i property">Description</a>
+		{
+			<b>get</b> { <b>return</b> <span class="s">&quot;Read response file for more options.&quot;</span>; }
+		}
+ 
+		<b>public override string</b>[] <a id="8b05648acb894772" href="../R/8b05648acb894772.html" target="n" data-glyph="72,1" class="i method">GetNames</a>()
+		{
+			<b>return</b> <b>new</b>[] { <span class="s">&quot;@file&quot;</span> };
+		}
+ 
+		<b>public override bool</b> <a id="6571cf7ae72fdafa" href="../R/6571cf7ae72fdafa.html" target="n" data-glyph="72,1" class="i method">GetArguments</a>(<b>string</b> <span id="r88 rd" class="r88 r">value</span>, <b>out</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <span id="r89 rd" class="r89 r">replacement</span>)
+		{
+			<b>if</b> (<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r88 r">value</span>) || !<span class="r88 r">value</span>.<a href="@0@mscorlib/A.html#23804789ea4c9c0e" class="i method">StartsWith</a>(<span class="s">&quot;@&quot;</span>))
+			{
+				<span class="r89 r">replacement</span> = <b>null</b>;
+				<b>return false</b>;
+			}
+			<span class="r89 r">replacement</span> = <a href="#efed340cc310ac11" class="i method">GetArgumentsFromFile</a>(<span class="r88 r">value</span>.<a href="@0@mscorlib/A.html#882fa7998d6ca35a" class="i method">Substring</a>(1));
+			<b>return true</b>;
+		}
+	}
+ 
+	[<a href="@0@mscorlib/A.html#e971d5381ca60183" class="t constructor">Serializable</a>]
+	<b>public class</b> <a id="10174261e6002bc7" href="../R/10174261e6002bc7.html" target="n" data-glyph="0,0" class="t t">OptionException</a> : <a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a>
+	{
+		<b>public</b> <a id="2de29340f3abbae4" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">OptionException</a>()
+		{
+		}
+ 
+		<b>public</b> <a id="9106616f65cdf4e8" href="../R/9106616f65cdf4e8.html" target="n" data-glyph="72,1" class="i constructor">OptionException</a>(<b>string</b> <span id="r90 rd" class="r90 r">message</span>, <b>string</b> <span id="r91 rd" class="r91 r">optionName</span>)
+			: <a href="@0@mscorlib/A.html#df2d82d91ca29e40" class="k">base</a>(<span class="r90 r">message</span>)
+		{
+			<a href="#242b4c0f2828a56f" class="i property">OptionName</a> = <span class="r91 r">optionName</span>;
+		}
+ 
+		<b>public</b> <a id="b3326794b30615a1" href="../R/b3326794b30615a1.html" target="n" data-glyph="72,1" class="i constructor">OptionException</a>(<b>string</b> <span id="r92 rd" class="r92 r">message</span>, <b>string</b> <span id="r93 rd" class="r93 r">optionName</span>, <a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r94 rd" class="r94 r">innerException</span>)
+			: <a href="@0@mscorlib/A.html#266f59a804f72937" class="k">base</a>(<span class="r92 r">message</span>, <span class="r94 r">innerException</span>)
+		{
+			<a href="#242b4c0f2828a56f" class="i property">OptionName</a> = <span class="r93 r">optionName</span>;
+		}
+ 
+		<b>protected</b> <a id="d41a12fd763e0dcf" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">OptionException</a>(<a href="@0@mscorlib/A.html#4ade46c59f4e07b4" class="t t">SerializationInfo</a> <span id="r95 rd" class="r95 r">info</span>, <a href="@0@mscorlib/A.html#b8ef3c3075d2cf28" class="t t">StreamingContext</a> <span id="r96 rd" class="r96 r">context</span>)
+			: <a href="@0@mscorlib/A.html#af352dab4ec4ee5b" class="k">base</a>(<span class="r95 r">info</span>, <span class="r96 r">context</span>)
+		{
+			<a href="#242b4c0f2828a56f" class="i property">OptionName</a> = <span class="r95 r">info</span>.<a href="@0@mscorlib/A.html#baa6464112845430" class="i method">GetString</a>(<span class="s">&quot;OptionName&quot;</span>);
+		}
+ 
+		<b>public string</b> <a id="242b4c0f2828a56f" href="../R/242b4c0f2828a56f.html" target="n" data-glyph="102,1" class="i property">OptionName</a> { <b>get</b>; }
+ 
+		[<a href="@0@mscorlib/A.html#4bf484773e461f52" class="t constructor">SecurityPermission</a>(<a href="@0@mscorlib/A.html#4c10d5e557238022" class="t t">SecurityAction</a>.<a href="@0@mscorlib/A.html#686e34810824f865" class="i field">LinkDemand</a>, <a href="@0@mscorlib/A.html#932b408ba0788da5" class="i property">SerializationFormatter</a> = <b>true</b>)]
+		<b>public override void</b> <a id="30dab1ef7dc00e42" href="../R/30dab1ef7dc00e42.html" target="n" data-glyph="72,1" class="i method">GetObjectData</a>(<a href="@0@mscorlib/A.html#4ade46c59f4e07b4" class="t t">SerializationInfo</a> <span id="r97 rd" class="r97 r">info</span>, <a href="@0@mscorlib/A.html#b8ef3c3075d2cf28" class="t t">StreamingContext</a> <span id="r98 rd" class="r98 r">context</span>)
+		{
+			<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="k">base</a>.<a href="@0@mscorlib/A.html#fc1dcb30e55ae2d7" class="i method">GetObjectData</a>(<span class="r97 r">info</span>, <span class="r98 r">context</span>);
+			<span class="r97 r">info</span>.<a href="@0@mscorlib/A.html#f5f7d3040b2268bc" class="i method">AddValue</a>(<span class="s">&quot;OptionName&quot;</span>, <a href="#242b4c0f2828a56f" class="i property">OptionName</a>);
+		}
+	}
+ 
+	<b>public delegate void</b> <a id="a961cce5e48f6901" href="../R/a961cce5e48f6901.html" target="n" data-glyph="12,0" class="t t"><span id="76e0c6db6ee30106">OptionAction</span></a>&lt;<span id="r99 rd t" class="r99 r t">TKey</span>, <span id="r100 rd t" class="r100 r t">TValue</span>&gt;(<span class="r99 r t">TKey</span> <span id="r101 rd" class="r101 r">key</span>, <span class="r100 r t">TValue</span> <span id="r102 rd" class="r102 r">value</span>);
+ 
+	<b>public class</b> <a id="009bc28f77c44443" href="../R/009bc28f77c44443.html" target="n" data-glyph="0,0" class="t t">OptionSet</a> : <a href="@0@mscorlib/A.html#ced1024bdf76c9e1" class="t t">KeyedCollection</a>&lt;<b>string</b>, <a href="#bd6987d29833d621" class="t t">Option</a>&gt;
+	{
+		<b>const int</b> <a id="b2749a0d4357ff42" href="../R/b2749a0d4357ff42.html" target="n" data-glyph="10,1" class="i field">OptionWidth</a> = 29;
+		<b>const int</b> <a id="fe69d7bd25e568d1" href="../R/fe69d7bd25e568d1.html" target="n" data-glyph="10,1" class="i field">DescriptionFirstWidth</a> = 80 - <a href="#b2749a0d4357ff42" class="i field">OptionWidth</a>;
+		<b>const int</b> <a id="8b0bb4d6955e7723" href="../R/8b0bb4d6955e7723.html" target="n" data-glyph="10,1" class="i field">DescriptionRemWidth</a> = 80 - <a href="#b2749a0d4357ff42" class="i field">OptionWidth</a> - 2;
+ 
+		<b>readonly</b> <a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#58c11e3d3621cbe1" class="t t">ArgumentSource</a>&gt; <a id="71a0ed3b3c6bf9ec" href="../R/71a0ed3b3c6bf9ec.html" target="n" data-glyph="46,1" class="i field">_sources</a> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="#58c11e3d3621cbe1" class="t t">ArgumentSource</a>&gt;();
+ 
+		<b>readonly</b> <a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a> <a id="2b910c42c2a330fc" href="../R/2b910c42c2a330fc.html" target="n" data-glyph="46,1" class="i field">_valueOption</a> = <b>new</b> <a href="@0@System/A.html#71b5945bb883860b" class="t constructor">Regex</a>(
+			<span class="s">@&quot;^(?&lt;flag&gt;--|-|/)(?&lt;name&gt;[^:=]+)((?&lt;sep&gt;[:=])(?&lt;value&gt;.*))?$&quot;</span>);
+ 
+		<b>public</b> <a id="4ae42cde4333ea53" href="../R/4ae42cde4333ea53.html" target="n" data-glyph="72,1" class="i constructor">OptionSet</a>()
+			: <a href="#307dfd869acd916a" class="k">this</a>(<b>delegate</b>(<b>string</b> <span id="r103 rd" class="r103 r">f</span>) { <b>return</b> <span class="r103 r">f</span>; })
+		{
+		}
+ 
+		<b>public</b> <a id="307dfd869acd916a" href="../R/307dfd869acd916a.html" target="n" data-glyph="72,1" class="i constructor">OptionSet</a>(<a href="@0@mscorlib/A.html#39a21c9cc539e88d" class="t t">Converter</a>&lt;<b>string</b>, <b>string</b>&gt; <span id="r104 rd" class="r104 r">localizer</span>)
+		{
+			<a href="#7b4794fe29b204ab" class="i property">MessageLocalizer</a> = <span class="r104 r">localizer</span>;
+			<a href="#376fdf1dec409e6d" class="i property">ArgumentSources</a> = <b>new</b> <a href="@0@mscorlib/A.html#64e45c8a9b38b1c2" class="t constructor">ReadOnlyCollection</a>&lt;<a href="#58c11e3d3621cbe1" class="t t">ArgumentSource</a>&gt;(<a href="#71a0ed3b3c6bf9ec" class="i field">_sources</a>);
+		}
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#39a21c9cc539e88d" class="t t">Converter</a>&lt;<b>string</b>, <b>string</b>&gt; <a id="7b4794fe29b204ab" href="../R/7b4794fe29b204ab.html" target="n" data-glyph="102,1" class="i property">MessageLocalizer</a> { <b>get</b>; }
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#aafef79f3fced6c2" class="t t">ReadOnlyCollection</a>&lt;<a href="#58c11e3d3621cbe1" class="t t">ArgumentSource</a>&gt; <a id="376fdf1dec409e6d" href="../R/376fdf1dec409e6d.html" target="n" data-glyph="102,1" class="i property">ArgumentSources</a> { <b>get</b>; }
+ 
+		<b>protected override string</b> <a id="243751e6e3746d22" href="../R/243751e6e3746d22.html" target="n" data-glyph="75,1" class="i method">GetKeyForItem</a>(<a href="#bd6987d29833d621" class="t t">Option</a> <span id="r105 rd" class="r105 r">item</span>)
+		{
+			<b>if</b> (<span class="r105 r">item</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;option&quot;</span>);
+			<b>if</b> (<span class="r105 r">item</span>.<a href="#aef531d17f6659ce" class="i property">Names</a> != <b>null</b> &amp;&amp; <span class="r105 r">item</span>.<a href="#aef531d17f6659ce" class="i property">Names</a>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0)
+				<b>return</b> <span class="r105 r">item</span>.<a href="#aef531d17f6659ce" class="i property">Names</a>[0];
+			<span class="c">// This should never happen, as it&#39;s invalid for Option to be</span>
+			<span class="c">// constructed w/o any names.</span>
+			<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;Option has no names!&quot;</span>);
+		}
+ 
+		[<a href="@0@mscorlib/A.html#66ed4e142f4e14e7" class="t constructor">Obsolete</a>(<span class="s">&quot;GetOptionForName is obsolete as of 1.1.0. Please use KeyedCollection.this[string] instead.&quot;</span>)]
+		<b>protected</b> <a href="#bd6987d29833d621" class="t t">Option</a> <a id="e61032eceba91efa" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">GetOptionForName</a>(<b>string</b> <span id="r106 rd" class="r106 r">option</span>)
+		{
+			<b>if</b> (<span class="r106 r">option</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;option&quot;</span>);
+			<b>try</b>
+			{
+				<b>return</b> <a href="@0@mscorlib/A.html#ced1024bdf76c9e1" class="k">base</a><a href="@0@mscorlib/A.html#71fd55721337ea0c">[</a><span class="r106 r">option</span>];
+			}
+			<b>catch</b> (<a href="@0@mscorlib/A.html#4e5d8fbb690f6391" class="t t">KeyNotFoundException</a>)
+			{
+				<b>return null</b>;
+			}
+		}
+ 
+		<b>protected override void</b> <a id="8de093f0aa6baf6e" href="../R/8de093f0aa6baf6e.html" target="n" data-glyph="75,1" class="i method">InsertItem</a>(<b>int</b> <span id="r107 rd" class="r107 r">index</span>, <a href="#bd6987d29833d621" class="t t">Option</a> <span id="r108 rd" class="r108 r">item</span>)
+		{
+			<a href="@0@mscorlib/A.html#ced1024bdf76c9e1" class="k">base</a>.<a href="@0@mscorlib/A.html#ce05de531b8e92b5" class="i method">InsertItem</a>(<span class="r107 r">index</span>, <span class="r108 r">item</span>);
+			<a href="#89d11231f45d41a1" class="i method">AddImpl</a>(<span class="r108 r">item</span>);
+		}
+ 
+		<b>protected override void</b> <a id="68b0b4c03452a866" href="../R/68b0b4c03452a866.html" target="n" data-glyph="75,1" class="i method">RemoveItem</a>(<b>int</b> <span id="r109 rd" class="r109 r">index</span>)
+		{
+			<a href="#bd6987d29833d621" class="t t">Option</a> <span id="r110 rd" class="r110 r">p</span> = <a href="@0@mscorlib/A.html#a0629dbd0f63a60e" class="i property">Items</a><a href="@0@mscorlib/A.html#396bb785d31f5979">[</a><span class="r109 r">index</span>];
+			<a href="@0@mscorlib/A.html#ced1024bdf76c9e1" class="k">base</a>.<a href="@0@mscorlib/A.html#8a9bd8d66dce6a35" class="i method">RemoveItem</a>(<span class="r109 r">index</span>);
+			<span class="c">// KeyedCollection.RemoveItem() handles the 0th item</span>
+			<b>for</b> (<b>int</b> <span id="r111 rd" class="r111 r">i</span> = 1; <span class="r111 r">i</span> &lt; <span class="r110 r">p</span>.<a href="#aef531d17f6659ce" class="i property">Names</a>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a>; ++<span class="r111 r">i</span>)
+				<a href="@0@mscorlib/A.html#41e8303328703fe4" class="i property">Dictionary</a>.<a href="@0@mscorlib/A.html#3682f274b2ca119f" class="i method">Remove</a>(<span class="r110 r">p</span>.<a href="#aef531d17f6659ce" class="i property">Names</a>[<span class="r111 r">i</span>]);
+		}
+ 
+		<b>protected override void</b> <a id="8c3f5270e6baec21" href="../R/8c3f5270e6baec21.html" target="n" data-glyph="75,1" class="i method">SetItem</a>(<b>int</b> <span id="r112 rd" class="r112 r">index</span>, <a href="#bd6987d29833d621" class="t t">Option</a> <span id="r113 rd" class="r113 r">item</span>)
+		{
+			<a href="@0@mscorlib/A.html#ced1024bdf76c9e1" class="k">base</a>.<a href="@0@mscorlib/A.html#d1a55527ace643c0" class="i method">SetItem</a>(<span class="r112 r">index</span>, <span class="r113 r">item</span>);
+			<a href="#89d11231f45d41a1" class="i method">AddImpl</a>(<span class="r113 r">item</span>);
+		}
+ 
+		<b>void</b> <a id="89d11231f45d41a1" href="../R/89d11231f45d41a1.html" target="n" data-glyph="76,1" class="i method">AddImpl</a>(<a href="#bd6987d29833d621" class="t t">Option</a> <span id="r114 rd" class="r114 r">option</span>)
+		{
+			<b>if</b> (<span class="r114 r">option</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;option&quot;</span>);
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>string</b>&gt; <span id="r115 rd" class="r115 r">added</span> = <b>new</b> <a href="@0@mscorlib/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<b>string</b>&gt;(<span class="r114 r">option</span>.<a href="#aef531d17f6659ce" class="i property">Names</a>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a>);
+			<b>try</b>
+			{
+				<span class="c">// KeyedCollection.InsertItem/SetItem handle the 0th name.</span>
+				<b>for</b> (<b>int</b> <span id="r116 rd" class="r116 r">i</span> = 1; <span class="r116 r">i</span> &lt; <span class="r114 r">option</span>.<a href="#aef531d17f6659ce" class="i property">Names</a>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a>; ++<span class="r116 r">i</span>)
+				{
+					<a href="@0@mscorlib/A.html#41e8303328703fe4" class="i property">Dictionary</a>.<a href="@0@mscorlib/A.html#380bc69e46a83183" class="i method">Add</a>(<span class="r114 r">option</span>.<a href="#aef531d17f6659ce" class="i property">Names</a>[<span class="r116 r">i</span>], <span class="r114 r">option</span>);
+					<span class="r115 r">added</span>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r114 r">option</span>.<a href="#aef531d17f6659ce" class="i property">Names</a>[<span class="r116 r">i</span>]);
+				}
+			}
+			<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a>)
+			{
+				<b>foreach</b> (<b>string</b> <span id="r117 rd" class="r117 r">name</span> <b>in</b> <span class="r115 r">added</span>)
+					<a href="@0@mscorlib/A.html#41e8303328703fe4" class="i property">Dictionary</a>.<a href="@0@mscorlib/A.html#3682f274b2ca119f" class="i method">Remove</a>(<span class="r117 r">name</span>);
+				<b>throw</b>;
+			}
+		}
+ 
+		<b>public</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="791c50da564129a1" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Add</a>(<b>string</b> <span id="r118 rd" class="r118 r">header</span>)
+		{
+			<b>if</b> (<span class="r118 r">header</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;header&quot;</span>);
+			<a href="#36b8f561a55b45de" class="i method">Add</a>(<b>new</b> <a href="#eb15d237f75391d1" class="t constructor">Category</a>(<span class="r118 r">header</span>));
+			<b>return</b> <a href="#009bc28f77c44443" class="k">this</a>;
+		}
+ 
+		<b>public</b> <b>new</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="36b8f561a55b45de" href="../R/36b8f561a55b45de.html" target="n" data-glyph="72,1" class="i method">Add</a>(<a href="#bd6987d29833d621" class="t t">Option</a> <span id="r119 rd" class="r119 r">option</span>)
+		{
+			<a href="@0@mscorlib/A.html#ced1024bdf76c9e1" class="k">base</a>.<a href="@0@mscorlib/A.html#5c61cc24de82f7e7" class="i method">Add</a>(<span class="r119 r">option</span>);
+			<b>return</b> <a href="#009bc28f77c44443" class="k">this</a>;
+		}
+ 
+		<b>public</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="4447698f8c0bff73" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Add</a>(<b>string</b> <span id="r120 rd" class="r120 r">prototype</span>, <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>string</b>&gt; <span id="r121 rd" class="r121 r">action</span>)
+		{
+			<b>return</b> <a href="#f10fb4a06f999d2e" class="i method">Add</a>(<span class="r120 r">prototype</span>, <b>null</b>, <span class="r121 r">action</span>);
+		}
+ 
+		<b>public</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="f10fb4a06f999d2e" href="../R/f10fb4a06f999d2e.html" target="n" data-glyph="72,1" class="i method">Add</a>(<b>string</b> <span id="r122 rd" class="r122 r">prototype</span>, <b>string</b> <span id="r123 rd" class="r123 r">description</span>, <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>string</b>&gt; <span id="r124 rd" class="r124 r">action</span>)
+		{
+			<b>if</b> (<span class="r124 r">action</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;action&quot;</span>);
+			<a href="#bd6987d29833d621" class="t t">Option</a> <span id="r125 rd" class="r125 r">p</span> = <b>new</b> <a href="#420622266cbf3a10" class="t constructor">ActionOption</a>(<span class="r122 r">prototype</span>, <span class="r123 r">description</span>, 1,
+				<b>delegate</b>(<a href="#baf018f1aad48b20" class="t t">OptionValueCollection</a> <span id="r126 rd" class="r126 r">v</span>) { <span class="r124 r">action</span>(<span class="r126 r">v</span>[0]); });
+			<a href="@0@mscorlib/A.html#ced1024bdf76c9e1" class="k">base</a>.<a href="@0@mscorlib/A.html#5c61cc24de82f7e7" class="i method">Add</a>(<span class="r125 r">p</span>);
+			<b>return</b> <a href="#009bc28f77c44443" class="k">this</a>;
+		}
+ 
+		<b>public</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="84ef04be4c5ed035" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Add</a>(<b>string</b> <span id="r127 rd" class="r127 r">prototype</span>, <a href="#a961cce5e48f6901" class="t t">OptionAction</a>&lt;<b>string</b>, <b>string</b>&gt; <span id="r128 rd" class="r128 r">action</span>)
+		{
+			<b>return</b> <a href="#a9ed364296690eb3" class="i method">Add</a>(<span class="r127 r">prototype</span>, <b>null</b>, <span class="r128 r">action</span>);
+		}
+ 
+		<b>public</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="a9ed364296690eb3" href="../R/a9ed364296690eb3.html" target="n" data-glyph="72,1" class="i method">Add</a>(<b>string</b> <span id="r129 rd" class="r129 r">prototype</span>, <b>string</b> <span id="r130 rd" class="r130 r">description</span>, <a href="#a961cce5e48f6901" class="t t">OptionAction</a>&lt;<b>string</b>, <b>string</b>&gt; <span id="r131 rd" class="r131 r">action</span>)
+		{
+			<b>if</b> (<span class="r131 r">action</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;action&quot;</span>);
+			<a href="#bd6987d29833d621" class="t t">Option</a> <span id="r132 rd" class="r132 r">p</span> = <b>new</b> <a href="#420622266cbf3a10" class="t constructor">ActionOption</a>(<span class="r129 r">prototype</span>, <span class="r130 r">description</span>, 2,
+				<b>delegate</b>(<a href="#baf018f1aad48b20" class="t t">OptionValueCollection</a> <span id="r133 rd" class="r133 r">v</span>) { <span class="r131 r">action</span>(<span class="r133 r">v</span>[0], <span class="r133 r">v</span>[1]); });
+			<a href="@0@mscorlib/A.html#ced1024bdf76c9e1" class="k">base</a>.<a href="@0@mscorlib/A.html#5c61cc24de82f7e7" class="i method">Add</a>(<span class="r132 r">p</span>);
+			<b>return</b> <a href="#009bc28f77c44443" class="k">this</a>;
+		}
+ 
+		<b>public</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="224541d33f5ae2d4" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Add</a>&lt;<span id="r134 rd t" class="r134 r t">T</span>&gt;(<b>string</b> <span id="r135 rd" class="r135 r">prototype</span>, <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="r134 r t">T</span>&gt; <span id="r136 rd" class="r136 r">action</span>)
+		{
+			<b>return</b> <a href="#5e13b4e92066754a" class="i method">Add</a>(<span class="r135 r">prototype</span>, <b>null</b>, <span class="r136 r">action</span>);
+		}
+ 
+		<b>public</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="5e13b4e92066754a" href="../R/5e13b4e92066754a.html" target="n" data-glyph="72,1" class="i method">Add</a>&lt;<span id="r137 rd t" class="r137 r t">T</span>&gt;(<b>string</b> <span id="r138 rd" class="r138 r">prototype</span>, <b>string</b> <span id="r139 rd" class="r139 r">description</span>, <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="r137 r t">T</span>&gt; <span id="r140 rd" class="r140 r">action</span>)
+		{
+			<b>return</b> <a href="#36b8f561a55b45de" class="i method">Add</a>(<b>new</b> <a href="#d900aa020651094f" class="t constructor">ActionOption</a>&lt;<span class="r137 r t">T</span>&gt;(<span class="r138 r">prototype</span>, <span class="r139 r">description</span>, <span class="r140 r">action</span>));
+		}
+ 
+		<b>public</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="7bdf769e7aa11c91" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Add</a>&lt;<span id="r141 rd t" class="r141 r t">TKey</span>, <span id="r142 rd t" class="r142 r t">TValue</span>&gt;(<b>string</b> <span id="r143 rd" class="r143 r">prototype</span>, <a href="#a961cce5e48f6901" class="t t">OptionAction</a>&lt;<span class="r141 r t">TKey</span>, <span class="r142 r t">TValue</span>&gt; <span id="r144 rd" class="r144 r">action</span>)
+		{
+			<b>return</b> <a href="#13aefbe98d778615" class="i method">Add</a>(<span class="r143 r">prototype</span>, <b>null</b>, <span class="r144 r">action</span>);
+		}
+ 
+		<b>public</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="13aefbe98d778615" href="../R/13aefbe98d778615.html" target="n" data-glyph="72,1" class="i method">Add</a>&lt;<span id="r145 rd t" class="r145 r t">TKey</span>, <span id="r146 rd t" class="r146 r t">TValue</span>&gt;(<b>string</b> <span id="r147 rd" class="r147 r">prototype</span>, <b>string</b> <span id="r148 rd" class="r148 r">description</span>, <a href="#a961cce5e48f6901" class="t t">OptionAction</a>&lt;<span class="r145 r t">TKey</span>, <span class="r146 r t">TValue</span>&gt; <span id="r149 rd" class="r149 r">action</span>)
+		{
+			<b>return</b> <a href="#36b8f561a55b45de" class="i method">Add</a>(<b>new</b> <a href="#ffacf92c7efcd570" class="t constructor">ActionOption</a>&lt;<span class="r145 r t">TKey</span>, <span class="r146 r t">TValue</span>&gt;(<span class="r147 r">prototype</span>, <span class="r148 r">description</span>, <span class="r149 r">action</span>));
+		}
+ 
+		<b>public</b> <a href="#009bc28f77c44443" class="t t">OptionSet</a> <a id="e781d6b4effaf525" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Add</a>(<a href="#58c11e3d3621cbe1" class="t t">ArgumentSource</a> <span id="r150 rd" class="r150 r">source</span>)
+		{
+			<b>if</b> (<span class="r150 r">source</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;source&quot;</span>);
+			<a href="#71a0ed3b3c6bf9ec" class="i field">_sources</a>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r150 r">source</span>);
+			<b>return</b> <a href="#009bc28f77c44443" class="k">this</a>;
+		}
+ 
+		<b>protected virtual</b> <a href="#2b15b2e105738031" class="t t">OptionContext</a> <a id="83b7a5f7bdfca4e5" href="../R/83b7a5f7bdfca4e5.html" target="n" data-glyph="75,1" class="i method">CreateOptionContext</a>()
+		{
+			<b>return</b> <b>new</b> <a href="#9430f94bef5aa8ad" class="t constructor">OptionContext</a>(<a href="#009bc28f77c44443" class="k">this</a>);
+		}
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>string</b>&gt; <a id="079179278b813de3" href="../R/079179278b813de3.html" target="n" data-glyph="72,1" class="i method">Parse</a>(<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <span id="r151 rd" class="r151 r">arguments</span>)
+		{
+			<b>if</b> (<span class="r151 r">arguments</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;arguments&quot;</span>);
+			<a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r152 rd" class="r152 r">c</span> = <a href="#83b7a5f7bdfca4e5" class="i method">CreateOptionContext</a>();
+			<span class="r152 r">c</span>.<a href="#ff0ca03be698f259" class="i property">OptionIndex</a> = -1;
+			<b>bool</b> <span id="r153 rd" class="r153 r">process</span> = <b>true</b>;
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>string</b>&gt; <span id="r154 rd" class="r154 r">unprocessed</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;();
+			<a href="#bd6987d29833d621" class="t t">Option</a> <span id="r155 rd" class="r155 r">def</span> = <a href="@0@mscorlib/A.html#8d5bdf30529b921e" class="i method">Contains</a>(<span class="s">&quot;&lt;&gt;&quot;</span>) ? <a href="#009bc28f77c44443" class="k">this</a><a href="@0@mscorlib/A.html#71fd55721337ea0c">[</a><span class="s">&quot;&lt;&gt;&quot;</span>] : <b>null</b>;
+			<a href="#06b708e9c27b1217" class="t t">ArgumentEnumerator</a> <span id="r156 rd" class="r156 r">ae</span> = <b>new</b> <a href="#b0a842c7f5bdd44c" class="t constructor">ArgumentEnumerator</a>(<span class="r151 r">arguments</span>);
+			<b>foreach</b> (<b>string</b> <span id="r157 rd" class="r157 r">argument</span> <b>in</b> <span class="r156 r">ae</span>)
+			{
+				++<span class="r152 r">c</span>.<a href="#ff0ca03be698f259" class="i property">OptionIndex</a>;
+				<b>if</b> (<span class="r157 r">argument</span> == <span class="s">&quot;--&quot;</span>)
+				{
+					<span class="r153 r">process</span> = <b>false</b>;
+					<b>continue</b>;
+				}
+				<b>if</b> (!<span class="r153 r">process</span>)
+				{
+					<a href="#51efadc7b9953e92" class="i method">Unprocessed</a>(<span class="r154 r">unprocessed</span>, <span class="r155 r">def</span>, <span class="r152 r">c</span>, <span class="r157 r">argument</span>);
+					<b>continue</b>;
+				}
+				<b>if</b> (<a href="#a6bfac93466a81fc" class="i method">AddSource</a>(<span class="r156 r">ae</span>, <span class="r157 r">argument</span>))
+					<b>continue</b>;
+				<b>if</b> (!<a href="#ca03bfdb2fa72e20" class="i method">Parse</a>(<span class="r157 r">argument</span>, <span class="r152 r">c</span>))
+					<a href="#51efadc7b9953e92" class="i method">Unprocessed</a>(<span class="r154 r">unprocessed</span>, <span class="r155 r">def</span>, <span class="r152 r">c</span>, <span class="r157 r">argument</span>);
+			}
+			<b>if</b> (<span class="r152 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a> != <b>null</b>)
+				<span class="r152 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#6bac25321b90a7c6" class="i method">Invoke</a>(<span class="r152 r">c</span>);
+			<b>return</b> <span class="r154 r">unprocessed</span>;
+		}
+ 
+		<b>bool</b> <a id="a6bfac93466a81fc" href="../R/a6bfac93466a81fc.html" target="n" data-glyph="76,1" class="i method">AddSource</a>(<a href="#06b708e9c27b1217" class="t t">ArgumentEnumerator</a> <span id="r158 rd" class="r158 r">ae</span>, <b>string</b> <span id="r159 rd" class="r159 r">argument</span>)
+		{
+			<b>foreach</b> (<a href="#58c11e3d3621cbe1" class="t t">ArgumentSource</a> <span id="r160 rd" class="r160 r">source</span> <b>in</b> <a href="#71a0ed3b3c6bf9ec" class="i field">_sources</a>)
+			{
+				<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <span id="r161 rd" class="r161 r">replacement</span>;
+				<b>if</b> (!<span class="r160 r">source</span>.<a href="#2aa6268b1f8b54c7" class="i method">GetArguments</a>(<span class="r159 r">argument</span>, <b>out</b> <span class="r161 r">replacement</span>))
+					<b>continue</b>;
+				<span class="r158 r">ae</span>.<a href="#74ac097433b38678" class="i method">Add</a>(<span class="r161 r">replacement</span>);
+				<b>return true</b>;
+			}
+			<b>return false</b>;
+		}
+ 
+		<b>static bool</b> <a id="51efadc7b9953e92" href="../R/51efadc7b9953e92.html" target="n" data-glyph="76,1" class="i method">Unprocessed</a>(<a href="@0@mscorlib/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<b>string</b>&gt; <span id="r162 rd" class="r162 r">extra</span>, <a href="#bd6987d29833d621" class="t t">Option</a> <span id="r163 rd" class="r163 r">def</span>, <a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r164 rd" class="r164 r">c</span>, <b>string</b> <span id="r165 rd" class="r165 r">argument</span>)
+		{
+			<b>if</b> (<span class="r163 r">def</span> == <b>null</b>)
+			{
+				<span class="r162 r">extra</span>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r165 r">argument</span>);
+				<b>return false</b>;
+			}
+			<span class="r164 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>.<a href="#5ed42f6f07496787" class="i method">Add</a>(<span class="r165 r">argument</span>);
+			<span class="r164 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a> = <span class="r163 r">def</span>;
+			<span class="r164 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#6bac25321b90a7c6" class="i method">Invoke</a>(<span class="r164 r">c</span>);
+			<b>return false</b>;
+		}
+ 
+		<b>protected bool</b> <a id="5e9be60f891ea0f3" href="../R/5e9be60f891ea0f3.html" target="n" data-glyph="75,1" class="i method">GetOptionParts</a>(<b>string</b> <span id="r166 rd" class="r166 r">argument</span>, <b>out string</b> <span id="r167 rd" class="r167 r">flag</span>, <b>out string</b> <span id="r168 rd" class="r168 r">name</span>, <b>out string</b> <span id="r169 rd" class="r169 r">sep</span>, <b>out string</b> <span id="r170 rd" class="r170 r">value</span>)
+		{
+			<b>if</b> (<span class="r166 r">argument</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;argument&quot;</span>);
+ 
+			<span class="r167 r">flag</span> = <span class="r168 r">name</span> = <span class="r169 r">sep</span> = <span class="r170 r">value</span> = <b>null</b>;
+			<a href="@0@System/A.html#d8a604d3af777b1c" class="t t">Match</a> <span id="r171 rd" class="r171 r">m</span> = <a href="#2b910c42c2a330fc" class="i field">_valueOption</a>.<a href="@0@System/A.html#7ef0f10a0d96f10f" class="i method">Match</a>(<span class="r166 r">argument</span>);
+			<b>if</b> (!<span class="r171 r">m</span>.<a href="@0@System/A.html#6e96d62f437bdbb7" class="i property">Success</a>)
+				<b>return false</b>;
+			<span class="r167 r">flag</span> = <span class="r171 r">m</span>.<a href="@0@System/A.html#882064d8e42ed216" class="i property">Groups</a><a href="@0@System/A.html#5317b443a52cfc71">[</a><span class="s">&quot;flag&quot;</span>].<a href="@0@System/A.html#5cf0d171c91c6cc1" class="i property">Value</a>;
+			<span class="r168 r">name</span> = <span class="r171 r">m</span>.<a href="@0@System/A.html#882064d8e42ed216" class="i property">Groups</a><a href="@0@System/A.html#5317b443a52cfc71">[</a><span class="s">&quot;name&quot;</span>].<a href="@0@System/A.html#5cf0d171c91c6cc1" class="i property">Value</a>;
+			<b>if</b> (<span class="r171 r">m</span>.<a href="@0@System/A.html#882064d8e42ed216" class="i property">Groups</a><a href="@0@System/A.html#5317b443a52cfc71">[</a><span class="s">&quot;sep&quot;</span>].<a href="@0@System/A.html#6e96d62f437bdbb7" class="i property">Success</a> &amp;&amp; <span class="r171 r">m</span>.<a href="@0@System/A.html#882064d8e42ed216" class="i property">Groups</a><a href="@0@System/A.html#5317b443a52cfc71">[</a><span class="s">&quot;value&quot;</span>].<a href="@0@System/A.html#6e96d62f437bdbb7" class="i property">Success</a>)
+			{
+				<span class="r169 r">sep</span> = <span class="r171 r">m</span>.<a href="@0@System/A.html#882064d8e42ed216" class="i property">Groups</a><a href="@0@System/A.html#5317b443a52cfc71">[</a><span class="s">&quot;sep&quot;</span>].<a href="@0@System/A.html#5cf0d171c91c6cc1" class="i property">Value</a>;
+				<span class="r170 r">value</span> = <span class="r171 r">m</span>.<a href="@0@System/A.html#882064d8e42ed216" class="i property">Groups</a><a href="@0@System/A.html#5317b443a52cfc71">[</a><span class="s">&quot;value&quot;</span>].<a href="@0@System/A.html#5cf0d171c91c6cc1" class="i property">Value</a>;
+			}
+			<b>return true</b>;
+		}
+ 
+		<b>protected virtual bool</b> <a id="ca03bfdb2fa72e20" href="../R/ca03bfdb2fa72e20.html" target="n" data-glyph="75,1" class="i method">Parse</a>(<b>string</b> <span id="r172 rd" class="r172 r">argument</span>, <a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r173 rd" class="r173 r">c</span>)
+		{
+			<b>if</b> (<span class="r173 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a> != <b>null</b>)
+			{
+				<a href="#4ccb0e3f3eb2615d" class="i method">ParseValue</a>(<span class="r172 r">argument</span>, <span class="r173 r">c</span>);
+				<b>return true</b>;
+			}
+ 
+			<b>string</b> <span id="r174 rd" class="r174 r">f</span>, <span id="r175 rd" class="r175 r">n</span>, <span id="r176 rd" class="r176 r">s</span>, <span id="r177 rd" class="r177 r">v</span>;
+			<b>if</b> (!<a href="#5e9be60f891ea0f3" class="i method">GetOptionParts</a>(<span class="r172 r">argument</span>, <b>out</b> <span class="r174 r">f</span>, <b>out</b> <span class="r175 r">n</span>, <b>out</b> <span class="r176 r">s</span>, <b>out</b> <span class="r177 r">v</span>))
+				<b>return false</b>;
+ 
+			<a href="#bd6987d29833d621" class="t t">Option</a> <span id="r178 rd" class="r178 r">p</span>;
+			<b>if</b> (<a href="@0@mscorlib/A.html#8d5bdf30529b921e" class="i method">Contains</a>(<span class="r175 r">n</span>))
+			{
+				<span class="r178 r">p</span> = <a href="#009bc28f77c44443" class="k">this</a><a href="@0@mscorlib/A.html#71fd55721337ea0c">[</a><span class="r175 r">n</span>];
+				<span class="r173 r">c</span>.<a href="#4bf326d7465849bf" class="i property">OptionName</a> = <span class="r174 r">f</span> + <span class="r175 r">n</span>;
+				<span class="r173 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a> = <span class="r178 r">p</span>;
+				<b>switch</b> (<span class="r178 r">p</span>.<a href="#20e8bf7141bfd912" class="i property">OptionValueType</a>)
+				{
+					<b>case</b> <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#f2618b20361ec5c3" class="i field">None</a>:
+						<span class="r173 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>.<a href="#5ed42f6f07496787" class="i method">Add</a>(<span class="r175 r">n</span>);
+						<span class="r173 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#6bac25321b90a7c6" class="i method">Invoke</a>(<span class="r173 r">c</span>);
+						<b>break</b>;
+					<b>case</b> <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#059af8f25c234b51" class="i field">Optional</a>:
+					<b>case</b> <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#81259a6a8d93fea0" class="i field">Required</a>:
+						<a href="#4ccb0e3f3eb2615d" class="i method">ParseValue</a>(<span class="r177 r">v</span>, <span class="r173 r">c</span>);
+						<b>break</b>;
+				}
+				<b>return true</b>;
+			}
+			<span class="c">// no match; is it a bool option?</span>
+			<b>if</b> (<a href="#b2f6cf69a75e6953" class="i method">ParseBool</a>(<span class="r172 r">argument</span>, <span class="r175 r">n</span>, <span class="r173 r">c</span>))
+				<b>return true</b>;
+			<span class="c">// is it a bundled option?</span>
+			<b>if</b> (<a href="#0906c510c0b2d1bf" class="i method">ParseBundledValue</a>(<span class="r174 r">f</span>, <b>string</b>.<a href="@0@mscorlib/A.html#75e4bdc056f3daf0" class="i method">Concat</a>(<span class="r175 r">n</span> + <span class="r176 r">s</span> + <span class="r177 r">v</span>), <span class="r173 r">c</span>))
+				<b>return true</b>;
+ 
+			<b>return false</b>;
+		}
+ 
+		<b>void</b> <a id="4ccb0e3f3eb2615d" href="../R/4ccb0e3f3eb2615d.html" target="n" data-glyph="76,1" class="i method">ParseValue</a>(<b>string</b> <span id="r179 rd" class="r179 r">option</span>, <a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r180 rd" class="r180 r">c</span>)
+		{
+			<b>if</b> (<span class="r179 r">option</span> != <b>null</b>)
+			{
+				<b>foreach</b> (<b>string</b> <span id="r181 rd" class="r181 r">o</span> <b>in</b> <span class="r180 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#3aa36ac151069353" class="i property">ValueSeparators</a> != <b>null</b>
+					? <span class="r179 r">option</span>.<a href="@0@mscorlib/A.html#0fb72f997ae1ab43" class="i method">Split</a>(<span class="r180 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#3aa36ac151069353" class="i property">ValueSeparators</a>, <span class="r180 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#29aec63e789a6794" class="i property">MaxValueCount</a> - <span class="r180 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>.<a href="#a38fd377de337df4" class="i property">Count</a>, <a href="@0@mscorlib/A.html#a948431c3f385783" class="t t">StringSplitOptions</a>.<a href="@0@mscorlib/A.html#03026d3a84da22cb" class="i field">None</a>)
+					: <b>new</b>[] { <span class="r179 r">option</span> })
+					<span class="r180 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>.<a href="#5ed42f6f07496787" class="i method">Add</a>(<span class="r181 r">o</span>);
+			}
+			<b>if</b> (<span class="r180 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>.<a href="#a38fd377de337df4" class="i property">Count</a> == <span class="r180 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#29aec63e789a6794" class="i property">MaxValueCount</a> ||
+			    <span class="r180 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#20e8bf7141bfd912" class="i property">OptionValueType</a> == <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#059af8f25c234b51" class="i field">Optional</a>)
+				<span class="r180 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#6bac25321b90a7c6" class="i method">Invoke</a>(<span class="r180 r">c</span>);
+			<b>else if</b> (<span class="r180 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>.<a href="#a38fd377de337df4" class="i property">Count</a> &gt; <span class="r180 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#29aec63e789a6794" class="i property">MaxValueCount</a>)
+			{
+				<b>throw</b> <b>new</b> <a href="#9106616f65cdf4e8" class="t constructor">OptionException</a>(<a href="#7b4794fe29b204ab" class="i property">MessageLocalizer</a>(<b>string</b>.<a href="@0@mscorlib/A.html#7432dab173fae5fc" class="i method">Format</a>(
+					<span class="s">&quot;Error: Found {0} option values when expecting {1}.&quot;</span>,
+					<span class="r180 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>.<a href="#a38fd377de337df4" class="i property">Count</a>, <span class="r180 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a>.<a href="#29aec63e789a6794" class="i property">MaxValueCount</a>)),
+					<span class="r180 r">c</span>.<a href="#4bf326d7465849bf" class="i property">OptionName</a>);
+			}
+		}
+ 
+		<b>bool</b> <a id="b2f6cf69a75e6953" href="../R/b2f6cf69a75e6953.html" target="n" data-glyph="76,1" class="i method">ParseBool</a>(<b>string</b> <span id="r182 rd" class="r182 r">option</span>, <b>string</b> <span id="r183 rd" class="r183 r">n</span>, <a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r184 rd" class="r184 r">c</span>)
+		{
+			<a href="#bd6987d29833d621" class="t t">Option</a> <span id="r185 rd" class="r185 r">p</span>;
+			<b>string</b> <span id="r186 rd" class="r186 r">rn</span>;
+			<b>if</b> (<span class="r183 r">n</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> &gt;= 1 &amp;&amp; (<span class="r183 r">n</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r183 r">n</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> - 1] == <span class="s">&#39;+&#39;</span> || <span class="r183 r">n</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r183 r">n</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> - 1] == <span class="s">&#39;-&#39;</span>) &amp;&amp;
+			    <a href="@0@mscorlib/A.html#8d5bdf30529b921e" class="i method">Contains</a>((<span class="r186 r">rn</span> = <span class="r183 r">n</span>.<a href="@0@mscorlib/A.html#8124961f027d9ac9" class="i method">Substring</a>(0, <span class="r183 r">n</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> - 1))))
+			{
+				<span class="r185 r">p</span> = <a href="#009bc28f77c44443" class="k">this</a><a href="@0@mscorlib/A.html#71fd55721337ea0c">[</a><span class="r186 r">rn</span>];
+				<b>string</b> <span id="r187 rd" class="r187 r">v</span> = <span class="r183 r">n</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r183 r">n</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> - 1] == <span class="s">&#39;+&#39;</span> ? <span class="r182 r">option</span> : <b>null</b>;
+				<span class="r184 r">c</span>.<a href="#4bf326d7465849bf" class="i property">OptionName</a> = <span class="r182 r">option</span>;
+				<span class="r184 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a> = <span class="r185 r">p</span>;
+				<span class="r184 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>.<a href="#5ed42f6f07496787" class="i method">Add</a>(<span class="r187 r">v</span>);
+				<span class="r185 r">p</span>.<a href="#6bac25321b90a7c6" class="i method">Invoke</a>(<span class="r184 r">c</span>);
+				<b>return true</b>;
+			}
+			<b>return false</b>;
+		}
+ 
+		<b>bool</b> <a id="0906c510c0b2d1bf" href="../R/0906c510c0b2d1bf.html" target="n" data-glyph="76,1" class="i method">ParseBundledValue</a>(<b>string</b> <span id="r188 rd" class="r188 r">f</span>, <b>string</b> <span id="r189 rd" class="r189 r">n</span>, <a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r190 rd" class="r190 r">c</span>)
+		{
+			<b>if</b> (<span class="r188 r">f</span> != <span class="s">&quot;-&quot;</span>)
+				<b>return false</b>;
+			<b>for</b> (<b>int</b> <span id="r191 rd" class="r191 r">i</span> = 0; <span class="r191 r">i</span> &lt; <span class="r189 r">n</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>; ++<span class="r191 r">i</span>)
+			{
+				<a href="#bd6987d29833d621" class="t t">Option</a> <span id="r192 rd" class="r192 r">p</span>;
+				<b>string</b> <span id="r193 rd" class="r193 r">opt</span> = <span class="r188 r">f</span> + <span class="r189 r">n</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r191 r">i</span>];
+				<b>string</b> <span id="r194 rd" class="r194 r">rn</span> = <span class="r189 r">n</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r191 r">i</span>].<a href="@0@mscorlib/A.html#8da116b4ffb677f2" class="i method">ToString</a>();
+				<b>if</b> (!<a href="@0@mscorlib/A.html#8d5bdf30529b921e" class="i method">Contains</a>(<span class="r194 r">rn</span>))
+				{
+					<b>if</b> (<span class="r191 r">i</span> == 0)
+						<b>return false</b>;
+					<b>throw</b> <b>new</b> <a href="#9106616f65cdf4e8" class="t constructor">OptionException</a>(<b>string</b>.<a href="@0@mscorlib/A.html#9d5604d4425b216f" class="i method">Format</a>(<a href="#7b4794fe29b204ab" class="i property">MessageLocalizer</a>(
+						<span class="s">&quot;Cannot bundle unregistered option &#39;{0}&#39;.&quot;</span>), <span class="r193 r">opt</span>), <span class="r193 r">opt</span>);
+				}
+				<span class="r192 r">p</span> = <a href="#009bc28f77c44443" class="k">this</a><a href="@0@mscorlib/A.html#71fd55721337ea0c">[</a><span class="r194 r">rn</span>];
+				<b>switch</b> (<span class="r192 r">p</span>.<a href="#20e8bf7141bfd912" class="i property">OptionValueType</a>)
+				{
+					<b>case</b> <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#f2618b20361ec5c3" class="i field">None</a>:
+						<a href="#bdc7a56dfedad6d3" class="i method">Invoke</a>(<span class="r190 r">c</span>, <span class="r193 r">opt</span>, <span class="r189 r">n</span>, <span class="r192 r">p</span>);
+						<b>break</b>;
+					<b>case</b> <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#059af8f25c234b51" class="i field">Optional</a>:
+					<b>case</b> <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#81259a6a8d93fea0" class="i field">Required</a>:
+					{
+						<b>string</b> <span id="r195 rd" class="r195 r">v</span> = <span class="r189 r">n</span>.<a href="@0@mscorlib/A.html#882fa7998d6ca35a" class="i method">Substring</a>(<span class="r191 r">i</span> + 1);
+						<span class="r190 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a> = <span class="r192 r">p</span>;
+						<span class="r190 r">c</span>.<a href="#4bf326d7465849bf" class="i property">OptionName</a> = <span class="r193 r">opt</span>;
+						<a href="#4ccb0e3f3eb2615d" class="i method">ParseValue</a>(<span class="r195 r">v</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> != 0 ? <span class="r195 r">v</span> : <b>null</b>, <span class="r190 r">c</span>);
+						<b>return true</b>;
+					}
+					<b>default</b>:
+						<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;Unknown OptionValueType: &quot;</span> + <span class="r192 r">p</span>.<a href="#20e8bf7141bfd912" class="i property">OptionValueType</a>);
+				}
+			}
+			<b>return true</b>;
+		}
+ 
+		<b>static void</b> <a id="bdc7a56dfedad6d3" href="../R/bdc7a56dfedad6d3.html" target="n" data-glyph="76,1" class="i method">Invoke</a>(<a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r196 rd" class="r196 r">c</span>, <b>string</b> <span id="r197 rd" class="r197 r">name</span>, <b>string</b> <span id="r198 rd" class="r198 r">value</span>, <a href="#bd6987d29833d621" class="t t">Option</a> <span id="r199 rd" class="r199 r">option</span>)
+		{
+			<span class="r196 r">c</span>.<a href="#4bf326d7465849bf" class="i property">OptionName</a> = <span class="r197 r">name</span>;
+			<span class="r196 r">c</span>.<a href="#a7206c19fa7df124" class="i property">Option</a> = <span class="r199 r">option</span>;
+			<span class="r196 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>.<a href="#5ed42f6f07496787" class="i method">Add</a>(<span class="r198 r">value</span>);
+			<span class="r199 r">option</span>.<a href="#6bac25321b90a7c6" class="i method">Invoke</a>(<span class="r196 r">c</span>);
+		}
+ 
+		<b>public void</b> <a id="b5edb34a5d289cd5" href="../R/b5edb34a5d289cd5.html" target="n" data-glyph="72,1" class="i method">WriteOptionDescriptions</a>(<a href="@0@mscorlib/A.html#6e84a88dc2be46e3" class="t t">TextWriter</a> <span id="r200 rd" class="r200 r">o</span>)
+		{
+			<b>foreach</b> (<a href="#bd6987d29833d621" class="t t">Option</a> <span id="r201 rd" class="r201 r">p</span> <b>in</b> <a href="#009bc28f77c44443" class="k">this</a>)
+			{
+				<b>int</b> <span id="r202 rd" class="r202 r">written</span> = 0;
+ 
+				<a href="#457a854b1f27ceda" class="t t">Category</a> <span id="r203 rd" class="r203 r">c</span> = <span class="r201 r">p</span> <b>as</b> <a href="#457a854b1f27ceda" class="t t">Category</a>;
+				<b>if</b> (<span class="r203 r">c</span> != <b>null</b>)
+				{
+					<a href="#6c38dcdd829d5e21" class="i method">WriteDescription</a>(<span class="r200 r">o</span>, <span class="r201 r">p</span>.<a href="#50435f4a7733bda3" class="i property">Description</a>, <span class="s">&quot;&quot;</span>, 80, 80);
+					<b>continue</b>;
+				}
+ 
+				<b>if</b> (!<a href="#84535ab12612c62b" class="i method">WriteOptionPrototype</a>(<span class="r200 r">o</span>, <span class="r201 r">p</span>, <b>ref</b> <span class="r202 r">written</span>))
+					<b>continue</b>;
+ 
+				<b>if</b> (<span class="r202 r">written</span> &lt; <a href="#b2749a0d4357ff42" class="i field">OptionWidth</a>)
+					<span class="r200 r">o</span>.<a href="@0@mscorlib/A.html#d3fb8ea93246e9a9" class="i method">Write</a>(<b>new</b> <b>string</b>(<span class="s">&#39; &#39;</span>, <a href="#b2749a0d4357ff42" class="i field">OptionWidth</a> - <span class="r202 r">written</span>));
+				<b>else</b>
+				{
+					<span class="r200 r">o</span>.<a href="@0@mscorlib/A.html#d2497198aa8f74c0" class="i method">WriteLine</a>();
+					<span class="r200 r">o</span>.<a href="@0@mscorlib/A.html#d3fb8ea93246e9a9" class="i method">Write</a>(<b>new</b> <b>string</b>(<span class="s">&#39; &#39;</span>, <a href="#b2749a0d4357ff42" class="i field">OptionWidth</a>));
+				}
+ 
+				<a href="#6c38dcdd829d5e21" class="i method">WriteDescription</a>(<span class="r200 r">o</span>, <span class="r201 r">p</span>.<a href="#50435f4a7733bda3" class="i property">Description</a>, <b>new</b> <b>string</b>(<span class="s">&#39; &#39;</span>, <a href="#b2749a0d4357ff42" class="i field">OptionWidth</a> + 2),
+					<a href="#fe69d7bd25e568d1" class="i field">DescriptionFirstWidth</a>, <a href="#8b0bb4d6955e7723" class="i field">DescriptionRemWidth</a>);
+			}
+ 
+			<b>foreach</b> (<a href="#58c11e3d3621cbe1" class="t t">ArgumentSource</a> <span id="r204 rd" class="r204 r">s</span> <b>in</b> <a href="#71a0ed3b3c6bf9ec" class="i field">_sources</a>)
+			{
+				<b>string</b>[] <span id="r205 rd" class="r205 r">names</span> = <span class="r204 r">s</span>.<a href="#541412fe80d75bbd" class="i method">GetNames</a>();
+				<b>if</b> (<span class="r205 r">names</span> == <b>null</b> || <span class="r205 r">names</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> == 0)
+					<b>continue</b>;
+ 
+				<b>int</b> <span id="r206 rd" class="r206 r">written</span> = 0;
+ 
+				<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r200 r">o</span>, <b>ref</b> <span class="r206 r">written</span>, <span class="s">&quot;  &quot;</span>);
+				<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r200 r">o</span>, <b>ref</b> <span class="r206 r">written</span>, <span class="r205 r">names</span>[0]);
+				<b>for</b> (<b>int</b> <span id="r207 rd" class="r207 r">i</span> = 1; <span class="r207 r">i</span> &lt; <span class="r205 r">names</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a>; ++<span class="r207 r">i</span>)
+				{
+					<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r200 r">o</span>, <b>ref</b> <span class="r206 r">written</span>, <span class="s">&quot;, &quot;</span>);
+					<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r200 r">o</span>, <b>ref</b> <span class="r206 r">written</span>, <span class="r205 r">names</span>[<span class="r207 r">i</span>]);
+				}
+ 
+				<b>if</b> (<span class="r206 r">written</span> &lt; <a href="#b2749a0d4357ff42" class="i field">OptionWidth</a>)
+					<span class="r200 r">o</span>.<a href="@0@mscorlib/A.html#d3fb8ea93246e9a9" class="i method">Write</a>(<b>new</b> <b>string</b>(<span class="s">&#39; &#39;</span>, <a href="#b2749a0d4357ff42" class="i field">OptionWidth</a> - <span class="r206 r">written</span>));
+				<b>else</b>
+				{
+					<span class="r200 r">o</span>.<a href="@0@mscorlib/A.html#d2497198aa8f74c0" class="i method">WriteLine</a>();
+					<span class="r200 r">o</span>.<a href="@0@mscorlib/A.html#d3fb8ea93246e9a9" class="i method">Write</a>(<b>new</b> <b>string</b>(<span class="s">&#39; &#39;</span>, <a href="#b2749a0d4357ff42" class="i field">OptionWidth</a>));
+				}
+ 
+				<a href="#6c38dcdd829d5e21" class="i method">WriteDescription</a>(<span class="r200 r">o</span>, <span class="r204 r">s</span>.<a href="#386d160056b3afa2" class="i property">Description</a>, <b>new</b> <b>string</b>(<span class="s">&#39; &#39;</span>, <a href="#b2749a0d4357ff42" class="i field">OptionWidth</a> + 2),
+					<a href="#fe69d7bd25e568d1" class="i field">DescriptionFirstWidth</a>, <a href="#8b0bb4d6955e7723" class="i field">DescriptionRemWidth</a>);
+			}
+		}
+ 
+		<b>void</b> <a id="6c38dcdd829d5e21" href="../R/6c38dcdd829d5e21.html" target="n" data-glyph="76,1" class="i method">WriteDescription</a>(<a href="@0@mscorlib/A.html#6e84a88dc2be46e3" class="t t">TextWriter</a> <span id="r208 rd" class="r208 r">o</span>, <b>string</b> <span id="r209 rd" class="r209 r">value</span>, <b>string</b> <span id="r210 rd" class="r210 r">prefix</span>, <b>int</b> <span id="r211 rd" class="r211 r">firstWidth</span>, <b>int</b> <span id="r212 rd" class="r212 r">remWidth</span>)
+		{
+			<b>bool</b> <span id="r213 rd" class="r213 r">indent</span> = <b>false</b>;
+			<b>foreach</b> (<b>string</b> <span id="r214 rd" class="r214 r">line</span> <b>in</b> <a href="#2c14c48b06edd9ab" class="i method">GetLines</a>(<a href="#7b4794fe29b204ab" class="i property">MessageLocalizer</a>(<a href="#9c1a9dc3bb0cce12" class="i method">GetDescription</a>(<span class="r209 r">value</span>)), <span class="r211 r">firstWidth</span>, <span class="r212 r">remWidth</span>))
+			{
+				<b>if</b> (<span class="r213 r">indent</span>)
+					<span class="r208 r">o</span>.<a href="@0@mscorlib/A.html#d3fb8ea93246e9a9" class="i method">Write</a>(<span class="r210 r">prefix</span>);
+				<span class="r208 r">o</span>.<a href="@0@mscorlib/A.html#5238cceaebfeaa74" class="i method">WriteLine</a>(<span class="r214 r">line</span>);
+				<span class="r213 r">indent</span> = <b>true</b>;
+			}
+		}
+ 
+		<b>bool</b> <a id="84535ab12612c62b" href="../R/84535ab12612c62b.html" target="n" data-glyph="76,1" class="i method">WriteOptionPrototype</a>(<a href="@0@mscorlib/A.html#6e84a88dc2be46e3" class="t t">TextWriter</a> <span id="r215 rd" class="r215 r">o</span>, <a href="#bd6987d29833d621" class="t t">Option</a> <span id="r216 rd" class="r216 r">p</span>, <b>ref int</b> <span id="r217 rd" class="r217 r">written</span>)
+		{
+			<b>string</b>[] <span id="r218 rd" class="r218 r">names</span> = <span class="r216 r">p</span>.<a href="#aef531d17f6659ce" class="i property">Names</a>;
+ 
+			<b>int</b> <span id="r219 rd" class="r219 r">i</span> = <a href="#3a07ce1df266548a" class="i method">GetNextOptionIndex</a>(<span class="r218 r">names</span>, 0);
+			<b>if</b> (<span class="r219 r">i</span> == <span class="r218 r">names</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a>)
+				<b>return false</b>;
+ 
+			<b>if</b> (<span class="r218 r">names</span>[<span class="r219 r">i</span>].<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> == 1)
+			{
+				<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r215 r">o</span>, <b>ref</b> <span class="r217 r">written</span>, <span class="s">&quot;  -&quot;</span>);
+				<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r215 r">o</span>, <b>ref</b> <span class="r217 r">written</span>, <span class="r218 r">names</span>[0]);
+			}
+			<b>else</b>
+			{
+				<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r215 r">o</span>, <b>ref</b> <span class="r217 r">written</span>, <span class="s">&quot;      --&quot;</span>);
+				<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r215 r">o</span>, <b>ref</b> <span class="r217 r">written</span>, <span class="r218 r">names</span>[0]);
+			}
+ 
+			<b>for</b> (<span class="r219 r">i</span> = <a href="#3a07ce1df266548a" class="i method">GetNextOptionIndex</a>(<span class="r218 r">names</span>, <span class="r219 r">i</span> + 1);
+				<span class="r219 r">i</span> &lt; <span class="r218 r">names</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a>;
+				<span class="r219 r">i</span> = <a href="#3a07ce1df266548a" class="i method">GetNextOptionIndex</a>(<span class="r218 r">names</span>, <span class="r219 r">i</span> + 1))
+			{
+				<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r215 r">o</span>, <b>ref</b> <span class="r217 r">written</span>, <span class="s">&quot;, &quot;</span>);
+				<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r215 r">o</span>, <b>ref</b> <span class="r217 r">written</span>, <span class="r218 r">names</span>[<span class="r219 r">i</span>].<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> == 1 ? <span class="s">&quot;-&quot;</span> : <span class="s">&quot;--&quot;</span>);
+				<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r215 r">o</span>, <b>ref</b> <span class="r217 r">written</span>, <span class="r218 r">names</span>[<span class="r219 r">i</span>]);
+			}
+ 
+			<b>if</b> (<span class="r216 r">p</span>.<a href="#20e8bf7141bfd912" class="i property">OptionValueType</a> == <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#059af8f25c234b51" class="i field">Optional</a> ||
+			    <span class="r216 r">p</span>.<a href="#20e8bf7141bfd912" class="i property">OptionValueType</a> == <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#81259a6a8d93fea0" class="i field">Required</a>)
+			{
+				<b>if</b> (<span class="r216 r">p</span>.<a href="#20e8bf7141bfd912" class="i property">OptionValueType</a> == <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#059af8f25c234b51" class="i field">Optional</a>)
+					<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r215 r">o</span>, <b>ref</b> <span class="r217 r">written</span>, <a href="#7b4794fe29b204ab" class="i property">MessageLocalizer</a>(<span class="s">&quot;[&quot;</span>));
+				<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r215 r">o</span>, <b>ref</b> <span class="r217 r">written</span>, <a href="#7b4794fe29b204ab" class="i property">MessageLocalizer</a>(<span class="s">&quot;=&quot;</span> + <a href="#9178e1f3f7594b7a" class="i method">GetArgumentName</a>(0, <span class="r216 r">p</span>.<a href="#29aec63e789a6794" class="i property">MaxValueCount</a>, <span class="r216 r">p</span>.<a href="#50435f4a7733bda3" class="i property">Description</a>)));
+				<b>string</b> <span id="r220 rd" class="r220 r">sep</span> = <span class="r216 r">p</span>.<a href="#3aa36ac151069353" class="i property">ValueSeparators</a> != <b>null</b> &amp;&amp; <span class="r216 r">p</span>.<a href="#3aa36ac151069353" class="i property">ValueSeparators</a>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0
+					? <span class="r216 r">p</span>.<a href="#3aa36ac151069353" class="i property">ValueSeparators</a>[0]
+					: <span class="s">&quot; &quot;</span>;
+				<b>for</b> (<b>int</b> <span id="r221 rd" class="r221 r">c</span> = 1; <span class="r221 r">c</span> &lt; <span class="r216 r">p</span>.<a href="#29aec63e789a6794" class="i property">MaxValueCount</a>; ++<span class="r221 r">c</span>)
+					<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r215 r">o</span>, <b>ref</b> <span class="r217 r">written</span>, <a href="#7b4794fe29b204ab" class="i property">MessageLocalizer</a>(<span class="r220 r">sep</span> + <a href="#9178e1f3f7594b7a" class="i method">GetArgumentName</a>(<span class="r221 r">c</span>, <span class="r216 r">p</span>.<a href="#29aec63e789a6794" class="i property">MaxValueCount</a>, <span class="r216 r">p</span>.<a href="#50435f4a7733bda3" class="i property">Description</a>)));
+				<b>if</b> (<span class="r216 r">p</span>.<a href="#20e8bf7141bfd912" class="i property">OptionValueType</a> == <a href="#b3b9b87f8bb196a2" class="t t">OptionValueType</a>.<a href="#059af8f25c234b51" class="i field">Optional</a>)
+					<a href="#767e1e7247cebed2" class="i method">Write</a>(<span class="r215 r">o</span>, <b>ref</b> <span class="r217 r">written</span>, <a href="#7b4794fe29b204ab" class="i property">MessageLocalizer</a>(<span class="s">&quot;]&quot;</span>));
+			}
+			<b>return true</b>;
+		}
+ 
+		<b>static int</b> <a id="3a07ce1df266548a" href="../R/3a07ce1df266548a.html" target="n" data-glyph="76,1" class="i method">GetNextOptionIndex</a>(<b>string</b>[] <span id="r222 rd" class="r222 r">names</span>, <b>int</b> <span id="r223 rd" class="r223 r">i</span>)
+		{
+			<b>while</b> (<span class="r223 r">i</span> &lt; <span class="r222 r">names</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &amp;&amp; <span class="r222 r">names</span>[<span class="r223 r">i</span>] == <span class="s">&quot;&lt;&gt;&quot;</span>)
+				++<span class="r223 r">i</span>;
+			<b>return</b> <span class="r223 r">i</span>;
+		}
+ 
+		<b>static void</b> <a id="767e1e7247cebed2" href="../R/767e1e7247cebed2.html" target="n" data-glyph="76,1" class="i method">Write</a>(<a href="@0@mscorlib/A.html#6e84a88dc2be46e3" class="t t">TextWriter</a> <span id="r224 rd" class="r224 r">o</span>, <b>ref int</b> <span id="r225 rd" class="r225 r">n</span>, <b>string</b> <span id="r226 rd" class="r226 r">s</span>)
+		{
+			<span class="r225 r">n</span> += <span class="r226 r">s</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>;
+			<span class="r224 r">o</span>.<a href="@0@mscorlib/A.html#d3fb8ea93246e9a9" class="i method">Write</a>(<span class="r226 r">s</span>);
+		}
+ 
+		<b>static string</b> <a id="9178e1f3f7594b7a" href="../R/9178e1f3f7594b7a.html" target="n" data-glyph="76,1" class="i method">GetArgumentName</a>(<b>int</b> <span id="r227 rd" class="r227 r">index</span>, <b>int</b> <span id="r228 rd" class="r228 r">maxIndex</span>, <b>string</b> <span id="r229 rd" class="r229 r">description</span>)
+		{
+			<b>if</b> (<span class="r229 r">description</span> == <b>null</b>)
+				<b>return</b> <span class="r228 r">maxIndex</span> == 1 ? <span class="s">&quot;VALUE&quot;</span> : <span class="s">&quot;VALUE&quot;</span> + (<span class="r227 r">index</span> + 1);
+			<b>string</b>[] <span id="r230 rd" class="r230 r">nameStart</span>;
+			<b>if</b> (<span class="r228 r">maxIndex</span> == 1)
+				<span class="r230 r">nameStart</span> = <b>new</b>[] { <span class="s">&quot;{0:&quot;</span>, <span class="s">&quot;{&quot;</span> };
+			<b>else</b>
+				<span class="r230 r">nameStart</span> = <b>new</b>[] { <span class="s">&quot;{&quot;</span> + <span class="r227 r">index</span> + <span class="s">&quot;:&quot;</span> };
+			<b>for</b> (<b>int</b> <span id="r231 rd" class="r231 r">i</span> = 0; <span class="r231 r">i</span> &lt; <span class="r230 r">nameStart</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a>; ++<span class="r231 r">i</span>)
+			{
+				<b>int</b> <span id="r232 rd" class="r232 r">start</span>, <span id="r233 rd" class="r233 r">j</span> = 0;
+				<b>do</b>
+				{
+					<span class="r232 r">start</span> = <span class="r229 r">description</span>.<a href="@0@mscorlib/A.html#458eb43a8be97cd7" class="i method">IndexOf</a>(<span class="r230 r">nameStart</span>[<span class="r231 r">i</span>], <span class="r233 r">j</span>);
+				} <b>while</b> (<span class="r232 r">start</span> &gt;= 0 &amp;&amp; <span class="r233 r">j</span> != 0 ? <span class="r229 r">description</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r233 r">j</span>++ - 1] == <span class="s">&#39;{&#39;</span> : <b>false</b>);
+				<b>if</b> (<span class="r232 r">start</span> == -1)
+					<b>continue</b>;
+				<b>int</b> <span id="r234 rd" class="r234 r">end</span> = <span class="r229 r">description</span>.<a href="@0@mscorlib/A.html#458eb43a8be97cd7" class="i method">IndexOf</a>(<span class="s">&quot;}&quot;</span>, <span class="r232 r">start</span>);
+				<b>if</b> (<span class="r234 r">end</span> == -1)
+					<b>continue</b>;
+				<b>return</b> <span class="r229 r">description</span>.<a href="@0@mscorlib/A.html#8124961f027d9ac9" class="i method">Substring</a>(<span class="r232 r">start</span> + <span class="r230 r">nameStart</span>[<span class="r231 r">i</span>].<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>, <span class="r234 r">end</span> - <span class="r232 r">start</span> - <span class="r230 r">nameStart</span>[<span class="r231 r">i</span>].<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>);
+			}
+			<b>return</b> <span class="r228 r">maxIndex</span> == 1 ? <span class="s">&quot;VALUE&quot;</span> : <span class="s">&quot;VALUE&quot;</span> + (<span class="r227 r">index</span> + 1);
+		}
+ 
+		<b>static string</b> <a id="9c1a9dc3bb0cce12" href="../R/9c1a9dc3bb0cce12.html" target="n" data-glyph="76,1" class="i method">GetDescription</a>(<b>string</b> <span id="r235 rd" class="r235 r">description</span>)
+		{
+			<b>if</b> (<span class="r235 r">description</span> == <b>null</b>)
+				<b>return string</b>.<a href="@0@mscorlib/A.html#c9f70a27facb27cf" class="i field">Empty</a>;
+			<a href="@0@mscorlib/A.html#adf60ee46ebd299f" class="t t">StringBuilder</a> <span id="r236 rd" class="r236 r">sb</span> = <b>new</b> <a href="@0@mscorlib/A.html#ec674e2123a44860" class="t constructor">StringBuilder</a>(<span class="r235 r">description</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>);
+			<b>int</b> <span id="r237 rd" class="r237 r">start</span> = -1;
+			<b>for</b> (<b>int</b> <span id="r238 rd" class="r238 r">i</span> = 0; <span class="r238 r">i</span> &lt; <span class="r235 r">description</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a>; ++<span class="r238 r">i</span>)
+			{
+				<b>switch</b> (<span class="r235 r">description</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r238 r">i</span>])
+				{
+					<b>case</b> <span class="s">&#39;{&#39;</span>:
+						<b>if</b> (<span class="r238 r">i</span> == <span class="r237 r">start</span>)
+						{
+							<span class="r236 r">sb</span>.<a href="@0@mscorlib/A.html#a2e7c78d85807da5" class="i method">Append</a>(<span class="s">&#39;{&#39;</span>);
+							<span class="r237 r">start</span> = -1;
+						}
+						<b>else if</b> (<span class="r237 r">start</span> &lt; 0)
+							<span class="r237 r">start</span> = <span class="r238 r">i</span> + 1;
+						<b>break</b>;
+					<b>case</b> <span class="s">&#39;}&#39;</span>:
+						<b>if</b> (<span class="r237 r">start</span> &lt; 0)
+						{
+							<b>if</b> ((<span class="r238 r">i</span> + 1) == <span class="r235 r">description</span>.<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> || <span class="r235 r">description</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r238 r">i</span> + 1] != <span class="s">&#39;}&#39;</span>)
+								<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;Invalid option description: &quot;</span> + <span class="r235 r">description</span>);
+							++<span class="r238 r">i</span>;
+							<span class="r236 r">sb</span>.<a href="@0@mscorlib/A.html#e8eaef3c361184bc" class="i method">Append</a>(<span class="s">&quot;}&quot;</span>);
+						}
+						<b>else</b>
+						{
+							<span class="r236 r">sb</span>.<a href="@0@mscorlib/A.html#e8eaef3c361184bc" class="i method">Append</a>(<span class="r235 r">description</span>.<a href="@0@mscorlib/A.html#8124961f027d9ac9" class="i method">Substring</a>(<span class="r237 r">start</span>, <span class="r238 r">i</span> - <span class="r237 r">start</span>));
+							<span class="r237 r">start</span> = -1;
+						}
+						<b>break</b>;
+					<b>case</b> <span class="s">&#39;:&#39;</span>:
+						<b>if</b> (<span class="r237 r">start</span> &lt; 0)
+							<b>goto default</b>;
+						<span class="r237 r">start</span> = <span class="r238 r">i</span> + 1;
+						<b>break</b>;
+					<b>default</b>:
+						<b>if</b> (<span class="r237 r">start</span> &lt; 0)
+							<span class="r236 r">sb</span>.<a href="@0@mscorlib/A.html#a2e7c78d85807da5" class="i method">Append</a>(<span class="r235 r">description</span><a href="@0@mscorlib/A.html#8307d03426b56fe1">[</a><span class="r238 r">i</span>]);
+						<b>break</b>;
+				}
+			}
+			<b>return</b> <span class="r236 r">sb</span>.<a href="@0@mscorlib/A.html#5a97da49a158a3c9" class="i method">ToString</a>();
+		}
+ 
+		<b>static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <a id="2c14c48b06edd9ab" href="../R/2c14c48b06edd9ab.html" target="n" data-glyph="76,1" class="i method">GetLines</a>(<b>string</b> <span id="r239 rd" class="r239 r">description</span>, <b>int</b> <span id="r240 rd" class="r240 r">firstWidth</span>, <b>int</b> <span id="r241 rd" class="r241 r">remWidth</span>)
+		{
+			<b>return</b> <a href="#60cda9354dfde2b8" class="t t">StringCoda</a>.<a href="#69f7b656272372a5" class="i method">WrappedLines</a>(<span class="r239 r">description</span>, <span class="r240 r">firstWidth</span>, <span class="r241 r">remWidth</span>);
+		}
+ 
+		<b>internal sealed class</b> <a id="457a854b1f27ceda" href="../R/457a854b1f27ceda.html" target="n" data-glyph="2,1" class="t t">Category</a> : <a href="#bd6987d29833d621" class="t t">Option</a>
+		{
+			<span class="c">// Prototype starts with &#39;=&#39; because this is an invalid prototype</span>
+			<span class="c">// (see Option.ParsePrototype(), and thus it&#39;ll prevent Category</span>
+			<span class="c">// instances from being accidentally used as normal options.</span>
+			<b>public</b> <a id="eb15d237f75391d1" href="../R/eb15d237f75391d1.html" target="n" data-glyph="72,2" class="i constructor">Category</a>(<b>string</b> <span id="r242 rd" class="r242 r">description</span>)
+				: <a href="#68ca408f43570e1e" class="k">base</a>(<span class="s">&quot;=:Category:= &quot;</span> + <span class="r242 r">description</span>, <span class="r242 r">description</span>)
+			{
+			}
+ 
+			<b>protected override void</b> <a id="7bcf47e3bf6d30ed" href="../R/7bcf47e3bf6d30ed.html" target="n" data-glyph="75,2" class="i method">OnParseComplete</a>(<a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r243 rd" class="r243 r">c</span>)
+			{
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#3d3c2c03118be4f8" class="t constructor">NotSupportedException</a>(<span class="s">&quot;Category.OnParseComplete should not be invoked.&quot;</span>);
+			}
+		}
+ 
+		<b>sealed class</b> <a id="359674d73804713e" href="../R/359674d73804713e.html" target="n" data-glyph="4,1" class="t t">ActionOption</a> : <a href="#bd6987d29833d621" class="t t">Option</a>
+		{
+			<b>readonly</b> <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<a href="#baf018f1aad48b20" class="t t">OptionValueCollection</a>&gt; <a id="c64a1ce39c26ae19" href="../R/c64a1ce39c26ae19.html" target="n" data-glyph="46,2" class="i field">_action</a>;
+ 
+			<b>public</b> <a id="420622266cbf3a10" href="../R/420622266cbf3a10.html" target="n" data-glyph="72,2" class="i constructor">ActionOption</a>(<b>string</b> <span id="r244 rd" class="r244 r">prototype</span>, <b>string</b> <span id="r245 rd" class="r245 r">description</span>, <b>int</b> <span id="r246 rd" class="r246 r">count</span>, <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<a href="#baf018f1aad48b20" class="t t">OptionValueCollection</a>&gt; <span id="r247 rd" class="r247 r">action</span>)
+				: <a href="#70a6e15d6d6b23cf" class="k">base</a>(<span class="r244 r">prototype</span>, <span class="r245 r">description</span>, <span class="r246 r">count</span>)
+			{
+				<b>if</b> (<span class="r247 r">action</span> == <b>null</b>)
+					<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;action&quot;</span>);
+				<a href="#c64a1ce39c26ae19" class="i field">_action</a> = <span class="r247 r">action</span>;
+			}
+ 
+			<b>protected override void</b> <a id="fa5723122eb58c45" href="../R/fa5723122eb58c45.html" target="n" data-glyph="75,2" class="i method">OnParseComplete</a>(<a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r248 rd" class="r248 r">c</span>)
+			{
+				<a href="#c64a1ce39c26ae19" class="i field">_action</a>(<span class="r248 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>);
+			}
+		}
+ 
+		<b>sealed class</b> <a id="b6db1088cfb497ca" href="../R/b6db1088cfb497ca.html" target="n" data-glyph="4,1" class="t t">ActionOption</a>&lt;<span id="r249 rd t" class="r249 r t">T</span>&gt; : <a href="#bd6987d29833d621" class="t t">Option</a>
+		{
+			<b>readonly</b> <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="r249 r t">T</span>&gt; <a id="bc383074eb715802" href="../R/bc383074eb715802.html" target="n" data-glyph="46,2" class="i field">_action</a>;
+ 
+			<b>public</b> <a id="d900aa020651094f" href="../R/d900aa020651094f.html" target="n" data-glyph="72,2" class="i constructor">ActionOption</a>(<b>string</b> <span id="r250 rd" class="r250 r">prototype</span>, <b>string</b> <span id="r251 rd" class="r251 r">description</span>, <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="r249 r t">T</span>&gt; <span id="r252 rd" class="r252 r">action</span>)
+				: <a href="#70a6e15d6d6b23cf" class="k">base</a>(<span class="r250 r">prototype</span>, <span class="r251 r">description</span>, 1)
+			{
+				<b>if</b> (<span class="r252 r">action</span> == <b>null</b>)
+					<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;action&quot;</span>);
+				<a href="#bc383074eb715802" class="i field">_action</a> = <span class="r252 r">action</span>;
+			}
+ 
+			<b>protected override void</b> <a id="fa9f99d8d22905cb" href="../R/fa9f99d8d22905cb.html" target="n" data-glyph="75,2" class="i method">OnParseComplete</a>(<a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r253 rd" class="r253 r">c</span>)
+			{
+				<a href="#bc383074eb715802" class="i field">_action</a>(<a href="#233457d0f4aaf62b" class="i method">Parse</a>&lt;<span class="r249 r t">T</span>&gt;(<span class="r253 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>[0], <span class="r253 r">c</span>));
+			}
+		}
+ 
+		<b>sealed class</b> <a id="22b756b3b69bd959" href="../R/22b756b3b69bd959.html" target="n" data-glyph="4,1" class="t t">ActionOption</a>&lt;<span id="r254 rd t" class="r254 r t">TKey</span>, <span id="r255 rd t" class="r255 r t">TValue</span>&gt; : <a href="#bd6987d29833d621" class="t t">Option</a>
+		{
+			<b>readonly</b> <a href="#a961cce5e48f6901" class="t t">OptionAction</a>&lt;<span class="r254 r t">TKey</span>, <span class="r255 r t">TValue</span>&gt; <a id="cc248f98bac57206" href="../R/cc248f98bac57206.html" target="n" data-glyph="46,2" class="i field">_action</a>;
+ 
+			<b>public</b> <a id="ffacf92c7efcd570" href="../R/ffacf92c7efcd570.html" target="n" data-glyph="72,2" class="i constructor">ActionOption</a>(<b>string</b> <span id="r256 rd" class="r256 r">prototype</span>, <b>string</b> <span id="r257 rd" class="r257 r">description</span>, <a href="#a961cce5e48f6901" class="t t">OptionAction</a>&lt;<span class="r254 r t">TKey</span>, <span class="r255 r t">TValue</span>&gt; <span id="r258 rd" class="r258 r">action</span>)
+				: <a href="#70a6e15d6d6b23cf" class="k">base</a>(<span class="r256 r">prototype</span>, <span class="r257 r">description</span>, 2)
+			{
+				<b>if</b> (<span class="r258 r">action</span> == <b>null</b>)
+					<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;action&quot;</span>);
+				<a href="#cc248f98bac57206" class="i field">_action</a> = <span class="r258 r">action</span>;
+			}
+ 
+			<b>protected override void</b> <a id="2847988784a30bd8" href="../R/2847988784a30bd8.html" target="n" data-glyph="75,2" class="i method">OnParseComplete</a>(<a href="#2b15b2e105738031" class="t t">OptionContext</a> <span id="r259 rd" class="r259 r">c</span>)
+			{
+				<a href="#cc248f98bac57206" class="i field">_action</a>(
+					<a href="#233457d0f4aaf62b" class="i method">Parse</a>&lt;<span class="r254 r t">TKey</span>&gt;(<span class="r259 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>[0], <span class="r259 r">c</span>),
+					<a href="#233457d0f4aaf62b" class="i method">Parse</a>&lt;<span class="r255 r t">TValue</span>&gt;(<span class="r259 r">c</span>.<a href="#1f4f52a33844d1bd" class="i property">OptionValues</a>[1], <span class="r259 r">c</span>));
+			}
+		}
+ 
+		<b>class</b> <a id="06b708e9c27b1217" href="../R/06b708e9c27b1217.html" target="n" data-glyph="4,1" class="t t">ArgumentEnumerator</a> : <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt;
+		{
+			<b>readonly</b> <a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="@0@mscorlib/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<b>string</b>&gt;&gt; <a id="c4eae5726ea933c8" href="../R/c4eae5726ea933c8.html" target="n" data-glyph="46,2" class="i field">_sources</a> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="@0@mscorlib/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<b>string</b>&gt;&gt;();
+ 
+			<b>public</b> <a id="b0a842c7f5bdd44c" href="../R/b0a842c7f5bdd44c.html" target="n" data-glyph="72,2" class="i constructor">ArgumentEnumerator</a>(<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <span id="r260 rd" class="r260 r">arguments</span>)
+			{
+				<a href="#c4eae5726ea933c8" class="i field">_sources</a>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r260 r">arguments</span>.<a href="@0@mscorlib/A.html#a242475701b655b2" class="i method">GetEnumerator</a>());
+			}
+ 
+			<b>public</b> <a href="@0@mscorlib/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<b>string</b>&gt; <a id="af6db62ef726286f" href="../R/af6db62ef726286f.html" target="n" data-glyph="72,2" class="i method">GetEnumerator</a>()
+			{
+				<b>do</b>
+				{
+					<a href="@0@mscorlib/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<b>string</b>&gt; <span id="r261 rd" class="r261 r">c</span> = <a href="#c4eae5726ea933c8" class="i field">_sources</a><a href="@0@mscorlib/A.html#0c65bec4d3fac21e">[</a><a href="#c4eae5726ea933c8" class="i field">_sources</a>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> - 1];
+					<b>if</b> (<span class="r261 r">c</span>.<a href="@0@mscorlib/A.html#116c28c0f6355e3f" class="i method">MoveNext</a>())
+						<b>yield return</b> <span class="r261 r">c</span>.<a href="@0@mscorlib/A.html#d231e5618becae91" class="i property">Current</a>;
+					<b>else</b>
+					{
+						<span class="r261 r">c</span>.<a href="@0@mscorlib/A.html#4e23fed29bd598fa" class="i method">Dispose</a>();
+						<a href="#c4eae5726ea933c8" class="i field">_sources</a>.<a href="@0@mscorlib/A.html#3d46113cc199059a" class="i method">RemoveAt</a>(<a href="#c4eae5726ea933c8" class="i field">_sources</a>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> - 1);
+					}
+				} <b>while</b> (<a href="#c4eae5726ea933c8" class="i field">_sources</a>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> &gt; 0);
+			}
+ 
+			<a href="@0@mscorlib/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a href="@0@mscorlib/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>.<a href="@0@mscorlib/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>()
+			{
+				<b>return</b> <a href="#af6db62ef726286f" class="i method">GetEnumerator</a>();
+			}
+ 
+			<b>public void</b> <a id="74ac097433b38678" href="../R/74ac097433b38678.html" target="n" data-glyph="72,2" class="i method">Add</a>(<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt; <span id="r262 rd" class="r262 r">arguments</span>)
+			{
+				<a href="#c4eae5726ea933c8" class="i field">_sources</a>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r262 r">arguments</span>.<a href="@0@mscorlib/A.html#a242475701b655b2" class="i method">GetEnumerator</a>());
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

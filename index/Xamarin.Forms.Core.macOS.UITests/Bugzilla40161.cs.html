@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html><head><title>Bugzilla40161.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(140);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core.macOS.UITests/Bugzilla40161.cs" target="_top">Bugzilla40161.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core.macOS.UITests" target="_top">Xamarin.Forms.Core.macOS.UITests\Xamarin.Forms.Core.macOS.UITests.csproj</a> (Xamarin.Forms.Core.macOS.UITests)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">CustomAttributes</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">System</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i">UITest</span>;
+<b>using</b> <span class="i">NUnit</span>.<span class="i">Framework</span>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>.<span class="i n">Issues</span>
+{
+	[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a>(<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+	[<a href="/Xamarin.Forms.CustomAttributes/A.html#7e3803f42297329b" class="t constructor">Issue</a>(<a href="/Xamarin.Forms.CustomAttributes/A.html#71fbc272a65cfefa" class="t t">IssueTracker</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#4c33f6b873a9476c" class="i field">Bugzilla</a>, 40161, <span class="s">&quot;Issue Description&quot;</span>, <a href="/Xamarin.Forms.CustomAttributes/A.html#e0966d88fdc6123d" class="t t">PlatformAffected</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#59012ce6d8e96a01" class="i field">Default</a>)]
+	<b>public class</b> <a id="19aacc2eccf9606d" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t"><span id="11489817e1e711ca">Bugzilla40161</span></a> : <a href="TestPages.cs.html#68092d82b8b3d7b5" class="t t">TestContentPage</a>
+	{
+		<span class="c">// If an image is swapped out for another image must the size of an image be recomputed? </span>
+		<span class="c">// That would work but is slow. As an optimization, if an image&#39;s size is controlled by </span>
+		<span class="c">// it&#39;s parents and the parents dictate that any image will be a specific size then there</span>
+		<span class="c">// is no need to layout the image. Consider the following scenarios:</span>
+ 
+		<span class="c">// (a) An aboslute layout dictates the size of a child image when the child specifies that it</span>
+		<span class="c">// should fill the space allocated by the aboslute layout. In this case the optimization </span>
+		<span class="c">// should be enabled; the layout pass for the replaced image can be skipped. The replaced image</span>
+		<span class="c">// should occupy the same space as the orig image.</span>
+ 
+		<span class="c">// (b) The image size is *not* dicatated by the absolute layout if it chooses not to fill the </span>
+		<span class="c">// space the absolute layout  allocates it and instead chooses to simply be centered with in </span>
+		<span class="c">// that space. In this case the layout pass for the replaced image must be run to compute the </span>
+		<span class="c">// size of the replaced image. This was the case reported by the bug that led to this UITest.</span>
+		<b>protected override void</b> <a id="77168e834d5d0c4d" href="R/77168e834d5d0c4d.html" target="n" data-glyph="75,1" class="i method">Init</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#d25a841d641b51c3" class="k">var</a> <span id="r0 rd" class="r0 r">absolute</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#24abed2ea49081ee" class="t constructor">AbsoluteLayout</a>()
+			{
+				<span class="c">// The size of an AbsoluteLayout whose H/V options equal Fill will match its</span>
+				<span class="c">// parent container. Given that, the layout engine will optimize any re-layout of </span>
+				<span class="c">// such an AbsoluteLayout by not recomputing its size if its parent container </span>
+				<span class="c">// does not change size. Such an AbsoluteLayout is marked as special by setting</span>
+				<span class="c">// its AbsoluteLayout.LayoutConstraint to fixed. All it&#39;s children will inherit</span>
+				<span class="c">// the special setting.</span>
+				<a href="/Xamarin.Forms.Core/A.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#84de63b682b2b2e1" class="i field">Fill</a>,
+				<a href="/Xamarin.Forms.Core/A.html#8e761ec8c2755065" class="i property">VerticalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#84de63b682b2b2e1" class="i field">Fill</a>,
+			};
+ 
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r1 rd" class="r1 r">imageA</span> = <span class="s">&quot;seth.png&quot;</span>;
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r2 rd" class="r2 r">imageB</span> = <span class="s">&quot;test.jpg&quot;</span>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="k">var</a> <span id="r3 rd" class="r3 r">image</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#dfe2f0f30dae6d8e" class="t constructor">Image</a>()
+			{
+				<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a> = <span class="r1 r">imageA</span>,
+				<a href="/Xamarin.Forms.Core/A.html#ee4d50419878101a" class="i property">Aspect</a> = <a href="/Xamarin.Forms.Core/A.html#aa2595e74151573d" class="t t">Aspect</a>.<a href="/Xamarin.Forms.Core/A.html#c63d19d0a93f800b" class="i field">AspectFill</a>,
+ 
+				<span class="c">// Children of an AbsoluteLayout can potentially inherit its LayoutConstraint.</span>
+				<span class="c">// This should happen if the child H/V options are also set to Fill AND its size</span>
+				<span class="c">// is all proportional. In that case the child fills the size allocated to it by </span>
+				<span class="c">// the layout and so it&#39;s size should be re-computed iff the layout&#39;s size has</span>
+				<span class="c">// changed. This behavior is achived by inheriting the layout&#39;s LayoutConstraint.</span>
+ 
+				<span class="c">// *IF* however the H/V options are Center then the Image should be rendered to </span>
+				<span class="c">// to *AT MOST* the image size regardless of whether the region allocated by</span>
+				<span class="c">// the absolute layout is larger than the image. </span>
+				<a href="/Xamarin.Forms.Core/A.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#e98cdf79a1c3e98f" class="i field">Center</a>,
+				<a href="/Xamarin.Forms.Core/A.html#8e761ec8c2755065" class="i property">VerticalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#e98cdf79a1c3e98f" class="i field">Center</a>,
+			};
+ 
+			<a href="/Xamarin.Forms.Core/A.html#d25a841d641b51c3" class="t t">AbsoluteLayout</a>.<a href="/Xamarin.Forms.Core/A.html#5e644ec982baa342" class="i method">SetLayoutFlags</a>(<span class="r3 r">image</span>, <a href="/Xamarin.Forms.Core/A.html#5dd525ca78c4f683" class="t t">AbsoluteLayoutFlags</a>.<a href="/Xamarin.Forms.Core/A.html#722240f9c6f640f5" class="i field">All</a>);
+			<a href="/Xamarin.Forms.Core/A.html#d25a841d641b51c3" class="t t">AbsoluteLayout</a>.<a href="/Xamarin.Forms.Core/A.html#543d27934b96aaaa" class="i method">SetLayoutBounds</a>(<span class="r3 r">image</span>, <b>new</b> <a href="/Xamarin.Forms.Core/A.html#884b8ad2719b18bf" class="t constructor">Rectangle</a>(0, 0, 1, 1));
+			<span class="r0 r">absolute</span>.<a href="/Xamarin.Forms.Core/A.html#6e1441bcfa46805b" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r3 r">image</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#5c88f1e97bd1f520" class="k">var</a> <span id="r4 rd" class="r4 r">stack</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a>();
+			<span class="r4 r">stack</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r0 r">absolute</span>);
+ 
+			<b>bool</b> <span id="r5 rd" class="r5 r">flipSwap</span> = <b>false</b>;
+			<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="k">var</a> <span id="r6 rd" class="r6 r">swap</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#c9ccc9248166aa0f" class="t constructor">Button</a>() { <a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a> = <span class="s">&quot;SWAP&quot;</span> };
+			<span class="r6 r">swap</span>.<a href="/Xamarin.Forms.Core/A.html#2f35d86af34f02f3" class="i">Clicked</a> += (<b>object</b> <span id="r7 rd" class="r7 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r8 rd" class="r8 r">e</span>) =&gt; 
+			{
+				<b>if</b> (<span class="r5 r">flipSwap</span>)
+					<span class="r3 r">image</span>.<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a> = <span class="r1 r">imageA</span>;
+				<b>else</b>
+					<span class="r3 r">image</span>.<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a> = <span class="r2 r">imageB</span>;
+ 
+				<span class="r5 r">flipSwap</span> = !<span class="r5 r">flipSwap</span>;
+			};
+			<span class="r4 r">stack</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r6 r">swap</span>);
+ 
+			<b>bool</b> <span id="r9 rd" class="r9 r">flipLayout</span> = <b>false</b>;
+			<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="k">var</a> <span id="r10 rd" class="r10 r">layout</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#c9ccc9248166aa0f" class="t constructor">Button</a>() { <a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a> = <span class="s">&quot;LAYOUT&quot;</span> };
+			<span class="r10 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#2f35d86af34f02f3" class="i">Clicked</a> += (<b>object</b> <span id="r11 rd" class="r11 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r12 rd" class="r12 r">e</span>) =&gt; 
+			{
+				<b>if</b> (<span class="r9 r">flipLayout</span>)
+				{
+					<span class="r3 r">image</span>.<a href="/Xamarin.Forms.Core/A.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#e98cdf79a1c3e98f" class="i field">Center</a>;
+					<span class="r3 r">image</span>.<a href="/Xamarin.Forms.Core/A.html#8e761ec8c2755065" class="i property">VerticalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#e98cdf79a1c3e98f" class="i field">Center</a>;
+				}
+				<b>else</b>
+				{
+					<span class="r3 r">image</span>.<a href="/Xamarin.Forms.Core/A.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#84de63b682b2b2e1" class="i field">Fill</a>;
+					<span class="r3 r">image</span>.<a href="/Xamarin.Forms.Core/A.html#8e761ec8c2755065" class="i property">VerticalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#84de63b682b2b2e1" class="i field">Fill</a>;
+				}
+ 
+				<span class="r9 r">flipLayout</span> = !<span class="r9 r">flipLayout</span>;
+			};
+			<span class="r4 r">stack</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r10 r">layout</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="k">var</a> <span id="r13 rd" class="r13 r">counter</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a>() { <a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">&quot;counter&quot;</span>, <a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>=<span class="s">&quot;counter&quot;</span> };
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="k">var</a> <span id="r14 rd" class="r14 r">height</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a>() { <a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">&quot;height&quot;</span>, <a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>=<span class="s">&quot;height&quot;</span> };
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="k">var</a> <span id="r15 rd" class="r15 r">width</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a>() { <a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">&quot;width&quot;</span>, <a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>= <span class="s">&quot;width&quot;</span> };
+			<span class="r4 r">stack</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r13 r">counter</span>);
+			<span class="r4 r">stack</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r14 r">height</span>);
+			<span class="r4 r">stack</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r15 r">width</span>);
+ 
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r16 rd" class="r16 r">count</span> = 0;
+			<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="k">var</a> <span id="r17 rd" class="r17 r">refresh</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#c9ccc9248166aa0f" class="t constructor">Button</a>() { <a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a> = <span class="s">&quot;REFRESH&quot;</span> };
+			<span class="r17 r">refresh</span>.<a href="/Xamarin.Forms.Core/A.html#2f35d86af34f02f3" class="i">Clicked</a> += (<b>object</b> <span id="r18 rd" class="r18 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r19 rd" class="r19 r">e</span>) =&gt;
+			{
+				<span class="r14 r">height</span>.<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">$&quot;</span><span class="s">h=</span>{<span class="r3 r">image</span>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a>}<span class="s">&quot;</span>;
+				<span class="r15 r">width</span>.<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">$&quot;</span><span class="s">w=</span>{<span class="r3 r">image</span>.<a href="/Xamarin.Forms.Core/A.html#4b4ff8e00e0429d0" class="i property">Width</a>}<span class="s">&quot;</span>;
+				<span class="r13 r">counter</span>.<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">$&quot;</span><span class="s">step=</span>{<span class="r16 r">count</span>++}<span class="s">&quot;</span>;
+			};
+			<span class="r4 r">stack</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r17 r">refresh</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#3929eda3f5d3e80d" class="i property">Content</a> = <span class="r4 r">stack</span>;
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		[<span class="i">Test</span>]
+		<b>public void</b> <a id="2240f95931a49fd3" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Issue1Test</a> ()
+		{
+			<a href="TestPages.cs.html#4c064e8d618de9de" class="i property">RunningApp</a>.<span class="i">Screenshot</span> (<span class="s">&quot;I am at Issue 40161&quot;</span>);
+			<a href="TestPages.cs.html#4c064e8d618de9de" class="i property">RunningApp</a>.<span class="i">WaitForElement</span> (<span id="r20 rd" class="r20 r">q</span> =&gt; <span class="r20 r">q</span>.<span class="i">Marked</span> (<span class="s">&quot;REFRESH&quot;</span>));
+			<a href="TestPages.cs.html#4c064e8d618de9de" class="i property">RunningApp</a>.<span class="i">Screenshot</span> (<span class="s">&quot;I see the first image&quot;</span>);
+ 
+			<a href="TestPages.cs.html#4c064e8d618de9de" class="i property">RunningApp</a>.<span class="i">Tap</span> (<span class="s">&quot;SWAP&quot;</span>);
+			<a href="TestPages.cs.html#4c064e8d618de9de" class="i property">RunningApp</a>.<span class="i">Tap</span> (<span class="s">&quot;REFRESH&quot;</span>);
+			<a href="TestPages.cs.html#4c064e8d618de9de" class="i property">RunningApp</a>.<span class="i">WaitForElement</span>(<span id="r21 rd" class="r21 r">q</span> =&gt; <span class="r21 r">q</span>.<span class="i">Marked</span>(<span class="s">&quot;step=0&quot;</span>));
+			<a href="TestPages.cs.html#4c064e8d618de9de" class="i property">RunningApp</a>.<span class="i">Screenshot</span> (<span class="s">&quot;I swap the image&quot;</span>);
+			<a href="TestPages.cs.html#4c064e8d618de9de" class="i property">RunningApp</a>.<span class="i">WaitForElement</span>(<span id="r22 rd" class="r22 r">q</span> =&gt; <span class="r22 r">q</span>.<span class="i">Marked</span>(<span class="s">&quot;w=50&quot;</span>));
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+	}
+}</pre></td></tr></table></div></body></html>

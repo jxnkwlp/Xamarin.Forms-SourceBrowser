@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html><head><title>XmlTypeExtensions.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(146);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/XmlTypeExtensions.cs" target="_top">XmlTypeExtensions.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Rocks</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>
+{
+	<b>static class</b> <a id="d50d0b1c4b47975e" href="R/d50d0b1c4b47975e.html" target="n" data-glyph="2,0" class="t t">XmlTypeExtensions</a>
+	{
+		<b>static</b> <a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="t t">XmlnsDefinitionAttribute</a>&gt; <a id="b578162cf01a177e" href="R/b578162cf01a177e.html" target="n" data-glyph="46,1" class="i field">s_xmlnsDefinitions</a>;
+ 
+		<b>static void</b> <a id="bf3ea900fed3ba31" href="R/bf3ea900fed3ba31.html" target="n" data-glyph="76,1" class="i method">GatherXmlnsDefinitionAttributes</a>()
+		{
+			<span class="c">//this could be extended to look for [XmlnsDefinition] in all assemblies</span>
+			<b>var</b> <span id="r0 rd" class="r0 r">assemblies</span> = <b>new</b> [] {
+				<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>).<a href="@0@mscorlib/A.html#e87d536bd07fab01" class="i property">Assembly</a>,
+				<b>typeof</b>(<a href="/Xamarin.Forms.Xaml/A.html#7971f26b0b433914" class="t t">XamlLoader</a>).<a href="@0@mscorlib/A.html#e87d536bd07fab01" class="i property">Assembly</a>,
+			};
+ 
+			<a href="#b578162cf01a177e" class="i field">s_xmlnsDefinitions</a> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="t t">XmlnsDefinitionAttribute</a>&gt;();
+ 
+			<b>foreach</b> (<a href="@0@mscorlib/A.html#73b5be5e9c2474b2" class="k">var</a> <span id="r1 rd" class="r1 r">assembly</span> <b>in</b> <span class="r0 r">assemblies</span>)
+				<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="t t">XmlnsDefinitionAttribute</a> <span id="r2 rd" class="r2 r">attribute</span> <b>in</b> <span class="r1 r">assembly</span>.<a href="@0@mscorlib/A.html#ccf3fa2a75d7d7fc" class="i method">GetCustomAttributes</a>(<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="t t">XmlnsDefinitionAttribute</a>), <b>false</b>)) {
+					<a href="#b578162cf01a177e" class="i field">s_xmlnsDefinitions</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r2 r">attribute</span>);
+					<span class="r2 r">attribute</span>.<a href="/Xamarin.Forms.Core/A.html#bb016ee986a83525" class="i property">AssemblyName</a> = <span class="r2 r">attribute</span>.<a href="/Xamarin.Forms.Core/A.html#bb016ee986a83525" class="i property">AssemblyName</a> ?? <span class="r1 r">assembly</span>.<a href="@0@mscorlib/A.html#c04eb189e6942872" class="i property">FullName</a>;
+				}
+		}
+ 
+		<b>public static</b> <span class="i">TypeReference</span> <a id="10ff340c0cc405a1" href="R/10ff340c0cc405a1.html" target="n" data-glyph="72,1" class="i method">GetTypeReference</a>(<b>string</b> <span id="r3 rd" class="r3 r">xmlType</span>, <span class="i">ModuleDefinition</span> <span id="r4 rd" class="r4 r">module</span>, <a href="/Xamarin.Forms.Xaml/A.html#aee785270197d5f3" class="t t">BaseNode</a> <span id="r5 rd" class="r5 r">node</span>)
+		{
+			<b>var</b> <span id="r6 rd" class="r6 r">split</span> = <span class="r3 r">xmlType</span>.<a href="@0@mscorlib/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;:&#39;</span>);
+			<b>if</b> (<span class="r6 r">split</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 2)
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Type \&quot;</span>{<span class="r3 r">xmlType</span>}<span class="s">\&quot; is invalid</span><span class="s">&quot;</span>, <span class="r5 r">node</span> <b>as</b> <a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a>);
+ 
+			<b>string</b> <span id="r7 rd" class="r7 r">prefix</span>, <span id="r8 rd" class="r8 r">name</span>;
+			<b>if</b> (<span class="r6 r">split</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> == 2) {
+				<span class="r7 r">prefix</span> = <span class="r6 r">split</span>[0];
+				<span class="r8 r">name</span> = <span class="r6 r">split</span>[1];
+			} <b>else</b> {
+				<span class="r7 r">prefix</span> = <span class="s">&quot;&quot;</span>;
+				<span class="r8 r">name</span> = <span class="r6 r">split</span>[0];
+			}
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r9 rd" class="r9 r">namespaceuri</span> = <span class="r5 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#4c29fc7211aeb588" class="i property">NamespaceResolver</a>.<a href="@0@System.Xml/A.html#5a346754cfdb27f6" class="i method">LookupNamespace</a>(<span class="r7 r">prefix</span>) ?? <span class="s">&quot;&quot;</span>;
+			<b>return</b> <a href="#bd43fe0cd1312d17" class="i method">GetTypeReference</a>(<b>new</b> <a href="/Xamarin.Forms.Xaml/A.html#0a1740224b8aaa73" class="t constructor">XmlType</a>(<span class="r9 r">namespaceuri</span>, <span class="r8 r">name</span>, <b>null</b>), <span class="r4 r">module</span>, <span class="r5 r">node</span> <b>as</b> <a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a>);
+		}
+ 
+		<b>public static</b> <span class="i">TypeReference</span> <a id="6c0a36b09840fe11" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetTypeReference</a>(<b>string</b> <span id="r10 rd" class="r10 r">namespaceURI</span>, <b>string</b> <span id="r11 rd" class="r11 r">typename</span>, <span class="i">ModuleDefinition</span> <span id="r12 rd" class="r12 r">module</span>, <a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a> <span id="r13 rd" class="r13 r">xmlInfo</span>)
+		{
+			<b>return</b> <b>new</b> <a href="/Xamarin.Forms.Xaml/A.html#0a1740224b8aaa73" class="t constructor">XmlType</a>(<span class="r10 r">namespaceURI</span>, <span class="r11 r">typename</span>, <b>null</b>).<a href="#bd43fe0cd1312d17" class="i method">GetTypeReference</a>(<span class="r12 r">module</span>, <span class="r13 r">xmlInfo</span>);
+		}
+ 
+		<b>public static</b> <span class="i">TypeReference</span> <a id="bd43fe0cd1312d17" href="R/bd43fe0cd1312d17.html" target="n" data-glyph="220,1" class="i method">GetTypeReference</a>(<b>this</b> <a href="/Xamarin.Forms.Xaml/A.html#944154aac15f45be" class="t t">XmlType</a> <span id="r14 rd" class="r14 r">xmlType</span>, <span class="i">ModuleDefinition</span> <span id="r15 rd" class="r15 r">module</span>, <a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a> <span id="r16 rd" class="r16 r">xmlInfo</span>)
+		{
+			<b>if</b> (<a href="#b578162cf01a177e" class="i field">s_xmlnsDefinitions</a> == <b>null</b>)
+				<a href="#bf3ea900fed3ba31" class="i method">GatherXmlnsDefinitionAttributes</a>();
+ 
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r17 rd" class="r17 r">namespaceURI</span> = <span class="r14 r">xmlType</span>.<a href="/Xamarin.Forms.Xaml/A.html#a53254597bc28ecf" class="i property">NamespaceUri</a>;
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r18 rd" class="r18 r">elementName</span> = <span class="r14 r">xmlType</span>.<a href="/Xamarin.Forms.Xaml/A.html#1561698d7b8a155c" class="i property">Name</a>;
+			<a href="@0@mscorlib/A.html#b19f71a84062554b" class="k">var</a> <span id="r19 rd" class="r19 r">typeArguments</span> = <span class="r14 r">xmlType</span>.<a href="/Xamarin.Forms.Xaml/A.html#ec734db8facb9675" class="i property">TypeArguments</a>;
+ 
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r20 rd" class="r20 r">lookupAssemblies</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="t t">XmlnsDefinitionAttribute</a>&gt;();
+ 
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r21 rd" class="r21 r">lookupNames</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;();
+ 
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="k">var</a> <span id="r22 rd" class="r22 r">xmlnsDef</span> <b>in</b> <a href="#b578162cf01a177e" class="i field">s_xmlnsDefinitions</a>) {
+				<b>if</b> (<span class="r22 r">xmlnsDef</span>.<a href="/Xamarin.Forms.Core/A.html#2b7875bd8f3e82f1" class="i property">XmlNamespace</a> != <span class="r17 r">namespaceURI</span>)
+					<b>continue</b>;
+				<span class="r20 r">lookupAssemblies</span>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r22 r">xmlnsDef</span>);
+			}
+ 
+			<b>if</b> (<span class="r20 r">lookupAssemblies</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> == 0) {
+				<b>string</b> <span id="r23 rd" class="r23 r">ns</span>;
+				<b>string</b> <span id="r24 rd" class="r24 r">typename</span>;
+				<b>string</b> <span id="r25 rd" class="r25 r">asmstring</span>;
+				<b>string</b> <span id="r26 rd" class="r26 r">targetPlatform</span>;
+ 
+				<a href="/Xamarin.Forms.Xaml/A.html#3248a3195f89e5e3" class="t t">XmlnsHelper</a>.<a href="/Xamarin.Forms.Xaml/A.html#ac7649562229a6d7" class="i method">ParseXmlns</a>(<span class="r17 r">namespaceURI</span>, <b>out</b> <span class="r24 r">typename</span>, <b>out</b> <span class="r23 r">ns</span>, <b>out</b> <span class="r25 r">asmstring</span>, <b>out</b> <span class="r26 r">targetPlatform</span>);
+				<span class="r25 r">asmstring</span> = <span class="r25 r">asmstring</span> ?? <span class="r15 r">module</span>.<span class="i">Assembly</span>.<span class="i">Name</span>.<span class="i">Name</span>;
+				<span class="r20 r">lookupAssemblies</span>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<b>new</b> <a href="/Xamarin.Forms.Core/A.html#f4ac69bbf1774a2d" class="t constructor">XmlnsDefinitionAttribute</a>(<span class="r17 r">namespaceURI</span>, <span class="r23 r">ns</span>) {
+					<a href="/Xamarin.Forms.Core/A.html#bb016ee986a83525" class="i property">AssemblyName</a> = <span class="r25 r">asmstring</span>
+				});
+			}
+ 
+			<span class="r21 r">lookupNames</span>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r18 r">elementName</span>);
+			<span class="r21 r">lookupNames</span>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r18 r">elementName</span> + <span class="s">&quot;Extension&quot;</span>);
+ 
+			<b>for</b> (<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r27 rd" class="r27 r">i</span> = 0; <span class="r27 r">i</span> &lt; <span class="r21 r">lookupNames</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r27 r">i</span>++)
+			{
+				<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r28 rd" class="r28 r">name</span> = <span class="r21 r">lookupNames</span><a href="@0@mscorlib/A.html#0c65bec4d3fac21e">[</a><span class="r27 r">i</span>];
+				<b>if</b> (<span class="r28 r">name</span>.<a href="@0@mscorlib/A.html#428c5c9954dea844" class="i method">Contains</a>(<span class="s">&quot;:&quot;</span>))
+					<span class="r28 r">name</span> = <span class="r28 r">name</span>.<a href="@0@mscorlib/A.html#882fa7998d6ca35a" class="i method">Substring</a>(<span class="r28 r">name</span>.<a href="@0@mscorlib/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;:&#39;</span>) + 1);
+				<b>if</b> (<span class="r19 r">typeArguments</span> != <b>null</b>)
+					<span class="r28 r">name</span> += <span class="s">&quot;`&quot;</span> + <span class="r19 r">typeArguments</span>.<a href="@0@mscorlib/A.html#3d6c21c4e9bd5f63" class="i property">Count</a>; <span class="c">//this will return an open generic Type</span>
+				<span class="r21 r">lookupNames</span><a href="@0@mscorlib/A.html#0c65bec4d3fac21e">[</a><span class="r27 r">i</span>] = <span class="r28 r">name</span>;
+			}
+ 
+			<span class="i">TypeReference</span> <span id="r29 rd" class="r29 r">type</span> = <b>null</b>;
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="k">var</a> <span id="r30 rd" class="r30 r">asm</span> <b>in</b> <span class="r20 r">lookupAssemblies</span>)
+			{
+				<b>if</b> (<span class="r29 r">type</span> != <b>null</b>)
+					<b>break</b>;
+				<b>foreach</b> (<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r31 rd" class="r31 r">name</span> <b>in</b> <span class="r21 r">lookupNames</span>)
+				{
+					<b>if</b> (<span class="r29 r">type</span> != <b>null</b>)
+						<b>break</b>;
+ 
+					<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r32 rd" class="r32 r">clrNamespace</span> = <span class="r30 r">asm</span>.<a href="/Xamarin.Forms.Core/A.html#c34e39634d1bdeaa" class="i property">ClrNamespace</a>;
+					<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r33 rd" class="r33 r">typeName</span> = <span class="r31 r">name</span>.<a href="@0@mscorlib/A.html#987da5dfb39f1927" class="i method">Replace</a>(<span class="s">&#39;+&#39;</span>, <span class="s">&#39;/&#39;</span>); <span class="c">//Nested types</span>
+					<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r34 rd" class="r34 r">idx</span> = <span class="r33 r">typeName</span>.<a href="@0@mscorlib/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;.&#39;</span>);
+					<b>if</b> (<span class="r34 r">idx</span> &gt;= 0) {
+						<span class="r32 r">clrNamespace</span> += <span class="s">&#39;.&#39;</span> + <span class="r33 r">typeName</span>.<a href="@0@mscorlib/A.html#8124961f027d9ac9" class="i method">Substring</a>(0, <span class="r33 r">typeName</span>.<a href="@0@mscorlib/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;.&#39;</span>));
+						<span class="r33 r">typeName</span> = <span class="r33 r">typeName</span>.<a href="@0@mscorlib/A.html#882fa7998d6ca35a" class="i method">Substring</a>(<span class="r33 r">typeName</span>.<a href="@0@mscorlib/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;.&#39;</span>) + 1);
+					}
+					<b>var</b> <span id="r35 rd" class="r35 r">assemblydefinition</span> = <span class="r15 r">module</span>.<span class="i">Assembly</span>.<span class="i">Name</span>.<span class="i">Name</span> == <span class="r30 r">asm</span>.<a href="/Xamarin.Forms.Core/A.html#bb016ee986a83525" class="i property">AssemblyName</a> ?
+												<span class="r15 r">module</span>.<span class="i">Assembly</span> :
+												<span class="r15 r">module</span>.<span class="i">AssemblyResolver</span>.<span class="i">Resolve</span>(<span class="i">AssemblyNameReference</span>.<span class="i">Parse</span>(<span class="r30 r">asm</span>.<a href="/Xamarin.Forms.Core/A.html#bb016ee986a83525" class="i property">AssemblyName</a>));
+ 
+					<span class="r29 r">type</span> = <span class="r35 r">assemblydefinition</span>.<span class="i">MainModule</span>.<span class="i">GetType</span>(<span class="r32 r">clrNamespace</span> + <span class="s">&quot;.&quot;</span> + <span class="r33 r">typeName</span>);
+					<b>if</b> (<span class="r29 r">type</span> == <b>null</b>)
+					{
+						<b>var</b> <span id="r36 rd" class="r36 r">exportedtype</span> =
+							<span class="r35 r">assemblydefinition</span>.<span class="i">MainModule</span>.<span class="i">ExportedTypes</span>.<span class="i">FirstOrDefault</span>(
+								(<span class="i">ExportedType</span> <span id="r37 rd" class="r37 r">arg</span>) =&gt; <span class="r37 r">arg</span>.<span class="i">IsForwarder</span> &amp;&amp; <span class="r37 r">arg</span>.<span class="i">Namespace</span> == <span class="r32 r">clrNamespace</span> &amp;&amp; <span class="r37 r">arg</span>.<span class="i">Name</span> == <span class="r33 r">typeName</span>);
+						<b>if</b> (<span class="r36 r">exportedtype</span> != <b>null</b>)
+							<span class="r29 r">type</span> = <span class="r36 r">exportedtype</span>.<span class="i">Resolve</span>();
+					}
+				}
+			}
+ 
+			<b>if</b> (<span class="r29 r">type</span> != <b>null</b> &amp;&amp; <span class="r19 r">typeArguments</span> != <b>null</b> &amp;&amp; <span class="r29 r">type</span>.<span class="i">HasGenericParameters</span>)
+			{
+				<span class="r29 r">type</span> =
+					<span class="r15 r">module</span>.<span class="i">ImportReference</span>(<span class="r29 r">type</span>)
+						.<span class="i">MakeGenericInstanceType</span>(<span class="r19 r">typeArguments</span>.<a href="@0@System.Core/A.html#5c652c53e80df013" class="i method">Select</a>(<span id="r38 rd" class="r38 r">x</span> =&gt; <a href="#bd43fe0cd1312d17" class="i method">GetTypeReference</a>(<span class="r38 r">x</span>, <span class="r15 r">module</span>, <span class="r16 r">xmlInfo</span>)).<a href="@0@System.Core/A.html#783a052330e7d48d" class="i method">ToArray</a>());
+			}
+ 
+			<b>if</b> (<span class="r29 r">type</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<b>string</b>.<a href="@0@mscorlib/A.html#7432dab173fae5fc" class="i method">Format</a>(<span class="s">&quot;Type {0} not found in xmlns {1}&quot;</span>, <span class="r18 r">elementName</span>, <span class="r17 r">namespaceURI</span>), <span class="r16 r">xmlInfo</span>);
+ 
+			<b>return</b> <span class="r15 r">module</span>.<span class="i">ImportReference</span>(<span class="r29 r">type</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

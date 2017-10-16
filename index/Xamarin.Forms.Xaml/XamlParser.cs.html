@@ -1,0 +1,417 @@
+﻿<!DOCTYPE html>
+<html><head><title>XamlParser.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(408);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Xaml/XamlParser.cs" target="_top">XamlParser.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Xaml" target="_top">Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj</a> (Xamarin.Forms.Xaml)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<span class="c">//</span>
+<span class="c">// XamlParser.cs</span>
+<span class="c">//</span>
+<span class="c">// Author:</span>
+<span class="c">//       Stephane Delcroix &lt;stephane@mi8.be&gt;</span>
+<span class="c">//</span>
+<span class="c">// Copyright (c) 2013 Mobile Inception</span>
+<span class="c">// Copyright (c) 2013-2014 Xamarin, Inc</span>
+<span class="c">//</span>
+<span class="c">// Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c">// of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c">// in the Software without restriction, including without limitation the rights</span>
+<span class="c">// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c">// copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c">// furnished to do so, subject to the following conditions:</span>
+<span class="c">//</span>
+<span class="c">// The above copyright notice and this permission notice shall be included in</span>
+<span class="c">// all copies or substantial portions of the Software.</span>
+<span class="c">//</span>
+<span class="c">// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c">// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c">// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c">// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c">// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c">// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span class="c">// THE SOFTWARE.</span>
+ 
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>
+{
+	<b>static class</b> <a id="761f9f93317ccb07" href="R/761f9f93317ccb07.html" target="n" data-glyph="2,0" class="t t">XamlParser</a>
+	{
+		<b>public const string</b> <a id="29e3cbb04e0705b2" href="R/29e3cbb04e0705b2.html" target="n" data-glyph="6,1" class="i field">XFUri</a> = <span class="s">&quot;http://xamarin.com/schemas/2014/forms&quot;</span>;
+		<b>public const string</b> <a id="3508e4ccca574315" href="R/3508e4ccca574315.html" target="n" data-glyph="6,1" class="i field">X2006Uri</a> = <span class="s">&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot;</span>;
+		<b>public const string</b> <a id="80b6c43c81971ca4" href="R/80b6c43c81971ca4.html" target="n" data-glyph="6,1" class="i field">X2009Uri</a> = <span class="s">&quot;http://schemas.microsoft.com/winfx/2009/xaml&quot;</span>;
+		<b>public const string</b> <a id="402158a1608ea3cb" href="R/402158a1608ea3cb.html" target="n" data-glyph="6,1" class="i field">McUri</a> = <span class="s">&quot;http://schemas.openxmlformats.org/markup-compatibility/2006&quot;</span>;
+ 
+		<b>public static void</b> <a id="49674a818223323d" href="R/49674a818223323d.html" target="n" data-glyph="72,1" class="i method">ParseXaml</a>(<a href="XamlNode.cs.html#539c4bdaedfa22a3" class="t t">RootNode</a> <span id="r0 rd" class="r0 r">rootNode</span>, <span class="t t">XmlReader</span> <span id="r1 rd" class="r1 r">reader</span>)
+		{
+			<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>string</b>&gt;&gt; <span id="r2 rd" class="r2 r">xmlns</span>;
+			<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="k">var</a> <span id="r3 rd" class="r3 r">attributes</span> = <a href="#886e7a5eb57a49d0" class="i method">ParseXamlAttributes</a>(<span class="r1 r">reader</span>, <b>out</b> <span class="r2 r">xmlns</span>);
+			<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="k">var</a> <span id="r4 rd" class="r4 r">prefixes</span> = <a href="#6e45193dc6cc45e3" class="i method">PrefixesToIgnore</a>(<span class="r2 r">xmlns</span>);
+			(<span class="r0 r">rootNode</span>.<a href="XamlNode.cs.html#a41aa8be04b719dd" class="i property">IgnorablePrefixes</a> ?? (<span class="r0 r">rootNode</span>.<a href="XamlNode.cs.html#a41aa8be04b719dd" class="i property">IgnorablePrefixes</a>=<b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;())).<a href="@1@System.Collections/A.html#e569d850a66a1771" class="i method">AddRange</a>(<span class="r4 r">prefixes</span>);
+			<span class="r0 r">rootNode</span>.<a href="XamlNode.cs.html#5ee5fe5a808d6839" class="i property">Properties</a>.<a href="IDictionaryExtensions.cs.html#f7eaf968d7168e6e" class="i method">AddRange</a>(<span class="r3 r">attributes</span>);
+			<a href="#11b1b8fc3cda2746" class="i method">ParseXamlElementFor</a>(<span class="r0 r">rootNode</span>, <span class="r1 r">reader</span>);
+		}
+ 
+		<b>static void</b> <a id="11b1b8fc3cda2746" href="R/11b1b8fc3cda2746.html" target="n" data-glyph="76,1" class="i method">ParseXamlElementFor</a>(<a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a> <span id="r5 rd" class="r5 r">node</span>, <span class="t t">XmlReader</span> <span id="r6 rd" class="r6 r">reader</span>)
+		{
+			<span class="t t">Debug</span>.<span class="i method">Assert</span>(<span class="r6 r">reader</span>.<span class="i property">NodeType</span> == <span class="t t">XmlNodeType</span>.<span class="i field">Element</span>);
+ 
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r7 rd" class="r7 r">elementName</span> = <span class="r6 r">reader</span>.<span class="i property">Name</span>;
+			<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r8 rd" class="r8 r">isEmpty</span> = <span class="r6 r">reader</span>.<span class="i property">IsEmptyElement</span>;
+ 
+			<b>if</b> (<span class="r8 r">isEmpty</span>)
+				<b>return</b>;
+ 
+			<b>while</b> (<span class="r6 r">reader</span>.<span class="i method">Read</span>())
+			{
+				<b>switch</b> (<span class="r6 r">reader</span>.<span class="i property">NodeType</span>)
+				{
+					<b>case</b> <span class="t t">XmlNodeType</span>.<span class="i field">EndElement</span>:
+						<span class="t t">Debug</span>.<span class="i method">Assert</span>(<span class="r6 r">reader</span>.<span class="i property">Name</span> == <span class="r7 r">elementName</span>); <span class="c">//make sure we close the right element</span>
+						<b>return</b>;
+					<b>case</b> <span class="t t">XmlNodeType</span>.<span class="i field">Element</span>:
+						<span class="c">// 1. Property Element.</span>
+						<b>if</b> (<span class="r6 r">reader</span>.<span class="i property">Name</span>.<a href="@1@System.Runtime/A.html#428c5c9954dea844" class="i method">Contains</a>(<span class="s">&quot;.&quot;</span>))
+						{
+							<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a> <span id="r9 rd" class="r9 r">name</span>;
+							<b>if</b> (<span class="r6 r">reader</span>.<span class="i property">Name</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="r7 r">elementName</span> + <span class="s">&quot;.&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+								<span class="r9 r">name</span> = <b>new</b> <a href="XmlName.cs.html#655d78af446a108a" class="t constructor">XmlName</a>(<span class="r6 r">reader</span>.<span class="i property">NamespaceURI</span>, <span class="r6 r">reader</span>.<span class="i property">Name</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(<span class="r7 r">elementName</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> + 1));
+							<b>else</b> <span class="c">//Attached DP</span>
+								<span class="r9 r">name</span> = <b>new</b> <a href="XmlName.cs.html#655d78af446a108a" class="t constructor">XmlName</a>(<span class="r6 r">reader</span>.<span class="i property">NamespaceURI</span>, <span class="r6 r">reader</span>.<span class="i property">LocalName</span>);
+ 
+							<a href="XamlNode.cs.html#9697de7bafb1de38" class="k">var</a> <span id="r10 rd" class="r10 r">prop</span> = <a href="#f144102a61699ef3" class="i method">ReadNode</a>(<span class="r6 r">reader</span>);
+							<b>if</b> (<span class="r10 r">prop</span> != <b>null</b>)
+								<span class="r5 r">node</span>.<a href="XamlNode.cs.html#ca11b3b288ccdec1" class="i property">Properties</a>.<a href="@1@System.Collections/A.html#a7861da7aaa500fe" class="i method">Add</a>(<span class="r9 r">name</span>, <span class="r10 r">prop</span>);
+						}
+						<span class="c">// 2. Xaml2009 primitives, x:Arguments, ...</span>
+						<b>else if</b> (<span class="r6 r">reader</span>.<span class="i property">NamespaceURI</span> == <a href="#80b6c43c81971ca4" class="i field">X2009Uri</a> &amp;&amp; <span class="r6 r">reader</span>.<span class="i property">LocalName</span> == <span class="s">&quot;Arguments&quot;</span>)
+						{
+							<a href="XamlNode.cs.html#9697de7bafb1de38" class="k">var</a> <span id="r11 rd" class="r11 r">prop</span> = <a href="#f144102a61699ef3" class="i method">ReadNode</a>(<span class="r6 r">reader</span>);
+							<b>if</b> (<span class="r11 r">prop</span> != <b>null</b>)
+								<span class="r5 r">node</span>.<a href="XamlNode.cs.html#ca11b3b288ccdec1" class="i property">Properties</a>.<a href="@1@System.Collections/A.html#a7861da7aaa500fe" class="i method">Add</a>(<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#ba25f468d9c4f81b" class="i field">xArguments</a>, <span class="r11 r">prop</span>);
+						}
+						<span class="c">// 3. DataTemplate (should be handled by 4.)</span>
+						<b>else if</b> (<span class="r5 r">node</span>.<a href="XamlNode.cs.html#5b65f02b1f79eeaf" class="i property">XmlType</a>.<a href="XamlNode.cs.html#a53254597bc28ecf" class="i property">NamespaceUri</a> == <a href="#29e3cbb04e0705b2" class="i field">XFUri</a> &amp;&amp;
+						         (<span class="r5 r">node</span>.<a href="XamlNode.cs.html#5b65f02b1f79eeaf" class="i property">XmlType</a>.<a href="XamlNode.cs.html#1561698d7b8a155c" class="i property">Name</a> == <span class="s">&quot;DataTemplate&quot;</span> || <span class="r5 r">node</span>.<a href="XamlNode.cs.html#5b65f02b1f79eeaf" class="i property">XmlType</a>.<a href="XamlNode.cs.html#1561698d7b8a155c" class="i property">Name</a> == <span class="s">&quot;ControlTemplate&quot;</span>))
+						{
+							<a href="XamlNode.cs.html#9697de7bafb1de38" class="k">var</a> <span id="r12 rd" class="r12 r">prop</span> = <a href="#f144102a61699ef3" class="i method">ReadNode</a>(<span class="r6 r">reader</span>, <b>true</b>);
+							<b>if</b> (<span class="r12 r">prop</span> != <b>null</b>)
+								<span class="r5 r">node</span>.<a href="XamlNode.cs.html#ca11b3b288ccdec1" class="i property">Properties</a>.<a href="@1@System.Collections/A.html#a7861da7aaa500fe" class="i method">Add</a>(<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#f9fb8fcdb5a2a4db" class="i field">_CreateContent</a>, <span class="r12 r">prop</span>);
+						}
+						<span class="c">// 4. Implicit content, implicit collection, or collection syntax. Add to CollectionItems, resolve case later.</span>
+						<b>else</b>
+						{
+							<a href="XamlNode.cs.html#9697de7bafb1de38" class="k">var</a> <span id="r13 rd" class="r13 r">item</span> = <a href="#f144102a61699ef3" class="i method">ReadNode</a>(<span class="r6 r">reader</span>, <b>true</b>);
+							<b>if</b> (<span class="r13 r">item</span> != <b>null</b>)
+								<span class="r5 r">node</span>.<a href="XamlNode.cs.html#fb3a9fc1d07f233b" class="i property">CollectionItems</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r13 r">item</span>);
+						}
+						<b>break</b>;
+					<b>case</b> <span class="t t">XmlNodeType</span>.<span class="i field">Whitespace</span>:
+						<b>break</b>;
+					<b>case</b> <span class="t t">XmlNodeType</span>.<span class="i field">Text</span>:
+					<b>case</b> <span class="t t">XmlNodeType</span>.<span class="i field">CDATA</span>:
+						<b>if</b> (<span class="r5 r">node</span>.<a href="XamlNode.cs.html#fb3a9fc1d07f233b" class="i property">CollectionItems</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> == 1 &amp;&amp; <span class="r5 r">node</span>.<a href="XamlNode.cs.html#fb3a9fc1d07f233b" class="i property">CollectionItems</a>[0] <b>is</b> <a href="XamlNode.cs.html#8154936e25abda05" class="t t">ValueNode</a>)
+							((<a href="XamlNode.cs.html#8154936e25abda05" class="t t">ValueNode</a>)<span class="r5 r">node</span>.<a href="XamlNode.cs.html#fb3a9fc1d07f233b" class="i property">CollectionItems</a>[0]).<a href="XamlNode.cs.html#5fa72a93b49782e1" class="i property">Value</a> += <span class="r6 r">reader</span>.<span class="i property">Value</span>.<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+						<b>else</b>
+							<span class="r5 r">node</span>.<a href="XamlNode.cs.html#fb3a9fc1d07f233b" class="i property">CollectionItems</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<b>new</b> <a href="XamlNode.cs.html#e2360d8fe4cc7ae5" class="t constructor">ValueNode</a>(<span class="r6 r">reader</span>.<span class="i property">Value</span>.<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>(), (<span class="t t">IXmlNamespaceResolver</span>)<span class="r6 r">reader</span>));
+						<b>break</b>;
+					<b>default</b>:
+						<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">&quot;Unhandled node {0} {1} {2}&quot;</span>, <span class="r6 r">reader</span>.<span class="i property">NodeType</span>, <span class="r6 r">reader</span>.<span class="i property">Name</span>, <span class="r6 r">reader</span>.<span class="i property">Value</span>);
+						<b>break</b>;
+				}
+			}
+		}
+ 
+		<b>static</b> <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <a id="f144102a61699ef3" href="R/f144102a61699ef3.html" target="n" data-glyph="76,1" class="i method">ReadNode</a>(<span class="t t">XmlReader</span> <span id="r14 rd" class="r14 r">reader</span>, <b>bool</b> <span id="r15 rd" class="r15 r">nested</span> = <b>false</b>)
+		{
+			<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r16 rd" class="r16 r">skipFirstRead</span> = <span class="r15 r">nested</span>;
+			<span class="t t">Debug</span>.<span class="i method">Assert</span>(<span class="r14 r">reader</span>.<span class="i property">NodeType</span> == <span class="t t">XmlNodeType</span>.<span class="i field">Element</span>);
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r17 rd" class="r17 r">name</span> = <span class="r14 r">reader</span>.<span class="i property">Name</span>;
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a>&gt; <span id="r18 rd" class="r18 r">nodes</span> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a>&gt;();
+			<a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r19 rd" class="r19 r">node</span> = <b>null</b>;
+ 
+			<b>while</b> (<span class="r16 r">skipFirstRead</span> || <span class="r14 r">reader</span>.<span class="i method">Read</span>())
+			{
+				<span class="r16 r">skipFirstRead</span> = <b>false</b>;
+ 
+				<b>switch</b> (<span class="r14 r">reader</span>.<span class="i property">NodeType</span>)
+				{
+					<b>case</b> <span class="t t">XmlNodeType</span>.<span class="i field">EndElement</span>:
+						<span class="t t">Debug</span>.<span class="i method">Assert</span>(<span class="r14 r">reader</span>.<span class="i property">Name</span> == <span class="r17 r">name</span>);
+						<b>if</b> (<span class="r18 r">nodes</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> == 0) <span class="c">//Empty element</span>
+							<b>return null</b>;
+						<b>if</b> (<span class="r18 r">nodes</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> == 1)
+							<b>return</b> <span class="r18 r">nodes</span>[0];
+						<b>return</b> <b>new</b> <a href="XamlNode.cs.html#72ce661ac3a770b0" class="t constructor">ListNode</a>(<span class="r18 r">nodes</span>, (<span class="t t">IXmlNamespaceResolver</span>)<span class="r14 r">reader</span>, ((<span class="t t">IXmlLineInfo</span>)<span class="r14 r">reader</span>).<span class="i property">LineNumber</span>,
+							((<span class="t t">IXmlLineInfo</span>)<span class="r14 r">reader</span>).<span class="i property">LinePosition</span>);
+					<b>case</b> <span class="t t">XmlNodeType</span>.<span class="i field">Element</span>:
+						<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r20 rd" class="r20 r">isEmpty</span> = <span class="r14 r">reader</span>.<span class="i property">IsEmptyElement</span> &amp;&amp; <span class="r14 r">reader</span>.<span class="i property">Name</span> == <span class="r17 r">name</span>;
+						<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r21 rd" class="r21 r">elementName</span> = <span class="r14 r">reader</span>.<span class="i property">Name</span>;
+						<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r22 rd" class="r22 r">elementNsUri</span> = <span class="r14 r">reader</span>.<span class="i property">NamespaceURI</span>;
+						<b>var</b> <span id="r23 rd" class="r23 r">elementXmlInfo</span> = (<span class="t t">IXmlLineInfo</span>)<span class="r14 r">reader</span>;
+						<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>string</b>&gt;&gt; <span id="r24 rd" class="r24 r">xmlns</span>;
+ 
+						<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="k">var</a> <span id="r25 rd" class="r25 r">attributes</span> = <a href="#886e7a5eb57a49d0" class="i method">ParseXamlAttributes</a>(<span class="r14 r">reader</span>, <b>out</b> <span class="r24 r">xmlns</span>);
+						<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="k">var</a> <span id="r26 rd" class="r26 r">prefixes</span> = <a href="#6e45193dc6cc45e3" class="i method">PrefixesToIgnore</a>(<span class="r24 r">xmlns</span>);
+ 
+						<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="XamlNode.cs.html#944154aac15f45be" class="t t">XmlType</a>&gt; <span id="r27 rd" class="r27 r">typeArguments</span> = <b>null</b>;
+						<b>if</b> (<span class="r25 r">attributes</span>.<span class="i method">Any</span>(<span id="r28 rd" class="r28 r">kvp</span> =&gt; <span class="r28 r">kvp</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a> == <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#2d7fbef61f459440" class="i field">xTypeArguments</a>))
+						{
+							<span class="r27 r">typeArguments</span> =
+								((<a href="XamlNode.cs.html#8154936e25abda05" class="t t">ValueNode</a>)<span class="r25 r">attributes</span>.<span class="i method">First</span>(<span id="r29 rd" class="r29 r">kvp</span> =&gt; <span class="r29 r">kvp</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a> == <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#2d7fbef61f459440" class="i field">xTypeArguments</a>).<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>).<a href="XamlNode.cs.html#5fa72a93b49782e1" class="i property">Value</a> <b>as</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="XamlNode.cs.html#944154aac15f45be" class="t t">XmlType</a>&gt;;
+						}
+ 
+						<span class="r19 r">node</span> = <b>new</b> <a href="XamlNode.cs.html#61ae0169eb29388e" class="t constructor">ElementNode</a>(<b>new</b> <a href="XamlNode.cs.html#0a1740224b8aaa73" class="t constructor">XmlType</a>(<span class="r22 r">elementNsUri</span>, <span class="r21 r">elementName</span>, <span class="r27 r">typeArguments</span>), <span class="r22 r">elementNsUri</span>,
+							<span class="r14 r">reader</span> <b>as</b> <span class="t t">IXmlNamespaceResolver</span>, <span class="r23 r">elementXmlInfo</span>.<span class="i property">LineNumber</span>, <span class="r23 r">elementXmlInfo</span>.<span class="i property">LinePosition</span>);
+						((<a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>)<span class="r19 r">node</span>).<a href="XamlNode.cs.html#ca11b3b288ccdec1" class="i property">Properties</a>.<a href="IDictionaryExtensions.cs.html#f7eaf968d7168e6e" class="i method">AddRange</a>(<span class="r25 r">attributes</span>);
+						(<span class="r19 r">node</span>.<a href="XamlNode.cs.html#158cc6ab855b9565" class="i property">IgnorablePrefixes</a> ?? (<span class="r19 r">node</span>.<a href="XamlNode.cs.html#158cc6ab855b9565" class="i property">IgnorablePrefixes</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;())).<a href="@1@System.Collections/A.html#e569d850a66a1771" class="i method">AddRange</a>(<span class="r26 r">prefixes</span>);
+ 
+						<a href="#11b1b8fc3cda2746" class="i method">ParseXamlElementFor</a>((<a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>)<span class="r19 r">node</span>, <span class="r14 r">reader</span>);
+						<span class="r18 r">nodes</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r19 r">node</span>);
+						<b>if</b> (<span class="r20 r">isEmpty</span> || <span class="r15 r">nested</span>)
+							<b>return</b> <span class="r19 r">node</span>;
+						<b>break</b>;
+					<b>case</b> <span class="t t">XmlNodeType</span>.<span class="i field">Text</span>:
+						<span class="r19 r">node</span> = <b>new</b> <a href="XamlNode.cs.html#e2360d8fe4cc7ae5" class="t constructor">ValueNode</a>(<span class="r14 r">reader</span>.<span class="i property">Value</span>.<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>(), (<span class="t t">IXmlNamespaceResolver</span>)<span class="r14 r">reader</span>, ((<span class="t t">IXmlLineInfo</span>)<span class="r14 r">reader</span>).<span class="i property">LineNumber</span>,
+							((<span class="t t">IXmlLineInfo</span>)<span class="r14 r">reader</span>).<span class="i property">LinePosition</span>);
+						<span class="r18 r">nodes</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r19 r">node</span>);
+						<b>break</b>;
+					<b>case</b> <span class="t t">XmlNodeType</span>.<span class="i field">Whitespace</span>:
+						<b>break</b>;
+					<b>default</b>:
+						<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">&quot;Unhandled node {0} {1} {2}&quot;</span>, <span class="r14 r">reader</span>.<span class="i property">NodeType</span>, <span class="r14 r">reader</span>.<span class="i property">Name</span>, <span class="r14 r">reader</span>.<span class="i property">Value</span>);
+						<b>break</b>;
+				}
+			}
+			<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">&quot;Closing PropertyElement expected&quot;</span>, (<span class="t t">IXmlLineInfo</span>)<span class="r14 r">reader</span>);
+		}
+ 
+		<b>static</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a>&gt;&gt; <a id="886e7a5eb57a49d0" href="R/886e7a5eb57a49d0.html" target="n" data-glyph="76,1" class="i method">ParseXamlAttributes</a>(<span class="t t">XmlReader</span> <span id="r30 rd" class="r30 r">reader</span>, <b>out</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>,<b>string</b>&gt;&gt; <span id="r31 rd" class="r31 r">xmlns</span>)
+		{
+			<span class="t t">Debug</span>.<span class="i method">Assert</span>(<span class="r30 r">reader</span>.<span class="i property">NodeType</span> == <span class="t t">XmlNodeType</span>.<span class="i field">Element</span>);
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r32 rd" class="r32 r">attributes</span> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a>&gt;&gt;();
+			<span class="r31 r">xmlns</span> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>string</b>&gt;&gt;();
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r33 rd" class="r33 r">i</span> = 0; <span class="r33 r">i</span> &lt; <span class="r30 r">reader</span>.<span class="i property">AttributeCount</span>; <span class="r33 r">i</span>++)
+			{
+				<span class="r30 r">reader</span>.<span class="i method">MoveToAttribute</span>(<span class="r33 r">i</span>);
+ 
+				<span class="c">//skip xmlns</span>
+				<b>if</b> (<span class="r30 r">reader</span>.<span class="i property">NamespaceURI</span> == <span class="s">&quot;http://www.w3.org/2000/xmlns/&quot;</span>) {
+					<span class="r31 r">xmlns</span>.<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<b>new</b> <a href="@1@System.Runtime/A.html#0d04c81b31e41262" class="t constructor">KeyValuePair</a>&lt;<b>string</b>, <b>string</b>&gt;(<span class="r30 r">reader</span>.<span class="i property">LocalName</span>, <span class="r30 r">reader</span>.<span class="i property">Value</span>));
+					<b>continue</b>;
+				}
+ 
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r34 rd" class="r34 r">namespaceUri</span> = <span class="r30 r">reader</span>.<span class="i property">NamespaceURI</span>;
+				<b>if</b> (<span class="r30 r">reader</span>.<span class="i property">LocalName</span>.<a href="@1@System.Runtime/A.html#428c5c9954dea844" class="i method">Contains</a>(<span class="s">&quot;.&quot;</span>) &amp;&amp; <span class="r34 r">namespaceUri</span> == <span class="s">&quot;&quot;</span>)
+					<span class="r34 r">namespaceUri</span> = ((<span class="t t">IXmlNamespaceResolver</span>)<span class="r30 r">reader</span>).<span class="i method">LookupNamespace</span>(<span class="s">&quot;&quot;</span>);
+				<a href="XmlName.cs.html#78eee6e8b684a76e" class="k">var</a> <span id="r35 rd" class="r35 r">propertyName</span> = <b>new</b> <a href="XmlName.cs.html#655d78af446a108a" class="t constructor">XmlName</a>(<span class="r34 r">namespaceUri</span>, <span class="r30 r">reader</span>.<span class="i property">LocalName</span>);
+ 
+				<b>object</b> <span id="r36 rd" class="r36 r">value</span> = <span class="r30 r">reader</span>.<span class="i property">Value</span>;
+ 
+				<b>if</b> (<span class="r30 r">reader</span>.<span class="i property">NamespaceURI</span> == <a href="#3508e4ccca574315" class="i field">X2006Uri</a>)
+				{
+					<b>switch</b> (<span class="r30 r">reader</span>.<span class="i property">Name</span>) {
+					<b>case</b> <span class="s">&quot;x:Key&quot;</span>:
+						<span class="r35 r">propertyName</span> = <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#ce88fd5516a3db5c" class="i field">xKey</a>;
+						<b>break</b>;
+					<b>case</b> <span class="s">&quot;x:Name&quot;</span>:
+						<span class="r35 r">propertyName</span> = <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#4dd36ca233878b27" class="i field">xName</a>;
+						<b>break</b>;
+					<b>case</b> <span class="s">&quot;x:Class&quot;</span>:
+					<b>case</b> <span class="s">&quot;x:FieldModifier&quot;</span>:
+						<b>continue</b>;
+					<b>default</b>:
+						<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">&quot;Unhandled attribute {0}&quot;</span>, <span class="r30 r">reader</span>.<span class="i property">Name</span>);
+						<b>continue</b>;
+					}
+                }
+ 
+				<b>if</b> (<span class="r30 r">reader</span>.<span class="i property">NamespaceURI</span> == <a href="#80b6c43c81971ca4" class="i field">X2009Uri</a>)
+				{
+					<b>switch</b> (<span class="r30 r">reader</span>.<span class="i property">Name</span>) {
+					<b>case</b> <span class="s">&quot;x:Key&quot;</span>:
+						<span class="r35 r">propertyName</span> = <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#ce88fd5516a3db5c" class="i field">xKey</a>;
+						<b>break</b>;
+					<b>case</b> <span class="s">&quot;x:Name&quot;</span>:
+						<span class="r35 r">propertyName</span> = <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#4dd36ca233878b27" class="i field">xName</a>;
+						<b>break</b>;
+					<b>case</b> <span class="s">&quot;x:TypeArguments&quot;</span>:
+						<span class="r35 r">propertyName</span> = <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#2d7fbef61f459440" class="i field">xTypeArguments</a>;
+						<span class="r36 r">value</span> = <a href="TypeArgumentsParser.cs.html#1d55d421fe322b76" class="t t">TypeArgumentsParser</a>.<a href="TypeArgumentsParser.cs.html#07591374f92b8280" class="i method">ParseExpression</a>((<b>string</b>)<span class="r36 r">value</span>, (<span class="t t">IXmlNamespaceResolver</span>)<span class="r30 r">reader</span>, (<span class="t t">IXmlLineInfo</span>)<span class="r30 r">reader</span>);
+						<b>break</b>;
+					<b>case</b> <span class="s">&quot;x:DataType&quot;</span>:
+						<span class="r35 r">propertyName</span> = <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#02206a874bd4f9a9" class="i field">xDataType</a>;
+						<b>break</b>;
+					<b>case</b> <span class="s">&quot;x:Class&quot;</span>:
+					<b>case</b> <span class="s">&quot;x:FieldModifier&quot;</span>:
+						<b>continue</b>;
+					<b>case</b> <span class="s">&quot;x:FactoryMethod&quot;</span>:
+						<span class="r35 r">propertyName</span> = <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#2c33b8fa36839efb" class="i field">xFactoryMethod</a>;
+						<b>break</b>;
+					<b>case</b> <span class="s">&quot;x:Arguments&quot;</span>:
+						<span class="r35 r">propertyName</span> = <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#ba25f468d9c4f81b" class="i field">xArguments</a>;
+						<b>break</b>;
+					<b>default</b>:
+						<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">&quot;Unhandled attribute {0}&quot;</span>, <span class="r30 r">reader</span>.<span class="i property">Name</span>);
+						<b>continue</b>;
+					}
+				}
+ 
+				<a href="XamlNode.cs.html#9e41a3fac26adfa7" class="k">var</a> <span id="r37 rd" class="r37 r">propertyNode</span> = <a href="#94d468ba14b0a807" class="i method">GetValueNode</a>(<span class="r36 r">value</span>, <span class="r30 r">reader</span>);
+				<span class="r32 r">attributes</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<b>new</b> <a href="@1@System.Runtime/A.html#0d04c81b31e41262" class="t constructor">KeyValuePair</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a>&gt;(<span class="r35 r">propertyName</span>, <span class="r37 r">propertyNode</span>));
+			}
+			<span class="r30 r">reader</span>.<span class="i method">MoveToElement</span>();
+			<b>return</b> <span class="r32 r">attributes</span>;
+		}
+ 
+		<b>static</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<b>string</b>&gt; <a id="6e45193dc6cc45e3" href="R/6e45193dc6cc45e3.html" target="n" data-glyph="76,1" class="i method">PrefixesToIgnore</a>(<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>string</b>&gt;&gt; <span id="r38 rd" class="r38 r">xmlns</span>)
+		{
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r39 rd" class="r39 r">prefixes</span> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;();
+			<b>foreach</b> (<a href="@1@System.Runtime/A.html#8585965bb176a426" class="k">var</a> <span id="r40 rd" class="r40 r">kvp</span> <b>in</b> <span class="r38 r">xmlns</span>) {
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r41 rd" class="r41 r">prefix</span> = <span class="r40 r">kvp</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>;
+ 
+				<b>string</b> <span id="r42 rd" class="r42 r">typeName</span> = <b>null</b>, <span id="r43 rd" class="r43 r">ns</span> = <b>null</b>, <span id="r44 rd" class="r44 r">asm</span> = <b>null</b>, <span id="r45 rd" class="r45 r">targetPlatform</span> = <b>null</b>;
+				<a href="XmlnsHelper.cs.html#3248a3195f89e5e3" class="t t">XmlnsHelper</a>.<a href="XmlnsHelper.cs.html#ac7649562229a6d7" class="i method">ParseXmlns</a>(<span class="r40 r">kvp</span>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>, <b>out</b> <span class="r42 r">typeName</span>, <b>out</b> <span class="r43 r">ns</span>, <b>out</b> <span class="r44 r">asm</span>, <b>out</b> <span class="r45 r">targetPlatform</span>);
+				<b>if</b> (<span class="r45 r">targetPlatform</span> == <b>null</b>)
+					<b>continue</b>;
+				<b>try</b> {
+					<b>if</b> (<span class="r45 r">targetPlatform</span> != <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#fcdc6f21b1b1d3b3" class="i property">RuntimePlatform</a>)
+					{
+						<span class="c">// Special case for Windows backward compatibility</span>
+						<b>if</b> (<span class="r45 r">targetPlatform</span> == <span class="s">&quot;Windows&quot;</span> &amp;&amp;
+						    (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#fcdc6f21b1b1d3b3" class="i property">RuntimePlatform</a> == <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#a14f0b2a6b9a5bfb" class="i field">UWP</a> || <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#fcdc6f21b1b1d3b3" class="i property">RuntimePlatform</a> == <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#f67fa52b30da808f" class="i field">WinRT</a>))
+							<b>continue</b>;
+						
+						<span class="r39 r">prefixes</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r41 r">prefix</span>);
+					}
+				} <b>catch</b> (<a href="@1@System.Runtime/A.html#beac22dfca574cd4" class="t t">InvalidOperationException</a>) {
+					<span class="r39 r">prefixes</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r41 r">prefix</span>);
+				}
+			}
+			<b>return</b> <span class="r39 r">prefixes</span>;
+		}
+ 
+		<b>static</b> <a href="XamlNode.cs.html#9e41a3fac26adfa7" class="t t">IValueNode</a> <a id="94d468ba14b0a807" href="R/94d468ba14b0a807.html" target="n" data-glyph="76,1" class="i method">GetValueNode</a>(<b>object</b> <span id="r46 rd" class="r46 r">value</span>, <span class="t t">XmlReader</span> <span id="r47 rd" class="r47 r">reader</span>)
+		{
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r48 rd" class="r48 r">valueString</span> = <span class="r46 r">value</span> <b>as string</b>;
+			<b>if</b> (<span class="r48 r">valueString</span> != <b>null</b> &amp;&amp; <span class="r48 r">valueString</span>.<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>().<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;{}&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+			{
+				<b>return</b> <b>new</b> <a href="XamlNode.cs.html#e2360d8fe4cc7ae5" class="t constructor">ValueNode</a>(<span class="r48 r">valueString</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(2), (<span class="t t">IXmlNamespaceResolver</span>)<span class="r47 r">reader</span>, ((<span class="t t">IXmlLineInfo</span>)<span class="r47 r">reader</span>).<span class="i property">LineNumber</span>,
+					((<span class="t t">IXmlLineInfo</span>)<span class="r47 r">reader</span>).<span class="i property">LinePosition</span>);
+			}
+			<b>if</b> (<span class="r48 r">valueString</span> != <b>null</b> &amp;&amp; <span class="r48 r">valueString</span>.<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>().<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;{&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+			{
+				<b>return</b> <b>new</b> <a href="XamlNode.cs.html#bd04ef0f6d2bac83" class="t constructor">MarkupNode</a>(<span class="r48 r">valueString</span>.<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>(), <span class="r47 r">reader</span> <b>as</b> <span class="t t">IXmlNamespaceResolver</span>, ((<span class="t t">IXmlLineInfo</span>)<span class="r47 r">reader</span>).<span class="i property">LineNumber</span>,
+					((<span class="t t">IXmlLineInfo</span>)<span class="r47 r">reader</span>).<span class="i property">LinePosition</span>);
+			}
+			<b>return</b> <b>new</b> <a href="XamlNode.cs.html#e2360d8fe4cc7ae5" class="t constructor">ValueNode</a>(<span class="r46 r">value</span>, (<span class="t t">IXmlNamespaceResolver</span>)<span class="r47 r">reader</span>, ((<span class="t t">IXmlLineInfo</span>)<span class="r47 r">reader</span>).<span class="i property">LineNumber</span>,
+				((<span class="t t">IXmlLineInfo</span>)<span class="r47 r">reader</span>).<span class="i property">LinePosition</span>);
+		}
+ 
+		<b>static</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="t t">XmlnsDefinitionAttribute</a>&gt; <a id="a90fe4d9ccc3c0cc" href="R/a90fe4d9ccc3c0cc.html" target="n" data-glyph="46,1" class="i field">s_xmlnsDefinitions</a>;
+ 
+		<b>static void</b> <a id="382057b2b19b5d7c" href="R/382057b2b19b5d7c.html" target="n" data-glyph="76,1" class="i method">GatherXmlnsDefinitionAttributes</a>()
+		{
+			<span class="c">//this could be extended to look for [XmlnsDefinition] in all assemblies</span>
+			<b>var</b> <span id="r49 rd" class="r49 r">assemblies</span> = <b>new</b> [] {
+				<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>).<span class="i method">GetTypeInfo</span>().<span class="i property">Assembly</span>,
+				<b>typeof</b>(<a href="XamlLoader.cs.html#7971f26b0b433914" class="t t">XamlLoader</a>).<span class="i method">GetTypeInfo</span>().<span class="i property">Assembly</span>,
+			};
+ 
+			<a href="#a90fe4d9ccc3c0cc" class="i field">s_xmlnsDefinitions</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="t t">XmlnsDefinitionAttribute</a>&gt;();
+ 
+			<b>foreach</b> (<b>var</b> <span id="r50 rd" class="r50 r">assembly</span> <b>in</b> <span class="r49 r">assemblies</span>)
+				<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="t t">XmlnsDefinitionAttribute</a> <span id="r51 rd" class="r51 r">attribute</span> <b>in</b> <span class="r50 r">assembly</span>.<span class="i method">GetCustomAttributes</span>(<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="t t">XmlnsDefinitionAttribute</a>))) {
+					<a href="#a90fe4d9ccc3c0cc" class="i field">s_xmlnsDefinitions</a>.<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r51 r">attribute</span>);
+					<span class="r51 r">attribute</span>.<a href="/Xamarin.Forms.Core/A.html#bb016ee986a83525" class="i property">AssemblyName</a> = <span class="r51 r">attribute</span>.<a href="/Xamarin.Forms.Core/A.html#bb016ee986a83525" class="i property">AssemblyName</a> ?? <span class="r50 r">assembly</span>.<span class="i property">FullName</span>;
+				}
+		}
+ 
+		<b>public static</b> <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <a id="860a8b316d6b0881" href="R/860a8b316d6b0881.html" target="n" data-glyph="72,1" class="i method">GetElementType</a>(<a href="XamlNode.cs.html#944154aac15f45be" class="t t">XmlType</a> <span id="r52 rd" class="r52 r">xmlType</span>, <span class="t t">IXmlLineInfo</span> <span id="r53 rd" class="r53 r">xmlInfo</span>, <span class="t t">Assembly</span> <span id="r54 rd" class="r54 r">currentAssembly</span>,
+			<b>out</b> <a href="/Xamarin.Forms.Core/A.html#99c63f26760b949a" class="t t">XamlParseException</a> <span id="r55 rd" class="r55 r">exception</span>)
+		{
+			<b>if</b> (<a href="#a90fe4d9ccc3c0cc" class="i field">s_xmlnsDefinitions</a> == <b>null</b>)
+				<a href="#382057b2b19b5d7c" class="i method">GatherXmlnsDefinitionAttributes</a>();
+ 
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r56 rd" class="r56 r">namespaceURI</span> = <span class="r52 r">xmlType</span>.<a href="XamlNode.cs.html#a53254597bc28ecf" class="i property">NamespaceUri</a>;
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r57 rd" class="r57 r">elementName</span> = <span class="r52 r">xmlType</span>.<a href="XamlNode.cs.html#1561698d7b8a155c" class="i property">Name</a>;
+			<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="k">var</a> <span id="r58 rd" class="r58 r">typeArguments</span> = <span class="r52 r">xmlType</span>.<a href="XamlNode.cs.html#ec734db8facb9675" class="i property">TypeArguments</a>;
+			<span class="r55 r">exception</span> = <b>null</b>;
+ 
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r59 rd" class="r59 r">lookupAssemblies</span> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="t t">XmlnsDefinitionAttribute</a>&gt;();
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r60 rd" class="r60 r">lookupNames</span> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;();
+ 
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="k">var</a> <span id="r61 rd" class="r61 r">xmlnsDef</span> <b>in</b> <a href="#a90fe4d9ccc3c0cc" class="i field">s_xmlnsDefinitions</a>) {
+				<b>if</b> (<span class="r61 r">xmlnsDef</span>.<a href="/Xamarin.Forms.Core/A.html#2b7875bd8f3e82f1" class="i property">XmlNamespace</a> != <span class="r56 r">namespaceURI</span>)
+					<b>continue</b>;
+				<span class="r59 r">lookupAssemblies</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r61 r">xmlnsDef</span>);
+			}
+ 
+			<b>if</b> (<span class="r59 r">lookupAssemblies</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> == 0) {
+				<b>string</b> <span id="r62 rd" class="r62 r">ns</span>, <span id="r63 rd" class="r63 r">asmstring</span>, <span id="r64 rd" class="r64 r">_</span>;
+				<a href="XmlnsHelper.cs.html#3248a3195f89e5e3" class="t t">XmlnsHelper</a>.<a href="XmlnsHelper.cs.html#ac7649562229a6d7" class="i method">ParseXmlns</a>(<span class="r56 r">namespaceURI</span>, <b>out</b> <span class="r64 r">_</span>, <b>out</b> <span class="r62 r">ns</span>, <b>out</b> <span class="r63 r">asmstring</span>, <b>out</b> <span class="r64 r">_</span>);
+				<span class="r59 r">lookupAssemblies</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<b>new</b> <a href="/Xamarin.Forms.Core/A.html#f4ac69bbf1774a2d" class="t constructor">XmlnsDefinitionAttribute</a>(<span class="r56 r">namespaceURI</span>, <span class="r62 r">ns</span>) {
+					<a href="/Xamarin.Forms.Core/A.html#bb016ee986a83525" class="i property">AssemblyName</a> = <span class="r63 r">asmstring</span> ?? <span class="r54 r">currentAssembly</span>.<span class="i property">FullName</span>
+				});
+			}
+ 
+			<span class="r60 r">lookupNames</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r57 r">elementName</span>);
+			<span class="r60 r">lookupNames</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r57 r">elementName</span> + <span class="s">&quot;Extension&quot;</span>);
+ 
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r65 rd" class="r65 r">i</span> = 0; <span class="r65 r">i</span> &lt; <span class="r60 r">lookupNames</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r65 r">i</span>++)
+			{
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r66 rd" class="r66 r">name</span> = <span class="r60 r">lookupNames</span><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r65 r">i</span>];
+				<b>if</b> (<span class="r66 r">name</span>.<a href="@1@System.Runtime/A.html#428c5c9954dea844" class="i method">Contains</a>(<span class="s">&quot;:&quot;</span>))
+					<span class="r66 r">name</span> = <span class="r66 r">name</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(<span class="r66 r">name</span>.<a href="@1@System.Runtime/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;:&#39;</span>) + 1);
+				<b>if</b> (<span class="r58 r">typeArguments</span> != <b>null</b>)
+					<span class="r66 r">name</span> += <span class="s">&quot;`&quot;</span> + <span class="r58 r">typeArguments</span>.<a href="@1@System.Runtime/A.html#3d6c21c4e9bd5f63" class="i property">Count</a>; <span class="c">//this will return an open generic Type</span>
+				<span class="r60 r">lookupNames</span><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r65 r">i</span>] = <span class="r66 r">name</span>;
+			}
+ 
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r67 rd" class="r67 r">type</span> = <b>null</b>;
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#ee55cc99684e49bf" class="k">var</a> <span id="r68 rd" class="r68 r">asm</span> <b>in</b> <span class="r59 r">lookupAssemblies</span>) {
+				<b>foreach</b> (<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r69 rd" class="r69 r">name</span> <b>in</b> <span class="r60 r">lookupNames</span>)
+					<b>if</b> ((<span class="r67 r">type</span> = <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>.<a href="@1@System.Runtime/A.html#ba8d29b0ddf9aaa0" class="i method">GetType</a>(<span class="s">$&quot;</span>{<span class="r68 r">asm</span>.<a href="/Xamarin.Forms.Core/A.html#c34e39634d1bdeaa" class="i property">ClrNamespace</a>}<span class="s">.</span>{<span class="r69 r">name</span>}<span class="s">, </span>{<span class="r68 r">asm</span>.<a href="/Xamarin.Forms.Core/A.html#bb016ee986a83525" class="i property">AssemblyName</a>}<span class="s">&quot;</span>)) != <b>null</b>)
+						<b>break</b>;
+				<b>if</b> (<span class="r67 r">type</span> != <b>null</b>)
+					<b>break</b>;
+			}
+ 
+			<b>if</b> (<span class="r67 r">type</span> != <b>null</b> &amp;&amp; <span class="r58 r">typeArguments</span> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#99c63f26760b949a" class="t t">XamlParseException</a> <span id="r70 rd" class="r70 r">innerexception</span> = <b>null</b>;
+				<b>var</b> <span id="r71 rd" class="r71 r">args</span> = <span class="r58 r">typeArguments</span>.<span class="i method">Select</span>(<b>delegate</b>(<a href="XamlNode.cs.html#944154aac15f45be" class="t t">XmlType</a> <span id="r72 rd" class="r72 r">xmltype</span>)
+				{
+					<a href="/Xamarin.Forms.Core/A.html#99c63f26760b949a" class="t t">XamlParseException</a> <span id="r73 rd" class="r73 r">xpe</span>;
+					<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r74 rd" class="r74 r">t</span> = <a href="#860a8b316d6b0881" class="i method">GetElementType</a>(<span class="r72 r">xmltype</span>, <span class="r53 r">xmlInfo</span>, <span class="r54 r">currentAssembly</span>, <b>out</b> <span class="r73 r">xpe</span>);
+					<b>if</b> (<span class="r73 r">xpe</span> != <b>null</b>)
+					{
+						<span class="r70 r">innerexception</span> = <span class="r73 r">xpe</span>;
+						<b>return null</b>;
+					}
+					<b>return</b> <span class="r74 r">t</span>;
+				}).<span class="i method">ToArray</span>();
+				<b>if</b> (<span class="r70 r">innerexception</span> != <b>null</b>)
+				{
+					<span class="r55 r">exception</span> = <span class="r70 r">innerexception</span>;
+					<b>return null</b>;
+				}
+				<span class="r67 r">type</span> = <span class="r67 r">type</span>.<a href="@1@System.Runtime/A.html#3e82dbae123f91fc" class="i method">MakeGenericType</a>(<span class="r71 r">args</span>);
+			}
+ 
+			<b>if</b> (<span class="r67 r">type</span> == <b>null</b>)
+				<span class="r55 r">exception</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Type </span>{<span class="r57 r">elementName</span>}<span class="s"> not found in xmlns </span>{<span class="r56 r">namespaceURI</span>}<span class="s">&quot;</span>, <span class="r53 r">xmlInfo</span>);
+ 
+			<b>return</b> <span class="r67 r">type</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

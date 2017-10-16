@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html><head><title>FrameworkElementExtensions.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(150);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/FrameworkElementExtensions.cs" target="_top">FrameworkElementExtensions.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Concurrent</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Reflection</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="t">WBinding</span> = <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Data</span>.<span class="t t">Binding</span>;
+<b>using</b> <span class="t">WBindingExpression</span> = <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Data</span>.<span class="t t">BindingExpression</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.WinRT
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal static class</b> <a id="9872c3028918e535" href="R/../../0000000000.html" target="n" data-glyph="2,0" class="t t">FrameworkElementExtensions</a>
+	{
+		<b>static readonly</b> <span class="i">Lazy</span>&lt;<span class="i">ConcurrentDictionary</span>&lt;<span class="i">Type</span>, <span class="t t">DependencyProperty</span>&gt;&gt; <a id="93f636b959dd0633" href="R/93f636b959dd0633.html" target="n" data-glyph="46,1" class="i field">ForegroundProperties</a> =
+			<b>new</b> <span class="i">Lazy</span>&lt;<span class="i">ConcurrentDictionary</span>&lt;<span class="i">Type</span>, <span class="t t">DependencyProperty</span>&gt;&gt;(() =&gt; <b>new</b> <span class="i">ConcurrentDictionary</span>&lt;<span class="i">Type</span>, <span class="t t">DependencyProperty</span>&gt;());
+ 
+		<b>public static</b> <span class="t t">Brush</span> <a id="ab2de467dba96d5e" href="R/ab2de467dba96d5e.html" target="n" data-glyph="220,1" class="i method">GetForeground</a>(<b>this</b> <span class="t t">FrameworkElement</span> <span id="r0 rd" class="r0 r">element</span>)
+		{
+			<b>if</b> (<span class="r0 r">element</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<span class="s">&quot;element&quot;</span>);
+ 
+			<b>return</b> (<span class="t t">Brush</span>)<span class="r0 r">element</span>.<span class="i">GetValue</span>(<a href="#eb82d91b442a0742" class="i method">GetForegroundProperty</a>(<span class="r0 r">element</span>));
+		}
+ 
+		<b>public static</b> <span class="t t">WBinding</span> <a id="154bda2527aaee53" href="R/154bda2527aaee53.html" target="n" data-glyph="220,1" class="i method">GetForegroundBinding</a>(<b>this</b> <span class="t t">FrameworkElement</span> <span id="r1 rd" class="r1 r">element</span>)
+		{
+			<span class="t t">WBindingExpression</span> <span id="r2 rd" class="r2 r">expr</span> = <span class="r1 r">element</span>.<span class="i method">GetBindingExpression</span>(<a href="#eb82d91b442a0742" class="i method">GetForegroundProperty</a>(<span class="r1 r">element</span>));
+			<b>if</b> (<span class="r2 r">expr</span> == <b>null</b>)
+				<b>return null</b>;
+ 
+			<b>return</b> <span class="r2 r">expr</span>.<span class="i property">ParentBinding</span>;
+		}
+ 
+		<b>public static object</b> <a id="d4caa198518dd85d" href="R/d4caa198518dd85d.html" target="n" data-glyph="220,1" class="i method">GetForegroundCache</a>(<b>this</b> <span class="t t">FrameworkElement</span> <span id="r3 rd" class="r3 r">element</span>)
+		{
+			<span class="t t">WBinding</span> <span id="r4 rd" class="r4 r">binding</span> = <a href="#154bda2527aaee53" class="i method">GetForegroundBinding</a>(<span class="r3 r">element</span>);
+			<b>if</b> (<span class="r4 r">binding</span> != <b>null</b>)
+				<b>return</b> <span class="r4 r">binding</span>;
+ 
+			<b>return</b> <a href="#ab2de467dba96d5e" class="i method">GetForeground</a>(<span class="r3 r">element</span>);
+		}
+ 
+		<b>public static void</b> <a id="026ee75057582a77" href="R/026ee75057582a77.html" target="n" data-glyph="220,1" class="i method">RestoreForegroundCache</a>(<b>this</b> <span class="t t">FrameworkElement</span> <span id="r5 rd" class="r5 r">element</span>, <b>object</b> <span id="r6 rd" class="r6 r">cache</span>)
+		{
+			<b>var</b> <span id="r7 rd" class="r7 r">binding</span> = <span class="r6 r">cache</span> <b>as</b> <span class="t t">WBinding</span>;
+			<b>if</b> (<span class="r7 r">binding</span> != <b>null</b>)
+				<a href="#6d1bd75193604a61" class="i method">SetForeground</a>(<span class="r5 r">element</span>, <span class="r7 r">binding</span>);
+			<b>else</b>
+				<a href="#d3c02104272856a5" class="i method">SetForeground</a>(<span class="r5 r">element</span>, (<span class="t t">Brush</span>)<span class="r6 r">cache</span>);
+		}
+ 
+		<b>public static void</b> <a id="d3c02104272856a5" href="R/d3c02104272856a5.html" target="n" data-glyph="220,1" class="i method">SetForeground</a>(<b>this</b> <span class="t t">FrameworkElement</span> <span id="r8 rd" class="r8 r">element</span>, <span class="t t">Brush</span> <span id="r9 rd" class="r9 r">foregroundBrush</span>)
+		{
+			<b>if</b> (<span class="r8 r">element</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<span class="s">&quot;element&quot;</span>);
+ 
+			<span class="r8 r">element</span>.<span class="i">SetValue</span>(<a href="#eb82d91b442a0742" class="i method">GetForegroundProperty</a>(<span class="r8 r">element</span>), <span class="r9 r">foregroundBrush</span>);
+		}
+ 
+		<b>public static void</b> <a id="6d1bd75193604a61" href="R/6d1bd75193604a61.html" target="n" data-glyph="220,1" class="i method">SetForeground</a>(<b>this</b> <span class="t t">FrameworkElement</span> <span id="r10 rd" class="r10 r">element</span>, <span class="t t">WBinding</span> <span id="r11 rd" class="r11 r">binding</span>)
+		{
+			<b>if</b> (<span class="r10 r">element</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<span class="s">&quot;element&quot;</span>);
+ 
+			<span class="r10 r">element</span>.<span class="i">SetBinding</span>(<a href="#eb82d91b442a0742" class="i method">GetForegroundProperty</a>(<span class="r10 r">element</span>), <span class="r11 r">binding</span>);
+		}
+ 
+		<b>internal static</b> <span class="i">IEnumerable</span>&lt;<span class="r12 r t">T</span>&gt; <a id="61080bcc3920b125" href="R/61080bcc3920b125.html" target="n" data-glyph="221,1" class="i method">GetDescendantsByName</a>&lt;<span id="r12 rd t" class="r12 r t">T</span>&gt;(<b>this</b> <span class="t t">DependencyObject</span> <span id="r13 rd" class="r13 r">parent</span>, <b>string</b> <span id="r14 rd" class="r14 r">elementName</span>) <b>where</b> <span class="r12 r t">T</span> : <span class="t t">DependencyObject</span>
+		{
+			<b>int</b> <span id="r15 rd" class="r15 r">myChildrenCount</span> = <span class="t t">VisualTreeHelper</span>.<span class="i">GetChildrenCount</span>(<span class="r13 r">parent</span>);
+			<b>for</b> (<b>int</b> <span id="r16 rd" class="r16 r">i</span> = 0; <span class="r16 r">i</span> &lt; <span class="r15 r">myChildrenCount</span>; <span class="r16 r">i</span>++)
+			{
+				<b>var</b> <span id="r17 rd" class="r17 r">child</span> = <span class="t t">VisualTreeHelper</span>.<span class="i">GetChild</span>(<span class="r13 r">parent</span>, <span class="r16 r">i</span>);
+				<b>var</b> <span id="r18 rd" class="r18 r">controlName</span> = <span class="r17 r">child</span>.<span class="i">GetValue</span>(<span class="t t">FrameworkElement</span>.<span class="i property">NameProperty</span>) <b>as string</b>;
+				<b>if</b> (<span class="r18 r">controlName</span> == <span class="r14 r">elementName</span> &amp;&amp; <span class="r17 r">child</span> <b>is</b> <span class="r12 r t">T</span>)
+					<b>yield return</b> <span class="r17 r">child</span> <b>as</b> <span class="r12 r t">T</span>;
+				<b>else</b>
+				{
+					<b>foreach</b> (<b>var</b> <span id="r19 rd" class="r19 r">subChild</span> <b>in</b> <span class="r17 r">child</span>.<a href="#61080bcc3920b125" class="i method">GetDescendantsByName</a>&lt;<span class="r12 r t">T</span>&gt;(<span class="r14 r">elementName</span>))
+						<b>yield return</b> <span class="r19 r">subChild</span>;
+				}
+			}
+		}
+ 
+		<b>internal static</b> <span class="r20 r t">T</span> <a id="052a87239ea704b0" href="R/052a87239ea704b0.html" target="n" data-glyph="221,1" class="i method">GetFirstDescendant</a>&lt;<span id="r20 rd t" class="r20 r t">T</span>&gt;(<b>this</b> <span class="t t">DependencyObject</span> <span id="r21 rd" class="r21 r">element</span>) <b>where</b> <span class="r20 r t">T</span> : <span class="t t">FrameworkElement</span>
+		{
+			<b>int</b> <span id="r22 rd" class="r22 r">count</span> = <span class="t t">VisualTreeHelper</span>.<span class="i">GetChildrenCount</span>(<span class="r21 r">element</span>);
+			<b>for</b> (<b>var</b> <span id="r23 rd" class="r23 r">i</span> = 0; <span class="r23 r">i</span> &lt; <span class="r22 r">count</span>; <span class="r23 r">i</span>++)
+			{
+				<span class="t t">DependencyObject</span> <span id="r24 rd" class="r24 r">child</span> = <span class="t t">VisualTreeHelper</span>.<span class="i">GetChild</span>(<span class="r21 r">element</span>, <span class="r23 r">i</span>);
+ 
+				<span class="r20 r t">T</span> <span id="r25 rd" class="r25 r">target</span> = <span class="r24 r">child</span> <b>as</b> <span class="r20 r t">T</span> ?? <a href="#052a87239ea704b0" class="i method">GetFirstDescendant</a>&lt;<span class="r20 r t">T</span>&gt;(<span class="r24 r">child</span>);
+				<b>if</b> (<span class="r25 r">target</span> != <b>null</b>)
+					<b>return</b> <span class="r25 r">target</span>;
+			}
+ 
+			<b>return null</b>;
+		}
+ 
+		<b>static</b> <span class="t t">DependencyProperty</span> <a id="eb82d91b442a0742" href="R/eb82d91b442a0742.html" target="n" data-glyph="76,1" class="i method">GetForegroundProperty</a>(<span class="t t">FrameworkElement</span> <span id="r26 rd" class="r26 r">element</span>)
+		{
+			<b>if</b> (<span class="r26 r">element</span> <b>is</b> <span class="t t">Control</span>)
+				<b>return</b> <span class="t t">Control</span>.<span class="i property">ForegroundProperty</span>;
+			<b>if</b> (<span class="r26 r">element</span> <b>is</b> <span class="t t">TextBlock</span>)
+				<b>return</b> <span class="t t">TextBlock</span>.<span class="i property">ForegroundProperty</span>;
+ 
+			<span class="i">Type</span> <span id="r27 rd" class="r27 r">type</span> = <span class="r26 r">element</span>.<span class="i">GetType</span>();
+ 
+			<span class="t t">DependencyProperty</span> <span id="r28 rd" class="r28 r">foregroundProperty</span>;
+			<b>if</b> (!<a href="#93f636b959dd0633" class="i field">ForegroundProperties</a>.<span class="i">Value</span>.<span class="i">TryGetValue</span>(<span class="r27 r">type</span>, <b>out</b> <span class="r28 r">foregroundProperty</span>))
+			{
+				<span class="i">FieldInfo</span> <span id="r29 rd" class="r29 r">field</span> = <a href="/Xamarin.Forms.Core/A.html#6708d9b62c25fb57" class="t t">ReflectionExtensions</a>.<span class="i">GetFields</span>(<span class="r27 r">type</span>).<span class="i">FirstOrDefault</span>(<span id="r30 rd" class="r30 r">f</span> =&gt; <span class="r30 r">f</span>.<span class="i">Name</span> == <span class="s">&quot;ForegroundProperty&quot;</span>);
+				<b>if</b> (<span class="r29 r">field</span> == <b>null</b>)
+					<b>throw</b> <b>new</b> <span class="i">ArgumentException</span>(<span class="s">&quot;type is not a Foregroundable type&quot;</span>);
+ 
+				<b>var</b> <span id="r31 rd" class="r31 r">property</span> = (<span class="t t">DependencyProperty</span>)<span class="r29 r">field</span>.<span class="i">GetValue</span>(<b>null</b>);
+				<a href="#93f636b959dd0633" class="i field">ForegroundProperties</a>.<span class="i">Value</span>.<span class="i">TryAdd</span>(<span class="r27 r">type</span>, <span class="r31 r">property</span>);
+ 
+				<b>return</b> <span class="r31 r">property</span>;
+			}
+ 
+			<b>return</b> <span class="r28 r">foregroundProperty</span>;
+		}
+ 
+		<b>internal static</b> <span class="i">IEnumerable</span>&lt;<span class="r32 r t">T</span>&gt; <a id="d7846a18008980a4" href="R/d7846a18008980a4.html" target="n" data-glyph="221,1" class="i method">GetChildren</a>&lt;<span id="r32 rd t" class="r32 r t">T</span>&gt;(<b>this</b> <span class="t t">DependencyObject</span> <span id="r33 rd" class="r33 r">parent</span>) <b>where</b> <span class="r32 r t">T</span> : <span class="t t">DependencyObject</span>
+		{
+			<b>int</b> <span id="r34 rd" class="r34 r">myChildrenCount</span> = <span class="t t">VisualTreeHelper</span>.<span class="i">GetChildrenCount</span>(<span class="r33 r">parent</span>);
+			<b>for</b> (<b>int</b> <span id="r35 rd" class="r35 r">i</span> = 0; <span class="r35 r">i</span> &lt; <span class="r34 r">myChildrenCount</span>; <span class="r35 r">i</span>++)
+			{
+				<b>var</b> <span id="r36 rd" class="r36 r">child</span> = <span class="t t">VisualTreeHelper</span>.<span class="i">GetChild</span>(<span class="r33 r">parent</span>, <span class="r35 r">i</span>);
+				<b>if</b> (<span class="r36 r">child</span> <b>is</b> <span class="r32 r t">T</span>)
+					<b>yield return</b> <span class="r36 r">child</span> <b>as</b> <span class="r32 r t">T</span>;
+				<b>else</b>
+				{
+					<b>foreach</b> (<b>var</b> <span id="r37 rd" class="r37 r">subChild</span> <b>in</b> <span class="r36 r">child</span>.<a href="#d7846a18008980a4" class="i method">GetChildren</a>&lt;<span class="r32 r t">T</span>&gt;())
+						<b>yield return</b> <span class="r37 r">subChild</span>;
+				}
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

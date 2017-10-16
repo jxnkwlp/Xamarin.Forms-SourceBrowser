@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html><head><title>PickerRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(169);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.WinRT/PickerRenderer.cs" target="_top">PickerRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.WinRT" target="_top">Xamarin.Forms.Platform.WinRT\Xamarin.Forms.Platform.WinRT.csproj</a> (Xamarin.Forms.Platform.WinRT)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Core</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public class</b> <a id="970e11b6f335e7b8" href="R/970e11b6f335e7b8.html" target="n" data-glyph="0,0" class="t t"><span id="67a788f1f13b69d4">PickerRenderer</span></a> : <a href="ViewRenderer.cs.html#758d77404199f47d" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>, <a href="FormsComboBox.cs.html#0e29f7d9499f0922" class="t t">FormsComboBox</a>&gt;
+	{
+		<b>bool</b> <a id="5dc81e3198c09b03" href="R/5dc81e3198c09b03.html" target="n" data-glyph="46,1" class="i field">_isAnimating</a>;
+		<span class="t t">Brush</span> <a id="0cf5aec483315823" href="R/0cf5aec483315823.html" target="n" data-glyph="46,1" class="i field">_defaultBrush</a>;
+ 
+		<b>protected override void</b> <a id="347514511b096033" href="R/347514511b096033.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r0 rd" class="r0 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r0 r">disposing</span>)
+			{
+				<b>if</b> (<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a> != <b>null</b>)
+				{
+					<a href="#5dc81e3198c09b03" class="i field">_isAnimating</a> = <b>false</b>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">SelectionChanged</span> -= <a href="#1e5f88a0d9fcaf7f" class="i method">OnControlSelectionChanged</a>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">DropDownOpened</span> -= <a href="#8efa83c1edb2a84d" class="i method">OnDropDownOpenStateChanged</a>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">DropDownClosed</span> -= <a href="#8efa83c1edb2a84d" class="i method">OnDropDownOpenStateChanged</a>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<a href="FormsComboBox.cs.html#68e9c3293546cdae" class="i">OpenAnimationCompleted</a> -= <a href="#0e4fb0207219ac40" class="i method">ControlOnOpenAnimationCompleted</a>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Loaded</span> -= <a href="#585794014d5df7a9" class="i method">ControlOnLoaded</a>;
+				}
+			}
+ 
+			<a href="ViewRenderer.cs.html#758d77404199f47d" class="k">base</a>.<a href="VisualElementRenderer.cs.html#0ec1d01e03bda5a7" class="i method">Dispose</a>(<span class="r0 r">disposing</span>);
+		}
+ 
+		<b>protected override void</b> <a id="6c1f7149f93a6515" href="R/6c1f7149f93a6515.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="VisualElementChangedEventArgs.cs.html#2106a6c47320d5ce" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>&gt; <span id="r1 rd" class="r1 r">e</span>)
+		{
+			<b>if</b> (<span class="r1 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#be4376e6abb54396" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<b>if</b> (<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a> == <b>null</b>)
+				{
+					<a href="VisualElementRenderer.cs.html#77455b4fb2566b87" class="i method">SetNativeControl</a>(<b>new</b> <a href="FormsComboBox.cs.html#0e29f7d9499f0922" class="t constructor">FormsComboBox</a>());
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">SelectionChanged</span> += <a href="#1e5f88a0d9fcaf7f" class="i method">OnControlSelectionChanged</a>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">DropDownOpened</span> += <a href="#8efa83c1edb2a84d" class="i method">OnDropDownOpenStateChanged</a>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">DropDownClosed</span> += <a href="#8efa83c1edb2a84d" class="i method">OnDropDownOpenStateChanged</a>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<a href="FormsComboBox.cs.html#68e9c3293546cdae" class="i">OpenAnimationCompleted</a> += <a href="#0e4fb0207219ac40" class="i method">ControlOnOpenAnimationCompleted</a>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<a href="FormsComboBox.cs.html#401067ea861f6dd9" class="i">ClosedAnimationStarted</a> += <a href="#703bc75f15cc9304" class="i method">ControlOnClosedAnimationStarted</a>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">Loaded</span> += <a href="#585794014d5df7a9" class="i method">ControlOnLoaded</a>;
+				}
+ 
+				<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">ItemsSource</span> = ((<a href="/Xamarin.Forms.Core/A.html#65ffcf6ba2170a72" class="t t">LockableObservableListWrapper</a>)<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>).<a href="/Xamarin.Forms.Core/A.html#5672a1b5df5bb4be" class="i field">_list</a>;
+ 
+				<a href="#9daade17ced646ef" class="i method">UpdateTitle</a>();
+				<a href="#203424892eefff70" class="i method">UpdateSelectedIndex</a>();
+			}
+ 
+			<a href="ViewRenderer.cs.html#758d77404199f47d" class="k">base</a>.<a href="ViewRenderer.cs.html#604db20e09ba949f" class="i method">OnElementChanged</a>(<span class="r1 r">e</span>);
+		}
+ 
+		<b>protected override void</b> <a id="6912353c949dfc6a" href="R/6912353c949dfc6a.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r2 rd" class="r2 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r3 rd" class="r3 r">e</span>)
+		{
+			<a href="ViewRenderer.cs.html#758d77404199f47d" class="k">base</a>.<a href="VisualElementRenderer.cs.html#571db90aaeaa58ff" class="i method">OnElementPropertyChanged</a>(<span class="r2 r">sender</span>, <span class="r3 r">e</span>);
+ 
+			<b>if</b> (<span class="r3 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>.<a href="/Xamarin.Forms.Core/A.html#4cc8ed30ae38dc2c" class="i field">SelectedIndexProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#203424892eefff70" class="i method">UpdateSelectedIndex</a>();
+			<b>else if</b> (<span class="r3 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>.<a href="/Xamarin.Forms.Core/A.html#5573ce67f57c099b" class="i field">TitleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#9daade17ced646ef" class="i method">UpdateTitle</a>();
+			<b>else if</b> (<span class="r3 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>.<a href="/Xamarin.Forms.Core/A.html#660c507935b16122" class="i field">TextColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#f17d3a58b25673b8" class="i method">UpdateTextColor</a>();
+		}
+ 
+		<b>void</b> <a id="585794014d5df7a9" href="R/585794014d5df7a9.html" target="n" data-glyph="76,1" class="i method">ControlOnLoaded</a>(<b>object</b> <span id="r4 rd" class="r4 r">sender</span>, <span class="t t">RoutedEventArgs</span> <span id="r5 rd" class="r5 r">routedEventArgs</span>)
+		{
+			<span class="c">// The defaults from the control template won&#39;t be available</span>
+			<span class="c">// right away; we have to wait until after the template has been applied</span>
+			<a href="#0cf5aec483315823" class="i field">_defaultBrush</a> = <a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">Foreground</span>;
+			<a href="#f17d3a58b25673b8" class="i method">UpdateTextColor</a>();
+		}
+ 
+		<b>void</b> <a id="703bc75f15cc9304" href="R/703bc75f15cc9304.html" target="n" data-glyph="76,1" class="i method">ControlOnClosedAnimationStarted</a>(<b>object</b> <span id="r6 rd" class="r6 r">sender</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r7 rd" class="r7 r">eventArgs</span>)
+		{
+			<b>if</b> (!<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<a href="FormsComboBox.cs.html#10b45eb01c74ad88" class="i property">IsFullScreen</a>)
+			{
+				<span class="c">// Start refreshing while the control&#39;s closing animation runs;</span>
+				<span class="c">// OnDropDownOpenStateChanged will take care of stopping the refresh</span>
+				<a href="#342c906d0512ad98" class="i method">StartAnimationRefresh</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="0e4fb0207219ac40" href="R/0e4fb0207219ac40.html" target="n" data-glyph="76,1" class="i method">ControlOnOpenAnimationCompleted</a>(<b>object</b> <span id="r8 rd" class="r8 r">sender</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r9 rd" class="r9 r">eventArgs</span>)
+		{
+			<a href="#5dc81e3198c09b03" class="i field">_isAnimating</a> = <b>false</b>;
+			<b>if</b> (!<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<a href="FormsComboBox.cs.html#10b45eb01c74ad88" class="i property">IsFullScreen</a>)
+			{
+				<span class="c">// Force a final redraw after the closing animation has completed</span>
+				((<a href="/Xamarin.Forms.Core/A.html#d605b7264f63ff57" class="t t">IVisualElementController</a>)<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>)?.<a href="/Xamarin.Forms.Core/A.html#3a793cd2c08a1bfd" class="i method">InvalidateMeasure</a>(<a href="/Xamarin.Forms.Core/A.html#310448c2f71c61f1" class="t t">InvalidationTrigger</a>.<a href="/Xamarin.Forms.Core/A.html#1c7a97ba4e810a20" class="i field">MeasureChanged</a>);
+			}
+		}
+ 
+		<b>void</b> <a id="1e5f88a0d9fcaf7f" href="R/1e5f88a0d9fcaf7f.html" target="n" data-glyph="76,1" class="i method">OnControlSelectionChanged</a>(<b>object</b> <span id="r10 rd" class="r10 r">sender</span>, <span class="t t">SelectionChangedEventArgs</span> <span id="r11 rd" class="r11 r">e</span>)
+		{
+			<b>if</b> (<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a> != <b>null</b>)
+				<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2a86e2fcc8f3e266" class="i property">SelectedIndex</a> = <a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">SelectedIndex</span>;
+		}
+ 
+		<b>void</b> <a id="8efa83c1edb2a84d" href="R/8efa83c1edb2a84d.html" target="n" data-glyph="76,1" class="i method">OnDropDownOpenStateChanged</a>(<b>object</b> <span id="r12 rd" class="r12 r">sender</span>, <b>object</b> <span id="r13 rd" class="r13 r">o</span>)
+		{
+			<b>if</b> (<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">IsDropDownOpen</span>)
+			{
+				<b>if</b> (<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<a href="FormsComboBox.cs.html#ceedfb65a9e173de" class="i property">IsOpeningAnimated</a> &amp;&amp; !<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<a href="FormsComboBox.cs.html#10b45eb01c74ad88" class="i property">IsFullScreen</a>)
+				{
+					<span class="c">// Start running the animation refresh; </span>
+					<span class="c">// ControlOnOpenAnimationCompleted will take care of stopping it</span>
+					<a href="#342c906d0512ad98" class="i method">StartAnimationRefresh</a>();
+				}
+				<b>else</b>
+				{
+					((<a href="/Xamarin.Forms.Core/A.html#d605b7264f63ff57" class="t t">IVisualElementController</a>)<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>)?.<a href="/Xamarin.Forms.Core/A.html#3a793cd2c08a1bfd" class="i method">InvalidateMeasure</a>(<a href="/Xamarin.Forms.Core/A.html#310448c2f71c61f1" class="t t">InvalidationTrigger</a>.<a href="/Xamarin.Forms.Core/A.html#1c7a97ba4e810a20" class="i field">MeasureChanged</a>);
+				}
+			}
+			<b>else</b>
+			{
+				<span class="c">// The ComboBox is now closed; if we were animating the closure, stop</span>
+				<a href="#5dc81e3198c09b03" class="i field">_isAnimating</a> = <b>false</b>;
+				<span class="c">// and force the final redraw</span>
+				((<a href="/Xamarin.Forms.Core/A.html#d605b7264f63ff57" class="t t">IVisualElementController</a>)<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>)?.<a href="/Xamarin.Forms.Core/A.html#3a793cd2c08a1bfd" class="i method">InvalidateMeasure</a>(<a href="/Xamarin.Forms.Core/A.html#310448c2f71c61f1" class="t t">InvalidationTrigger</a>.<a href="/Xamarin.Forms.Core/A.html#1c7a97ba4e810a20" class="i field">MeasureChanged</a>);
+			}
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Forces redraw of the control during opening/closing animations to provide</span>
+		<span class="c">///</span><span class="c">     a smoother sliding animation for the surrounding controls</span>
+		<span class="c">///</span><span class="c">     Only applies on the phone and only when there are fewer than 6 items in the picker</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>void</b> <a id="342c906d0512ad98" href="R/342c906d0512ad98.html" target="n" data-glyph="76,1" class="i method">StartAnimationRefresh</a>()
+		{
+			<a href="#5dc81e3198c09b03" class="i field">_isAnimating</a> = <b>true</b>;
+			<span class="t t">Task</span>.<span class="i property">Factory</span>.<span class="i method">StartNew</span>(<b>async</b> () =&gt;
+			{
+				<b>while</b> (<a href="#5dc81e3198c09b03" class="i field">_isAnimating</a>)
+				{
+					<b>await</b> <span class="t t">Task</span>.<span class="i method">Delay</span>(16);
+					<b>await</b> <span class="i property">Dispatcher</span>.<span class="i method">RunAsync</span>(<span class="t t">CoreDispatcherPriority</span>.<span class="i field">Normal</span>, () =&gt; ((<a href="/Xamarin.Forms.Core/A.html#d605b7264f63ff57" class="t t">IVisualElementController</a>)<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>)?.<a href="/Xamarin.Forms.Core/A.html#3a793cd2c08a1bfd" class="i method">InvalidateMeasure</a>(<a href="/Xamarin.Forms.Core/A.html#310448c2f71c61f1" class="t t">InvalidationTrigger</a>.<a href="/Xamarin.Forms.Core/A.html#1c7a97ba4e810a20" class="i field">MeasureChanged</a>));
+				}
+			});
+		}
+ 
+		<b>void</b> <a id="203424892eefff70" href="R/203424892eefff70.html" target="n" data-glyph="76,1" class="i method">UpdateSelectedIndex</a>()
+		{
+			<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">SelectedIndex</span> = <a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2a86e2fcc8f3e266" class="i property">SelectedIndex</a>;
+		}
+ 
+		<b>void</b> <a id="f17d3a58b25673b8" href="R/f17d3a58b25673b8.html" target="n" data-glyph="76,1" class="i method">UpdateTextColor</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r14 rd" class="r14 r">color</span> = <a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d4fea928c5d48f63" class="i property">TextColor</a>;
+			<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">Foreground</span> = <span class="r14 r">color</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a> ? (<a href="#0cf5aec483315823" class="i field">_defaultBrush</a> ?? <span class="r14 r">color</span>.<a href="ConvertExtensions.cs.html#6013f6c670fdc29b" class="i method">ToBrush</a>()) : <span class="r14 r">color</span>.<a href="ConvertExtensions.cs.html#6013f6c670fdc29b" class="i method">ToBrush</a>();
+		}
+ 
+		<b>void</b> <a id="9daade17ced646ef" href="R/9daade17ced646ef.html" target="n" data-glyph="76,1" class="i method">UpdateTitle</a>()
+		{
+			<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">Header</span> = <a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#f944f721fe11576b" class="i property">Title</a>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

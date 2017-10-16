@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html><head><title>DatePickerRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(138);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/Renderers/DatePickerRenderer.cs" target="_top">Renderers\DatePickerRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="i n">Foundation</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>public class</b> <a id="81f37b7e7f7fd15d" href="../R/81f37b7e7f7fd15d.html" target="n" data-glyph="0,0" class="t t"><span id="0b23b17730ea993c">DatePickerRenderer</span></a> : <a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#3d956e8ce53b1f81" class="t t">DatePicker</a>, <span class="t t">NSDatePicker</span>&gt;
+	{
+		<span class="t t">NSDatePicker</span> <a id="3aed26672a632421" href="../R/3aed26672a632421.html" target="n" data-glyph="46,1" class="i field">_picker</a>;
+		<span class="t t">NSColor</span> <a id="b923c3044ee87a25" href="../R/b923c3044ee87a25.html" target="n" data-glyph="46,1" class="i field">_defaultTextColor</a>;
+		<span class="t t">NSColor</span> <a id="d715c9ef63522ebb" href="../R/d715c9ef63522ebb.html" target="n" data-glyph="46,1" class="i field">_defaultBackgroundColor</a>;
+		<b>bool</b> <a id="a51566930b2f1524" href="../R/a51566930b2f1524.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a> <a id="75f7b19aa14336de" href="../R/75f7b19aa14336de.html" target="n" data-glyph="106,1" class="i property">ElementController</a> =&gt; <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>;
+ 
+		<b>protected override void</b> <a id="a3e1e55b19094017" href="../R/a3e1e55b19094017.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#62949d367d44776c" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#3d956e8ce53b1f81" class="t t">DatePicker</a>&gt; <span id="r0 rd" class="r0 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#90cd799abe64b9ad" class="i method">OnElementChanged</a>(<span class="r0 r">e</span>);
+ 
+			<b>if</b> (<span class="r0 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#69c68dbc9f4fbe33" class="i property">OldElement</a> == <b>null</b>)
+			{
+				<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> == <b>null</b>)
+				{
+					<a href="#3aed26672a632421" class="i field">_picker</a> = <b>new</b> <span class="t constructor">NSDatePicker</span>
+					{
+						<span class="i property">DatePickerMode</span> = <span class="t t">NSDatePickerMode</span>.<span class="i field">Single</span>,
+						<span class="i property">TimeZone</span> = <b>new</b> <span class="t constructor">NSTimeZone</span>(<span class="s">&quot;UTC&quot;</span>),
+						<span class="i property">DatePickerStyle</span> = <span class="t t">NSDatePickerStyle</span>.<span class="i field">TextFieldAndStepper</span>,
+						<span class="i property">DatePickerElements</span> = <span class="t t">NSDatePickerElementFlags</span>.<span class="i field">YearMonthDateDay</span>
+					};
+					<a href="#3aed26672a632421" class="i field">_picker</a>.<span class="i">ValidateProposedDateValue</span> += <a href="#95b02d2d2411054e" class="i method">HandleValueChanged</a>;
+					<a href="#b923c3044ee87a25" class="i field">_defaultTextColor</a> = <a href="#3aed26672a632421" class="i field">_picker</a>.<span class="i property">TextColor</span>;
+					<a href="#d715c9ef63522ebb" class="i field">_defaultBackgroundColor</a> = <a href="#3aed26672a632421" class="i field">_picker</a>.<span class="i property">BackgroundColor</span>;
+ 
+					<a href="../ViewRenderer.cs.html#de42360b129a5181" class="i method">SetNativeControl</a>(<a href="#3aed26672a632421" class="i field">_picker</a>);
+				}
+			}
+ 
+			<a href="#c9a0d1948c4e18d0" class="i method">UpdateDateFromModel</a>();
+			<a href="#8b4756a764bd8e45" class="i method">UpdateMaximumDate</a>();
+			<a href="#9a8bb618dd4b2d69" class="i method">UpdateMinimumDate</a>();
+			<a href="#630ad488a344c884" class="i method">UpdateTextColor</a>();
+		}
+ 
+		<b>protected override void</b> <a id="c760ffab1b2841b6" href="../R/c760ffab1b2841b6.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r1 rd" class="r1 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r2 rd" class="r2 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#97a635fbd9f5d4cd" class="i method">OnElementPropertyChanged</a>(<span class="r1 r">sender</span>, <span class="r2 r">e</span>);
+ 
+			<b>if</b> (<span class="r2 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#3d956e8ce53b1f81" class="t t">DatePicker</a>.<a href="/Xamarin.Forms.Core/A.html#d1f274fbf2b4797c" class="i field">DateProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+				<span class="r2 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#3d956e8ce53b1f81" class="t t">DatePicker</a>.<a href="/Xamarin.Forms.Core/A.html#b22413a772265057" class="i field">FormatProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#c9a0d1948c4e18d0" class="i method">UpdateDateFromModel</a>();
+			<b>else if</b> (<span class="r2 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#3d956e8ce53b1f81" class="t t">DatePicker</a>.<a href="/Xamarin.Forms.Core/A.html#6869305c3869c7c7" class="i field">MinimumDateProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#9a8bb618dd4b2d69" class="i method">UpdateMinimumDate</a>();
+			<b>else if</b> (<span class="r2 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#3d956e8ce53b1f81" class="t t">DatePicker</a>.<a href="/Xamarin.Forms.Core/A.html#dab56427d2609054" class="i field">MaximumDateProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#8b4756a764bd8e45" class="i method">UpdateMaximumDate</a>();
+			<b>else if</b> (<span class="r2 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#3d956e8ce53b1f81" class="t t">DatePicker</a>.<a href="/Xamarin.Forms.Core/A.html#b4a655280b58e258" class="i field">TextColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+					<span class="r2 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#d798cc16e0e87f98" class="i field">IsEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#630ad488a344c884" class="i method">UpdateTextColor</a>();
+		}
+ 
+		<b>protected override void</b> <a id="5404b93e49e0023c" href="../R/5404b93e49e0023c.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r3 rd" class="r3 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r3 r">disposing</span> &amp;&amp; !<a href="#a51566930b2f1524" class="i field">_disposed</a>)
+			{
+				<b>if</b> (<a href="#3aed26672a632421" class="i field">_picker</a> != <b>null</b>)
+					<a href="#3aed26672a632421" class="i field">_picker</a>.<span class="i">ValidateProposedDateValue</span> -= <a href="#95b02d2d2411054e" class="i method">HandleValueChanged</a>;
+ 
+				<a href="#a51566930b2f1524" class="i field">_disposed</a> = <b>true</b>;
+			}
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#3cb6ec73595daa35" class="i method">Dispose</a>(<span class="r3 r">disposing</span>);
+		}
+ 
+		<b>protected override void</b> <a id="d1791753fd6e233a" href="../R/d1791753fd6e233a.html" target="n" data-glyph="75,1" class="i method">SetBackgroundColor</a>(<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r4 rd" class="r4 r">color</span>)
+		{
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#9a76fd6e39aac1f6" class="i method">SetBackgroundColor</a>(<span class="r4 r">color</span>);
+ 
+			<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<span class="r4 r">color</span> == <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#78f150ac7d83a2c8" class="i property">Default</a>)
+				<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">BackgroundColor</span> = <a href="#d715c9ef63522ebb" class="i field">_defaultBackgroundColor</a>;
+			<b>else</b>
+				<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">BackgroundColor</span> = <span class="r4 r">color</span>.<a href="../Extensions/ColorExtensions.cs.html#315625aceeb93f91" class="i method">ToNSColor</a>();
+		}
+ 
+		<b>void</b> <a id="95b02d2d2411054e" href="../R/95b02d2d2411054e.html" target="n" data-glyph="76,1" class="i method">HandleValueChanged</a>(<b>object</b> <span id="r5 rd" class="r5 r">sender</span>, <span class="t t">NSDatePickerValidatorEventArgs</span> <span id="r6 rd" class="r6 r">e</span>)
+		{
+			<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> == <b>null</b> || <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+			<a href="#75f7b19aa14336de" class="i property">ElementController</a>?.<a href="/Xamarin.Forms.Core/A.html#5e644259f42c0939" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#3d956e8ce53b1f81" class="t t">DatePicker</a>.<a href="/Xamarin.Forms.Core/A.html#d1f274fbf2b4797c" class="i field">DateProperty</a>, <a href="#3aed26672a632421" class="i field">_picker</a>.<span class="i property">DateValue</span>.<a href="../Extensions/DateExtensions.cs.html#7075b58091fc7624" class="i method">ToDateTime</a>().<a href="@0@mscorlib/A.html#92aa9b2917a74e91" class="i property">Date</a>);
+		}
+ 
+		<b>void</b> <a id="49fb2af998a4dc75" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnEnded</a>(<b>object</b> <span id="r7 rd" class="r7 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r8 rd" class="r8 r">eventArgs</span>)
+		{
+			<a href="#75f7b19aa14336de" class="i property">ElementController</a>?.<a href="/Xamarin.Forms.Core/A.html#4fa5976d0a57f29b" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <b>false</b>);
+		}
+ 
+		<b>void</b> <a id="2ba0cdd2fd1302db" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnStarted</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r10 rd" class="r10 r">eventArgs</span>)
+		{
+			<a href="#75f7b19aa14336de" class="i property">ElementController</a>?.<a href="/Xamarin.Forms.Core/A.html#4fa5976d0a57f29b" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <b>true</b>);
+		}
+ 
+		<b>void</b> <a id="c9a0d1948c4e18d0" href="../R/c9a0d1948c4e18d0.html" target="n" data-glyph="76,1" class="i method">UpdateDateFromModel</a>()
+		{
+			<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> == <b>null</b> || <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+			<b>if</b> (<a href="#3aed26672a632421" class="i field">_picker</a>.<span class="i property">DateValue</span>.<a href="../Extensions/DateExtensions.cs.html#7075b58091fc7624" class="i method">ToDateTime</a>().<a href="@0@mscorlib/A.html#92aa9b2917a74e91" class="i property">Date</a> != <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ad0dfb60cfb7f841" class="i property">Date</a>.<a href="@0@mscorlib/A.html#92aa9b2917a74e91" class="i property">Date</a>)
+				<a href="#3aed26672a632421" class="i field">_picker</a>.<span class="i property">DateValue</span> = <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ad0dfb60cfb7f841" class="i property">Date</a>.<a href="../Extensions/DateExtensions.cs.html#f93005eca746cbc0" class="i method">ToNSDate</a>();
+		}
+ 
+		<b>void</b> <a id="8b4756a764bd8e45" href="../R/8b4756a764bd8e45.html" target="n" data-glyph="76,1" class="i method">UpdateMaximumDate</a>()
+		{
+			<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> == <b>null</b> || <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+			<a href="#3aed26672a632421" class="i field">_picker</a>.<span class="i property">MaxDate</span> = <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#312455f59a3445b1" class="i property">MaximumDate</a>.<a href="../Extensions/DateExtensions.cs.html#f93005eca746cbc0" class="i method">ToNSDate</a>();
+		}
+ 
+		<b>void</b> <a id="9a8bb618dd4b2d69" href="../R/9a8bb618dd4b2d69.html" target="n" data-glyph="76,1" class="i method">UpdateMinimumDate</a>()
+		{
+			<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> == <b>null</b> || <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+			<a href="#3aed26672a632421" class="i field">_picker</a>.<span class="i property">MinDate</span> = <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#e10e9b8c4ebb9e7b" class="i property">MinimumDate</a>.<a href="../Extensions/DateExtensions.cs.html#f93005eca746cbc0" class="i method">ToNSDate</a>();
+		}
+ 
+		<b>void</b> <a id="630ad488a344c884" href="../R/630ad488a344c884.html" target="n" data-glyph="76,1" class="i method">UpdateTextColor</a>()
+		{
+			<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> == <b>null</b> || <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="k">var</a> <span id="r11 rd" class="r11 r">textColor</span> = <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#0c3dc39fadf3e10e" class="i property">TextColor</a>;
+ 
+			<b>if</b> (<span class="r11 r">textColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a> || !<a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>)
+				<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">TextColor</span> = <a href="#b923c3044ee87a25" class="i field">_defaultTextColor</a>;
+			<b>else</b>
+				<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">TextColor</span> = <span class="r11 r">textColor</span>.<a href="../Extensions/ColorExtensions.cs.html#315625aceeb93f91" class="i method">ToNSColor</a>();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

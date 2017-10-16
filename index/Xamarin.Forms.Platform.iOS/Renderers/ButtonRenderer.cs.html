@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html><head><title>ButtonRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(278);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/Renderers/ButtonRenderer.cs" target="_top">Renderers\ButtonRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">Foundation</span>;
+<b>using</b> <span class="i n">UIKit</span>;
+<b>using</b> <span class="t">SizeF</span> = <span class="i n">CoreGraphics</span>.<span class="t t">CGSize</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+{
+	<b>public class</b> <a id="6499cdf296e6c51a" href="../R/6499cdf296e6c51a.html" target="n" data-glyph="0,0" class="t t"><span id="7e08d7f04181113a">ButtonRenderer</span></a> : <a href="../ViewRenderer.cs.html#a26bff279160b03e" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>, <span class="t t">UIButton</span>&gt;
+	{
+		<span class="t t">UIColor</span> <a id="fb58078a86272965" href="../R/fb58078a86272965.html" target="n" data-glyph="46,1" class="i field">_buttonTextColorDefaultDisabled</a>;
+		<span class="t t">UIColor</span> <a id="ecf22943e31574cb" href="../R/ecf22943e31574cb.html" target="n" data-glyph="46,1" class="i field">_buttonTextColorDefaultHighlighted</a>;
+		<span class="t t">UIColor</span> <a id="87b5ffbebb727953" href="../R/87b5ffbebb727953.html" target="n" data-glyph="46,1" class="i field">_buttonTextColorDefaultNormal</a>;
+		<b>bool</b> <a id="1c3710123af9c78d" href="../R/1c3710123af9c78d.html" target="n" data-glyph="46,1" class="i field">_titleChanged</a>;
+		<span class="t t">SizeF</span> <a id="bd3fb8379184022d" href="../R/bd3fb8379184022d.html" target="n" data-glyph="46,1" class="i field">_titleSize</a>;
+ 
+		<span class="c">// This looks like it should be a const under iOS Classic,</span>
+		<span class="c">// but that doesn&#39;t work under iOS </span>
+		<span class="c">// ReSharper disable once BuiltInTypeReferenceStyle</span>
+		<span class="c">// Under iOS Classic Resharper wants to suggest this use the built-in type ref</span>
+		<span class="c">// but under iOS that suggestion won&#39;t work</span>
+		<b>readonly</b> <span class="t t">nfloat</span> <a id="4583211d49632810" href="../R/4583211d49632810.html" target="n" data-glyph="46,1" class="i field">_minimumButtonHeight</a> = 44; <span class="c">// Apple docs</span>
+ 
+		<b>static readonly</b> <span class="t t">UIControlState</span>[] <a id="8389f75f383a0006" href="../R/8389f75f383a0006.html" target="n" data-glyph="46,1" class="i field">s_controlStates</a> = { <span class="t t">UIControlState</span>.<span class="i field">Normal</span>, <span class="t t">UIControlState</span>.<span class="i field">Highlighted</span>, <span class="t t">UIControlState</span>.<span class="i field">Disabled</span> };
+ 
+		<b>public override</b> <span class="t t">SizeF</span> <a id="c60d519bbc3cc2f5" href="../R/c60d519bbc3cc2f5.html" target="n" data-glyph="72,1" class="i method">SizeThatFits</a>(<span class="t t">SizeF</span> <span id="r0 rd" class="r0 r">size</span>)
+		{
+			<b>var</b> <span id="r1 rd" class="r1 r">result</span> = <a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#a3785a5eb9c2cb3b" class="i method">SizeThatFits</a>(<span class="r0 r">size</span>);
+ 
+			<b>if</b> (<span class="r1 r">result</span>.<span class="i property">Height</span> &lt; <a href="#4583211d49632810" class="i field">_minimumButtonHeight</a>)
+			{
+				<span class="r1 r">result</span>.<span class="i property">Height</span> = <a href="#4583211d49632810" class="i field">_minimumButtonHeight</a>; 
+			}
+ 
+			<b>return</b> <span class="r1 r">result</span>;
+		}
+ 
+		<b>protected override void</b> <a id="75a39f3bfc62178a" href="../R/75a39f3bfc62178a.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r2 rd" class="r2 r">disposing</span>)
+		{
+			<b>if</b> (<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> != <b>null</b>)
+			{
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i">TouchUpInside</span> -= <a href="#2f8fdc10097bf93d" class="i method">OnButtonTouchUpInside</a>;
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i">TouchDown</span> -= <a href="#2f628c7ce7434df4" class="i method">OnButtonTouchDown</a>;
+			}
+ 
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#0263ff95aef8d32c" class="i method">Dispose</a>(<span class="r2 r">disposing</span>);
+		}
+ 
+		<b>protected override void</b> <a id="4076f4113936d6b5" href="../R/4076f4113936d6b5.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#8cd59c48d876c811" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>&gt; <span id="r3 rd" class="r3 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#8d6908150c52ef88" class="i method">OnElementChanged</a>(<span class="r3 r">e</span>);
+ 
+			<b>if</b> (<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<b>if</b> (<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> == <b>null</b>)
+				{
+					<a href="../ViewRenderer.cs.html#5a05fd07ede87b4f" class="i method">SetNativeControl</a>(<b>new</b> <span class="t constructor">UIButton</span>(<span class="t t">UIButtonType</span>.<span class="i field">System</span>));
+ 
+					<a href="@0@System/A.html#632c6da37ce825df" class="t t">Debug</a>.<a href="@0@System/A.html#4f55cf5792dfc5e6" class="i method">Assert</a>(<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> != <b>null</b>, <span class="s">&quot;Control != null&quot;</span>);
+ 
+					<a href="#30c1e20cec2ba42b" class="i method">SetControlPropertiesFromProxy</a>();
+ 
+					<a href="#87b5ffbebb727953" class="i field">_buttonTextColorDefaultNormal</a> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">TitleColor</span>(<span class="t t">UIControlState</span>.<span class="i field">Normal</span>);
+					<a href="#ecf22943e31574cb" class="i field">_buttonTextColorDefaultHighlighted</a> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">TitleColor</span>(<span class="t t">UIControlState</span>.<span class="i field">Highlighted</span>);
+					<a href="#fb58078a86272965" class="i field">_buttonTextColorDefaultDisabled</a> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">TitleColor</span>(<span class="t t">UIControlState</span>.<span class="i field">Disabled</span>);
+ 
+					<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i">TouchUpInside</span> += <a href="#2f8fdc10097bf93d" class="i method">OnButtonTouchUpInside</a>;
+					<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i">TouchDown</span> += <a href="#2f628c7ce7434df4" class="i method">OnButtonTouchDown</a>;
+				}
+ 
+				<a href="#53109e4f37b9d7a7" class="i method">UpdateText</a>();
+				<a href="#1ba0c71f2cf7a1b2" class="i method">UpdateFont</a>();
+				<a href="#91b61d58f318a7f5" class="i method">UpdateBorder</a>();
+				<a href="#6daaa885e083ef8d" class="i method">UpdateImage</a>();
+				<a href="#d2873b5d045f70d1" class="i method">UpdateTextColor</a>();
+			}
+		}
+ 
+		<b>protected override void</b> <a id="ec515455774e6962" href="../R/ec515455774e6962.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r4 rd" class="r4 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r5 rd" class="r5 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#9d8f9c1b9a699acd" class="i method">OnElementPropertyChanged</a>(<span class="r4 r">sender</span>, <span class="r5 r">e</span>);
+ 
+			<b>if</b> (<span class="r5 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#7c0c5f9cd576d26c" class="i field">TextProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#53109e4f37b9d7a7" class="i method">UpdateText</a>();
+			<b>else if</b> (<span class="r5 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#d0002ab7da86058d" class="i field">TextColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#d2873b5d045f70d1" class="i method">UpdateTextColor</a>();
+			<b>else if</b> (<span class="r5 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#6bdbe85e043d51ec" class="i field">FontProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#1ba0c71f2cf7a1b2" class="i method">UpdateFont</a>();
+			<b>else if</b> (<span class="r5 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#ebe01062b1984a02" class="i field">BorderWidthProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r5 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#4c40db5f56645c2f" class="i field">BorderRadiusProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r5 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#d838ed74b8bf5dc1" class="i field">BorderColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#91b61d58f318a7f5" class="i method">UpdateBorder</a>();
+			<b>else if</b> (<span class="r5 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#632c8a9339160c1d" class="i field">ImageProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#6daaa885e083ef8d" class="i method">UpdateImage</a>();
+		}
+    
+		<b>protected override void</b> <a id="995cc6f36e75c01b" href="../R/995cc6f36e75c01b.html" target="n" data-glyph="75,1" class="i method">SetAccessibilityLabel</a>()
+		{
+			<span class="c">// If we have not specified an AccessibilityLabel and the AccessibiltyLabel is current bound to the Title,</span>
+			<span class="c">// exit this method so we don&#39;t set the AccessibilityLabel value and break the binding.</span>
+			<span class="c">// This may pose a problem for users who want to explicitly set the AccessibilityLabel to null, but this</span>
+			<span class="c">// will prevent us from inadvertently breaking UI Tests that are using Query.Marked to get the dynamic Title </span>
+			<span class="c">// of the Button.</span>
+ 
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r6 rd" class="r6 r">elemValue</span> = (<b>string</b>)<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>?.<a href="/Xamarin.Forms.Core/A.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="/Xamarin.Forms.Core/A.html#76486fa8faf111f4" class="t t">AutomationProperties</a>.<a href="/Xamarin.Forms.Core/A.html#8996262b62046ac0" class="i field">NameProperty</a>);
+			<b>if</b> (<b>string</b>.<a href="@0@mscorlib/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(<span class="r6 r">elemValue</span>) &amp;&amp; <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>?.<span class="i property">AccessibilityLabel</span> == <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>?.<span class="i method">Title</span>(<span class="t t">UIControlState</span>.<span class="i field">Normal</span>))
+				<b>return</b>;
+ 
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#25d5fafeb07b1e96" class="i method">SetAccessibilityLabel</a>();
+		}
+		
+		<b>void</b> <a id="30c1e20cec2ba42b" href="../R/30c1e20cec2ba42b.html" target="n" data-glyph="76,1" class="i method">SetControlPropertiesFromProxy</a>()
+		{
+			<b>foreach</b> (<span class="t t">UIControlState</span> <span id="r7 rd" class="r7 r">uiControlState</span> <b>in</b> <a href="#8389f75f383a0006" class="i field">s_controlStates</a>)
+			{
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">SetTitleColor</span>(<span class="t t">UIButton</span>.<span class="i property">Appearance</span>.<span class="i method">TitleColor</span>(<span class="r7 r">uiControlState</span>), <span class="r7 r">uiControlState</span>); <span class="c">// if new values are null, old values are preserved.</span>
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">SetTitleShadowColor</span>(<span class="t t">UIButton</span>.<span class="i property">Appearance</span>.<span class="i method">TitleShadowColor</span>(<span class="r7 r">uiControlState</span>), <span class="r7 r">uiControlState</span>);
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">SetBackgroundImage</span>(<span class="t t">UIButton</span>.<span class="i property">Appearance</span>.<span class="i method">BackgroundImageForState</span>(<span class="r7 r">uiControlState</span>), <span class="r7 r">uiControlState</span>);
+			}
+		}
+ 
+		<b>void</b> <a id="2f8fdc10097bf93d" href="../R/2f8fdc10097bf93d.html" target="n" data-glyph="76,1" class="i method">OnButtonTouchUpInside</a>(<b>object</b> <span id="r8 rd" class="r8 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r9 rd" class="r9 r">eventArgs</span>)
+		{
+			((<a href="/Xamarin.Forms.Core/A.html#7affc5ed3814bae6" class="t t">IButtonController</a>)<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>)?.<a href="/Xamarin.Forms.Core/A.html#947542c4e00dcb51" class="i method">SendReleased</a>();
+			((<a href="/Xamarin.Forms.Core/A.html#7affc5ed3814bae6" class="t t">IButtonController</a>)<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>)?.<a href="/Xamarin.Forms.Core/A.html#439d02cce7f3d5ea" class="i method">SendClicked</a>();
+		}
+ 
+		<b>void</b> <a id="2f628c7ce7434df4" href="../R/2f628c7ce7434df4.html" target="n" data-glyph="76,1" class="i method">OnButtonTouchDown</a>(<b>object</b> <span id="r10 rd" class="r10 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r11 rd" class="r11 r">eventArgs</span>)
+		{
+			((<a href="/Xamarin.Forms.Core/A.html#7affc5ed3814bae6" class="t t">IButtonController</a>)<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>)?.<a href="/Xamarin.Forms.Core/A.html#92e822d39af422fe" class="i method">SendPressed</a>();
+		}
+ 
+		<b>void</b> <a id="91b61d58f318a7f5" href="../R/91b61d58f318a7f5.html" target="n" data-glyph="76,1" class="i method">UpdateBorder</a>()
+		{
+			<b>var</b> <span id="r12 rd" class="r12 r">uiButton</span> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>;
+			<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="k">var</a> <span id="r13 rd" class="r13 r">button</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>;
+ 
+			<b>if</b> (<span class="r13 r">button</span>.<a href="/Xamarin.Forms.Core/A.html#fb20b6f99abaa567" class="i property">BorderColor</a> != <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#78f150ac7d83a2c8" class="i property">Default</a>)
+				<span class="r12 r">uiButton</span>.<span class="i property">Layer</span>.<span class="i property">BorderColor</span> = <span class="r13 r">button</span>.<a href="/Xamarin.Forms.Core/A.html#fb20b6f99abaa567" class="i property">BorderColor</a>.<a href="../Extensions/ColorExtensions.cs.html#2cc83a768ee013c4" class="i method">ToCGColor</a>();
+ 
+			<span class="r12 r">uiButton</span>.<span class="i property">Layer</span>.<span class="i property">BorderWidth</span> = <a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#c2b57dc2156f32d4" class="i method">Max</a>(0f, (<b>float</b>)<span class="r13 r">button</span>.<a href="/Xamarin.Forms.Core/A.html#7d163d0cc5de3ee9" class="i property">BorderWidth</a>);
+			<span class="r12 r">uiButton</span>.<span class="i property">Layer</span>.<span class="i property">CornerRadius</span> = <span class="r13 r">button</span>.<a href="/Xamarin.Forms.Core/A.html#8447a65775b5a96f" class="i property">BorderRadius</a>;
+		}
+ 
+		<b>void</b> <a id="1ba0c71f2cf7a1b2" href="../R/1ba0c71f2cf7a1b2.html" target="n" data-glyph="76,1" class="i method">UpdateFont</a>()
+		{
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">TitleLabel</span>.<span class="i property">Font</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="FontExtensions.cs.html#de149c32e2333d3b" class="i method">ToUIFont</a>();
+		}
+ 
+		<b>async void</b> <a id="6daaa885e083ef8d" href="../R/6daaa885e083ef8d.html" target="n" data-glyph="76,1" class="i method">UpdateImage</a>()
+		{
+			<a href="ImageRenderer.cs.html#31399c2e7660bf34" class="t t">IImageSourceHandler</a> <span id="r14 rd" class="r14 r">handler</span>;
+			<a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a> <span id="r15 rd" class="r15 r">source</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#b77430877c998ab3" class="i property">Image</a>;
+			<b>if</b> (<span class="r15 r">source</span> != <b>null</b> &amp;&amp; (<span class="r14 r">handler</span> = <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="/Xamarin.Forms.Core/A.html#5f29d2ac0e30bd81" class="i property">Registered</a>.<a href="/Xamarin.Forms.Core/A.html#af776dc3bf4e03c2" class="i method">GetHandlerForObject</a>&lt;<a href="ImageRenderer.cs.html#31399c2e7660bf34" class="t t">IImageSourceHandler</a>&gt;(<span class="r15 r">source</span>)) != <b>null</b>)
+			{
+				<span class="t t">UIImage</span> <span id="r16 rd" class="r16 r">uiimage</span>;
+				<b>try</b>
+				{
+					<span class="r16 r">uiimage</span> = <b>await</b> <span class="r14 r">handler</span>.<a href="ImageRenderer.cs.html#affc040d634a63d1" class="i method">LoadImageAsync</a>(<span class="r15 r">source</span>, <span class="r17 r">scale</span>: (<b>float</b>)<span class="t t">UIScreen</span>.<span class="i property">MainScreen</span>.<span class="i property">Scale</span>);
+				}
+				<b>catch</b> (<a href="@0@mscorlib/A.html#a0a8b79c277cf327" class="t t">OperationCanceledException</a>)
+				{
+					<span class="r16 r">uiimage</span> = <b>null</b>;
+				}
+				<span class="t t">UIButton</span> <span id="r18 rd" class="r18 r">button</span> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>;
+				<b>if</b> (<span class="r18 r">button</span> != <b>null</b> &amp;&amp; <span class="r16 r">uiimage</span> != <b>null</b>)
+				{
+					<span class="r18 r">button</span>.<span class="i method">SetImage</span>(<span class="r16 r">uiimage</span>.<span class="i method">ImageWithRenderingMode</span>(<span class="t t">UIImageRenderingMode</span>.<span class="i field">AlwaysOriginal</span>), <span class="t t">UIControlState</span>.<span class="i field">Normal</span>);
+ 
+					<span class="r18 r">button</span>.<span class="i property">ImageView</span>.<span class="i property">ContentMode</span> = <span class="t t">UIViewContentMode</span>.<span class="i field">ScaleAspectFit</span>;
+ 
+					<a href="#22b99c10af3bcd1d" class="i method">ComputeEdgeInsets</a>(<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>, <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#c80039947878c76b" class="i property">ContentLayout</a>);
+				}
+			}
+			<b>else</b>
+			{
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">SetImage</span>(<b>null</b>, <span class="t t">UIControlState</span>.<span class="i field">Normal</span>);
+				<a href="#b1846ab2f4de6c73" class="i method">ClearEdgeInsets</a>(<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>);
+			}
+			((<a href="/Xamarin.Forms.Core/A.html#d605b7264f63ff57" class="t t">IVisualElementController</a>)<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#b12b5140a1053cdd" class="i method">NativeSizeChanged</a>();
+		}
+ 
+		<b>void</b> <a id="53109e4f37b9d7a7" href="../R/53109e4f37b9d7a7.html" target="n" data-glyph="76,1" class="i method">UpdateText</a>()
+		{
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r19 rd" class="r19 r">newText</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a>;
+ 
+			<b>if</b> (<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">Title</span>(<span class="t t">UIControlState</span>.<span class="i field">Normal</span>) != <span class="r19 r">newText</span>)
+			{
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">SetTitle</span>(<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a>, <span class="t t">UIControlState</span>.<span class="i field">Normal</span>);
+				<a href="#1c3710123af9c78d" class="i field">_titleChanged</a> = <b>true</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="d2873b5d045f70d1" href="../R/d2873b5d045f70d1.html" target="n" data-glyph="76,1" class="i method">UpdateTextColor</a>()
+		{
+			<b>if</b> (<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#992324b9ab13f8d4" class="i property">TextColor</a> == <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#78f150ac7d83a2c8" class="i property">Default</a>)
+			{
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">SetTitleColor</span>(<a href="#87b5ffbebb727953" class="i field">_buttonTextColorDefaultNormal</a>, <span class="t t">UIControlState</span>.<span class="i field">Normal</span>);
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">SetTitleColor</span>(<a href="#ecf22943e31574cb" class="i field">_buttonTextColorDefaultHighlighted</a>, <span class="t t">UIControlState</span>.<span class="i field">Highlighted</span>);
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">SetTitleColor</span>(<a href="#fb58078a86272965" class="i field">_buttonTextColorDefaultDisabled</a>, <span class="t t">UIControlState</span>.<span class="i field">Disabled</span>);
+			}
+			<b>else</b>
+			{
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">SetTitleColor</span>(<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#992324b9ab13f8d4" class="i property">TextColor</a>.<a href="../Extensions/ColorExtensions.cs.html#76dd85b8fcdc3ec0" class="i method">ToUIColor</a>(), <span class="t t">UIControlState</span>.<span class="i field">Normal</span>);
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">SetTitleColor</span>(<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#992324b9ab13f8d4" class="i property">TextColor</a>.<a href="../Extensions/ColorExtensions.cs.html#76dd85b8fcdc3ec0" class="i method">ToUIColor</a>(), <span class="t t">UIControlState</span>.<span class="i field">Highlighted</span>);
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i method">SetTitleColor</span>(<a href="#fb58078a86272965" class="i field">_buttonTextColorDefaultDisabled</a>, <span class="t t">UIControlState</span>.<span class="i field">Disabled</span>);
+				
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">TintColor</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#992324b9ab13f8d4" class="i property">TextColor</a>.<a href="../Extensions/ColorExtensions.cs.html#76dd85b8fcdc3ec0" class="i method">ToUIColor</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="b1846ab2f4de6c73" href="../R/b1846ab2f4de6c73.html" target="n" data-glyph="76,1" class="i method">ClearEdgeInsets</a>(<span class="t t">UIButton</span> <span id="r20 rd" class="r20 r">button</span>)
+		{
+			<b>if</b> (<span class="r20 r">button</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">ImageEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(0, 0, 0, 0);
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">TitleEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(0, 0, 0, 0);
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">ContentEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(0, 0, 0, 0);
+		}
+ 
+		<b>void</b> <a id="22b99c10af3bcd1d" href="../R/22b99c10af3bcd1d.html" target="n" data-glyph="76,1" class="i method">ComputeEdgeInsets</a>(<span class="t t">UIButton</span> <span id="r21 rd" class="r21 r">button</span>, <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#97ae63de26cf05b4" class="t t">ButtonContentLayout</a> <span id="r22 rd" class="r22 r">layout</span>)
+		{
+			<b>if</b> (<span class="r21 r">button</span>?.<span class="i property">ImageView</span>?.<span class="i property">Image</span> == <b>null</b> || <b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r21 r">button</span>.<span class="i property">TitleLabel</span>?.<span class="i property">Text</span>))
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#997825dad5328620" class="k">var</a> <span id="r23 rd" class="r23 r">position</span> = <span class="r22 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#d8b720813d8c9889" class="i property">Position</a>;
+			<b>var</b> <span id="r24 rd" class="r24 r">spacing</span> = (<span class="t t">nfloat</span>)(<span class="r22 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#d563e36ae4180060" class="i property">Spacing</a> / 2);
+ 
+			<b>if</b> (<span class="r23 r">position</span> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#97ae63de26cf05b4" class="t t">ButtonContentLayout</a>.<a href="/Xamarin.Forms.Core/A.html#997825dad5328620" class="t t">ImagePosition</a>.<a href="/Xamarin.Forms.Core/A.html#cac662a916f5d49c" class="i field">Left</a>)
+			{
+				<span class="r21 r">button</span>.<span class="i property">ImageEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(0, -<span class="r24 r">spacing</span>, 0, <span class="r24 r">spacing</span>);
+				<span class="r21 r">button</span>.<span class="i property">TitleEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(0, <span class="r24 r">spacing</span>, 0, -<span class="r24 r">spacing</span>);
+				<span class="r21 r">button</span>.<span class="i property">ContentEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(0, 2 * <span class="r24 r">spacing</span>, 0, 2 * <span class="r24 r">spacing</span>);
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<a href="#1c3710123af9c78d" class="i field">_titleChanged</a>)
+			{
+				<b>var</b> <span id="r25 rd" class="r25 r">stringToMeasure</span> = <b>new</b> <span class="t constructor">NSString</span>(<span class="r21 r">button</span>.<span class="i property">TitleLabel</span>.<span class="i property">Text</span>);
+				<span class="t t">UIStringAttributes</span> <span id="r26 rd" class="r26 r">attribs</span> = <b>new</b> <span class="t constructor">UIStringAttributes</span> { <span class="i property">Font</span> = <span class="r21 r">button</span>.<span class="i property">TitleLabel</span>.<span class="i property">Font</span> };
+				<a href="#bd3fb8379184022d" class="i field">_titleSize</a> = <span class="r25 r">stringToMeasure</span>.<span class="i method">GetSizeUsingAttributes</span>(<span class="r26 r">attribs</span>);
+				<a href="#1c3710123af9c78d" class="i field">_titleChanged</a> = <b>false</b>;
+			}
+ 
+			<b>var</b> <span id="r27 rd" class="r27 r">labelWidth</span> = <a href="#bd3fb8379184022d" class="i field">_titleSize</a>.<span class="i property">Width</span>;
+			<b>var</b> <span id="r28 rd" class="r28 r">imageWidth</span> = <span class="r21 r">button</span>.<span class="i property">ImageView</span>.<span class="i property">Image</span>.<span class="i property">Size</span>.<span class="i property">Width</span>;
+ 
+			<b>if</b> (<span class="r23 r">position</span> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#97ae63de26cf05b4" class="t t">ButtonContentLayout</a>.<a href="/Xamarin.Forms.Core/A.html#997825dad5328620" class="t t">ImagePosition</a>.<a href="/Xamarin.Forms.Core/A.html#5f33968dd90712ef" class="i field">Right</a>)
+			{
+				<span class="r21 r">button</span>.<span class="i property">ImageEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(0, <span class="r27 r">labelWidth</span> + <span class="r24 r">spacing</span>, 0, -<span class="r27 r">labelWidth</span> - <span class="r24 r">spacing</span>);
+				<span class="r21 r">button</span>.<span class="i property">TitleEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(0, -<span class="r28 r">imageWidth</span> - <span class="r24 r">spacing</span>, 0, <span class="r28 r">imageWidth</span> + <span class="r24 r">spacing</span>);
+				<span class="r21 r">button</span>.<span class="i property">ContentEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(0, 2 * <span class="r24 r">spacing</span>, 0, 2 * <span class="r24 r">spacing</span>);
+				<b>return</b>;
+			}
+ 
+			<b>var</b> <span id="r29 rd" class="r29 r">imageVertOffset</span> = (<a href="#bd3fb8379184022d" class="i field">_titleSize</a>.<span class="i property">Height</span> / 2);
+			<b>var</b> <span id="r30 rd" class="r30 r">titleVertOffset</span> = (<span class="r21 r">button</span>.<span class="i property">ImageView</span>.<span class="i property">Image</span>.<span class="i property">Size</span>.<span class="i property">Height</span> / 2);
+ 
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r31 rd" class="r31 r">edgeOffset</span> = (<b>float</b>)<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#e248b38c0156e9dd" class="i method">Min</a>(<span class="r29 r">imageVertOffset</span>, <span class="r30 r">titleVertOffset</span>);
+ 
+			<span class="r21 r">button</span>.<span class="i property">ContentEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(<span class="r31 r">edgeOffset</span>, 0, <span class="r31 r">edgeOffset</span>, 0);
+ 
+			<b>var</b> <span id="r32 rd" class="r32 r">horizontalImageOffset</span> = <span class="r27 r">labelWidth</span> / 2;
+			<b>var</b> <span id="r33 rd" class="r33 r">horizontalTitleOffset</span> = <span class="r28 r">imageWidth</span> / 2;
+ 
+			<b>if</b> (<span class="r23 r">position</span> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#97ae63de26cf05b4" class="t t">ButtonContentLayout</a>.<a href="/Xamarin.Forms.Core/A.html#997825dad5328620" class="t t">ImagePosition</a>.<a href="/Xamarin.Forms.Core/A.html#aacd1b8687283a13" class="i field">Bottom</a>)
+			{
+				<span class="r29 r">imageVertOffset</span> = -<span class="r29 r">imageVertOffset</span>;
+				<span class="r30 r">titleVertOffset</span> = -<span class="r30 r">titleVertOffset</span>;
+			}
+ 
+			<span class="r21 r">button</span>.<span class="i property">ImageEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(-<span class="r29 r">imageVertOffset</span>, <span class="r32 r">horizontalImageOffset</span>, <span class="r29 r">imageVertOffset</span>, -<span class="r32 r">horizontalImageOffset</span>);
+			<span class="r21 r">button</span>.<span class="i property">TitleEdgeInsets</span> = <b>new</b> <span class="t constructor">UIEdgeInsets</span>(<span class="r30 r">titleVertOffset</span>, -<span class="r33 r">horizontalTitleOffset</span>, -<span class="r30 r">titleVertOffset</span>, <span class="r33 r">horizontalTitleOffset</span>);
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

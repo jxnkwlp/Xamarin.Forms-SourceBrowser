@@ -1,0 +1,201 @@
+﻿<!DOCTYPE html>
+<html><head><title>CarouselPageRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(192);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/CarouselPageRenderer.cs" target="_top">CarouselPageRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Specialized</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Automation</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.WinRT
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public class</b> <a id="8a0f5ebc62ae9aca" href="R/8a0f5ebc62ae9aca.html" target="n" data-glyph="0,0" class="t t">CarouselPageRenderer</a> : <span class="t t">FlipView</span>, <a href="IVisualElementRenderer.cs.html#5e8fccba4d16485c" class="t t">IVisualElementRenderer</a>
+	{
+		<b>bool</b> <a id="30c708c2ef534765" href="R/30c708c2ef534765.html" target="n" data-glyph="46,1" class="i field">_fromUpdate</a>;
+		<b>bool</b> <a id="97e59cc2a72fee53" href="R/97e59cc2a72fee53.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<a href="BackgroundTracker.cs.html#77e0a45d198ac1f3" class="t t">BackgroundTracker</a>&lt;<span class="t t">FlipView</span>&gt; <a id="67d0bbce1535243d" href="R/67d0bbce1535243d.html" target="n" data-glyph="46,1" class="i field">_tracker</a>;
+ 
+		<b>public</b> <a id="8c689773a281aa95" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">CarouselPageRenderer</a>()
+		{
+			<span class="t t">VirtualizingStackPanel</span>.<span class="i">SetVirtualizationMode</span>(<a href="#8a0f5ebc62ae9aca" class="k">this</a>, <span class="t t">VirtualizationMode</span>.<span class="i field">Standard</span>);
+			<span class="i">ItemTemplate</span> = (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">DataTemplate</span>)<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Application</span>.<span class="i property">Current</span>.<span class="i property">Resources</span>[<span class="s">&quot;ContainedPageTemplate&quot;</span>];
+			<span class="i">SelectionChanged</span> += <span class="i">OnSelectionChanged</span>;
+			<span class="i">Loaded</span> += <span class="i">OnLoaded</span>;
+			<span class="i">Unloaded</span> += <span class="i">OnUnloaded</span>;
+		}
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#efe3ef8da06691e9" class="t t">CarouselPage</a> <a id="6876891fbf1f0e20" href="R/6876891fbf1f0e20.html" target="n" data-glyph="102,1" class="i property">Element</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public void</b> <a id="902c83d25566093b" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Dispose</a>()
+		{
+			<a href="#abd409213f0c17f5" class="i method">Dispose</a>(<b>true</b>);
+		}
+ 
+		<b>public</b> <span class="t t">FrameworkElement</span> <a id="66caa76b2aa3da9b" href="R/66caa76b2aa3da9b.html" target="n" data-glyph="102,1" class="i property">ContainerElement</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#8a0f5ebc62ae9aca" class="k">this</a>; }
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a href="IVisualElementRenderer.cs.html#5e8fccba4d16485c" class="t t">IVisualElementRenderer</a>.<a href="IVisualElementRenderer.cs.html#6e6ba4e26c168297" class="i property">Element</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#6876891fbf1f0e20" class="i property">Element</a>; }
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <a id="9501219826d4b239" href="R/9501219826d4b239.html" target="n" data-glyph="106,1" class="i property">Page</a> =&gt; <a href="#6876891fbf1f0e20" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>;
+ 
+		<b>public event</b> <span class="i">EventHandler</span>&lt;<a href="VisualElementChangedEventArgs.cs.html#987f24d4661ba3e7" class="t t">VisualElementChangedEventArgs</a>&gt; <a id="33bf5978c74a2418" href="R/33bf5978c74a2418.html" target="n" data-glyph="30,1" class="i">ElementChanged</a>;
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="3280d867c1dc7808" href="R/3280d867c1dc7808.html" target="n" data-glyph="72,1" class="i method">GetDesiredSize</a>(<b>double</b> <span id="r0 rd" class="r0 r">widthConstraint</span>, <b>double</b> <span id="r1 rd" class="r1 r">heightConstraint</span>)
+		{
+			<b>var</b> <span id="r2 rd" class="r2 r">constraint</span> = <b>new</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="i">Size</span>(<span class="r0 r">widthConstraint</span>, <span class="r1 r">heightConstraint</span>);
+ 
+			<b>double</b> <span id="r3 rd" class="r3 r">oldWidth</span> = <span class="i property">Width</span>;
+			<b>double</b> <span id="r4 rd" class="r4 r">oldHeight</span> = <span class="i property">Height</span>;
+ 
+			<span class="i property">Height</span> = <b>double</b>.<span class="i">NaN</span>;
+			<span class="i property">Width</span> = <b>double</b>.<span class="i">NaN</span>;
+ 
+			<span class="i">Measure</span>(<span class="r2 r">constraint</span>);
+			<a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="k">var</a> <span id="r5 rd" class="r5 r">result</span> = <b>new</b> <span class="t">Size</span>(<span class="i">Math</span>.<span class="i">Ceiling</span>(<span class="i property">DesiredSize</span>.<span class="i">Width</span>), <span class="i">Math</span>.<span class="i">Ceiling</span>(<span class="i property">DesiredSize</span>.<span class="i">Height</span>));
+ 
+			<span class="i property">Width</span> = <span class="r3 r">oldWidth</span>;
+			<span class="i property">Height</span> = <span class="r4 r">oldHeight</span>;
+ 
+			<b>return</b> <b>new</b> <span class="t">SizeRequest</span>(<span class="r5 r">result</span>);
+		}
+ 
+		<span class="t t">UIElement</span> <a href="IVisualElementRenderer.cs.html#5e8fccba4d16485c" class="t t">IVisualElementRenderer</a>.<a href="IVisualElementRenderer.cs.html#fd13aab183fc9a08" class="i method">GetNativeElement</a>()
+		{
+			<b>return null</b>;
+		}
+ 
+		<b>public void</b> <a id="b9b5072fd965f74b" href="R/b9b5072fd965f74b.html" target="n" data-glyph="72,1" class="i method">SetElement</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r6 rd" class="r6 r">element</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#efe3ef8da06691e9" class="k">var</a> <span id="r7 rd" class="r7 r">newPage</span> = <span class="r6 r">element</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#efe3ef8da06691e9" class="t t">CarouselPage</a>;
+			<b>if</b> (<span class="r6 r">element</span> != <b>null</b> &amp;&amp; <span class="r7 r">newPage</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentException</span>(<span class="s">&quot;element must be a CarouselPage&quot;</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#efe3ef8da06691e9" class="t t">CarouselPage</a> <span id="r8 rd" class="r8 r">oldPage</span> = <a href="#6876891fbf1f0e20" class="i property">Element</a>;
+			<a href="#6876891fbf1f0e20" class="i property">Element</a> = <span class="r7 r">newPage</span>;
+ 
+			<b>if</b> (<span class="r8 r">oldPage</span> != <b>null</b>)
+			{
+				<span class="r8 r">oldPage</span>.<span class="i">SendDisappearing</span>();
+				((<span class="i">INotifyCollectionChanged</span>)<span class="r8 r">oldPage</span>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>).<span class="i">CollectionChanged</span> -= <span class="i">OnChildrenChanged</span>;
+				<span class="r8 r">oldPage</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <span class="i">OnElementPropertyChanged</span>;
+			}
+ 
+			<b>if</b> (<span class="r7 r">newPage</span> != <b>null</b>)
+			{
+				<b>if</b> (<a href="#67d0bbce1535243d" class="i field">_tracker</a> == <b>null</b>)
+				{
+					<a href="#67d0bbce1535243d" class="i field">_tracker</a> = <b>new</b> <a href="BackgroundTracker.cs.html#43e0ae2aa2ed9650" class="t constructor">BackgroundTracker</a>&lt;<span class="t t">FlipView</span>&gt;(<span class="i property">BackgroundProperty</span>) { <a href="VisualElementTracker.cs.html#8bd6c42528f7d271" class="i property">Control</a> = <a href="#8a0f5ebc62ae9aca" class="k">this</a> };
+				}
+ 
+				<a href="#67d0bbce1535243d" class="i field">_tracker</a>.<a href="VisualElementTracker.cs.html#0f1fd41cefec6568" class="i property">Element</a> = <span class="r7 r">newPage</span>;
+ 
+				<span class="c">// Adding Items triggers the SelectionChanged event,</span>
+				<span class="c">// which will reset the CurrentPage unless we tell it to ignore.</span>
+				<a href="#30c708c2ef534765" class="i field">_fromUpdate</a> = <b>true</b>;
+				<b>for</b> (<b>var</b> <span id="r9 rd" class="r9 r">i</span> = 0; <span class="r9 r">i</span> &lt; <span class="r7 r">newPage</span>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>.<span class="i">Count</span>; <span class="r9 r">i</span>++)
+					<span class="i property">Items</span>.<span class="i">Add</span>(<span class="r7 r">newPage</span>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>[<span class="r9 r">i</span>]);
+				<a href="#30c708c2ef534765" class="i field">_fromUpdate</a> = <b>false</b>;
+ 
+				((<span class="i">INotifyCollectionChanged</span>)<span class="r7 r">newPage</span>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>).<span class="i">CollectionChanged</span> += <span class="i">OnChildrenChanged</span>;
+				<span class="r7 r">newPage</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <span class="i">OnElementPropertyChanged</span>;
+ 
+				<a href="#7098e2781df3fb24" class="i method">UpdateCurrentPage</a>();
+				<span class="r7 r">newPage</span>.<span class="i">SendAppearing</span>();
+			}
+ 
+			<a href="#efe5b9a4f5b18fb1" class="i method">OnElementChanged</a>(<b>new</b> <a href="VisualElementChangedEventArgs.cs.html#42dda1b177c267dc" class="t constructor">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#efe3ef8da06691e9" class="t t">CarouselPage</a>&gt;(<span class="r8 r">oldPage</span>, <span class="r7 r">newPage</span>));
+ 
+			<b>if</b> (!<b>string</b>.<span class="i">IsNullOrEmpty</span>(<a href="#6876891fbf1f0e20" class="i property">Element</a>?.<a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>))
+				<span class="i">SetValue</span>(<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Automation</span>.<span class="t t">AutomationProperties</span>.<span class="i property">AutomationIdProperty</span>, <a href="#6876891fbf1f0e20" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>);
+		}
+ 
+		<b>protected virtual void</b> <a id="abd409213f0c17f5" href="R/abd409213f0c17f5.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r10 rd" class="r10 r">disposing</span>)
+		{
+			<b>if</b> (!<span class="r10 r">disposing</span> || <a href="#97e59cc2a72fee53" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#67d0bbce1535243d" class="i field">_tracker</a> != <b>null</b>)
+			{
+				<a href="#67d0bbce1535243d" class="i field">_tracker</a>.<a href="VisualElementTracker.cs.html#37ca6f51fdc4e085" class="i method">Dispose</a>();
+				<a href="#67d0bbce1535243d" class="i field">_tracker</a> = <b>null</b>;
+			}
+ 
+			<a href="#97e59cc2a72fee53" class="i field">_disposed</a> = <b>true</b>;
+			<a href="#9501219826d4b239" class="i property">Page</a>?.<span class="i">SendDisappearing</span>();
+			<a href="#b9b5072fd965f74b" class="i method">SetElement</a>(<b>null</b>);
+		}
+ 
+		<b>protected virtual void</b> <a id="efe5b9a4f5b18fb1" href="R/efe5b9a4f5b18fb1.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="VisualElementChangedEventArgs.cs.html#5dbe5ff3136591e6" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#efe3ef8da06691e9" class="t t">CarouselPage</a>&gt; <span id="r11 rd" class="r11 r">e</span>)
+		{
+			<span class="i">EventHandler</span>&lt;<a href="VisualElementChangedEventArgs.cs.html#987f24d4661ba3e7" class="t t">VisualElementChangedEventArgs</a>&gt; <span id="r12 rd" class="r12 r">changed</span> = <a href="#33bf5978c74a2418" class="i">ElementChanged</a>;
+			<b>if</b> (<span class="r12 r">changed</span> != <b>null</b>)
+				<span class="r12 r">changed</span>(<a href="#8a0f5ebc62ae9aca" class="k">this</a>, <b>new</b> <a href="VisualElementChangedEventArgs.cs.html#ebffa9de2bf319ed" class="t constructor">VisualElementChangedEventArgs</a>(<span class="r11 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#f4b125153dbde1d7" class="i property">OldElement</a>, <span class="r11 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#eadadd421823a1eb" class="i property">NewElement</a>));
+		}
+ 
+		<b>protected virtual void</b> <a id="455f02a7111f4731" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r13 rd" class="r13 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r14 rd" class="r14 r">e</span>)
+		{
+			<b>if</b> (<span class="r14 r">e</span>.<span class="i">PropertyName</span> == <span class="s">&quot;CurrentPage&quot;</span>)
+			{
+				<a href="#7098e2781df3fb24" class="i method">UpdateCurrentPage</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="5d431886e12a5fce" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnChildrenChanged</a>(<b>object</b> <span id="r15 rd" class="r15 r">sender</span>, <span class="i">NotifyCollectionChangedEventArgs</span> <span id="r16 rd" class="r16 r">e</span>)
+		{
+			<span class="r16 r">e</span>.<span class="i">Apply</span>(<a href="#6876891fbf1f0e20" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>, <span class="i property">Items</span>);
+		}
+ 
+		<b>void</b> <a id="0482fa8f40f7eeed" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnLoaded</a>(<b>object</b> <span id="r17 rd" class="r17 r">sender</span>, <span class="t t">RoutedEventArgs</span> <span id="r18 rd" class="r18 r">e</span>)
+		{
+			<a href="#9501219826d4b239" class="i property">Page</a>?.<span class="i">SendAppearing</span>();
+		}
+ 
+		<b>void</b> <a id="6d879d30b2ef2e0a" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnSelectionChanged</a>(<b>object</b> <span id="r19 rd" class="r19 r">sender</span>, <span class="t t">SelectionChangedEventArgs</span> <span id="r20 rd" class="r20 r">e</span>)
+		{
+			<b>if</b> (<a href="#30c708c2ef534765" class="i field">_fromUpdate</a>)
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="k">var</a> <span id="r21 rd" class="r21 r">page</span> = (<a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t t">ContentPage</a>)<span class="i property">SelectedItem</span>;
+			<a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t t">ContentPage</a> <span id="r22 rd" class="r22 r">currentPage</span> = <a href="#6876891fbf1f0e20" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ffbdb21cfc058aa9" class="i property">CurrentPage</a>;
+			<b>if</b> (<span class="r22 r">currentPage</span> == <span class="r21 r">page</span>)
+				<b>return</b>;
+			<span class="r22 r">currentPage</span>?.<span class="i">SendDisappearing</span>();
+			<a href="#6876891fbf1f0e20" class="i property">Element</a>.<span class="i">CurrentPage</span> = <span class="r21 r">page</span>;
+			<span class="r21 r">page</span>?.<span class="i">SendAppearing</span>();
+		}
+ 
+		<b>void</b> <a id="a5ee3c3b5cd4dde9" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnUnloaded</a>(<b>object</b> <span id="r23 rd" class="r23 r">sender</span>, <span class="t t">RoutedEventArgs</span> <span id="r24 rd" class="r24 r">e</span>)
+		{
+			<a href="#9501219826d4b239" class="i property">Page</a>?.<span class="i">SendDisappearing</span>();
+		}
+ 
+		<b>void</b> <a id="7098e2781df3fb24" href="R/7098e2781df3fb24.html" target="n" data-glyph="76,1" class="i method">UpdateCurrentPage</a>()
+		{
+			<a href="#30c708c2ef534765" class="i field">_fromUpdate</a> = <b>true</b>;
+ 
+			<span class="i property">SelectedItem</span> = <a href="#6876891fbf1f0e20" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ffbdb21cfc058aa9" class="i property">CurrentPage</a>;
+ 
+			<a href="#30c708c2ef534765" class="i field">_fromUpdate</a> = <b>false</b>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

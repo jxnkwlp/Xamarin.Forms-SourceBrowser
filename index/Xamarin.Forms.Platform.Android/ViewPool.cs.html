@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html><head><title>ViewPool.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(79);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/ViewPool.cs" target="_top">ViewPool.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">AView</span> = <span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>public class</b> <a id="16456ab14ca443c8" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t">ViewPool</a> : <span class="i">IDisposable</span>
+	{
+		<b>readonly</b> <span class="i">Dictionary</span>&lt;<span class="i">Type</span>, <span class="i">Stack</span>&lt;<span class="i">AView</span>&gt;&gt; <a id="84dd678de8264b20" href="R/84dd678de8264b20.html" target="n" data-glyph="46,1" class="i field">_freeViews</a> = <b>new</b> <span class="i">Dictionary</span>&lt;<span class="i">Type</span>, <span class="i">Stack</span>&lt;<span class="i">AView</span>&gt;&gt;();
+		<b>readonly</b> <span class="i">ViewGroup</span> <a id="4f1b788bac44d95f" href="R/4f1b788bac44d95f.html" target="n" data-glyph="46,1" class="i field">_viewGroup</a>;
+ 
+		<b>bool</b> <a id="9378c5bd91674188" href="R/9378c5bd91674188.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<b>public</b> <a id="38c6d20dc31ca1c8" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">ViewPool</a>(<span class="i">ViewGroup</span> <span id="r0 rd" class="r0 r">viewGroup</span>)
+		{
+			<a href="#4f1b788bac44d95f" class="i field">_viewGroup</a> = <span class="r0 r">viewGroup</span>;
+		}
+ 
+		<b>public void</b> <a id="115479ba2680354b" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Dispose</a>()
+		{
+			<b>if</b> (<a href="#9378c5bd91674188" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<b>foreach</b> (<span class="i">Stack</span>&lt;<span class="i">AView</span>&gt; <span id="r1 rd" class="r1 r">views</span> <b>in</b> <a href="#84dd678de8264b20" class="i field">_freeViews</a>.<span class="i">Values</span>)
+			{
+				<b>foreach</b> (<span class="i">AView</span> <span id="r2 rd" class="r2 r">view</span> <b>in</b> <span class="r1 r">views</span>)
+					<span class="r2 r">view</span>.<span class="i">Dispose</span>();
+			}
+ 
+			<a href="#9378c5bd91674188" class="i field">_disposed</a> = <b>true</b>;
+		}
+ 
+		<b>public void</b> <a id="271843f0373b40f0" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ClearChildren</a>()
+		{
+			<b>if</b> (<a href="#9378c5bd91674188" class="i field">_disposed</a>)
+				<b>throw</b> <b>new</b> <span class="i">ObjectDisposedException</span>(<b>null</b>);
+ 
+			<a href="#ac00b3e83effd8fc" class="i method">ClearChildren</a>(<a href="#4f1b788bac44d95f" class="i field">_viewGroup</a>);
+		}
+ 
+		<b>public</b> <span class="r3 r t">TView</span> <a id="6d5d07fe6f8938af" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetFreeView</a>&lt;<span id="r3 rd t" class="r3 r t">TView</span>&gt;() <b>where</b> <span class="r3 r t">TView</span> : <span class="i">AView</span>
+		{
+			<b>if</b> (<a href="#9378c5bd91674188" class="i field">_disposed</a>)
+				<b>throw</b> <b>new</b> <span class="i">ObjectDisposedException</span>(<b>null</b>);
+ 
+			<span class="i">Stack</span>&lt;<span class="i">AView</span>&gt; <span id="r4 rd" class="r4 r">views</span>;
+			<b>if</b> (<a href="#84dd678de8264b20" class="i field">_freeViews</a>.<span class="i">TryGetValue</span>(<b>typeof</b>(<span class="r3 r t">TView</span>), <b>out</b> <span class="r4 r">views</span>) &amp;&amp; <span class="r4 r">views</span>.<span class="i">Count</span> &gt; 0)
+				<b>return</b> (<span class="r3 r t">TView</span>)<span class="r4 r">views</span>.<span class="i">Pop</span>();
+ 
+			<b>return null</b>;
+		}
+ 
+		<b>void</b> <a id="ac00b3e83effd8fc" href="R/ac00b3e83effd8fc.html" target="n" data-glyph="76,1" class="i method">ClearChildren</a>(<span class="i">ViewGroup</span> <span id="r5 rd" class="r5 r">group</span>)
+		{
+			<b>if</b> (<span class="r5 r">group</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>int</b> <span id="r6 rd" class="r6 r">count</span> = <span class="r5 r">group</span>.<span class="i">ChildCount</span>;
+			<b>for</b> (<b>var</b> <span id="r7 rd" class="r7 r">i</span> = 0; <span class="r7 r">i</span> &lt; <span class="r6 r">count</span>; <span class="r7 r">i</span>++)
+			{
+				<span class="i">AView</span> <span id="r8 rd" class="r8 r">child</span> = <span class="r5 r">group</span>.<span class="i">GetChildAt</span>(<span class="r7 r">i</span>);
+ 
+				<b>var</b> <span id="r9 rd" class="r9 r">g</span> = <span class="r8 r">child</span> <b>as</b> <span class="i">ViewGroup</span>;
+				<b>if</b> (<span class="r9 r">g</span> != <b>null</b>)
+					<a href="#ac00b3e83effd8fc" class="i method">ClearChildren</a>(<span class="r9 r">g</span>);
+ 
+				<span class="i">Type</span> <span id="r10 rd" class="r10 r">childType</span> = <span class="r8 r">child</span>.<span class="i">GetType</span>();
+				<span class="i">Stack</span>&lt;<span class="i">AView</span>&gt; <span id="r11 rd" class="r11 r">stack</span>;
+				<b>if</b> (!<a href="#84dd678de8264b20" class="i field">_freeViews</a>.<span class="i">TryGetValue</span>(<span class="r10 r">childType</span>, <b>out</b> <span class="r11 r">stack</span>))
+					<a href="#84dd678de8264b20" class="i field">_freeViews</a>[<span class="r10 r">childType</span>] = <span class="r11 r">stack</span> = <b>new</b> <span class="i">Stack</span>&lt;<span class="i">AView</span>&gt;();
+ 
+				<span class="r11 r">stack</span>.<span class="i">Push</span>(<span class="r8 r">child</span>);
+			}
+ 
+			<span class="r5 r">group</span>.<span class="i">RemoveAllViews</span>();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

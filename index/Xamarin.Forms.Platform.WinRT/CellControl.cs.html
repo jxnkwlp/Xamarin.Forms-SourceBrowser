@@ -1,0 +1,329 @@
+﻿<!DOCTYPE html>
+<html><head><title>CellControl.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(320);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.WinRT/CellControl.cs" target="_top">CellControl.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.WinRT" target="_top">Xamarin.Forms.Platform.WinRT\Xamarin.Forms.Platform.WinRT.csproj</a> (Xamarin.Forms.Platform.WinRT)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Input</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="i n">Primitives</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Input</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public class</b> <a id="e19d8919b2e106b7" href="R/e19d8919b2e106b7.html" target="n" data-glyph="0,0" class="t t">CellControl</a> : <span class="t t">ContentControl</span>
+	{
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="be862025d60a7aa1" href="R/be862025d60a7aa1.html" target="n" data-glyph="42,1" class="i field">CellProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i method">Register</span>(<span class="s">&quot;Cell&quot;</span>, <b>typeof</b>(<b>object</b>), <b>typeof</b>(<a href="#e19d8919b2e106b7" class="t t">CellControl</a>),
+			<b>new</b> <span class="t constructor">PropertyMetadata</span>(<b>null</b>, (<span id="r0 rd" class="r0 r">o</span>, <span id="r1 rd" class="r1 r">e</span>) =&gt; ((<a href="#e19d8919b2e106b7" class="t t">CellControl</a>)<span class="r0 r">o</span>).<a href="#075ce58089730e5d" class="i method">SetSource</a>((<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>)<span class="r1 r">e</span>.<span class="i property">OldValue</span>, (<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>)<span class="r1 r">e</span>.<span class="i property">NewValue</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="ff323d4ab5665e80" href="R/ff323d4ab5665e80.html" target="n" data-glyph="42,1" class="i field">IsGroupHeaderProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i method">Register</span>(<span class="s">&quot;IsGroupHeader&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#e19d8919b2e106b7" class="t t">CellControl</a>), <b>null</b>);
+ 
+		<b>internal static readonly</b> <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="4d8a5a17700379ca" href="R/4d8a5a17700379ca.html" target="n" data-glyph="44,1" class="i field">MeasuredEstimateProperty</a> = <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="/Xamarin.Forms.Core/A.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;MeasuredEstimate&quot;</span>, <b>typeof</b>(<b>double</b>), <b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>), -1d);
+		<b>readonly</b> <a href="@1@System.Runtime/A.html#8b99c1f377873554" class="t t">Lazy</a>&lt;<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>&gt; <a id="e30c971e55ac5d0c" href="R/e30c971e55ac5d0c.html" target="n" data-glyph="46,1" class="i field">_listView</a>;
+		<b>readonly</b> <span class="t t">PropertyChangedEventHandler</span> <a id="a8a44b778c07a27f" href="R/a8a44b778c07a27f.html" target="n" data-glyph="46,1" class="i field">_propertyChangedHandler</a>;
+ 
+		<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="/Xamarin.Forms.Core/A.html#36ded754cef116fb" class="t t">MenuItem</a>&gt; <a id="2ef3ad37d03987b8" href="R/2ef3ad37d03987b8.html" target="n" data-glyph="46,1" class="i field">_contextActions</a>;
+		<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">DataTemplate</span> <a id="5af6c4cf6fdf4d26" href="R/5af6c4cf6fdf4d26.html" target="n" data-glyph="46,1" class="i field">_currentTemplate</a>;
+		<b>bool</b> <a id="705b018f9b5305a9" href="R/705b018f9b5305a9.html" target="n" data-glyph="46,1" class="i field">_isListViewRealized</a>;
+		<b>object</b> <a id="7a50738359b9683e" href="R/7a50738359b9683e.html" target="n" data-glyph="46,1" class="i field">_newValue</a>;
+ 
+		<b>public</b> <a id="f21dd117942b566e" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">CellControl</a>()
+		{
+			<a href="#e30c971e55ac5d0c" class="i field">_listView</a> = <b>new</b> <a href="@1@System.Runtime/A.html#c0f7b98bacad370a" class="t constructor">Lazy</a>&lt;<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>&gt;(<a href="#e9b33adeeaadd947" class="i method">GetListView</a>);
+ 
+			<span class="i">DataContextChanged</span> += <a href="#baf6af1c89f78ca5" class="i method">OnDataContextChanged</a>;
+ 
+			<span class="i">Unloaded</span> += (<span id="r2 rd" class="r2 r">sender</span>, <span id="r3 rd" class="r3 r">args</span>) =&gt;
+			{
+				<b>if</b> (<a href="#8b2889f185d5f2e8" class="i property">Cell</a> != <b>null</b>)
+					<a href="#8b2889f185d5f2e8" class="i property">Cell</a>.<a href="/Xamarin.Forms.Core/A.html#9a269aae86b7756c" class="i method">SendDisappearing</a>();
+			};
+ 
+			<a href="#a8a44b778c07a27f" class="i field">_propertyChangedHandler</a> = <a href="#fb740a527143a8b3" class="i method">OnCellPropertyChanged</a>;
+		}
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <a id="8b2889f185d5f2e8" href="R/8b2889f185d5f2e8.html" target="n" data-glyph="102,1" class="i property">Cell</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>)<span class="i method">GetValue</span>(<a href="#be862025d60a7aa1" class="i field">CellProperty</a>); }
+			<b>set</b> { <span class="i method">SetValue</span>(<a href="#be862025d60a7aa1" class="i field">CellProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public bool</b> <a id="e36c91e306023a78" href="R/e36c91e306023a78.html" target="n" data-glyph="102,1" class="i property">IsGroupHeader</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<span class="i method">GetValue</span>(<a href="#ff323d4ab5665e80" class="i field">IsGroupHeaderProperty</a>); }
+			<b>set</b> { <span class="i method">SetValue</span>(<a href="#ff323d4ab5665e80" class="i field">IsGroupHeaderProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>protected</b> <span class="t t">FrameworkElement</span> <a id="c101ced71f068976" href="R/c101ced71f068976.html" target="n" data-glyph="105,1" class="i property">CellContent</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">FrameworkElement</span>)<span class="i property">Content</span>; }
+		}
+ 
+		<b>protected override</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="t t">Size</span> <a id="c632a96153735839" href="R/c632a96153735839.html" target="n" data-glyph="75,1" class="i method">MeasureOverride</a>(<span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="t t">Size</span> <span id="r4 rd" class="r4 r">availableSize</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a> <span id="r5 rd" class="r5 r">lv</span> = <a href="#e30c971e55ac5d0c" class="i field">_listView</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>;
+ 
+			<span class="c">// set the Cell now that we have a reference to the ListView, since it will have been skipped</span>
+			<span class="c">// on DataContextChanged.</span>
+			<b>if</b> (<a href="#7a50738359b9683e" class="i field">_newValue</a> != <b>null</b>)
+			{
+				<a href="#8695495fd4c3ef38" class="i method">SetCell</a>(<a href="#7a50738359b9683e" class="i field">_newValue</a>);
+				<a href="#7a50738359b9683e" class="i field">_newValue</a> = <b>null</b>;
+			}
+ 
+			<b>if</b> (<span class="i property">Content</span> == <b>null</b>)
+			{
+				<b>if</b> (<span class="r5 r">lv</span> != <b>null</b>)
+				{
+					<b>if</b> (<span class="r5 r">lv</span>.<a href="/Xamarin.Forms.Core/A.html#7d4655a3bc00be9b" class="i property">HasUnevenRows</a>)
+					{
+						<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r6 rd" class="r6 r">estimate</span> = (<b>double</b>)<span class="r5 r">lv</span>.<a href="/Xamarin.Forms.Core/A.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#4d8a5a17700379ca" class="i field">MeasuredEstimateProperty</a>);
+						<b>if</b> (<span class="r6 r">estimate</span> &gt; -1)
+							<b>return</b> <b>new</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="t constructor">Size</span>(<span class="r4 r">availableSize</span>.<span class="i property">Width</span>, <span class="r6 r">estimate</span>);
+					}
+					<b>else</b>
+					{
+						<b>double</b> <span id="r7 rd" class="r7 r">rowHeight</span> = <span class="r5 r">lv</span>.<a href="/Xamarin.Forms.Core/A.html#873f0e107de1f075" class="i property">RowHeight</a>;
+						<b>if</b> (<span class="r7 r">rowHeight</span> &gt; -1)
+							<b>return</b> <b>new</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="t constructor">Size</span>(<span class="r4 r">availableSize</span>.<span class="i property">Width</span>, <span class="r7 r">rowHeight</span>);
+					}
+				}
+ 
+				<span class="c">// This needs to return a size with a non-zero height; </span>
+				<span class="c">// otherwise, it kills virtualization.</span>
+				<b>return</b> <b>new</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="t constructor">Size</span>(0, <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>.<a href="/Xamarin.Forms.Core/A.html#586d91e08ec7fc0a" class="i field">DefaultCellHeight</a>);
+			}
+ 
+			<span class="c">// Children still need measure called on them</span>
+			<span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="t t">Size</span> <span id="r8 rd" class="r8 r">result</span> = <b>base</b>.<span class="i method">MeasureOverride</span>(<span class="r4 r">availableSize</span>);
+ 
+			<b>if</b> (<span class="r5 r">lv</span> != <b>null</b>)
+			{
+				<span class="r5 r">lv</span>.<a href="/Xamarin.Forms.Core/A.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#4d8a5a17700379ca" class="i field">MeasuredEstimateProperty</a>, <span class="r8 r">result</span>.<span class="i property">Height</span>);
+			}
+ 
+			<b>return</b> <span class="r8 r">result</span>;
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a> <a id="e9b33adeeaadd947" href="R/e9b33adeeaadd947.html" target="n" data-glyph="76,1" class="i method">GetListView</a>()
+		{
+			<span class="t t">DependencyObject</span> <span id="r9 rd" class="r9 r">parent</span> = <span class="t t">VisualTreeHelper</span>.<span class="i method">GetParent</span>(<a href="#e19d8919b2e106b7" class="k">this</a>);
+			<b>while</b> (<span class="r9 r">parent</span> != <b>null</b>)
+			{
+				<a href="ListViewRenderer.cs.html#5d2a62e9852f2449" class="k">var</a> <span id="r10 rd" class="r10 r">lv</span> = <span class="r9 r">parent</span> <b>as</b> <a href="ListViewRenderer.cs.html#5d2a62e9852f2449" class="t t">ListViewRenderer</a>;
+				<b>if</b> (<span class="r10 r">lv</span> != <b>null</b>)
+				{
+					<a href="#705b018f9b5305a9" class="i field">_isListViewRealized</a> = <b>true</b>;
+					<b>return</b> <span class="r10 r">lv</span>.<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>;
+				}
+ 
+				<span class="r9 r">parent</span> = <span class="t t">VisualTreeHelper</span>.<span class="i method">GetParent</span>(<span class="r9 r">parent</span>);
+			}
+ 
+			<b>return null</b>;
+		}
+ 
+		<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">DataTemplate</span> <a id="afd11497d0530b68" href="R/afd11497d0530b68.html" target="n" data-glyph="76,1" class="i method">GetTemplate</a>(<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r11 rd" class="r11 r">cell</span>)
+		{
+			<a href="ICellRenderer.cs.html#ec6d221f08f0b437" class="k">var</a> <span id="r12 rd" class="r12 r">renderer</span> = <a href="/Xamarin.Forms.Core/A.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="/Xamarin.Forms.Core/A.html#5f29d2ac0e30bd81" class="i property">Registered</a>.<a href="/Xamarin.Forms.Core/A.html#af776dc3bf4e03c2" class="i method">GetHandlerForObject</a>&lt;<a href="ICellRenderer.cs.html#ec6d221f08f0b437" class="t t">ICellRenderer</a>&gt;(<span class="r11 r">cell</span>);
+			<b>return</b> <span class="r12 r">renderer</span>.<a href="ICellRenderer.cs.html#eb4f505df7e9debf" class="i method">GetTemplate</a>(<span class="r11 r">cell</span>);
+		}
+ 
+		<b>void</b> <a id="fb740a527143a8b3" href="R/fb740a527143a8b3.html" target="n" data-glyph="76,1" class="i method">OnCellPropertyChanged</a>(<b>object</b> <span id="r13 rd" class="r13 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r14 rd" class="r14 r">e</span>)
+		{
+			<b>if</b> (<span class="r14 r">e</span>.<span class="i property">PropertyName</span> == <span class="s">&quot;HasContextActions&quot;</span>)
+			{
+				<a href="#42733396a3fc7edd" class="i method">SetupContextMenu</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="aa059c545c25e5e3" href="R/aa059c545c25e5e3.html" target="n" data-glyph="76,1" class="i method">OnClick</a>(<b>object</b> <span id="r15 rd" class="r15 r">sender</span>, <span class="t t">PointerRoutedEventArgs</span> <span id="r16 rd" class="r16 r">e</span>)
+		{
+			<span class="t t">PointerPoint</span> <span id="r17 rd" class="r17 r">point</span> = <span class="r16 r">e</span>.<span class="i method">GetCurrentPoint</span>(<a href="#c101ced71f068976" class="i property">CellContent</a>);
+			<b>if</b> (<span class="r17 r">point</span>.<span class="i property">Properties</span>.<span class="i property">PointerUpdateKind</span> != <span class="t t">PointerUpdateKind</span>.<span class="i field">RightButtonReleased</span>)
+				<b>return</b>;
+ 
+			<a href="#b69391ed13e10725" class="i method">OpenContextMenu</a>();
+		}
+ 
+		<b>void</b> <a id="4a5344615794c180" href="R/4a5344615794c180.html" target="n" data-glyph="76,1" class="i method">OnContextActionsChanged</a>(<b>object</b> <span id="r18 rd" class="r18 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r19 rd" class="r19 r">e</span>)
+		{
+			<b>var</b> <span id="r20 rd" class="r20 r">flyout</span> = <span class="t t">FlyoutBase</span>.<span class="i method">GetAttachedFlyout</span>(<a href="#c101ced71f068976" class="i property">CellContent</a>) <b>as</b> <span class="t t">MenuFlyout</span>;
+			<b>if</b> (<span class="r20 r">flyout</span> != <b>null</b>)
+			{
+				<span class="r20 r">flyout</span>.<span class="i property">Items</span>.<a href="@1@System.Runtime/A.html#6144bc2a22ce28c4" class="i method">Clear</a>();
+				<a href="#54f22404154a6598" class="i method">SetupMenuItems</a>(<span class="r20 r">flyout</span>);
+			}
+		}
+ 
+		<b>void</b> <a id="baf6af1c89f78ca5" href="R/baf6af1c89f78ca5.html" target="n" data-glyph="76,1" class="i method">OnDataContextChanged</a>(<span class="t t">FrameworkElement</span> <span id="r21 rd" class="r21 r">sender</span>, <span class="t t">DataContextChangedEventArgs</span> <span id="r22 rd" class="r22 r">args</span>)
+		{
+			<span class="c">// We don&#39;t want to set the Cell until the ListView is realized, just in case the </span>
+			<span class="c">// Cell has an ItemTemplate. Instead, we&#39;ll store the new data item, and it will be</span>
+			<span class="c">// set on MeasureOverrideDelegate. However, if the parent is a TableView, we&#39;ll already </span>
+			<span class="c">// have a complete Cell object to work with, so we can move ahead.</span>
+			<b>if</b> (<a href="#705b018f9b5305a9" class="i field">_isListViewRealized</a> || <span class="r22 r">args</span>.<span class="i property">NewValue</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>)
+				<a href="#8695495fd4c3ef38" class="i method">SetCell</a>(<span class="r22 r">args</span>.<span class="i property">NewValue</span>);
+			<b>else if</b> (<span class="r22 r">args</span>.<span class="i property">NewValue</span> != <b>null</b>)
+				<a href="#7a50738359b9683e" class="i field">_newValue</a> = <span class="r22 r">args</span>.<span class="i property">NewValue</span>;
+		}
+ 
+		<b>void</b> <a id="4c08b9fb691681f1" href="R/4c08b9fb691681f1.html" target="n" data-glyph="76,1" class="i method">OnLongTap</a>(<b>object</b> <span id="r23 rd" class="r23 r">sender</span>, <span class="t t">HoldingRoutedEventArgs</span> <span id="r24 rd" class="r24 r">e</span>)
+		{
+			<b>if</b> (<span class="r24 r">e</span>.<span class="i property">HoldingState</span> == <span class="t t">HoldingState</span>.<span class="i field">Started</span>)
+				<a href="#b69391ed13e10725" class="i method">OpenContextMenu</a>();
+		}
+ 
+		<b>void</b> <a id="95cbaa991b131e95" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnOpenContext</a>(<b>object</b> <span id="r25 rd" class="r25 r">sender</span>, <span class="t t">RightTappedRoutedEventArgs</span> <span id="r26 rd" class="r26 r">e</span>)
+		{
+			<span class="t t">FlyoutBase</span>.<span class="i method">ShowAttachedFlyout</span>(<a href="#c101ced71f068976" class="i property">CellContent</a>);
+		}
+ 
+		<b>void</b> <a id="b69391ed13e10725" href="R/b69391ed13e10725.html" target="n" data-glyph="76,1" class="i method">OpenContextMenu</a>()
+		{
+			<b>if</b> (<span class="t t">FlyoutBase</span>.<span class="i method">GetAttachedFlyout</span>(<a href="#c101ced71f068976" class="i property">CellContent</a>) == <b>null</b>)
+			{
+				<b>var</b> <span id="r27 rd" class="r27 r">flyout</span> = <b>new</b> <span class="t constructor">MenuFlyout</span>();
+				<a href="#54f22404154a6598" class="i method">SetupMenuItems</a>(<span class="r27 r">flyout</span>);
+ 
+				((<span class="t t">INotifyCollectionChanged</span>)<a href="#8b2889f185d5f2e8" class="i property">Cell</a>.<a href="/Xamarin.Forms.Core/A.html#df6ab09b8d06612c" class="i property">ContextActions</a>).<span class="i">CollectionChanged</span> += <a href="#4a5344615794c180" class="i method">OnContextActionsChanged</a>;
+ 
+				<a href="#2ef3ad37d03987b8" class="i field">_contextActions</a> = <a href="#8b2889f185d5f2e8" class="i property">Cell</a>.<a href="/Xamarin.Forms.Core/A.html#df6ab09b8d06612c" class="i property">ContextActions</a>;
+				<span class="t t">FlyoutBase</span>.<span class="i method">SetAttachedFlyout</span>(<a href="#c101ced71f068976" class="i property">CellContent</a>, <span class="r27 r">flyout</span>);
+			}
+ 
+			<span class="t t">FlyoutBase</span>.<span class="i method">ShowAttachedFlyout</span>(<a href="#c101ced71f068976" class="i property">CellContent</a>);
+		}
+ 
+		<b>void</b> <a id="8695495fd4c3ef38" href="R/8695495fd4c3ef38.html" target="n" data-glyph="76,1" class="i method">SetCell</a>(<b>object</b> <span id="r28 rd" class="r28 r">newContext</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="k">var</a> <span id="r29 rd" class="r29 r">cell</span> = <span class="r28 r">newContext</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>;
+ 
+			<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<a href="#8b2889f185d5f2e8" class="i property">Cell</a>?.<a href="/Xamarin.Forms.Core/A.html#ec31b23be1ce91d4" class="i property">BindingContext</a>, <span class="r28 r">newContext</span>))
+				<b>return</b>;
+ 
+			<span class="c">// If there is a ListView, load the Cell content from the ItemTemplate.</span>
+			<span class="c">// Otherwise, the given Cell is already a templated Cell from a TableView.</span>
+			<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a> <span id="r30 rd" class="r30 r">lv</span> = <a href="#e30c971e55ac5d0c" class="i field">_listView</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>;
+			<b>if</b> (<span class="r30 r">lv</span> != <b>null</b>)
+			{
+				<b>bool</b> <span id="r31 rd" class="r31 r">isGroupHeader</span> = <a href="#e36c91e306023a78" class="i property">IsGroupHeader</a>;
+				<a href="/Xamarin.Forms.Core/A.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <span id="r32 rd" class="r32 r">template</span> = <span class="r31 r">isGroupHeader</span> ? <span class="r30 r">lv</span>.<a href="/Xamarin.Forms.Core/A.html#37d541414cc573e1" class="i property">GroupHeaderTemplate</a> : <span class="r30 r">lv</span>.<a href="/Xamarin.Forms.Core/A.html#e714497888d14198" class="i property">ItemTemplate</a>;
+				<b>object</b> <span id="r33 rd" class="r33 r">bindingContext</span> = <span class="r28 r">newContext</span>;
+ 
+				<b>if</b> (<span class="r32 r">template</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#7935887479ca6f68" class="t t">DataTemplateSelector</a>)
+				{
+					<span class="r32 r">template</span> = ((<a href="/Xamarin.Forms.Core/A.html#7935887479ca6f68" class="t t">DataTemplateSelector</a>)<span class="r32 r">template</span>).<a href="/Xamarin.Forms.Core/A.html#127faae5ce046dcd" class="i method">SelectTemplate</a>(<span class="r33 r">bindingContext</span>, <span class="r30 r">lv</span>);
+				}
+ 
+				<b>if</b> (<span class="r32 r">template</span> != <b>null</b>)
+				{
+					<span class="r29 r">cell</span> = <span class="r32 r">template</span>.<a href="/Xamarin.Forms.Core/A.html#cd48b351b7f758f5" class="i method">CreateContent</a>() <b>as</b> <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>;
+				}
+				<b>else</b>
+				{
+					<b>if</b> (<span class="r31 r">isGroupHeader</span>)
+						<span class="r33 r">bindingContext</span> = <span class="r30 r">lv</span>.<a href="/Xamarin.Forms.Core/A.html#6f20ad844c5bbc22" class="i method">GetDisplayTextFromGroup</a>(<span class="r33 r">bindingContext</span>);
+ 
+					<span class="r29 r">cell</span> = <span class="r30 r">lv</span>.<a href="/Xamarin.Forms.Core/A.html#2ebdb227296d433f" class="i method">CreateDefaultCell</a>(<span class="r33 r">bindingContext</span>);
+				}
+ 
+				<span class="c">// A TableView cell should already have its parent,</span>
+				<span class="c">// but we need to set the parent for a ListView cell.</span>
+				<span class="r29 r">cell</span>.<a href="/Xamarin.Forms.Core/A.html#c4bf3d030cd32fe9" class="i property">Parent</a> = <span class="r30 r">lv</span>;
+ 
+				<span class="c">// Set inherited BindingContext after setting the Parent so it won&#39;t be wiped out</span>
+				<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a>.<a href="/Xamarin.Forms.Core/A.html#530fa4630449540e" class="i method">SetInheritedBindingContext</a>(<span class="r29 r">cell</span>, <span class="r33 r">bindingContext</span>);
+ 
+				<span class="c">// This provides the Group Header styling (e.g., larger font, etc.) when the</span>
+				<span class="c">// template is loaded later.</span>
+				<span class="r29 r">cell</span>.<a href="/Xamarin.Forms.Core/A.html#3aeec47dddf683ee" class="i method">SetIsGroupHeader</a>&lt;<a href="/Xamarin.Forms.Core/A.html#e6e9068bbee42f54" class="t t">ItemsView</a>&lt;<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>&gt;, <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>&gt;(<span class="r31 r">isGroupHeader</span>);
+			}
+ 
+			<a href="#8b2889f185d5f2e8" class="i property">Cell</a> = <span class="r29 r">cell</span>;
+		}
+ 
+		<b>void</b> <a id="075ce58089730e5d" href="R/075ce58089730e5d.html" target="n" data-glyph="76,1" class="i method">SetSource</a>(<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r34 rd" class="r34 r">oldCell</span>, <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r35 rd" class="r35 r">newCell</span>)
+		{
+			<b>if</b> (<span class="r34 r">oldCell</span> != <b>null</b>)
+			{
+				<span class="r34 r">oldCell</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#a8a44b778c07a27f" class="i field">_propertyChangedHandler</a>;
+				<span class="r34 r">oldCell</span>.<a href="/Xamarin.Forms.Core/A.html#9a269aae86b7756c" class="i method">SendDisappearing</a>();
+			}
+ 
+			<b>if</b> (<span class="r35 r">newCell</span> != <b>null</b>)
+			{
+				<span class="r35 r">newCell</span>.<a href="/Xamarin.Forms.Core/A.html#884674abe59f9ab2" class="i method">SendAppearing</a>();
+ 
+				<a href="#5ef52bf4adfc6f18" class="i method">UpdateContent</a>(<span class="r35 r">newCell</span>);
+				<a href="#42733396a3fc7edd" class="i method">SetupContextMenu</a>();
+ 
+				<span class="r35 r">newCell</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#a8a44b778c07a27f" class="i field">_propertyChangedHandler</a>;
+			}
+		}
+ 
+		<b>void</b> <a id="42733396a3fc7edd" href="R/42733396a3fc7edd.html" target="n" data-glyph="76,1" class="i method">SetupContextMenu</a>()
+		{
+			<b>if</b> (<a href="#c101ced71f068976" class="i property">CellContent</a> == <b>null</b> || <a href="#8b2889f185d5f2e8" class="i property">Cell</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (!<a href="#8b2889f185d5f2e8" class="i property">Cell</a>.<a href="/Xamarin.Forms.Core/A.html#c18f293b9c4fd7e6" class="i property">HasContextActions</a>)
+			{
+				<a href="#c101ced71f068976" class="i property">CellContent</a>.<span class="i">Holding</span> -= <a href="#4c08b9fb691681f1" class="i method">OnLongTap</a>;
+				<a href="#c101ced71f068976" class="i property">CellContent</a>.<span class="i">PointerReleased</span> -= <a href="#aa059c545c25e5e3" class="i method">OnClick</a>;
+				<b>if</b> (<a href="#2ef3ad37d03987b8" class="i field">_contextActions</a> != <b>null</b>)
+				{
+					((<span class="t t">INotifyCollectionChanged</span>)<a href="#2ef3ad37d03987b8" class="i field">_contextActions</a>).<span class="i">CollectionChanged</span> -= <a href="#4a5344615794c180" class="i method">OnContextActionsChanged</a>;
+					<a href="#2ef3ad37d03987b8" class="i field">_contextActions</a> = <b>null</b>;
+				}
+ 
+				<span class="t t">FlyoutBase</span>.<span class="i method">SetAttachedFlyout</span>(<a href="#c101ced71f068976" class="i property">CellContent</a>, <b>null</b>);
+				<b>return</b>;
+			}
+ 
+			<a href="#c101ced71f068976" class="i property">CellContent</a>.<span class="i">PointerReleased</span> += <a href="#aa059c545c25e5e3" class="i method">OnClick</a>;
+			<a href="#c101ced71f068976" class="i property">CellContent</a>.<span class="i">Holding</span> += <a href="#4c08b9fb691681f1" class="i method">OnLongTap</a>;
+		}
+ 
+		<b>void</b> <a id="54f22404154a6598" href="R/54f22404154a6598.html" target="n" data-glyph="76,1" class="i method">SetupMenuItems</a>(<span class="t t">MenuFlyout</span> <span id="r36 rd" class="r36 r">flyout</span>)
+		{
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#36ded754cef116fb" class="t t">MenuItem</a> <span id="r37 rd" class="r37 r">item</span> <b>in</b> <a href="#8b2889f185d5f2e8" class="i property">Cell</a>.<a href="/Xamarin.Forms.Core/A.html#df6ab09b8d06612c" class="i property">ContextActions</a>)
+			{
+				<b>var</b> <span id="r38 rd" class="r38 r">flyoutItem</span> = <b>new</b> <span class="t constructor">MenuFlyoutItem</span>();
+				<span class="r38 r">flyoutItem</span>.<a href="Extensions.cs.html#4d630711256d1c37" class="i method">SetBinding</a>(<span class="t t">MenuFlyoutItem</span>.<span class="i property">TextProperty</span>, <span class="s">&quot;Text&quot;</span>);
+				<span class="r38 r">flyoutItem</span>.<span class="i property">Command</span> = <b>new</b> <a href="MenuItemCommand.cs.html#a78f3cba0c77dbb7" class="t constructor">MenuItemCommand</a>(<span class="r37 r">item</span>);
+				<span class="r38 r">flyoutItem</span>.<span class="i property">DataContext</span> = <span class="r37 r">item</span>;
+ 
+				<span class="r36 r">flyout</span>.<span class="i property">Items</span>.<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r38 r">flyoutItem</span>);
+			}
+		}
+ 
+		<b>void</b> <a id="5ef52bf4adfc6f18" href="R/5ef52bf4adfc6f18.html" target="n" data-glyph="76,1" class="i method">UpdateContent</a>(<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r39 rd" class="r39 r">newCell</span>)
+		{
+			<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">DataTemplate</span> <span id="r40 rd" class="r40 r">dt</span> = <a href="#afd11497d0530b68" class="i method">GetTemplate</a>(<span class="r39 r">newCell</span>);
+			<b>if</b> (<span class="r40 r">dt</span> != <a href="#5af6c4cf6fdf4d26" class="i field">_currentTemplate</a> || <span class="i property">Content</span> == <b>null</b>)
+			{
+				<a href="#5af6c4cf6fdf4d26" class="i field">_currentTemplate</a> = <span class="r40 r">dt</span>;
+				<span class="i property">Content</span> = <span class="r40 r">dt</span>.<span class="i method">LoadContent</span>();
+			}
+ 
+			((<span class="t t">FrameworkElement</span>)<span class="i property">Content</span>).<span class="i property">DataContext</span> = <span class="r39 r">newCell</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

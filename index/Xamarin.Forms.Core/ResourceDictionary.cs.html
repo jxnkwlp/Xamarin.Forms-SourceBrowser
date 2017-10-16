@@ -1,0 +1,269 @@
+﻿<!DOCTYPE html>
+<html><head><title>ResourceDictionary.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(260);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/ResourceDictionary.cs" target="_top">ResourceDictionary.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Runtime</span>.<span class="i n">CompilerServices</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>public class</b> <a id="d98cc303a5785b29" href="R/d98cc303a5785b29.html" target="n" data-glyph="0,0" class="t t"><span id="04357fc9cad99e48">ResourceDictionary</span></a> : <a href="IResourceDictionary.cs.html#1765597cafa315b5" class="t t">IResourceDictionary</a>, <a href="@1@System.Runtime/A.html#20343df0c96b629b" class="t t">IDictionary</a>&lt;<b>string</b>, <b>object</b>&gt;
+	{
+		<b>static</b> <span class="t t">ConditionalWeakTable</span>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a>&gt; <a id="8ab1e73a7b6d60a5" href="R/8ab1e73a7b6d60a5.html" target="n" data-glyph="46,1" class="i field">s_instances</a> = <b>new</b> <span class="t constructor">ConditionalWeakTable</span>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a>&gt;();
+		<b>readonly</b> <a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<b>string</b>, <b>object</b>&gt; <a id="9c08fb1b98ed97e8" href="R/9c08fb1b98ed97e8.html" target="n" data-glyph="46,1" class="i field">_innerDictionary</a> = <b>new</b> <a href="@1@System.Collections/A.html#bf6849e410b43c4c" class="t constructor">Dictionary</a>&lt;<b>string</b>, <b>object</b>&gt;();
+		<a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a> <a id="27124b04b96013b7" href="R/27124b04b96013b7.html" target="n" data-glyph="46,1" class="i field">_mergedInstance</a>;
+		<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <a id="97c4c43e85608fa4" href="R/97c4c43e85608fa4.html" target="n" data-glyph="46,1" class="i field">_mergedWith</a>;
+ 
+		[<a href="TypeConverterAttribute.cs.html#ba9bf382c7a66e7b" class="t constructor">TypeConverter</a> (<b>typeof</b>(<a href="TypeTypeConverter.cs.html#781e29171378cb64" class="t t">TypeTypeConverter</a>))]
+		<b>public</b> <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <a id="224d9af2ace9cc7f" href="R/224d9af2ace9cc7f.html" target="n" data-glyph="102,1" class="i property">MergedWith</a> {
+			<b>get</b> { <b>return</b> <a href="#97c4c43e85608fa4" class="i field">_mergedWith</a>; }
+			<b>set</b> {
+				<b>if</b> (<a href="#97c4c43e85608fa4" class="i field">_mergedWith</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<b>if</b> (!<b>typeof</b>(<a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a>).<span class="i method">GetTypeInfo</span>().<span class="i method">IsAssignableFrom</span>(<b>value</b>.<span class="i method">GetTypeInfo</span>()))
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;MergedWith should inherit from ResourceDictionary&quot;</span>);
+ 
+				<a href="#97c4c43e85608fa4" class="i field">_mergedWith</a> = <b>value</b>;
+				<b>if</b> (<a href="#97c4c43e85608fa4" class="i field">_mergedWith</a> == <b>null</b>)
+					<b>return</b>;
+ 
+				<a href="#27124b04b96013b7" class="i field">_mergedInstance</a> = <a href="#8ab1e73a7b6d60a5" class="i field">s_instances</a>.<span class="i method">GetValue</span>(<a href="#97c4c43e85608fa4" class="i field">_mergedWith</a>, (<span id="r0 rd" class="r0 r">key</span>) =&gt; (<a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a>)<a href="@1@System.Runtime/A.html#955a7437554c8efc" class="t t">Activator</a>.<a href="@1@System.Runtime/A.html#4c7b92371a93f246" class="i method">CreateInstance</a>(<span class="r0 r">key</span>));
+				<a href="#fb11c044c910b4a2" class="i method">OnValuesChanged</a>(<a href="#27124b04b96013b7" class="i field">_mergedInstance</a>.<span class="i method">ToArray</span>());
+			}
+		}
+ 
+		<a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a>&gt; <a id="4b627030644cb0be" href="R/4b627030644cb0be.html" target="n" data-glyph="46,1" class="i field">_mergedDictionaries</a>;
+		<b>public</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a>&gt; <a id="5db4504a7263423f" href="R/5db4504a7263423f.html" target="n" data-glyph="102,1" class="i property">MergedDictionaries</a> {
+			<b>get</b> {
+				<b>if</b> (<a href="#4b627030644cb0be" class="i field">_mergedDictionaries</a> == <b>null</b>) {
+					<b>var</b> <span id="r1 rd" class="r1 r">col</span> = <b>new</b> <span class="t constructor">ObservableCollection</span>&lt;<a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a>&gt;();
+					<span class="r1 r">col</span>.<span class="i">CollectionChanged</span> += <a href="#5fb8a2e2c9527612" class="i method">MergedDictionaries_CollectionChanged</a>;
+					<a href="#4b627030644cb0be" class="i field">_mergedDictionaries</a> = <span class="r1 r">col</span>;
+				}
+				<b>return</b> <a href="#4b627030644cb0be" class="i field">_mergedDictionaries</a>;
+			}
+		}
+ 
+		<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a>&gt; <a id="4f428f93d69f97c6" href="R/4f428f93d69f97c6.html" target="n" data-glyph="46,1" class="i field">_collectionTrack</a>;
+ 
+		<b>void</b> <a id="5fb8a2e2c9527612" href="R/5fb8a2e2c9527612.html" target="n" data-glyph="76,1" class="i method">MergedDictionaries_CollectionChanged</a>(<b>object</b> <span id="r2 rd" class="r2 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r3 rd" class="r3 r">e</span>)
+		{
+			<span class="c">// Move() isn&#39;t exposed by ICollection</span>
+			<b>if</b> (<span class="r3 r">e</span>.<span class="i property">Action</span> == <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Move</span>)
+				<b>return</b>;
+ 
+			<a href="#4f428f93d69f97c6" class="i field">_collectionTrack</a> = <a href="#4f428f93d69f97c6" class="i field">_collectionTrack</a> ?? <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a>&gt;();
+			<span class="c">// Collection has been cleared</span>
+			<b>if</b> (<span class="r3 r">e</span>.<span class="i property">Action</span> == <span class="t t">NotifyCollectionChangedAction</span>.<span class="i field">Reset</span>) {
+				<b>foreach</b> (<a href="#d98cc303a5785b29" class="k">var</a> <span id="r4 rd" class="r4 r">dictionary</span> <b>in</b> <a href="#4f428f93d69f97c6" class="i field">_collectionTrack</a>)
+					<span class="r4 r">dictionary</span>.<a href="#d7ff482681d1b57b" class="i">ValuesChanged</a> -= <a href="#6dbbf60517f4c13f" class="i method">Item_ValuesChanged</a>;
+ 
+				<a href="#4f428f93d69f97c6" class="i field">_collectionTrack</a>.<a href="@1@System.Runtime/A.html#6144bc2a22ce28c4" class="i method">Clear</a>();
+				<b>return</b>;
+			}
+ 
+			<span class="c">// New Items</span>
+			<b>if</b> (<span class="r3 r">e</span>.<span class="i property">NewItems</span> != <b>null</b>)
+			{
+				<b>foreach</b> (<a href="@1@System.Runtime/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r5 rd" class="r5 r">item</span> <b>in</b> <span class="r3 r">e</span>.<span class="i property">NewItems</span>)
+				{
+					<a href="#d98cc303a5785b29" class="k">var</a> <span id="r6 rd" class="r6 r">rd</span> = (<a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a>)<span class="r5 r">item</span>;
+					<a href="#4f428f93d69f97c6" class="i field">_collectionTrack</a>.<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r6 r">rd</span>);
+					<span class="r6 r">rd</span>.<a href="#d7ff482681d1b57b" class="i">ValuesChanged</a> += <a href="#6dbbf60517f4c13f" class="i method">Item_ValuesChanged</a>;
+					<a href="#fb11c044c910b4a2" class="i method">OnValuesChanged</a>(<span class="r6 r">rd</span>.<span class="i method">ToArray</span>());
+				}
+			}
+ 
+			<span class="c">// Old Items</span>
+			<b>if</b> (<span class="r3 r">e</span>.<span class="i property">OldItems</span> != <b>null</b>)
+			{
+				<b>foreach</b> (<a href="@1@System.Runtime/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r7 rd" class="r7 r">item</span> <b>in</b> <span class="r3 r">e</span>.<span class="i property">OldItems</span>)
+				{
+					<a href="#d98cc303a5785b29" class="k">var</a> <span id="r8 rd" class="r8 r">rd</span> = (<a href="#d98cc303a5785b29" class="t t">ResourceDictionary</a>)<span class="r7 r">item</span>;
+					<span class="r8 r">rd</span>.<a href="#d7ff482681d1b57b" class="i">ValuesChanged</a> -= <a href="#6dbbf60517f4c13f" class="i method">Item_ValuesChanged</a>;
+					<a href="#4f428f93d69f97c6" class="i field">_collectionTrack</a>.<a href="@1@System.Runtime/A.html#12ab6cfa5ca2ceec" class="i method">Remove</a>(<span class="r8 r">rd</span>);
+				}
+			}
+		}
+ 
+		<b>void</b> <a id="6dbbf60517f4c13f" href="R/6dbbf60517f4c13f.html" target="n" data-glyph="76,1" class="i method">Item_ValuesChanged</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <a href="ResourcesChangedEventArgs.cs.html#b63142bd253c1a98" class="t t">ResourcesChangedEventArgs</a> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<a href="#fb11c044c910b4a2" class="i method">OnValuesChanged</a>(<span class="r10 r">e</span>.<a href="ResourcesChangedEventArgs.cs.html#c898f5ccae8b3028" class="i property">Values</a>.<span class="i method">ToArray</span>());
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt;.<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt; <span id="r11 rd" class="r11 r">item</span>)
+		{
+			((<a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt;)<a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>).<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r11 r">item</span>);
+			<a href="#fb11c044c910b4a2" class="i method">OnValuesChanged</a>(<span class="r11 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="abef17531769d120" href="R/abef17531769d120.html" target="n" data-glyph="72,1" class="i method">Clear</a>()
+		{
+			<a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>.<a href="@1@System.Collections/A.html#36b30e4c0708a88c" class="i method">Clear</a>();
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt;.<a href="@1@System.Runtime/A.html#8f74065d140cfe04" class="i method">Contains</a>(<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt; <span id="r12 rd" class="r12 r">item</span>)
+		{
+			<b>return</b> ((<a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt;)<a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>).<a href="@1@System.Runtime/A.html#8f74065d140cfe04" class="i method">Contains</a>(<span class="r12 r">item</span>)
+				|| (<a href="#27124b04b96013b7" class="i field">_mergedInstance</a> != <b>null</b> &amp;&amp; <a href="#27124b04b96013b7" class="i field">_mergedInstance</a>.<span class="i method">Contains</span>(<span class="r12 r">item</span>));
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt;.<a href="@1@System.Runtime/A.html#e60f08f14be7e099" class="i method">CopyTo</a>(<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;[] <span id="r13 rd" class="r13 r">array</span>, <b>int</b> <span id="r14 rd" class="r14 r">arrayIndex</span>)
+		{
+			((<a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt;)<a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>).<a href="@1@System.Runtime/A.html#e60f08f14be7e099" class="i method">CopyTo</a>(<span class="r13 r">array</span>, <span class="r14 r">arrayIndex</span>);
+		}
+ 
+		<b>public int</b> <a id="9a0cf77a52188841" href="R/9a0cf77a52188841.html" target="n" data-glyph="102,1" class="i property">Count</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>.<a href="@1@System.Collections/A.html#12b9bba2a1f9c3e2" class="i property">Count</a>; }
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt;.<a href="@1@System.Runtime/A.html#30768a81e456ea74" class="i property">IsReadOnly</a>
+		{
+			<b>get</b> { <b>return</b> ((<a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt;)<a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>).<a href="@1@System.Runtime/A.html#30768a81e456ea74" class="i property">IsReadOnly</a>; }
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt;.<a href="@1@System.Runtime/A.html#12ab6cfa5ca2ceec" class="i method">Remove</a>(<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt; <span id="r15 rd" class="r15 r">item</span>)
+		{
+			<b>return</b> ((<a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt;)<a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>).<a href="@1@System.Runtime/A.html#12ab6cfa5ca2ceec" class="i method">Remove</a>(<span class="r15 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="85a5c815e5da0edc" href="R/85a5c815e5da0edc.html" target="n" data-glyph="72,1" class="i method">Add</a>(<b>string</b> <span id="r16 rd" class="r16 r">key</span>, <b>object</b> <span id="r17 rd" class="r17 r">value</span>)
+		{
+			<b>if</b> (<a href="#caa0c015b912beda" class="i method">ContainsKey</a>(<span class="r16 r">key</span>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">$&quot;</span><span class="s">A resource with the key &#39;</span>{<span class="r16 r">key</span>}<span class="s">&#39; is already present in the ResourceDictionary.</span><span class="s">&quot;</span>);
+			<a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>.<a href="@1@System.Collections/A.html#a7861da7aaa500fe" class="i method">Add</a>(<span class="r16 r">key</span>, <span class="r17 r">value</span>);
+			<a href="#b922b0e79d8eff4c" class="i method">OnValueChanged</a>(<span class="r16 r">key</span>, <span class="r17 r">value</span>);
+		}
+ 
+		<b>public bool</b> <a id="caa0c015b912beda" href="R/caa0c015b912beda.html" target="n" data-glyph="72,1" class="i method">ContainsKey</a>(<b>string</b> <span id="r18 rd" class="r18 r">key</span>)
+		{
+			<b>return</b> <a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r18 r">key</span>);
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#d0062829f114b4b6" class="t constructor">IndexerName</a>(<span class="s">&quot;Item&quot;</span>)]
+		<b>public object</b> <a id="327be20f437fccf7" href="R/327be20f437fccf7.html" target="n" data-glyph="102,1" class="k">this</a>[<b>string</b> <span id="r19 rd" class="r19 r">index</span>]
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r19 r">index</span>))
+					<b>return</b> <a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r19 r">index</span>];
+				<b>if</b> (<a href="#27124b04b96013b7" class="i field">_mergedInstance</a> != <b>null</b> &amp;&amp; <a href="#27124b04b96013b7" class="i field">_mergedInstance</a>.<a href="#caa0c015b912beda" class="i method">ContainsKey</a>(<span class="r19 r">index</span>))
+					<b>return</b> <a href="#27124b04b96013b7" class="i field">_mergedInstance</a><a href="#327be20f437fccf7">[</a><span class="r19 r">index</span>];
+				<b>if</b> (<a href="#5db4504a7263423f" class="i property">MergedDictionaries</a> != <b>null</b>)
+					<b>foreach</b> (<a href="#d98cc303a5785b29" class="k">var</a> <span id="r20 rd" class="r20 r">dict</span> <b>in</b> <a href="#5db4504a7263423f" class="i property">MergedDictionaries</a>.<span class="i method">Reverse</span>())
+						<b>if</b> (<span class="r20 r">dict</span>.<a href="#caa0c015b912beda" class="i method">ContainsKey</a>(<span class="r19 r">index</span>))
+							<b>return</b> <span class="r20 r">dict</span><a href="#327be20f437fccf7">[</a><span class="r19 r">index</span>];
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#e939fd7f85bd76a1" class="t constructor">KeyNotFoundException</a>(<span class="s">$&quot;</span><span class="s">The resource &#39;</span>{<span class="r19 r">index</span>}<span class="s">&#39; is not present in the dictionary.</span><span class="s">&quot;</span>);
+			}
+			<b>set</b>
+			{
+				<a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r19 r">index</span>] = <b>value</b>;
+				<a href="#b922b0e79d8eff4c" class="i method">OnValueChanged</a>(<span class="r19 r">index</span>, <b>value</b>);
+			}
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<b>string</b>&gt; <a id="c47dab79817bc450" href="R/c47dab79817bc450.html" target="n" data-glyph="102,1" class="i property">Keys</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>.<a href="@1@System.Collections/A.html#9a3c0cb5c149c9f7" class="i property">Keys</a>; }
+		}
+ 
+		<b>public bool</b> <a id="401b61bd0ac4210f" href="R/401b61bd0ac4210f.html" target="n" data-glyph="72,1" class="i method">Remove</a>(<b>string</b> <span id="r21 rd" class="r21 r">key</span>)
+		{
+			<b>return</b> <a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>.<a href="@1@System.Collections/A.html#a6db5ffdec557169" class="i method">Remove</a>(<span class="r21 r">key</span>);
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<b>object</b>&gt; <a id="15f629fd725f5f09" href="R/15f629fd725f5f09.html" target="n" data-glyph="102,1" class="i property">Values</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>.<a href="@1@System.Collections/A.html#4367dd1e300ae797" class="i property">Values</a>; }
+		}
+ 
+		<a href="@1@System.Runtime/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>.<a href="@1@System.Runtime/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <a href="#a41512f4bb893e11" class="i method">GetEnumerator</a>();
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt; <a id="a41512f4bb893e11" href="R/a41512f4bb893e11.html" target="n" data-glyph="72,1" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>.<a href="@1@System.Collections/A.html#dc88893199dea317" class="i method">GetEnumerator</a>();
+		}
+ 
+		<b>internal</b> <a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;&gt; <a id="1bfb80f33b01da1f" href="R/1bfb80f33b01da1f.html" target="n" data-glyph="104,1" class="i property">MergedResources</a> {
+			<b>get</b> {
+				<b>if</b> (<a href="#5db4504a7263423f" class="i property">MergedDictionaries</a> != <b>null</b>)
+					<b>foreach</b> (<a href="@1@System.Runtime/A.html#8585965bb176a426" class="k">var</a> <span id="r22 rd" class="r22 r">r</span> <b>in</b> <a href="#5db4504a7263423f" class="i property">MergedDictionaries</a>.<span class="i method">Reverse</span>().<span class="i method">SelectMany</span>(<span id="r23 rd" class="r23 r">x</span> =&gt; <span class="r23 r">x</span>.<a href="#1bfb80f33b01da1f" class="i property">MergedResources</a>))
+						<b>yield return</b> <span class="r22 r">r</span>;
+				<b>if</b> (<a href="#27124b04b96013b7" class="i field">_mergedInstance</a> != <b>null</b>)
+					<b>foreach</b> (<a href="@1@System.Runtime/A.html#8585965bb176a426" class="k">var</a> <span id="r24 rd" class="r24 r">r</span> <b>in</b> <a href="#27124b04b96013b7" class="i field">_mergedInstance</a>.<a href="#1bfb80f33b01da1f" class="i property">MergedResources</a>)
+						<b>yield return</b> <span class="r24 r">r</span>;
+				<b>foreach</b> (<a href="@1@System.Runtime/A.html#8585965bb176a426" class="k">var</a> <span id="r25 rd" class="r25 r">r</span> <b>in</b> <a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>)
+					<b>yield return</b> <span class="r25 r">r</span>;
+			}
+		}
+ 
+		<b>public bool</b> <a id="5d1718c6444748b6" href="R/5d1718c6444748b6.html" target="n" data-glyph="72,1" class="i method">TryGetValue</a>(<b>string</b> <span id="r26 rd" class="r26 r">key</span>, <b>out object</b> <span id="r27 rd" class="r27 r">value</span>)
+		{
+			<b>return</b> <a href="#9c08fb1b98ed97e8" class="i field">_innerDictionary</a>.<a href="@1@System.Collections/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<span class="r26 r">key</span>, <b>out</b> <span class="r27 r">value</span>)
+				|| (<a href="#27124b04b96013b7" class="i field">_mergedInstance</a> != <b>null</b> &amp;&amp; <a href="#27124b04b96013b7" class="i field">_mergedInstance</a>.<a href="#5d1718c6444748b6" class="i method">TryGetValue</a>(<span class="r26 r">key</span>, <b>out</b> <span class="r27 r">value</span>))
+				|| (<a href="#5db4504a7263423f" class="i property">MergedDictionaries</a> != <b>null</b> &amp;&amp; <a href="#f2eb555e777baeaf" class="i method">TryGetMergedDictionaryValue</a>(<span class="r26 r">key</span>, <b>out</b> <span class="r27 r">value</span>));
+		}
+ 
+		<b>bool</b> <a id="f2eb555e777baeaf" href="R/f2eb555e777baeaf.html" target="n" data-glyph="76,1" class="i method">TryGetMergedDictionaryValue</a>(<b>string</b> <span id="r28 rd" class="r28 r">key</span>, <b>out object</b> <span id="r29 rd" class="r29 r">value</span>)
+		{
+			<b>foreach</b> (<a href="#d98cc303a5785b29" class="k">var</a> <span id="r30 rd" class="r30 r">dictionary</span> <b>in</b> <a href="#5db4504a7263423f" class="i property">MergedDictionaries</a>.<span class="i method">Reverse</span>())
+				<b>if</b> (<span class="r30 r">dictionary</span>.<a href="#5d1718c6444748b6" class="i method">TryGetValue</a>(<span class="r28 r">key</span>, <b>out</b> <span class="r29 r">value</span>))
+					<b>return true</b>;
+ 
+			<span class="r29 r">value</span> = <b>null</b>;
+			<b>return false</b>;
+		}
+ 
+		<b>event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ResourcesChangedEventArgs.cs.html#b63142bd253c1a98" class="t t">ResourcesChangedEventArgs</a>&gt; <a href="IResourceDictionary.cs.html#1765597cafa315b5" class="t t">IResourceDictionary</a>.<a href="IResourceDictionary.cs.html#4b47b69cd05e23c4" class="i">ValuesChanged</a>
+		{
+			<b>add</b> { <a href="#d7ff482681d1b57b" class="i">ValuesChanged</a> += <b>value</b>; }
+			<b>remove</b> { <a href="#d7ff482681d1b57b" class="i">ValuesChanged</a> -= <b>value</b>; }
+		}
+ 
+		<b>public void</b> <a id="669cd4c4071c969f" href="R/669cd4c4071c969f.html" target="n" data-glyph="72,1" class="i method">Add</a>(<a href="Style.cs.html#18d854577c3c5901" class="t t">Style</a> <span id="r31 rd" class="r31 r">style</span>)
+		{
+			<b>if</b> (<b>string</b>.<a href="@1@System.Runtime/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r31 r">style</span>.<a href="Style.cs.html#f895c37ed905de38" class="i property">Class</a>))
+				<a href="#85a5c815e5da0edc" class="i method">Add</a>(<span class="r31 r">style</span>.<a href="Style.cs.html#14eef24de994dea8" class="i property">TargetType</a>.<a href="@1@System.Runtime/A.html#976443bb39dc37cd" class="i property">FullName</a>, <span class="r31 r">style</span>);
+			<b>else</b>
+			{
+				<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="Style.cs.html#18d854577c3c5901" class="t t">Style</a>&gt; <span id="r32 rd" class="r32 r">classes</span>;
+				<b>object</b> <span id="r33 rd" class="r33 r">outclasses</span>;
+				<b>if</b> (!<a href="#5d1718c6444748b6" class="i method">TryGetValue</a>(<a href="Style.cs.html#18d854577c3c5901" class="t t">Style</a>.<a href="Style.cs.html#ed5ade0d18093d1e" class="i field">StyleClassPrefix</a> + <span class="r31 r">style</span>.<a href="Style.cs.html#f895c37ed905de38" class="i property">Class</a>, <b>out</b> <span class="r33 r">outclasses</span>) || (<span class="r32 r">classes</span> = <span class="r33 r">outclasses</span> <b>as</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="Style.cs.html#18d854577c3c5901" class="t t">Style</a>&gt;) == <b>null</b>)
+					<span class="r32 r">classes</span> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="Style.cs.html#18d854577c3c5901" class="t t">Style</a>&gt;();
+				<span class="r32 r">classes</span>.<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r31 r">style</span>);
+				<a href="#d98cc303a5785b29" class="k">this</a><a href="#327be20f437fccf7">[</a><a href="Style.cs.html#18d854577c3c5901" class="t t">Style</a>.<a href="Style.cs.html#ed5ade0d18093d1e" class="i field">StyleClassPrefix</a> + <span class="r31 r">style</span>.<a href="Style.cs.html#f895c37ed905de38" class="i property">Class</a>] = <span class="r32 r">classes</span>;
+			}
+		}
+ 
+		<b>void</b> <a id="b922b0e79d8eff4c" href="R/b922b0e79d8eff4c.html" target="n" data-glyph="76,1" class="i method">OnValueChanged</a>(<b>string</b> <span id="r34 rd" class="r34 r">key</span>, <b>object</b> <span id="r35 rd" class="r35 r">value</span>)
+		{
+			<a href="#fb11c044c910b4a2" class="i method">OnValuesChanged</a>(<b>new</b> <a href="@1@System.Runtime/A.html#0d04c81b31e41262" class="t constructor">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;(<span class="r34 r">key</span>, <span class="r35 r">value</span>));
+		}
+ 
+		<b>void</b> <a id="fb11c044c910b4a2" href="R/fb11c044c910b4a2.html" target="n" data-glyph="76,1" class="i method">OnValuesChanged</a>(<b>params</b> <a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<b>string</b>, <b>object</b>&gt;[] <span id="r36 rd" class="r36 r">values</span>)
+		{
+			<b>if</b> (<span class="r36 r">values</span> == <b>null</b> || <span class="r36 r">values</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 0)
+				<b>return</b>;
+			<a href="#d7ff482681d1b57b" class="i">ValuesChanged</a>?.<a href="@1@System.Runtime/A.html#48225ee7c18a0e20" class="i method">Invoke</a>(<a href="#d98cc303a5785b29" class="k">this</a>, <b>new</b> <a href="ResourcesChangedEventArgs.cs.html#e7b32f92b8fb46e4" class="t constructor">ResourcesChangedEventArgs</a>(<span class="r36 r">values</span>));
+		}
+ 
+		<b>event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ResourcesChangedEventArgs.cs.html#b63142bd253c1a98" class="t t">ResourcesChangedEventArgs</a>&gt; <a id="d7ff482681d1b57b" href="R/d7ff482681d1b57b.html" target="n" data-glyph="34,1" class="i">ValuesChanged</a>;
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html><head><title>PlatformRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(81);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/PlatformRenderer.cs" target="_top">PlatformRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">App</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Widget</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>internal class</b> <a id="9a61029a153036d6" href="R/9a61029a153036d6.html" target="n" data-glyph="2,0" class="t t">PlatformRenderer</a> : <span class="i">ViewGroup</span>
+	{
+		<b>readonly</b> <a href="IPlatformLayout.cs.html#91c435c34376bab6" class="t t">IPlatformLayout</a> <a id="76905c45507e10b9" href="R/76905c45507e10b9.html" target="n" data-glyph="46,1" class="i field">_canvas</a>;
+		<a href="/Xamarin.Forms.Core/A.html#71c2b8add148844d" class="t t">Point</a> <a id="22d02dcb1575de29" href="R/22d02dcb1575de29.html" target="n" data-glyph="46,1" class="i field">_downPosition</a>;
+ 
+		<span class="i">DateTime</span> <a id="d7762b5b8bf6fe7c" href="R/d7762b5b8bf6fe7c.html" target="n" data-glyph="46,1" class="i field">_downTime</a>;
+ 
+		<b>public</b> <a id="a7f9baa23667b1a9" href="R/a7f9baa23667b1a9.html" target="n" data-glyph="72,1" class="i constructor">PlatformRenderer</a>(<span class="i">Context</span> <span id="r0 rd" class="r0 r">context</span>, <a href="IPlatformLayout.cs.html#91c435c34376bab6" class="t t">IPlatformLayout</a> <span id="r1 rd" class="r1 r">canvas</span>) : <b>base</b>(<span class="r0 r">context</span>)
+		{
+			<a href="#76905c45507e10b9" class="i field">_canvas</a> = <span class="r1 r">canvas</span>;
+			<span class="i">Focusable</span> = <b>true</b>;
+			<span class="i">FocusableInTouchMode</span> = <b>true</b>;
+		}
+ 
+		<b>public override bool</b> <a id="39bdb961133ceab5" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">DispatchTouchEvent</a>(<span class="i">MotionEvent</span> <span id="r2 rd" class="r2 r">e</span>)
+		{
+			<b>if</b> (<span class="r2 r">e</span>.<span class="i">Action</span> == <span class="i">MotionEventActions</span>.<span class="i">Down</span>)
+			{
+				<a href="#d7762b5b8bf6fe7c" class="i field">_downTime</a> = <span class="i">DateTime</span>.<span class="i">UtcNow</span>;
+				<a href="#22d02dcb1575de29" class="i field">_downPosition</a> = <b>new</b> <span class="t">Point</span>(<span class="r2 r">e</span>.<span class="i">RawX</span>, <span class="r2 r">e</span>.<span class="i">RawY</span>);
+			}
+ 
+			<b>if</b> (<span class="r2 r">e</span>.<span class="i">Action</span> != <span class="i">MotionEventActions</span>.<span class="i">Up</span>)
+				<b>return</b> <b>base</b>.<span class="i">DispatchTouchEvent</span>(<span class="r2 r">e</span>);
+ 
+			<b>global</b>::<span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span> <span id="r3 rd" class="r3 r">currentView</span> = ((<span class="i">Activity</span>)<span class="i">Context</span>).<span class="i">CurrentFocus</span>;
+			<b>bool</b> <span id="r4 rd" class="r4 r">result</span> = <b>base</b>.<span class="i">DispatchTouchEvent</span>(<span class="r2 r">e</span>);
+ 
+			<b>do</b>
+			{
+				<b>if</b> (!(<span class="r3 r">currentView</span> <b>is</b> <span class="i">EditText</span>))
+					<b>break</b>;
+ 
+				<b>global</b>::<span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span> <span id="r5 rd" class="r5 r">newCurrentView</span> = ((<span class="i">Activity</span>)<span class="i">Context</span>).<span class="i">CurrentFocus</span>;
+ 
+				<b>if</b> (<span class="r3 r">currentView</span> != <span class="r5 r">newCurrentView</span>)
+					<b>break</b>;
+ 
+				<b>double</b> <span id="r6 rd" class="r6 r">distance</span> = <a href="#22d02dcb1575de29" class="i field">_downPosition</a>.<span class="i">Distance</span>(<b>new</b> <span class="t">Point</span>(<span class="r2 r">e</span>.<span class="i">RawX</span>, <span class="r2 r">e</span>.<span class="i">RawY</span>));
+ 
+				<b>if</b> (<span class="r6 r">distance</span> &gt; <span class="i">Context</span>.<span class="i">ToPixels</span>(20) || <span class="i">DateTime</span>.<span class="i">UtcNow</span> - <a href="#d7762b5b8bf6fe7c" class="i field">_downTime</a> &gt; <span class="i">TimeSpan</span>.<span class="i">FromMilliseconds</span>(200))
+					<b>break</b>;
+ 
+				<b>var</b> <span id="r7 rd" class="r7 r">location</span> = <b>new</b> <b>int</b>[2];
+				<span class="r3 r">currentView</span>.<span class="i">GetLocationOnScreen</span>(<span class="r7 r">location</span>);
+ 
+				<b>float</b> <span id="r8 rd" class="r8 r">x</span> = <span class="r2 r">e</span>.<span class="i">RawX</span> + <span class="r3 r">currentView</span>.<span class="i">Left</span> - <span class="r7 r">location</span>[0];
+				<b>float</b> <span id="r9 rd" class="r9 r">y</span> = <span class="r2 r">e</span>.<span class="i">RawY</span> + <span class="r3 r">currentView</span>.<span class="i">Top</span> - <span class="r7 r">location</span>[1];
+ 
+				<a href="/Xamarin.Forms.Core/A.html#2ad9a305ad01941d" class="k">var</a> <span id="r10 rd" class="r10 r">rect</span> = <b>new</b> <span class="t">Rectangle</span>(<span class="r3 r">currentView</span>.<span class="i">Left</span>, <span class="r3 r">currentView</span>.<span class="i">Top</span>, <span class="r3 r">currentView</span>.<span class="i">Width</span>, <span class="r3 r">currentView</span>.<span class="i">Height</span>);
+ 
+				<b>if</b> (<span class="r10 r">rect</span>.<span class="i">Contains</span>(<span class="r8 r">x</span>, <span class="r9 r">y</span>))
+					<b>break</b>;
+ 
+				<span class="i">Context</span>.<span class="i">HideKeyboard</span>(<span class="r3 r">currentView</span>);
+				((<span class="i">Activity</span>)<span class="i">Context</span>).<span class="i">Window</span>.<span class="i">DecorView</span>.<span class="i">ClearFocus</span>();
+			} <b>while</b> (<b>false</b>);
+ 
+			<b>return</b> <span class="r4 r">result</span>;
+		}
+ 
+		<b>protected override void</b> <a id="58d1ed5e92a39679" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnLayout</a>(<b>bool</b> <span id="r11 rd" class="r11 r">changed</span>, <b>int</b> <span id="r12 rd" class="r12 r">l</span>, <b>int</b> <span id="r13 rd" class="r13 r">t</span>, <b>int</b> <span id="r14 rd" class="r14 r">r</span>, <b>int</b> <span id="r15 rd" class="r15 r">b</span>)
+		{
+			<span class="i">SetMeasuredDimension</span>(<span class="r14 r">r</span> - <span class="r12 r">l</span>, <span class="r15 r">b</span> - <span class="r13 r">t</span>);
+			<a href="#76905c45507e10b9" class="i field">_canvas</a>?.<a href="IPlatformLayout.cs.html#c770a459a67efda7" class="i method">OnLayout</a>(<span class="r11 r">changed</span>, <span class="r12 r">l</span>, <span class="r13 r">t</span>, <span class="r14 r">r</span>, <span class="r15 r">b</span>);
+		}
+ 
+		<b>protected override void</b> <a id="07a355dbb8d1ae12" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnMeasure</a>(<b>int</b> <span id="r16 rd" class="r16 r">widthMeasureSpec</span>, <b>int</b> <span id="r17 rd" class="r17 r">heightMeasureSpec</span>)
+		{
+			<span class="i">SetMeasuredDimension</span>(<span class="i">MeasureSpec</span>.<span class="i">GetSize</span>(<span class="r16 r">widthMeasureSpec</span>), <span class="i">MeasureSpec</span>.<span class="i">GetSize</span>(<span class="r17 r">heightMeasureSpec</span>));
+		}
+	}
+}</pre></td></tr></table></div></body></html>

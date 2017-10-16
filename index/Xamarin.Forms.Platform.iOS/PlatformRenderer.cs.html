@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html><head><title>PlatformRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(171);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/PlatformRenderer.cs" target="_top">PlatformRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">UIKit</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">iOSSpecific</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+{
+	<b>internal class</b> <a id="9b47020ae73bb5a8" href="R/9b47020ae73bb5a8.html" target="n" data-glyph="2,0" class="t t">ModalWrapper</a> : <span class="t t">UIViewController</span>
+	{
+		<a href="IVisualElementRenderer.cs.html#222fbc88c8a624f8" class="t t">IVisualElementRenderer</a> <a id="93f6e5cb612fcc48" href="R/93f6e5cb612fcc48.html" target="n" data-glyph="46,1" class="i field">_modal</a>;
+ 
+		<b>internal</b> <a id="11f7b7b7f74c0c6b" href="R/11f7b7b7f74c0c6b.html" target="n" data-glyph="74,1" class="i constructor">ModalWrapper</a>(<a href="IVisualElementRenderer.cs.html#222fbc88c8a624f8" class="t t">IVisualElementRenderer</a> <span id="r0 rd" class="r0 r">modal</span>)
+		{
+			<a href="#93f6e5cb612fcc48" class="i field">_modal</a> = <span class="r0 r">modal</span>;
+ 
+			<span class="i property">View</span>.<span class="i property">BackgroundColor</span> = <span class="t t">UIColor</span>.<span class="i property">White</span>;
+			<span class="i property">View</span>.<span class="i method">AddSubview</span>(<span class="r0 r">modal</span>.<a href="IVisualElementRenderer.cs.html#9a433c8430a26d7e" class="i property">ViewController</a>.<span class="i property">View</span>);
+			<span class="i property">TransitioningDelegate</span> = <span class="r0 r">modal</span>.<a href="IVisualElementRenderer.cs.html#9a433c8430a26d7e" class="i property">ViewController</a>.<span class="i property">TransitioningDelegate</span>;
+			<span class="i method">AddChildViewController</span>(<span class="r0 r">modal</span>.<a href="IVisualElementRenderer.cs.html#9a433c8430a26d7e" class="i property">ViewController</a>);
+ 
+			<span class="r0 r">modal</span>.<a href="IVisualElementRenderer.cs.html#9a433c8430a26d7e" class="i property">ViewController</a>.<span class="i method">DidMoveToParentViewController</span>(<a href="#9b47020ae73bb5a8" class="k">this</a>);
+		}
+ 
+		<b>public override void</b> <a id="685eedaebd622c7a" href="R/685eedaebd622c7a.html" target="n" data-glyph="72,1" class="i method">DismissViewController</a>(<b>bool</b> <span id="r1 rd" class="r1 r">animated</span>, <a href="@0@mscorlib/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r2 rd" class="r2 r">completionHandler</span>)
+		{
+			<b>if</b> (<span class="i property">PresentedViewController</span> == <b>null</b>)
+			{
+				<span class="c">// After dismissing a UIDocumentMenuViewController, (for instance, if a WebView with an Upload button</span>
+				<span class="c">// is asking the user for a source (camera roll, etc.)), the view controller accidentally calls dismiss</span>
+				<span class="c">// again on itself before presenting the UIImagePickerController; this leaves the UIImagePickerController</span>
+				<span class="c">// without an anchor to the view hierarchy and it doesn&#39;t show up. This appears to be an iOS bug.</span>
+ 
+				<span class="c">// We can work around it by ignoring the dismiss call when PresentedViewController is null. </span>
+				<b>return</b>;
+			}
+ 
+			<b>base</b>.<span class="i method">DismissViewController</span>(<span class="r1 r">animated</span>, <span class="r2 r">completionHandler</span>);
+		}
+ 
+		<b>public override</b> <span class="t t">UIInterfaceOrientationMask</span> <a id="3ead9e6e99b2573d" href="R/3ead9e6e99b2573d.html" target="n" data-glyph="72,1" class="i method">GetSupportedInterfaceOrientations</a>()
+		{
+			<b>if</b> ((<span class="i property">ChildViewControllers</span> != <b>null</b>) &amp;&amp; (<span class="i property">ChildViewControllers</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0))
+			{
+				<b>return</b> <span class="i property">ChildViewControllers</span>[0].<span class="i method">GetSupportedInterfaceOrientations</span>();
+			}
+			
+			<b>return</b> <b>base</b>.<span class="i method">GetSupportedInterfaceOrientations</span>();
+		}
+ 
+		<b>public override</b> <span class="t t">UIInterfaceOrientation</span> <a id="bf494ac25aaeb6d1" href="R/bf494ac25aaeb6d1.html" target="n" data-glyph="72,1" class="i method">PreferredInterfaceOrientationForPresentation</a>()
+		{
+			<b>if</b> ((<span class="i property">ChildViewControllers</span> != <b>null</b>) &amp;&amp; (<span class="i property">ChildViewControllers</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0))
+			{
+				<b>return</b> <span class="i property">ChildViewControllers</span>[0].<span class="i method">PreferredInterfaceOrientationForPresentation</span>();
+			}
+			<b>return</b> <b>base</b>.<span class="i method">PreferredInterfaceOrientationForPresentation</span>();
+		}
+ 
+		<b>public override bool</b> <a id="8f06f7e0b28280b0" href="R/8f06f7e0b28280b0.html" target="n" data-glyph="72,1" class="i method">ShouldAutorotate</a>()
+		{
+			<b>if</b> ((<span class="i property">ChildViewControllers</span> != <b>null</b>) &amp;&amp; (<span class="i property">ChildViewControllers</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0))
+			{
+				<b>return</b> <span class="i property">ChildViewControllers</span>[0].<span class="i method">ShouldAutorotate</span>();
+			}
+			<b>return</b> <b>base</b>.<span class="i method">ShouldAutorotate</span>();
+		}
+ 
+		<b>public override bool</b> <a id="32a1736afb51f3d1" href="R/32a1736afb51f3d1.html" target="n" data-glyph="72,1" class="i method">ShouldAutorotateToInterfaceOrientation</a>(<span class="t t">UIInterfaceOrientation</span> <span id="r3 rd" class="r3 r">toInterfaceOrientation</span>)
+		{
+			<b>if</b> ((<span class="i property">ChildViewControllers</span> != <b>null</b>) &amp;&amp; (<span class="i property">ChildViewControllers</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0))
+			{
+				<b>return</b> <span class="i property">ChildViewControllers</span>[0].<span class="i method">ShouldAutorotateToInterfaceOrientation</span>(<span class="r3 r">toInterfaceOrientation</span>);
+			}
+			<b>return</b> <b>base</b>.<span class="i method">ShouldAutorotateToInterfaceOrientation</span>(<span class="r3 r">toInterfaceOrientation</span>);
+		}
+ 
+		<b>public override bool</b> <a id="42cfdc82d6466808" href="R/42cfdc82d6466808.html" target="n" data-glyph="102,1" class="i property">ShouldAutomaticallyForwardRotationMethods</a> =&gt; <b>true</b>;
+ 
+		<b>public override void</b> <a id="7d7651693e0e73fc" href="R/7d7651693e0e73fc.html" target="n" data-glyph="72,1" class="i method">ViewDidLayoutSubviews</a>()
+		{
+			<b>base</b>.<span class="i method">ViewDidLayoutSubviews</span>();
+			<b>if</b> (<a href="#93f6e5cb612fcc48" class="i field">_modal</a> != <b>null</b>)
+				<a href="#93f6e5cb612fcc48" class="i field">_modal</a>.<a href="IVisualElementRenderer.cs.html#7bd8572675f2005a" class="i method">SetElementSize</a>(<b>new</b> <a href="/Xamarin.Forms.Core/A.html#1727209bca650e71" class="t constructor">Size</a>(<span class="i property">View</span>.<span class="i property">Bounds</span>.<span class="i property">Width</span>, <span class="i property">View</span>.<span class="i property">Bounds</span>.<span class="i property">Height</span>));
+		}
+ 
+		<b>public override void</b> <a id="180e9bb0f4af10b6" href="R/180e9bb0f4af10b6.html" target="n" data-glyph="72,1" class="i method">ViewWillAppear</a>(<b>bool</b> <span id="r4 rd" class="r4 r">animated</span>)
+		{
+			<span class="i property">View</span>.<span class="i property">BackgroundColor</span> = <span class="t t">UIColor</span>.<span class="i property">White</span>;
+			<b>base</b>.<span class="i method">ViewWillAppear</span>(<span class="r4 r">animated</span>);
+		}
+ 
+		<b>protected override void</b> <a id="ffc88b09e2ec315d" href="R/ffc88b09e2ec315d.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r5 rd" class="r5 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r5 r">disposing</span>)
+				<a href="#93f6e5cb612fcc48" class="i field">_modal</a> = <b>null</b>;
+			<b>base</b>.<span class="i method">Dispose</span>(<span class="r5 r">disposing</span>);
+		}
+	}
+ 
+	<b>internal class</b> <a id="d9b8fd275b3beb8e" href="R/d9b8fd275b3beb8e.html" target="n" data-glyph="2,0" class="t t">PlatformRenderer</a> : <span class="t t">UIViewController</span>
+	{
+		<b>internal</b> <a id="9d32e25f439803a6" href="R/9d32e25f439803a6.html" target="n" data-glyph="74,1" class="i constructor">PlatformRenderer</a>(<a href="Platform.cs.html#348bf1c3abb233c7" class="t t">Platform</a> <span id="r6 rd" class="r6 r">platform</span>)
+		{
+			<a href="#ab214cd76a2cc3e4" class="i property">Platform</a> = <span class="r6 r">platform</span>;
+		}
+ 
+		<b>public</b> <a href="Platform.cs.html#348bf1c3abb233c7" class="t t">Platform</a> <a id="ab214cd76a2cc3e4" href="R/ab214cd76a2cc3e4.html" target="n" data-glyph="102,1" class="i property">Platform</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public override</b> <span class="t t">UIInterfaceOrientationMask</span> <a id="bb58881248af326a" href="R/bb58881248af326a.html" target="n" data-glyph="72,1" class="i method">GetSupportedInterfaceOrientations</a>()
+		{
+			<b>if</b> ((<span class="i property">ChildViewControllers</span> != <b>null</b>) &amp;&amp; (<span class="i property">ChildViewControllers</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0))
+			{
+				<b>return</b> <span class="i property">ChildViewControllers</span>[0].<span class="i method">GetSupportedInterfaceOrientations</span>();
+			}
+			<b>return</b> <b>base</b>.<span class="i method">GetSupportedInterfaceOrientations</span>();
+		}
+ 
+		<b>public override</b> <span class="t t">UIInterfaceOrientation</span> <a id="ddf3512f9c8654ee" href="R/ddf3512f9c8654ee.html" target="n" data-glyph="72,1" class="i method">PreferredInterfaceOrientationForPresentation</a>()
+		{
+			<b>if</b> ((<span class="i property">ChildViewControllers</span> != <b>null</b>) &amp;&amp; (<span class="i property">ChildViewControllers</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0))
+			{
+				<b>return</b> <span class="i property">ChildViewControllers</span>[0].<span class="i method">PreferredInterfaceOrientationForPresentation</span>();
+			}
+			<b>return</b> <b>base</b>.<span class="i method">PreferredInterfaceOrientationForPresentation</span>();
+		}
+		
+		<b>public override</b> <span class="t t">UIViewController</span> <a id="ccf10a470811cd45" href="R/ccf10a470811cd45.html" target="n" data-glyph="72,1" class="i method">ChildViewControllerForStatusBarHidden</a>()
+		{
+			<b>return</b> (<span class="t t">UIViewController</span>)<a href="Platform.cs.html#348bf1c3abb233c7" class="t t">Platform</a>.<a href="Platform.cs.html#f9842318ec9d3985" class="i method">GetRenderer</a>(<a href="#d9b8fd275b3beb8e" class="k">this</a>.<a href="#ab214cd76a2cc3e4" class="i property">Platform</a>.<a href="Platform.cs.html#95b428f784320191" class="i property">Page</a>);
+		}
+ 
+		<b>public override bool</b> <a id="6b459c36b330b426" href="R/6b459c36b330b426.html" target="n" data-glyph="72,1" class="i method">ShouldAutorotate</a>()
+		{
+			<b>if</b> ((<span class="i property">ChildViewControllers</span> != <b>null</b>) &amp;&amp; (<span class="i property">ChildViewControllers</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0))
+			{
+				<b>return</b> <span class="i property">ChildViewControllers</span>[0].<span class="i method">ShouldAutorotate</span>();
+			}
+			<b>return</b> <b>base</b>.<span class="i method">ShouldAutorotate</span>();
+		}
+ 
+		<b>public override bool</b> <a id="8412305ce94df646" href="R/8412305ce94df646.html" target="n" data-glyph="72,1" class="i method">ShouldAutorotateToInterfaceOrientation</a>(<span class="t t">UIInterfaceOrientation</span> <span id="r7 rd" class="r7 r">toInterfaceOrientation</span>)
+		{
+			<b>if</b> ((<span class="i property">ChildViewControllers</span> != <b>null</b>) &amp;&amp; (<span class="i property">ChildViewControllers</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0))
+			{
+				<b>return</b> <span class="i property">ChildViewControllers</span>[0].<span class="i method">ShouldAutorotateToInterfaceOrientation</span>(<span class="r7 r">toInterfaceOrientation</span>);
+			}
+			<b>return</b> <b>base</b>.<span class="i method">ShouldAutorotateToInterfaceOrientation</span>(<span class="r7 r">toInterfaceOrientation</span>);
+		}
+ 
+		<b>public override bool</b> <a id="8fce5b280bf08f5f" href="R/8fce5b280bf08f5f.html" target="n" data-glyph="102,1" class="i property">ShouldAutomaticallyForwardRotationMethods</a> =&gt; <b>true</b>;
+ 
+		<b>public override void</b> <a id="3682923a13351ff7" href="R/3682923a13351ff7.html" target="n" data-glyph="72,1" class="i method">ViewDidAppear</a>(<b>bool</b> <span id="r8 rd" class="r8 r">animated</span>)
+		{
+			<a href="#ab214cd76a2cc3e4" class="i property">Platform</a>.<a href="Platform.cs.html#dd95df22ff4785e8" class="i method">DidAppear</a>();
+			<b>base</b>.<span class="i method">ViewDidAppear</span>(<span class="r8 r">animated</span>);
+		}
+ 
+		<b>public override void</b> <a id="519d5b813fa6195b" href="R/519d5b813fa6195b.html" target="n" data-glyph="72,1" class="i method">ViewDidLayoutSubviews</a>()
+		{
+			<b>base</b>.<span class="i method">ViewDidLayoutSubviews</span>();
+			<a href="#ab214cd76a2cc3e4" class="i property">Platform</a>.<a href="Platform.cs.html#618b702a5ed7b662" class="i method">LayoutSubviews</a>();
+		}
+ 
+		<b>public override void</b> <a id="5f04bf0bac09e8fd" href="R/5f04bf0bac09e8fd.html" target="n" data-glyph="72,1" class="i method">ViewWillAppear</a>(<b>bool</b> <span id="r9 rd" class="r9 r">animated</span>)
+		{
+			<span class="i property">View</span>.<span class="i property">BackgroundColor</span> = <span class="t t">UIColor</span>.<span class="i property">White</span>;
+			<a href="#ab214cd76a2cc3e4" class="i property">Platform</a>.<a href="Platform.cs.html#d27d1278a5cbae69" class="i method">WillAppear</a>();
+			<b>base</b>.<span class="i method">ViewWillAppear</span>(<span class="r9 r">animated</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

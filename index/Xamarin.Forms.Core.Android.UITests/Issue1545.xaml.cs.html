@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html><head><title>Issue1545.xaml.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(131);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core.Android.UITests/Issue1545.xaml.cs" target="_top">Issue1545.xaml.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core.Android.UITests" target="_top">Xamarin.Forms.Core.Android.UITests\Xamarin.Forms.Core.Android.UITests.csproj</a> (Xamarin.Forms.Core.Android.UITests)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Text</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+ 
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">CustomAttributes</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>
+{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+<span class="e">	[Preserve (AllMembers = true)]
+	[Issue (IssueTracker.Github, 1545, &quot;Binding instances cannot be reused&quot;, PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]
+	public partial class Issue1545 : ContentPage
+	{
+		ArtistsViewModel _viewModel;
+		public Issue1545()
+		{
+			InitializeComponent();
+			BindingContext = _viewModel = new ArtistsViewModel();
+		}
+ 
+		protected override void OnAppearing()
+		{
+		  base.OnAppearing();
+		  if (_viewModel.IsInitialized)
+			return;
+ 
+		  _viewModel.IsInitialized = true;
+		  _viewModel.LoadCommand.Execute(null);
+		}
+	}
+ 
+	public class BaseViewModel : INotifyPropertyChanged
+	{
+		public string Title { get; set; }
+		public bool IsInitialized { get; set; }
+ 
+		bool _isBusy;
+ 
+		/// &lt;summary&gt;
+		/// Gets or sets if VM is busy working
+		/// &lt;/summary&gt;
+		public bool IsBusy
+		{
+			get { return _isBusy; }
+			set { _isBusy = value; OnPropertyChanged(&quot;IsBusy&quot;); }
+		}
+ 
+		//INotifyPropertyChanged Implementation
+		public event PropertyChangedEventHandler PropertyChanged;
+ 
+		protected void OnPropertyChanged(string propertyName)
+		{
+			if (PropertyChanged == null)
+			return;
+ 
+			PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+ 
+	public class ArtistsViewModel : BaseViewModel
+	{
+		public ArtistsViewModel()
+		{
+			Title = &quot;Artists&quot;;
+			Artists = new ObservableCollection&lt;Artist&gt;();
+		}
+ 
+		/// &lt;summary&gt;
+		/// gets or sets the feed items
+		/// &lt;/summary&gt;
+		public ObservableCollection&lt;Artist&gt; Artists
+		{
+			get;
+			private set;
+		}
+ 
+		Command _loadCommand;
+		/// &lt;summary&gt;
+		/// Command to load/refresh artitists
+		/// &lt;/summary&gt;
+		public Command LoadCommand
+		{
+			get { return _loadCommand ?? (_loadCommand = new Command(async () =&gt; await ExecuteLoadCommand())); }
+		}
+ 
+		static readonly Artist[] ArtistsToLoad = new Artist[] {
+			new Artist { Name = &quot;Metallica&quot;, ListenerCount = &quot;100&quot;, PlayCount = &quot;5000&quot; },
+			new Artist { Name = &quot;Epica&quot;, ListenerCount = &quot;50&quot;, PlayCount = &quot;1000&quot; }
+		};
+ 
+		async Task ExecuteLoadCommand()
+		{
+			if (IsBusy)
+				return;
+ 
+			IsBusy = true;
+ 
+			Artists.Clear();
+ 
+			await Task.Delay (3000);
+ 
+			foreach (Artist a in ArtistsToLoad)
+				Artists.Add (a);
+ 
+			IsBusy = false;
+		}
+	}
+ 
+	public class Artist
+	{
+ 
+		public string Name { get; set; }
+ 
+		public string PlayCount { get; set; }
+ 
+		public string ListenerCount { get; set; }
+ 
+		public string Mbid { get; set; }
+ 
+		public string Url { get; set; }
+ 
+		public string Streamable { get; set; }
+	}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+}
+</pre></td></tr></table></div></body></html>

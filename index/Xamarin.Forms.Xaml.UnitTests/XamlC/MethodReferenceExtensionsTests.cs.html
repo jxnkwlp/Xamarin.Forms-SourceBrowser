@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html><head><title>MethodReferenceExtensionsTests.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(92);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Xaml.UnitTests/XamlC/MethodReferenceExtensionsTests.cs" target="_top">XamlC\MethodReferenceExtensionsTests.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Xaml.UnitTests" target="_top">Xamarin.Forms.Xaml.UnitTests\Xamarin.Forms.Xaml.UnitTests.csproj</a> (Xamarin.Forms.Xaml.UnitTests)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+ 
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>;
+ 
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>;
+ 
+<b>using</b> <span class="i">NUnit</span>.<span class="i">Framework</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>.<span class="i n">XamlcUnitTests</span>
+{
+	[<span class="i">TestFixture</span>]
+	<b>public class</b> <a id="ef4ef2188fbcca2c" href="../R/../../0000000000.html" target="n" data-glyph="0,0" class="t t"><span id="7eb3a09b3a89bd25">MethodReferenceExtensionsTests</span></a>
+	{
+		<span class="i">ModuleDefinition</span> <a id="b444d6e1f5de49a2" href="../R/b444d6e1f5de49a2.html" target="n" data-glyph="46,1" class="i field">module</a>;
+ 
+		[<span class="i">SetUp</span>]
+		<b>public void</b> <a id="40bc0dc711ffef4a" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SetUp</a> ()
+		{
+			<a href="#b444d6e1f5de49a2" class="i field">module</a> = <span class="i">ModuleDefinition</span>.<span class="i">CreateModule</span> (<span class="s">&quot;foo&quot;</span>, <span class="i">ModuleKind</span>.<span class="i">Dll</span>);
+		}
+ 
+		[<span class="i">Test</span>]
+		<b>public void</b> <a id="d5a8a0ccfe012664" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ResolveRowDefAdder</a> ()
+		{
+			<b>var</b> <span id="r0 rd" class="r0 r">propertyType</span> = <a href="#b444d6e1f5de49a2" class="i field">module</a>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#da4d98a643762af4" class="t t">RowDefinitionCollection</a>));
+			<b>var</b> <span id="r1 rd" class="r1 r">adderT</span> = <span class="r0 r">propertyType</span>.<span class="i">GetMethods</span> ((<span id="r2 rd" class="r2 r">md</span>, <span id="r3 rd" class="r3 r">tr</span>) =&gt; <span class="r2 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;Add&quot;</span>, <a href="#b444d6e1f5de49a2" class="i field">module</a>).<span class="i">Single</span> ();
+			<b>var</b> <span id="r4 rd" class="r4 r">adder</span> = <span class="r1 r">adderT</span>.<span class="i">Item1</span>;
+			<b>var</b> <span id="r5 rd" class="r5 r">ptype</span> = <span class="r1 r">adderT</span>.<span class="i">Item2</span>;
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Void Xamarin.Forms.DefinitionCollection`1::Add(T)&quot;</span>, <span class="r4 r">adder</span>.<span class="i">FullName</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;Xamarin.Forms.DefinitionCollection`1&lt;Xamarin.Forms.RowDefinition&gt;&quot;</span>, <span class="r5 r">ptype</span>.<span class="i">FullName</span>);
+			<b>var</b> <span id="r6 rd" class="r6 r">adderRef</span> = <a href="#b444d6e1f5de49a2" class="i field">module</a>.<span class="i">ImportReference</span> (<span class="r4 r">adder</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Void Xamarin.Forms.DefinitionCollection`1::Add(T)&quot;</span>, <span class="r6 r">adderRef</span>.<span class="i">FullName</span>);
+			<span class="r6 r">adderRef</span> = <span class="r6 r">adderRef</span>.<span class="i">ResolveGenericParameters</span> (<span class="r5 r">ptype</span>, <a href="#b444d6e1f5de49a2" class="i field">module</a>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Void Xamarin.Forms.DefinitionCollection`1&lt;Xamarin.Forms.RowDefinition&gt;::Add(T)&quot;</span>, <span class="r6 r">adderRef</span>.<span class="i">FullName</span>);
+		}
+ 
+		[<span class="i">Test</span>]
+		<b>public void</b> <a id="6fb4563d91f18a59" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GenericGetter</a> ()
+		{
+			<span class="i">TypeReference</span> <span id="r7 rd" class="r7 r">declaringTypeReference</span>;
+			<b>var</b> <span id="r8 rd" class="r8 r">type</span> = <a href="#b444d6e1f5de49a2" class="i field">module</a>.<span class="i">ImportReference</span> (<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#5c88f1e97bd1f520" class="t t">StackLayout</a>));
+			<b>var</b> <span id="r9 rd" class="r9 r">property</span> = <span class="r8 r">type</span>.<span class="i">GetProperty</span> (<span id="r10 rd" class="r10 r">pd</span> =&gt; <span class="r10 r">pd</span>.<span class="i">Name</span> == <span class="s">&quot;Children&quot;</span>, <b>out</b> <span class="r7 r">declaringTypeReference</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Collections.Generic.IList`1&lt;T&gt; Xamarin.Forms.Layout`1::Children()&quot;</span>, <span class="r9 r">property</span>.<span class="i">FullName</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;Xamarin.Forms.Layout`1&lt;Xamarin.Forms.View&gt;&quot;</span>, <span class="r7 r">declaringTypeReference</span>.<span class="i">FullName</span>);
+			<b>var</b> <span id="r11 rd" class="r11 r">propertyGetter</span> = <span class="r9 r">property</span>.<span class="i">GetMethod</span>;
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Collections.Generic.IList`1&lt;T&gt; Xamarin.Forms.Layout`1::get_Children()&quot;</span>, <span class="r11 r">propertyGetter</span>.<span class="i">FullName</span>);
+			<b>var</b> <span id="r12 rd" class="r12 r">propertyGetterRef</span> = <a href="#b444d6e1f5de49a2" class="i field">module</a>.<span class="i">ImportReference</span> (<span class="r11 r">propertyGetter</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Collections.Generic.IList`1&lt;T&gt; Xamarin.Forms.Layout`1::get_Children()&quot;</span>, <span class="r12 r">propertyGetterRef</span>.<span class="i">FullName</span>);
+ 
+			<span class="r12 r">propertyGetterRef</span> = <a href="#b444d6e1f5de49a2" class="i field">module</a>.<span class="i">ImportReference</span> (<span class="r12 r">propertyGetterRef</span>.<span class="i">ResolveGenericParameters</span> (<span class="r7 r">declaringTypeReference</span>, <a href="#b444d6e1f5de49a2" class="i field">module</a>));
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Collections.Generic.IList`1&lt;T&gt; Xamarin.Forms.Layout`1&lt;Xamarin.Forms.View&gt;::get_Children()&quot;</span>, <span class="r12 r">propertyGetterRef</span>.<span class="i">FullName</span>);
+			<b>var</b> <span id="r13 rd" class="r13 r">returnType</span> = <span class="r12 r">propertyGetterRef</span>.<span class="i">ReturnType</span>.<span class="i">ResolveGenericParameters</span> (<span class="r7 r">declaringTypeReference</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Collections.Generic.IList`1&lt;Xamarin.Forms.View&gt;&quot;</span>, <span class="r13 r">returnType</span>.<span class="i">FullName</span>);
+		}
+ 
+		[<span class="i">Test</span>]
+		<b>public void</b> <a id="0a58029af0d0b749" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetterWithGenericReturnType</a> ()
+		{
+			<span class="i">TypeReference</span> <span id="r14 rd" class="r14 r">declaringTypeReference</span>;
+			<b>var</b> <span id="r15 rd" class="r15 r">type</span> = <a href="#b444d6e1f5de49a2" class="i field">module</a>.<span class="i">ImportReference</span> (<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#18d854577c3c5901" class="t t">Style</a>));
+			<b>var</b> <span id="r16 rd" class="r16 r">property</span> = <span class="r15 r">type</span>.<span class="i">GetProperty</span> (<span id="r17 rd" class="r17 r">pd</span> =&gt; <span class="r17 r">pd</span>.<span class="i">Name</span> == <span class="s">&quot;Setters&quot;</span>, <b>out</b> <span class="r14 r">declaringTypeReference</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Collections.Generic.IList`1&lt;Xamarin.Forms.Setter&gt; Xamarin.Forms.Style::Setters()&quot;</span>, <span class="r16 r">property</span>.<span class="i">FullName</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;Xamarin.Forms.Style&quot;</span>, <span class="r14 r">declaringTypeReference</span>.<span class="i">FullName</span>);
+			<b>var</b> <span id="r18 rd" class="r18 r">propertyGetter</span> = <span class="r16 r">property</span>.<span class="i">GetMethod</span>;
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Collections.Generic.IList`1&lt;Xamarin.Forms.Setter&gt; Xamarin.Forms.Style::get_Setters()&quot;</span>, <span class="r18 r">propertyGetter</span>.<span class="i">FullName</span>);
+ 
+			<b>var</b> <span id="r19 rd" class="r19 r">propertyGetterRef</span> = <a href="#b444d6e1f5de49a2" class="i field">module</a>.<span class="i">ImportReference</span> (<span class="r18 r">propertyGetter</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Collections.Generic.IList`1&lt;Xamarin.Forms.Setter&gt; Xamarin.Forms.Style::get_Setters()&quot;</span>, <span class="r19 r">propertyGetterRef</span>.<span class="i">FullName</span>);
+			<span class="r19 r">propertyGetterRef</span> = <a href="#b444d6e1f5de49a2" class="i field">module</a>.<span class="i">ImportReference</span> (<span class="r19 r">propertyGetterRef</span>.<span class="i">ResolveGenericParameters</span> (<span class="r14 r">declaringTypeReference</span>, <a href="#b444d6e1f5de49a2" class="i field">module</a>));
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Collections.Generic.IList`1&lt;Xamarin.Forms.Setter&gt; Xamarin.Forms.Style::get_Setters()&quot;</span>, <span class="r19 r">propertyGetterRef</span>.<span class="i">FullName</span>);
+			<b>var</b> <span id="r20 rd" class="r20 r">returnType</span> = <span class="r19 r">propertyGetterRef</span>.<span class="i">ReturnType</span>.<span class="i">ResolveGenericParameters</span> (<span class="r14 r">declaringTypeReference</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Collections.Generic.IList`1&lt;Xamarin.Forms.Setter&gt;&quot;</span>, <span class="r20 r">returnType</span>.<span class="i">FullName</span>);
+		}
+ 
+		[<span class="i">Test</span>]
+		<b>public void</b> <a id="04fcf22bbfe9dc1f" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ResolveChildren</a> ()
+		{
+			<b>var</b> <span id="r21 rd" class="r21 r">propertyType</span> = <a href="#b444d6e1f5de49a2" class="i field">module</a>.<span class="i">ImportReference</span> (<b>typeof</b> (<a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>&gt;));
+			<b>var</b> <span id="r22 rd" class="r22 r">adderT</span> = <span class="r21 r">propertyType</span>.<span class="i">GetMethods</span> (<span id="r23 rd" class="r23 r">md</span> =&gt; <span class="r23 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;Add&quot;</span> &amp;&amp; <span class="r23 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 1, <a href="#b444d6e1f5de49a2" class="i field">module</a>).<span class="i">Single</span> ();
+			<b>var</b> <span id="r24 rd" class="r24 r">adder</span> = <span class="r22 r">adderT</span>.<span class="i">Item1</span>;
+			<b>var</b> <span id="r25 rd" class="r25 r">ptype</span> = <span class="r22 r">adderT</span>.<span class="i">Item2</span>;
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Void System.Collections.Generic.ICollection`1::Add(T)&quot;</span>, <span class="r24 r">adder</span>.<span class="i">FullName</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Collections.Generic.ICollection`1&lt;Xamarin.Forms.View&gt;&quot;</span>, <span class="r25 r">ptype</span>.<span class="i">FullName</span>);
+			<b>var</b> <span id="r26 rd" class="r26 r">adderRef</span> = <a href="#b444d6e1f5de49a2" class="i field">module</a>.<span class="i">ImportReference</span> (<span class="r24 r">adder</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Void System.Collections.Generic.ICollection`1::Add(T)&quot;</span>, <span class="r26 r">adderRef</span>.<span class="i">FullName</span>);
+			<span class="r26 r">adderRef</span> = <span class="r26 r">adderRef</span>.<span class="i">ResolveGenericParameters</span> (<span class="r25 r">ptype</span>, <a href="#b444d6e1f5de49a2" class="i field">module</a>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (<span class="s">&quot;System.Void System.Collections.Generic.ICollection`1&lt;Xamarin.Forms.View&gt;::Add(T)&quot;</span>, <span class="r26 r">adderRef</span>.<span class="i">FullName</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

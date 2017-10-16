@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html><head><title>AzureDataSource.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(150);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Pages.Azure/AzureDataSource.cs" target="_top">AzureDataSource.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Pages.Azure" target="_top">Xamarin.Forms.Pages.Azure\Xamarin.Forms.Pages.Azure.csproj</a> (Xamarin.Forms.Pages.Azure)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">ObjectModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Text</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i">Newtonsoft</span>.<span class="i">Json</span>.<span class="i">Linq</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Pages</span>.<span class="i n">Azure</span>
+{
+	<b>public class</b> <a id="3f43bf68dda8963c" href="R/3f43bf68dda8963c.html" target="n" data-glyph="0,0" class="t t">AzureDataSource</a> : <a href="/Xamarin.Forms.Pages/A.html#be0402394a3896e6" class="t t">BaseDataSource</a>
+	{
+		<b>readonly</b> <span class="i">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Pages/A.html#6562e03746e7c406" class="t t">IDataItem</a>&gt; <a id="eb18824380ae6be9" href="R/eb18824380ae6be9.html" target="n" data-glyph="46,1" class="i field">_dataItems</a> = <b>new</b> <span class="i">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Pages/A.html#6562e03746e7c406" class="t t">IDataItem</a>&gt;();
+		<span class="i">Task</span> <a id="e5bf475a0f5e82f7" href="R/e5bf475a0f5e82f7.html" target="n" data-glyph="46,1" class="i field">_currentParseTask</a>;
+		<b>bool</b> <a id="437c6db53966345b" href="R/437c6db53966345b.html" target="n" data-glyph="46,1" class="i field">_initialized</a>;
+		<a href="AzureSource.cs.html#38341bc34ee448e5" class="t t">AzureSource</a> <a id="fa8c8a2e8b90425f" href="R/fa8c8a2e8b90425f.html" target="n" data-glyph="46,1" class="i field">_source</a>;
+ 
+		<b>public</b> <a id="20423ba3020e03b1" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">AzureDataSource</a>()
+		{
+		}
+ 
+		<b>internal</b> <a id="beeaf447e405727f" href="R/beeaf447e405727f.html" target="n" data-glyph="74,1" class="i constructor">AzureDataSource</a>(<span class="i">JToken</span> <span id="r0 rd" class="r0 r">rootToken</span>)
+		{
+			<a href="#f2fe23a61ebfdb7a" class="i method">ParseJsonToken</a>(<span class="r0 r">rootToken</span>);
+		}
+		
+		<b>public</b> <a href="AzureSource.cs.html#38341bc34ee448e5" class="t t">AzureSource</a> <a id="81a3976caf1caa05" href="R/81a3976caf1caa05.html" target="n" data-glyph="102,1" class="i property">Source</a>
+		{
+			<b>get</b>
+			{
+				<b>return</b> <a href="#fa8c8a2e8b90425f" class="i field">_source</a>;
+			}
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#fa8c8a2e8b90425f" class="i field">_source</a> == <b>value</b>)
+					<b>return</b>;
+				<a href="#fa8c8a2e8b90425f" class="i field">_source</a> = <b>value</b>;
+ 
+				<a href="#eb18824380ae6be9" class="i field">_dataItems</a>.<span class="i">Clear</span>();
+				<b>if</b> (<b>value</b> != <b>null</b> &amp;&amp; <a href="#437c6db53966345b" class="i field">_initialized</a>)
+				{
+					<a href="#e5bf475a0f5e82f7" class="i field">_currentParseTask</a> = <a href="#b3c61fba9bb7aa72" class="i method">ParseJson</a>();
+					<a href="#e5bf475a0f5e82f7" class="i field">_currentParseTask</a>.<span class="i">ContinueWith</span>(<span id="r1 rd" class="r1 r">t</span> =&gt; { <b>throw</b> <span class="r1 r">t</span>.<span class="i">Exception</span>; }, <span class="i">TaskContinuationOptions</span>.<span class="i">OnlyOnFaulted</span>);
+				}
+			}
+		}
+ 
+		<b>protected override async</b> <span class="i">Task</span>&lt;<span class="i">IList</span>&lt;<a href="/Xamarin.Forms.Pages/A.html#6562e03746e7c406" class="t t">IDataItem</a>&gt;&gt; <a id="4cbd6ed230d2b3ac" href="R/4cbd6ed230d2b3ac.html" target="n" data-glyph="75,1" class="i method">GetRawData</a>()
+		{
+			<b>if</b> (!<a href="#437c6db53966345b" class="i field">_initialized</a>)
+			{
+				<span class="i">Task</span> <span id="r2 rd" class="r2 r">task</span> = <a href="#e5bf475a0f5e82f7" class="i field">_currentParseTask</a> = <a href="#b3c61fba9bb7aa72" class="i method">ParseJson</a>();
+				<b>await</b> <span class="r2 r">task</span>;
+			}
+			<b>else if</b> (<a href="#e5bf475a0f5e82f7" class="i field">_currentParseTask</a> != <b>null</b> &amp;&amp; <a href="#e5bf475a0f5e82f7" class="i field">_currentParseTask</a>.<span class="i">IsCompleted</span> == <b>false</b>)
+				<b>await</b> <a href="#e5bf475a0f5e82f7" class="i field">_currentParseTask</a>;
+			<b>return</b> <a href="#eb18824380ae6be9" class="i field">_dataItems</a>;
+		}
+ 
+		<b>protected override object</b> <a id="6d8c67b727feb182" href="R/6d8c67b727feb182.html" target="n" data-glyph="75,1" class="i method">GetValue</a>(<b>string</b> <span id="r3 rd" class="r3 r">key</span>)
+		{
+			<a href="/Xamarin.Forms.Pages/A.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r4 rd" class="r4 r">target</span> = <a href="#eb18824380ae6be9" class="i field">_dataItems</a>.<span class="i">FirstOrDefault</span>(<span id="r5 rd" class="r5 r">d</span> =&gt; <span class="r5 r">d</span>.<span class="i">Name</span> == <span class="r3 r">key</span>);
+			<b>return</b> <span class="r4 r">target</span>?.<a href="/Xamarin.Forms.Pages/A.html#c2de1aae056e8b6f" class="i property">Value</a>;
+		}
+ 
+		<b>protected override bool</b> <a id="7f124174b369b9dc" href="R/7f124174b369b9dc.html" target="n" data-glyph="75,1" class="i method">SetValue</a>(<b>string</b> <span id="r6 rd" class="r6 r">key</span>, <b>object</b> <span id="r7 rd" class="r7 r">value</span>)
+		{
+			<a href="/Xamarin.Forms.Pages/A.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r8 rd" class="r8 r">target</span> = <a href="#eb18824380ae6be9" class="i field">_dataItems</a>.<span class="i">FirstOrDefault</span>(<span id="r9 rd" class="r9 r">d</span> =&gt; <span class="r9 r">d</span>.<span class="i">Name</span> == <span class="r6 r">key</span>);
+			<b>if</b> (<span class="r8 r">target</span> == <b>null</b>)
+			{
+				<a href="#eb18824380ae6be9" class="i field">_dataItems</a>.<span class="i">Add</span>(<b>new</b> <a href="/Xamarin.Forms.Pages/A.html#710c47c23e8a0636" class="t constructor">DataItem</a>(<span class="r6 r">key</span>, <span class="r7 r">value</span>));
+				<b>return true</b>;
+			}
+			<b>if</b> (<span class="r8 r">target</span>.<a href="/Xamarin.Forms.Pages/A.html#c2de1aae056e8b6f" class="i property">Value</a> == <span class="r7 r">value</span>)
+				<b>return false</b>;
+			<span class="r8 r">target</span>.<a href="/Xamarin.Forms.Pages/A.html#c2de1aae056e8b6f" class="i property">Value</a> = <span class="r7 r">value</span>;
+			<b>return true</b>;
+		}
+ 
+		<b>object</b> <a id="559045fb68972581" href="R/559045fb68972581.html" target="n" data-glyph="76,1" class="i method">GetValueForJToken</a>(<span class="i">JToken</span> <span id="r10 rd" class="r10 r">token</span>)
+		{
+			<b>switch</b> (<span class="r10 r">token</span>.<span class="i">Type</span>)
+			{
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Object</span>:
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Array</span>:
+					<b>return</b> <b>new</b> <a href="#beeaf447e405727f" class="t constructor">AzureDataSource</a>(<span class="r10 r">token</span>);
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Constructor</span>:
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Property</span>:
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Comment</span>:
+					<b>throw</b> <b>new</b> <span class="i">NotImplementedException</span>();
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Integer</span>:
+					<b>return</b> (<b>int</b>)<span class="r10 r">token</span>;
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Float</span>:
+					<b>return</b> (<b>float</b>)<span class="r10 r">token</span>;
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Raw</span>:
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">String</span>:
+					<b>return</b> (<b>string</b>)<span class="r10 r">token</span>;
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Boolean</span>:
+					<b>return</b> (<b>bool</b>)<span class="r10 r">token</span>;
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Date</span>:
+					<b>return</b> (<span class="i">DateTime</span>)<span class="r10 r">token</span>;
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Bytes</span>:
+					<b>return</b> (<b>byte</b>[])<span class="r10 r">token</span>;
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Guid</span>:
+					<b>return</b> (<span class="i">Guid</span>)<span class="r10 r">token</span>;
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">Uri</span>:
+					<b>return</b> (<span class="i">Uri</span>)<span class="r10 r">token</span>;
+				<b>case</b> <span class="i">JTokenType</span>.<span class="i">TimeSpan</span>:
+					<b>return</b> (<span class="i">TimeSpan</span>)<span class="r10 r">token</span>;
+				<b>default</b>:
+					<b>return null</b>;
+			}
+		}
+ 
+		<b>async</b> <span class="i">Task</span> <a id="b3c61fba9bb7aa72" href="R/b3c61fba9bb7aa72.html" target="n" data-glyph="76,1" class="i method">ParseJson</a>()
+		{
+			<a href="#437c6db53966345b" class="i field">_initialized</a> = <b>true</b>;
+ 
+			<b>if</b> (<a href="#81a3976caf1caa05" class="i property">Source</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Pages/A.html#c3b4e9610ed06f40" class="i property">IsLoading</a> = <b>true</b>;
+			<b>var</b> <span id="r11 rd" class="r11 r">jtoken</span> = <b>await</b> <a href="#81a3976caf1caa05" class="i property">Source</a>.<a href="AzureSource.cs.html#ab66a5e2ba81927d" class="i method">GetJson</a>();
+			<span class="i">ParseJsonToken</span>(<span class="r11 r">jtoken</span>);
+			<a href="/Xamarin.Forms.Pages/A.html#c3b4e9610ed06f40" class="i property">IsLoading</a> = <b>false</b>;
+		}
+ 
+		<b>void</b> <a id="f2fe23a61ebfdb7a" href="R/f2fe23a61ebfdb7a.html" target="n" data-glyph="76,1" class="i method">ParseJsonToken</a>(<span class="i">JToken</span> <span id="r12 rd" class="r12 r">token</span>)
+		{
+			<b>var</b> <span id="r13 rd" class="r13 r">jArray</span> = <span class="r12 r">token</span> <b>as</b> <span class="i">JArray</span>;
+			<b>var</b> <span id="r14 rd" class="r14 r">jObject</span> = <span class="r12 r">token</span> <b>as</b> <span class="i">JObject</span>;
+			<b>if</b> (<span class="r13 r">jArray</span> != <b>null</b>)
+			{
+				<b>for</b> (<b>var</b> <span id="r15 rd" class="r15 r">i</span> = 0; <span class="r15 r">i</span> &lt; <span class="r13 r">jArray</span>.<span class="i">Count</span>; <span class="r15 r">i</span>++)
+				{
+					<span class="i">JToken</span> <span id="r16 rd" class="r16 r">obj</span> = <span class="r13 r">jArray</span>[<span class="r15 r">i</span>];
+					<a href="#eb18824380ae6be9" class="i field">_dataItems</a>.<span class="i">Add</span>(<b>new</b> <span class="t">DataItem</span>(<span class="r15 r">i</span>.<span class="i">ToString</span>(), <a href="#559045fb68972581" class="i method">GetValueForJToken</a>(<span class="r16 r">obj</span>)));
+				}
+			}
+			<b>else if</b> (<span class="r14 r">jObject</span> != <b>null</b>)
+			{
+				<b>foreach</b> (<span class="i">KeyValuePair</span>&lt;<b>string</b>, <span class="i">JToken</span>&gt; <span id="r17 rd" class="r17 r">kvp</span> <b>in</b> <span class="r14 r">jObject</span>)
+				{
+					<a href="#eb18824380ae6be9" class="i field">_dataItems</a>.<span class="i">Add</span>(<b>new</b> <span class="t">DataItem</span>(<span class="r17 r">kvp</span>.<span class="i">Key</span>, <span class="i">GetValueForJToken</span>(<span class="r17 r">kvp</span>.<span class="i">Value</span>)));
+				}
+			}
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

@@ -1,0 +1,229 @@
+﻿<!DOCTYPE html>
+<html><head><title>GestureBubblingTests.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(220);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core.Windows.UITests/GestureBubblingTests.cs" target="_top">GestureBubblingTests.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core.Windows.UITests" target="_top">Xamarin.Forms.Core.Windows.UITests\Xamarin.Forms.Core.Windows.UITests.csproj</a> (Xamarin.Forms.Core.Windows.UITests)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">CustomAttributes</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<b>using</b> <span class="i">NUnit</span>.<span class="i">Framework</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Core</span>.<span class="i n">UITests</span>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>.<span class="i n">Issues</span>
+{
+	<span class="c">// This is similar to the test for 35477, but tests all of the basic controls to make sure that they all exhibit</span>
+	<span class="c">// the same behavior across all the platforms. The question is whether tapping a control inside of a frame</span>
+	<span class="c">// will trigger the frame&#39;s tap gesture; for most controls it will not (the control itself absorbs the tap),</span>
+	<span class="c">// but for non-interactive controls (box, frame, image, label) the gesture bubbles up to the container.</span>
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+	[<span class="i">Category</span>(<a href="UITestCategories.cs.html#af5bbebc1eb6d7df" class="t t">UITestCategories</a>.<a href="UITestCategories.cs.html#6368461d63021592" class="i field">Gestures</a>)]
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+	[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a>(<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+	[<a href="/Xamarin.Forms.CustomAttributes/A.html#7e3803f42297329b" class="t constructor">Issue</a>(<a href="/Xamarin.Forms.CustomAttributes/A.html#71fbc272a65cfefa" class="t t">IssueTracker</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#fa9dd153bdbb8619" class="i field">None</a>, 00100100, <span class="s">&quot;Verify that the tap gesture bubbling behavior is consistent across the platforms&quot;</span>, <a href="/Xamarin.Forms.CustomAttributes/A.html#e0966d88fdc6123d" class="t t">PlatformAffected</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#ebc10c2d143433f9" class="i field">All</a>)]
+	<b>public class</b> <a id="bdbe44b5dfc75570" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t"><span id="beaf54de225ee44e">GestureBubblingTests</span></a> : <a href="TestPages.cs.html#33c495d7fb850a48" class="t t">TestNavigationPage</a>
+	{
+		<b>const string</b> <a id="909445a07c2c5dcb" href="R/909445a07c2c5dcb.html" target="n" data-glyph="10,1" class="i field">TargetAutomationId</a> = <span class="s">&quot;controlinsideofframe&quot;</span>;
+		<b>const string</b> <a id="a52d1085295a28e6" href="R/a52d1085295a28e6.html" target="n" data-glyph="10,1" class="i field">NoTaps</a> = <span class="s">&quot;No taps yet&quot;</span>;
+		<b>const string</b> <a id="c805c242c56b80ec" href="R/c805c242c56b80ec.html" target="n" data-glyph="10,1" class="i field">Tapped</a> = <span class="s">&quot;Frame was tapped&quot;</span>;
+		<a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t t">ContentPage</a> <a id="3a1119d5778361ab" href="R/3a1119d5778361ab.html" target="n" data-glyph="46,1" class="i field">_menu</a>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		[<span class="i">Test</span>, <span class="i">TestCaseSource</span>(<b>nameof</b>(<a href="#13f3d9595d472fb1" class="i property">TestCases</a>))]
+		<b>public void</b> <a id="c076dde6eb6b0566" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">VerifyTapBubbling</a>(<b>string</b> <span id="r0 rd" class="r0 r">menuItem</span>, <b>bool</b> <span id="r1 rd" class="r1 r">frameShouldRegisterTap</span>)
+		{
+			<b>var</b> <span id="r2 rd" class="r2 r">results</span> = <a href="TestPages.cs.html#f1ce145a66391948" class="i property">RunningApp</a>.<span class="i">WaitForElement</span>(<span id="r3 rd" class="r3 r">q</span> =&gt; <span class="r3 r">q</span>.<span class="i">Marked</span>(<span class="r0 r">menuItem</span>));
+ 
+			<b>if</b> (<span class="r2 r">results</span>.<span class="i">Length</span> &gt; 1)
+			{
+				<b>var</b> <span id="r4 rd" class="r4 r">rect</span> = <span class="r2 r">results</span>.<span class="i">First</span>(<span id="r5 rd" class="r5 r">r</span> =&gt; <span class="r5 r">r</span>.<span class="i">Class</span>.<span class="i">Contains</span>(<span class="s">&quot;Button&quot;</span>)).<span class="i">Rect</span>;
+ 
+				<a href="TestPages.cs.html#f1ce145a66391948" class="i property">RunningApp</a>.<span class="i">TapCoordinates</span>(<span class="r4 r">rect</span>.<span class="i">CenterX</span>, <span class="r4 r">rect</span>.<span class="i">CenterY</span>);
+			}
+			<b>else</b>
+			{
+				<a href="TestPages.cs.html#f1ce145a66391948" class="i property">RunningApp</a>.<span class="i">Tap</span>(<span id="r6 rd" class="r6 r">q</span> =&gt; <span class="r6 r">q</span>.<span class="i">Marked</span>(<span class="r0 r">menuItem</span>));
+			}
+ 
+			<span class="c">// Find the start label</span>
+			<a href="TestPages.cs.html#f1ce145a66391948" class="i property">RunningApp</a>.<span class="i">WaitForElement</span>(<span id="r7 rd" class="r7 r">q</span> =&gt; <span class="r7 r">q</span>.<span class="i">Marked</span>(<a href="#a52d1085295a28e6" class="i field">NoTaps</a>));
+ 
+			<span class="c">// Find the control we&#39;re testing</span>
+			<b>var</b> <span id="r8 rd" class="r8 r">result</span> = <a href="TestPages.cs.html#f1ce145a66391948" class="i property">RunningApp</a>.<span class="i">WaitForElement</span>(<span id="r9 rd" class="r9 r">q</span> =&gt; <span class="r9 r">q</span>.<span class="i">Marked</span>(<a href="#909445a07c2c5dcb" class="i field">TargetAutomationId</a>));
+			<b>var</b> <span id="r10 rd" class="r10 r">target</span> = <span class="r8 r">result</span>.<span class="i">First</span>().<span class="i">Rect</span>;
+ 
+			<span class="c">// Tap the control</span>
+			<b>var</b> <span id="r11 rd" class="r11 r">y</span> = <span class="r10 r">target</span>.<span class="i">CenterY</span>;
+			<b>var</b> <span id="r12 rd" class="r12 r">x</span> = <span class="r10 r">target</span>.<span class="i">CenterX</span>;
+ 
+			<span class="c">// In theory we want to tap the center of the control. But Stepper lays out differently than the other controls,</span>
+			<span class="c">// so we need to adjust for it until someone fixes it</span>
+			<b>if</b> (<span class="r0 r">menuItem</span> == <span class="s">&quot;Stepper&quot;</span>)
+			{
+				<span class="r11 r">y</span> = <span class="r10 r">target</span>.<span class="i">Y</span> + 5;
+				<span class="r12 r">x</span> = <span class="r10 r">target</span>.<span class="i">X</span> + 5;
+			}
+ 
+			<a href="TestPages.cs.html#f1ce145a66391948" class="i property">RunningApp</a>.<span class="i">TapCoordinates</span>(<span class="r12 r">x</span>, <span class="r11 r">y</span>);
+ 
+			<b>if</b> (<span class="r0 r">menuItem</span> == <b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#3d956e8ce53b1f81" class="t t">DatePicker</a>) || <span class="r0 r">menuItem</span> == <b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#26d6d0d63271e64c" class="t t">TimePicker</a>))
+			{
+				<span class="c">// These controls show a pop-up which we have to cancel/done out of before we can continue</span>
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__ANDROID__</span>
+<span class="e">				var cancelButtonText = &quot;Cancel&quot;;
+				RunningApp.Back();
+</span><span class="k preprocess">#</span><span class="k preprocess">elif</span> <span class="i">__IOS__</span>
+<span class="e">				var cancelButtonText = &quot;Done&quot;;
+				RunningApp.WaitForElement(q =&gt; q.Marked(cancelButtonText));
+				RunningApp.Tap(q =&gt; q.Marked(cancelButtonText));
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+				<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r13 rd" class="r13 r">cancelButtonText</span> = <span class="s">&quot;DismissButton&quot;</span>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+			}
+ 
+			<b>if</b> (<span class="r1 r">frameShouldRegisterTap</span>)
+			{
+				<a href="TestPages.cs.html#f1ce145a66391948" class="i property">RunningApp</a>.<span class="i">WaitForElement</span>(<span id="r14 rd" class="r14 r">q</span> =&gt; <span class="r14 r">q</span>.<span class="i">Marked</span>(<a href="#c805c242c56b80ec" class="i field">Tapped</a>));
+			}
+			<b>else</b>
+			{
+				<a href="TestPages.cs.html#f1ce145a66391948" class="i property">RunningApp</a>.<span class="i">WaitForElement</span>(<span id="r15 rd" class="r15 r">q</span> =&gt; <span class="r15 r">q</span>.<span class="i">Marked</span>(<a href="#a52d1085295a28e6" class="i field">NoTaps</a>));
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t t">ContentPage</a> <a id="fe1a56042822c3c9" href="R/fe1a56042822c3c9.html" target="n" data-glyph="76,1" class="i method">CreateTestPage</a>(<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a> <span id="r16 rd" class="r16 r">view</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="k">var</a> <span id="r17 rd" class="r17 r">instructions</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a>();
+ 
+			<b>if</b> (<a href="#0a88705b9bcf959e" class="i field">_controlsWhichShouldAllowTheTapToBubbleUp</a>.<a href="@0@mscorlib/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r16 r">view</span>.<a href="@0@mscorlib/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<a href="@0@mscorlib/A.html#aa4f112f79364b6e" class="i property">Name</a>))
+			{
+				<span class="r17 r">instructions</span>.<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> =
+					<span class="s">$&quot;</span><span class="s">Tap the frame below. The label with the text &#39;</span>{<a href="#a52d1085295a28e6" class="i field">NoTaps</a>}<span class="s">&#39; should change its text to &#39;</span>{<a href="#c805c242c56b80ec" class="i field">Tapped</a>}<span class="s">&#39;.</span><span class="s">&quot;</span>;
+			}
+			<b>else</b>
+			{
+				<span class="r17 r">instructions</span>.<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> =
+					<span class="s">$&quot;</span><span class="s">Tap the frame below. The label with the text &#39;</span>{<a href="#a52d1085295a28e6" class="i field">NoTaps</a>}<span class="s">&#39; should not change.</span><span class="s">&quot;</span>;
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="k">var</a> <span id="r18 rd" class="r18 r">label</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a> { <a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <a href="#a52d1085295a28e6" class="i field">NoTaps</a> };
+ 
+			<a href="/Xamarin.Forms.Core/A.html#ce1e8f34c8da5dda" class="k">var</a> <span id="r19 rd" class="r19 r">frame</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#df24636ecf190284" class="t constructor">Frame</a> { <a href="/Xamarin.Forms.Core/A.html#af8dc4feb93dee51" class="i property">Content</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a> { <a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a> = { <span class="r16 r">view</span> } } };
+ 
+			<a href="/Xamarin.Forms.Core/A.html#ee3163fce3030ae2" class="k">var</a> <span id="r20 rd" class="r20 r">rec</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#151e01e081d40ae4" class="t constructor">TapGestureRecognizer</a> { <a href="/Xamarin.Forms.Core/A.html#b8c3346cd591a8df" class="i property">NumberOfTapsRequired</a> = 1 };
+			<span class="r20 r">rec</span>.<a href="/Xamarin.Forms.Core/A.html#26ed89e5096ac977" class="i">Tapped</a> += (<span id="r21 rd" class="r21 r">s</span>, <span id="r22 rd" class="r22 r">e</span>) =&gt; { <span class="r18 r">label</span>.<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <a href="#c805c242c56b80ec" class="i field">Tapped</a>; };
+			<span class="r19 r">frame</span>.<a href="/Xamarin.Forms.Core/A.html#47b8b15a0c49e516" class="i property">GestureRecognizers</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r20 r">rec</span>);
+			
+			<a href="/Xamarin.Forms.Core/A.html#5c88f1e97bd1f520" class="k">var</a> <span id="r23 rd" class="r23 r">layout</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a>();
+		
+			<span class="r23 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r17 r">instructions</span>);
+			<span class="r23 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r18 r">label</span>);
+			<span class="r23 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r19 r">frame</span>);
+ 
+			<b>return</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t constructor">ContentPage</a> { <a href="/Xamarin.Forms.Core/A.html#3929eda3f5d3e80d" class="i property">Content</a> = <span class="r23 r">layout</span> };
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a> <a id="96e9026fd47c6817" href="R/96e9026fd47c6817.html" target="n" data-glyph="76,1" class="i method">MenuButton</a>(<b>string</b> <span id="r24 rd" class="r24 r">label</span>, <a href="@0@mscorlib/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>&gt; <span id="r25 rd" class="r25 r">view</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="k">var</a> <span id="r26 rd" class="r26 r">button</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#c9ccc9248166aa0f" class="t constructor">Button</a> { <a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a> = <span class="r24 r">label</span> };
+ 
+			<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r27 rd" class="r27 r">testView</span> = <span class="r25 r">view</span>();
+			<span class="r27 r">testView</span>.<a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a> = <a href="#909445a07c2c5dcb" class="i field">TargetAutomationId</a>;
+ 
+			<span class="r26 r">button</span>.<a href="/Xamarin.Forms.Core/A.html#2f35d86af34f02f3" class="i">Clicked</a> += (<span id="r28 rd" class="r28 r">sender</span>, <span id="r29 rd" class="r29 r">args</span>) =&gt; <a href="/Xamarin.Forms.Core/A.html#0b928594869960ba" class="i method">PushAsync</a>(<a href="#fe1a56042822c3c9" class="i method">CreateTestPage</a>(<span class="r27 r">testView</span>));
+ 
+			<b>return</b> <span class="r26 r">button</span>;
+		}
+ 
+		<span class="c">// These controls should allow the tap gesture to bubble up to their container; everything else should absorb the gesture</span>
+		<b>readonly</b> <a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>string</b>&gt; <a id="0a88705b9bcf959e" href="R/0a88705b9bcf959e.html" target="n" data-glyph="46,1" class="i field">_controlsWhichShouldAllowTheTapToBubbleUp</a> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;
+		{
+			<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>),
+			<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>),
+			<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#2097a18136981fa9" class="t t">BoxView</a>),
+			<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#ce1e8f34c8da5dda" class="t t">Frame</a>)
+		};
+ 
+		<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>object</b>[]&gt; <a id="13f3d9595d472fb1" href="R/13f3d9595d472fb1.html" target="n" data-glyph="106,1" class="i property">TestCases</a>
+		{
+			<b>get</b>
+			{
+				<a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="k">var</a> <span id="r30 rd" class="r30 r">layout</span> = <a href="#8d57c7b02fd1c04c" class="i method">BuildMenu</a>().<a href="/Xamarin.Forms.Core/A.html#3929eda3f5d3e80d" class="i property">Content</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="t t">Layout</a>;
+				<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="k">var</a> <span id="r31 rd" class="r31 r">result</span> =
+					<b>from</b> <a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="t t">Layout</a> <span class="i">element</span> <b>in</b> <span class="r30 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#1410153f062e9d91" class="i property">InternalChildren</a>
+					<b>from</b> <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a> <span class="i">button</span> <b>in</b> <span class="i">element</span>.<a href="/Xamarin.Forms.Core/A.html#1410153f062e9d91" class="i property">InternalChildren</a>
+					<b>let</b> <span class="i">text</span> = <span class="i">button</span>.<a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a>
+					<b>select</b> <b>new</b> <b>object</b>[]
+					{
+						<span class="i">text</span>,
+						<a href="#0a88705b9bcf959e" class="i field">_controlsWhichShouldAllowTheTapToBubbleUp</a>.<a href="@0@mscorlib/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="i">text</span>)
+					};
+ 
+				<b>return</b> <span class="r31 r">result</span>;
+			}
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t t">ContentPage</a> <a id="8d57c7b02fd1c04c" href="R/8d57c7b02fd1c04c.html" target="n" data-glyph="76,1" class="i method">BuildMenu</a>()
+		{
+			<b>if</b> (<a href="#3a1119d5778361ab" class="i field">_menu</a> != <b>null</b>)
+			{
+				<b>return</b> <a href="#3a1119d5778361ab" class="i field">_menu</a>;
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#b4132e8e9a86f1d6" class="k">var</a> <span id="r32 rd" class="r32 r">layout</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#cb7d69d9b07590da" class="t constructor">Grid</a>
+			{
+				<a href="/Xamarin.Forms.Core/A.html#8e761ec8c2755065" class="i property">VerticalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#84de63b682b2b2e1" class="i field">Fill</a>,
+				<a href="/Xamarin.Forms.Core/A.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#84de63b682b2b2e1" class="i field">Fill</a>,
+				<a href="/Xamarin.Forms.Core/A.html#34a960b7e71d160c" class="i property">ColumnDefinitions</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#ee563e6cad9cd75d" class="t constructor">ColumnDefinitionCollection</a> { <b>new</b> <a href="/Xamarin.Forms.Core/A.html#d89ab14de9cd08f1" class="t constructor">ColumnDefinition</a>(), <b>new</b> <a href="/Xamarin.Forms.Core/A.html#d89ab14de9cd08f1" class="t constructor">ColumnDefinition</a>() }
+			};
+ 
+			<a href="/Xamarin.Forms.Core/A.html#5c88f1e97bd1f520" class="k">var</a> <span id="r33 rd" class="r33 r">col1</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a>();
+			<span class="r32 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#a475b66501d17523" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r33 r">col1</span>);
+			<a href="/Xamarin.Forms.Core/A.html#b4132e8e9a86f1d6" class="t t">Grid</a>.<a href="/Xamarin.Forms.Core/A.html#754c01273283e8f7" class="i method">SetColumn</a>(<span class="r33 r">col1</span>, 0);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#5c88f1e97bd1f520" class="k">var</a> <span id="r34 rd" class="r34 r">col2</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a>();
+			<span class="r32 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#a475b66501d17523" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r34 r">col2</span>);
+			<a href="/Xamarin.Forms.Core/A.html#b4132e8e9a86f1d6" class="t t">Grid</a>.<a href="/Xamarin.Forms.Core/A.html#754c01273283e8f7" class="i method">SetColumn</a>(<span class="r34 r">col2</span>, 1);
+ 
+			<span class="r33 r">col1</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#dfe2f0f30dae6d8e" class="t constructor">Image</a> { <a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a> = <a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="t t">ImageSource</a>.<a href="/Xamarin.Forms.Core/A.html#33b88ebdbce286d3" class="i method">FromFile</a>(<span class="s">&quot;oasis.jpg&quot;</span>) }));
+			<span class="r33 r">col1</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#ce1e8f34c8da5dda" class="t t">Frame</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#df24636ecf190284" class="t constructor">Frame</a> { <a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#51a7588e0c1f5ea4" class="i field">DarkGoldenrod</a> }));
+			<span class="r33 r">col1</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#6c006155b059a0c8" class="t constructor">Entry</a>()));
+			<span class="r33 r">col1</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#a9c5fa9b87be0395" class="t t">Editor</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#ebbdc7d5ec7bb872" class="t constructor">Editor</a>()));
+			<span class="r33 r">col1</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#c9ccc9248166aa0f" class="t constructor">Button</a> { <a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a> = <span class="s">&quot;Test&quot;</span> }));
+			<span class="r33 r">col1</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a>
+			{
+				<a href="/Xamarin.Forms.Core/A.html#db1aea97d5bb7d42" class="i property">LineBreakMode</a> = <a href="/Xamarin.Forms.Core/A.html#533bb2e457399853" class="t t">LineBreakMode</a>.<a href="/Xamarin.Forms.Core/A.html#49b0700f24aa563e" class="i field">WordWrap</a>,
+				<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">&quot;Lorem ipsum dolor sit amet&quot;</span>
+			}));
+			<span class="r33 r">col1</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#c6da57600ae3fbae" class="t t">SearchBar</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#cc32f84c9233ad38" class="t constructor">SearchBar</a>()));
+ 
+			<span class="r34 r">col2</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#3d956e8ce53b1f81" class="t t">DatePicker</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#2ffc8ca33e986791" class="t constructor">DatePicker</a>()));
+			<span class="r34 r">col2</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#26d6d0d63271e64c" class="t t">TimePicker</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#1bd81eedac87ba13" class="t constructor">TimePicker</a>()));
+			<span class="r34 r">col2</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#bffe317409bff8f0" class="t t">Slider</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#fe84c35d84b0d1ed" class="t constructor">Slider</a>()));
+			<span class="r34 r">col2</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#a1364aa0e09717dc" class="t t">Switch</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#fb76261fd1cef078" class="t constructor">Switch</a>()));
+			<span class="r34 r">col2</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#ffe0ddea479397d1" class="t t">Stepper</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#04f9b43818631385" class="t constructor">Stepper</a>()));
+			<span class="r34 r">col2</span>.<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#96e9026fd47c6817" class="i method">MenuButton</a>(<b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#2097a18136981fa9" class="t t">BoxView</a>), () =&gt; <b>new</b> <a href="/Xamarin.Forms.Core/A.html#5fb9aea266d897be" class="t constructor">BoxView</a> { <a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#28c6a5431d2498d2" class="i field">DarkMagenta</a>, <a href="/Xamarin.Forms.Core/A.html#70921f9ac462553f" class="i property">WidthRequest</a> = 100, <a href="/Xamarin.Forms.Core/A.html#2777b88949804b06" class="i property">HeightRequest</a> = 100 }));
+ 
+			<b>return</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t constructor">ContentPage</a> { <a href="/Xamarin.Forms.Core/A.html#3929eda3f5d3e80d" class="i property">Content</a> = <span class="r32 r">layout</span> };
+		}
+ 
+		<b>protected override void</b> <a id="d1106a623d384cf1" href="R/d1106a623d384cf1.html" target="n" data-glyph="75,1" class="i method">Init</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#0b928594869960ba" class="i method">PushAsync</a>(<a href="#8d57c7b02fd1c04c" class="i method">BuildMenu</a>());
+		}
+	}
+}</pre></td></tr></table></div></body></html>

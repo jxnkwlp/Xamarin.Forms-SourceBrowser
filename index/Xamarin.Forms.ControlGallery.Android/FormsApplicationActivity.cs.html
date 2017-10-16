@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html><head><title>FormsApplicationActivity.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(62);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.ControlGallery.Android/FormsApplicationActivity.cs" target="_top">FormsApplicationActivity.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.ControlGallery.Android" target="_top">Xamarin.Forms.ControlGallery.Android\Xamarin.Forms.ControlGallery.Android.csproj</a> (Xamarin.Forms.ControlGallery.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">FORMS_APPLICATION_ACTIVITY</span>
+<span class="e">
+using System.Diagnostics;
+using Android.App;
+using Android.Content.PM;
+using Android.OS;
+using Java.Interop;
+using Xamarin.Forms.Controls;
+using Xamarin.Forms.Controls.Issues;
+using Xamarin.Forms.Platform.Android;
+ 
+namespace Xamarin.Forms.ControlGallery.Android
+{
+	// This is the Pre-AppCompat version of Activity1
+ 
+[Activity(Label = &quot;Control Gallery&quot;, Icon = &quot;@drawable/icon&quot;, MainLauncher = true,
+		HardwareAccelerated = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+	public partial class Activity1 : FormsApplicationActivity
+	{
+		protected override void OnCreate(Bundle bundle)
+		{
+			base.OnCreate(bundle);
+ 
+			if (!Debugger.IsAttached)
+				Insights.Initialize(App.InsightsApiKey, ApplicationContext);
+ 
+			Forms.SetFlags(&quot;Fake_Flag&quot;); // So we can test for flag initialization issues
+ 
+			Forms.Init(this, bundle);
+			FormsMaps.Init(this, bundle);
+			Forms.ViewInitialized += (sender, e) =&gt; {
+				if (!string.IsNullOrWhiteSpace(e.View.StyleId))
+				{
+					e.NativeView.ContentDescription = e.View.StyleId;
+				}
+			};
+ 
+			// uncomment to verify turning off title bar works. This is not intended to be dynamic really.
+			//Forms.SetTitleBarVisibility (AndroidTitleBarVisibility.Never);
+ 
+			var app = _app = new App();
+ 
+			// When the native control gallery loads up, it&#39;ll let us know so we can add the nested native controls
+			MessagingCenter.Subscribe&lt;NestedNativeControlGalleryPage&gt;(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
+ 
+			// When the native binding gallery loads up, it&#39;ll let us know so we can set up the native bindings
+			MessagingCenter.Subscribe&lt;NativeBindingGalleryPage&gt;(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
+ 
+			SetUpForceRestartTest();
+ 
+			LoadApplication(app);
+		}
+ 
+		[Export(&quot;IsPreAppCompat&quot;)]
+		public bool IsPreAppCompat()
+		{
+			return true;
+		}
+	}
+}
+ 
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span></pre></td></tr></table></div></body></html>

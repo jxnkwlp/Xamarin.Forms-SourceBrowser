@@ -1,0 +1,588 @@
+﻿<!DOCTYPE html>
+<html><head><title>TestPages.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(579);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Controls/TestPages.cs" target="_top">TestPages.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Controls" target="_top">Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj</a> (Xamarin.Forms.Controls)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">CustomAttributes</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">using Xamarin.Forms.Core.UITests;
+using NUnit.Framework;
+using Xamarin.UITest;
+ 
+// Apply the default category of &quot;Issues&quot; to all of the tests in this assembly
+// We use this as a catch-all for tests which haven&#39;t been individually categorized
+[assembly: Category(&quot;Issues&quot;)]
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>
+{
+	<b>internal static class</b> <a id="1df4ea8aee692563" href="R/../../0000000000.html" target="n" data-glyph="2,0" class="t t">AppPaths</a>
+	{
+		<b>public static string</b> <a id="8f5c7af8835c01c8" href="R/../../0000000000.html" target="n" data-glyph="42,1" class="i field">ApkPath</a> = <span class="s">&quot;../../../Xamarin.Forms.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk&quot;</span>;
+ 
+		<b>public static string</b> <a id="03a101b39f0d1a00" href="R/../../0000000000.html" target="n" data-glyph="42,1" class="i field">MacOSPath</a> = <span class="s">&quot;../../../Xamarin.Forms.ControlGallery.MacOS/bin/Debug/Xamarin.Forms.ControlGallery.MacOS.app&quot;</span>;
+ 
+		<span class="c">// Have to continue using the old BundleId for now; Test Cloud doesn&#39;t like</span>
+		<span class="c">// when you change the BundleId</span>
+		<b>public static string</b> <a id="fc6a2630d8af6d62" href="R/../../0000000000.html" target="n" data-glyph="42,1" class="i field">BundleId</a> = <span class="s">&quot;com.xamarin.quickui.controlgallery&quot;</span>;
+ 
+		<span class="c">// Have to continue using the old BundleId for now; Test Cloud doesn&#39;t like</span>
+		<span class="c">// when you change the BundleId</span>
+		<b>public static string</b> <a id="fc3bcfbb71031d53" href="R/../../0000000000.html" target="n" data-glyph="42,1" class="i field">MacOSBundleId</a> = <span class="s">&quot;com.xamarin.xamarin-forms-controlgallery-macos&quot;</span>;
+	}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">	internal static class AppSetup
+	{
+		static IApp InitializeApp()
+		{
+			IApp app = null;
+</span><span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__ANDROID__</span>
+<span class="e">
+			app = InitializeAndroidApp();
+ 
+</span><span class="k preprocess">#</span><span class="k preprocess">elif</span> <span class="i">__IOS__</span>
+<span class="e">
+			app = InitializeiOSApp();
+			
+</span><span class="k preprocess">#</span><span class="k preprocess">elif</span> <span class="i">__MACOS__</span>
+<span class="e">			Xamarin.UITest.Desktop.TestAgent.Start();
+			app = InitializeMacOSApp();
+ 
+</span><span class="k preprocess">#</span><span class="k preprocess">elif</span> <span class="i">__WINDOWS__</span>
+<span class="e">			app = InitializeUWPApp();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+<span class="e">			if (app == null)
+				throw new NullReferenceException(&quot;App was not initialized.&quot;);
+ 
+			// Wrap the app in ScreenshotConditional so it only takes screenshots if the SCREENSHOTS symbol is specified
+			return new ScreenshotConditionalApp(app);
+		}
+ 
+</span><span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__ANDROID__</span>
+<span class="e">		static IApp InitializeAndroidApp()
+		{
+			var app = ConfigureApp.Android.ApkFile(AppPaths.ApkPath).Debug().StartApp();
+ 
+			if (bool.Parse((string)app.Invoke(&quot;IsPreAppCompat&quot;)))
+			{
+				IsFormsApplicationActivity = true;
+			}
+ 
+			return app;
+		}
+ 
+		public static bool IsFormsApplicationActivity { get; private set; }
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+<span class="e">
+</span><span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__IOS__</span>
+<span class="e">		static IApp InitializeiOSApp() 
+		{ 
+			// Running on a device
+			var app = ConfigureApp.iOS.InstalledApp(AppPaths.BundleId).Debug()
+				//Uncomment to run from a specific iOS SIM, get the ID from XCode -&gt; Devices
+				.StartApp();
+ 
+			// Running on the simulator
+			//var app = ConfigureApp.iOS
+			//				  .PreferIdeSettings()
+			//		  		  .AppBundle(&quot;../../../Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/Debug/XamarinFormsControlGalleryiOS.app&quot;)
+			//				  .Debug()
+			//				  .StartApp();
+ 
+			return app;
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+<span class="e">
+</span><span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MACOS__</span>
+<span class="e">		static IApp InitializeMacOSApp()
+		{
+			// Running on a device
+			var configurator = new Xamarin.UITest.Desktop.CocoaAppConfigurator();
+			var app = configurator
+							//.AppBundle(&quot;/Users/rmarinho/Xamarin/Xamarin.Forms/Xamarin.Forms.ControlGallery.MacOS/bin/Debug/Xamarin.Forms.ControlGallery.MacOS.app&quot;)
+							.AppBundle(AppPaths.MacOSPath)
+							.BundleId(AppPaths.MacOSBundleId)
+							.StartApp();
+			return new Xamarin.Forms.Core.macOS.UITests.MacOSApp(app);
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+<span class="e">
+</span><span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__WINDOWS__</span>
+<span class="e">		static IApp InitializeUWPApp()
+		{
+			return WindowsTestBase.ConfigureApp();
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+<span class="e">
+		public static void NavigateToIssue(Type type, IApp app)
+		{
+			var typeIssueAttribute = type.GetTypeInfo().GetCustomAttribute&lt;IssueAttribute&gt;();
+ 
+			string cellName = &quot;&quot;;
+			if (typeIssueAttribute.IssueTracker.ToString() != &quot;None&quot; &amp;&amp;
+				typeIssueAttribute.IssueNumber != 1461 &amp;&amp;
+				typeIssueAttribute.IssueNumber != 342)
+			{
+				cellName = typeIssueAttribute.DisplayName;
+			}
+			else {
+				cellName = typeIssueAttribute.Description;
+			}
+ 
+			int maxAttempts = 2;
+			int attempts = 0;
+ 
+			while (attempts &lt; maxAttempts)
+			{
+				attempts += 1;
+ 
+				try
+				{
+					// Attempt the direct way of navigating to the test page
+</span><span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__ANDROID__</span>
+<span class="e">
+					if (bool.Parse((string)app.Invoke(&quot;NavigateToTest&quot;, cellName)))
+					{
+						return;
+					}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__IOS__</span>
+<span class="e">				if (bool.Parse(app.Invoke(&quot;navigateToTest:&quot;, cellName).ToString()))
+				{
+					return;
+				}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+<span class="e">
+</span><span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__WINDOWS__</span>
+<span class="e">					// Windows doens&#39;t have an &#39;invoke&#39; option right now for us to do the more direct navigation
+					// we&#39;re using for Android/iOS
+					// So we&#39;re just going to use the &#39;Reset&#39; method to bounce the app to the opening screen
+					// and then fall back to the old manual navigation
+					WindowsTestBase.Reset();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+<span class="e">				}
+				catch (Exception ex)
+				{
+					var debugMessage = $&quot;Could not directly invoke test; using UI navigation instead. {ex}&quot;;
+ 
+					System.Diagnostics.Debug.WriteLine(debugMessage);
+					Console.WriteLine(debugMessage);
+				}
+ 
+				try
+				{
+					// Fall back to the &quot;manual&quot; navigation method
+					app.Tap(q =&gt; q.Button(&quot;Go to Test Cases&quot;));
+					app.WaitForElement(q =&gt; q.Raw(&quot;* marked:&#39;TestCasesIssueList&#39;&quot;));
+ 
+					app.EnterText(q =&gt; q.Raw(&quot;* marked:&#39;SearchBarGo&#39;&quot;), cellName);
+ 
+					app.WaitForElement(q =&gt; q.Raw(&quot;* marked:&#39;SearchButton&#39;&quot;));
+					app.Tap(q =&gt; q.Raw(&quot;* marked:&#39;SearchButton&#39;&quot;));
+ 
+					return;
+				}
+				catch (Exception ex)
+				{
+					var debugMessage = $&quot;Both navigation methods failed. {ex}&quot;;
+ 
+					System.Diagnostics.Debug.WriteLine(debugMessage);
+					Console.WriteLine(debugMessage);
+ 
+					if (attempts &lt; maxAttempts)
+					{
+						// Something has failed and we&#39;re stuck in a place where we can&#39;t navigate
+						// to the test. Usually this is because we&#39;re getting network/HTTP errors 
+						// communicating with the server on the device. So we&#39;ll try restarting the app.
+						RunningApp = InitializeApp();
+					}
+					else
+					{
+						// But if it&#39;s still not working after [maxAttempts], we&#39;ve got assume this is a legit
+						// problem that restarting won&#39;t fix
+						throw;
+					}
+				}
+			}
+		}
+ 
+		public static IApp Setup(Type pageType = null)
+		{
+			IApp runningApp = null;
+			try
+			{
+				runningApp = InitializeApp();
+			}
+			catch (Exception e)
+			{
+				Assert.Inconclusive($&quot;App did not start for some reason: {e}&quot;);
+			}
+ 
+			if (pageType != null)
+				NavigateToIssue(pageType, runningApp);
+ 
+			return runningApp;
+		}
+ 
+		// Make sure the server on the device is still up and running;
+		// if not, restart the app
+		public static void EnsureConnection()
+		{
+			if (RunningApp != null)
+			{
+				try
+				{
+					RunningApp.TestServer.Get(&quot;version&quot;);
+					return;
+				}
+				catch (Exception ex)
+				{
+				}
+ 
+				RunningApp = InitializeApp();
+			}
+		}
+ 
+		static int s_testsrun;
+		const int ConsecutiveTestLimit = 10;
+ 
+		// Until we get more of our memory leak issues worked out, restart the app 
+		// after a specified number of tests so we don&#39;t get bogged down in GC
+		// (or booted by jetsam)
+		public static void EnsureMemory()
+		{
+			if (RunningApp != null)
+			{
+				s_testsrun += 1;
+ 
+				if (s_testsrun &gt;= ConsecutiveTestLimit)
+				{
+					s_testsrun = 0;
+					RunningApp = InitializeApp();
+				}
+			}
+		}
+ 
+		// For tests which just don&#39;t play well with others, we can ensure
+		// that they run in their own instance of the application
+		public static void BeginIsolate()
+		{
+			if (RunningApp != null &amp;&amp; s_testsrun &gt; 0)
+			{
+				s_testsrun = 0;
+				RunningApp = InitializeApp();
+			}
+		}
+ 
+		public static void EndIsolate()
+		{
+			s_testsrun = ConsecutiveTestLimit;
+		}
+ 
+		public static IApp RunningApp { get; set; }
+	}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+	<b>public abstract class</b> <a id="2b4948e1f869d03f" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t">TestPage</a> : <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		public IApp RunningApp =&gt; AppSetup.RunningApp;
+ 
+		protected virtual bool Isolate =&gt; false;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="61cf52403d6ffddd" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+			<a href="#5afa3c64cc251eb0" class="i method">Init</a>();
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		[SetUp]
+		public void Setup()
+		{
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+ 
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+ 
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="5afa3c64cc251eb0" href="R/5afa3c64cc251eb0.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+ 
+ 
+	<b>public abstract class</b> <a id="68092d82b8b3d7b5" href="R/68092d82b8b3d7b5.html" target="n" data-glyph="0,0" class="t t">TestContentPage</a> : <a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t t">ContentPage</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		public IApp RunningApp =&gt; AppSetup.RunningApp;
+ 
+		protected virtual bool Isolate =&gt; false;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="7588f9af5bc6b0b6" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestContentPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+			<a href="#b5f0685256ccc869" class="i method">Init</a>();
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		[SetUp]
+		public void Setup()
+		{
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+ 
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+ 
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="b5f0685256ccc869" href="R/b5f0685256ccc869.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+ 
+	<b>public abstract class</b> <a id="ab060f42eef0c6eb" href="R/ab060f42eef0c6eb.html" target="n" data-glyph="0,0" class="t t">TestCarouselPage</a> : <a href="/Xamarin.Forms.Core/A.html#efe3ef8da06691e9" class="t t">CarouselPage</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		public IApp RunningApp =&gt; AppSetup.RunningApp;
+ 
+		protected virtual bool Isolate =&gt; false;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="f56bcf39a9fb0895" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestCarouselPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+			<a href="#7d541196404d6cae" class="i method">Init</a>();
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		[SetUp]
+		public void Setup()
+		{
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+ 
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+ 
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="7d541196404d6cae" href="R/7d541196404d6cae.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">	[Category(Core.UITests.UITestCategories.MasterDetailPage)]
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+	<b>public abstract class</b> <a id="4ae41f4f74b7c9a6" href="R/4ae41f4f74b7c9a6.html" target="n" data-glyph="0,0" class="t t">TestMasterDetailPage</a> : <a href="/Xamarin.Forms.Core/A.html#187368fc14858e81" class="t t">MasterDetailPage</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		public IApp RunningApp =&gt; AppSetup.RunningApp;
+ 
+		protected virtual bool Isolate =&gt; false;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="297af5371fa712c1" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestMasterDetailPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+			<a href="#86f88674c3dab045" class="i method">Init</a>();
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		[SetUp]
+		public void Setup()
+		{
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+ 
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+ 
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="86f88674c3dab045" href="R/86f88674c3dab045.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+ 
+	<b>public abstract class</b> <a id="33c495d7fb850a48" href="R/33c495d7fb850a48.html" target="n" data-glyph="0,0" class="t t">TestNavigationPage</a> : <a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		public IApp RunningApp =&gt; AppSetup.RunningApp;
+ 
+		protected virtual bool Isolate =&gt; false;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="b60eca159932fe4c" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestNavigationPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+			<a href="#014f0f360aa2aa45" class="i method">Init</a>();
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		[SetUp]
+		public void Setup()
+		{
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+ 
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+ 
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="014f0f360aa2aa45" href="R/014f0f360aa2aa45.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+ 
+	<b>public abstract class</b> <a id="4fdca0933a12f6d9" href="R/4fdca0933a12f6d9.html" target="n" data-glyph="0,0" class="t t">TestTabbedPage</a> : <a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		public IApp RunningApp =&gt; AppSetup.RunningApp;
+ 
+		protected virtual bool Isolate =&gt; false;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="81621b123b8d7fa9" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestTabbedPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+			<a href="#64189057f6920bde" class="i method">Init</a>();
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">		[SetUp]
+		public void Setup()
+		{
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+ 
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+ 
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="64189057f6920bde" href="R/64189057f6920bde.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">namespace Xamarin.Forms.Controls.Issues
+{
+	using System;
+	using NUnit.Framework;
+ 
+	// Run setup once for all tests in the Xamarin.Forms.Controls.Issues namespace
+	// (instead of once for each test)
+	[SetUpFixture]
+	public class IssuesSetup
+	{
+		[SetUp]
+		public void RunBeforeAnyTests()
+		{
+			AppSetup.RunningApp = AppSetup.Setup(null);
+		}
+	}
+}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+</pre></td></tr></table></div></body></html>

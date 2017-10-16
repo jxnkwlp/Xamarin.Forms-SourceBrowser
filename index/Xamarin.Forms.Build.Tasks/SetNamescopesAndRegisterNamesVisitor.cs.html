@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html><head><title>SetNamescopesAndRegisterNamesVisitor.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(135);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/SetNamescopesAndRegisterNamesVisitor.cs" target="_top">SetNamescopesAndRegisterNamesVisitor.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Cil</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>
+{
+	<b>class</b> <a id="11304be12f481b78" href="R/11304be12f481b78.html" target="n" data-glyph="2,0" class="t t">SetNamescopesAndRegisterNamesVisitor</a> : <a href="/Xamarin.Forms.Xaml/A.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a>
+	{
+		<b>public</b> <a id="b8cf7cd1f7cce875" href="R/b8cf7cd1f7cce875.html" target="n" data-glyph="72,1" class="i constructor">SetNamescopesAndRegisterNamesVisitor</a>(<a href="ILContext.cs.html#cfeae44d09d495a0" class="t t">ILContext</a> <span id="r0 rd" class="r0 r">context</span>)
+		{
+			<a href="#df7b48c44d8173b4" class="i property">Context</a> = <span class="r0 r">context</span>;
+		}
+ 
+		<a href="ILContext.cs.html#cfeae44d09d495a0" class="t t">ILContext</a> <a id="df7b48c44d8173b4" href="R/df7b48c44d8173b4.html" target="n" data-glyph="106,1" class="i property">Context</a> { <b>get</b>; }
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Xaml/A.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a> <a id="0bd202ce47b78cca" href="R/0bd202ce47b78cca.html" target="n" data-glyph="102,1" class="i property">VisitingMode</a> =&gt; <a href="/Xamarin.Forms.Xaml/A.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a>.<a href="/Xamarin.Forms.Xaml/A.html#1b46e9674a8c0601" class="i field">TopDown</a>;
+		<b>public bool</b> <a id="0aec8ddc64ccc175" href="R/0aec8ddc64ccc175.html" target="n" data-glyph="102,1" class="i property">StopOnDataTemplate</a> =&gt; <b>true</b>;
+		<b>public bool</b> <a id="1a2b45e0dfaa417f" href="R/1a2b45e0dfaa417f.html" target="n" data-glyph="102,1" class="i property">StopOnResourceDictionary</a> =&gt; <b>false</b>;
+		<b>public bool</b> <a id="0693d9895b1fd168" href="R/0693d9895b1fd168.html" target="n" data-glyph="102,1" class="i property">VisitNodeOnDataTemplate</a> =&gt; <b>false</b>;
+ 
+		<b>public void</b> <a id="8355d2fdbe78cce5" href="R/8355d2fdbe78cce5.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a> <span id="r1 rd" class="r1 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r2 rd" class="r2 r">parentNode</span>)
+		{
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r1 r">node</span>] = <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r2 r">parentNode</span>];
+			<b>if</b> (<a href="#7208e4fe478605ca" class="i method">IsXNameProperty</a>(<span class="r1 r">node</span>, <span class="r2 r">parentNode</span>))
+				<a href="#26d90d61120dd3f6" class="i method">RegisterName</a>((<b>string</b>)<span class="r1 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#5fa72a93b49782e1" class="i property">Value</a>, <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r1 r">node</span>].<a href="@0@mscorlib/A.html#d1922db1cf9dcd03" class="i property">Item1</a>, <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r1 r">node</span>].<a href="@0@mscorlib/A.html#85ddc983cace902c" class="i property">Item2</a>, <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#3a594383a1a7a590" class="i property">Variables</a>[(<a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a>)<span class="r2 r">parentNode</span>], <span class="r1 r">node</span>);
+		}
+ 
+		<b>public void</b> <a id="f964c204e6641f46" href="R/f964c204e6641f46.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="/Xamarin.Forms.Xaml/A.html#429a1b2e0cd22849" class="t t">MarkupNode</a> <span id="r3 rd" class="r3 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r4 rd" class="r4 r">parentNode</span>)
+		{
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r3 r">node</span>] = <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r4 r">parentNode</span>];
+		}
+ 
+		<b>public void</b> <a id="30343e1f442d9b70" href="R/30343e1f442d9b70.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="t t">ElementNode</a> <span id="r5 rd" class="r5 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r6 rd" class="r6 r">parentNode</span>)
+		{
+			<span class="i">VariableDefinition</span> <span id="r7 rd" class="r7 r">namescopeVarDef</span>;
+			<a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<b>string</b>&gt; <span id="r8 rd" class="r8 r">namesInNamescope</span>;
+			<b>if</b> (<span class="r6 r">parentNode</span> == <b>null</b> || <a href="#90088d70d72d69a2" class="i method">IsDataTemplate</a>(<span class="r5 r">node</span>, <span class="r6 r">parentNode</span>) || <a href="#a5a99ab4e814fb75" class="i method">IsStyle</a>(<span class="r5 r">node</span>, <span class="r6 r">parentNode</span>)) {
+				<span class="r7 r">namescopeVarDef</span> = <a href="#d3d4cf0030e85ea4" class="i method">CreateNamescope</a>();
+				<span class="r8 r">namesInNamescope</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;();
+			} <b>else</b> {
+				<span class="r7 r">namescopeVarDef</span> = <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r6 r">parentNode</span>].<a href="@0@mscorlib/A.html#d1922db1cf9dcd03" class="i property">Item1</a>;
+				<span class="r8 r">namesInNamescope</span> = <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r6 r">parentNode</span>].<a href="@0@mscorlib/A.html#85ddc983cace902c" class="i property">Item2</a>;
+			}
+			<b>if</b> (<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#3a594383a1a7a590" class="i property">Variables</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r5 r">node</span>].<span class="i">VariableType</span>.<span class="i">InheritsFromOrImplements</span>(<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a>))))
+				<a href="#4eb64ceb4dfe74b0" class="i method">SetNameScope</a>(<span class="r5 r">node</span>, <span class="r7 r">namescopeVarDef</span>);
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r5 r">node</span>] = <b>new</b> <span class="i n">System</span>.<a href="@0@mscorlib/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<span class="i">VariableDefinition</span>, <a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<b>string</b>&gt;&gt;(<span class="r7 r">namescopeVarDef</span>, <span class="r8 r">namesInNamescope</span>);
+		}
+ 
+		<b>public void</b> <a id="c15bb949b90eabc6" href="R/c15bb949b90eabc6.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="/Xamarin.Forms.Xaml/A.html#539c4bdaedfa22a3" class="t t">RootNode</a> <span id="r9 rd" class="r9 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r10 rd" class="r10 r">parentNode</span>)
+		{
+			<b>var</b> <span id="r11 rd" class="r11 r">namescopeVarDef</span> = <a href="#d3d4cf0030e85ea4" class="i method">CreateNamescope</a>();
+			<a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<b>string</b>&gt; <span id="r12 rd" class="r12 r">namesInNamescope</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;();
+			<b>if</b> (<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#3a594383a1a7a590" class="i property">Variables</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r9 r">node</span>].<span class="i">VariableType</span>.<span class="i">InheritsFromOrImplements</span>(<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a>))))
+				<a href="#4eb64ceb4dfe74b0" class="i method">SetNameScope</a>(<span class="r9 r">node</span>, <span class="r11 r">namescopeVarDef</span>);
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r9 r">node</span>] = <b>new</b> <span class="i n">System</span>.<a href="@0@mscorlib/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<span class="i">VariableDefinition</span>, <a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<b>string</b>&gt;&gt;(<span class="r11 r">namescopeVarDef</span>, <span class="r12 r">namesInNamescope</span>);
+		}
+ 
+		<b>public void</b> <a id="578fb31331da7276" href="R/578fb31331da7276.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="/Xamarin.Forms.Xaml/A.html#0a483d0bd41cadb6" class="t t">ListNode</a> <span id="r13 rd" class="r13 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r14 rd" class="r14 r">parentNode</span>)
+		{
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r13 r">node</span>] = <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#52ac588ece39fc95" class="i property">Scopes</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r14 r">parentNode</span>];
+		}
+ 
+		<b>static bool</b> <a id="90088d70d72d69a2" href="R/90088d70d72d69a2.html" target="n" data-glyph="76,1" class="i method">IsDataTemplate</a>(<a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r15 rd" class="r15 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r16 rd" class="r16 r">parentNode</span>)
+		{
+			<a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="k">var</a> <span id="r17 rd" class="r17 r">parentElement</span> = <span class="r16 r">parentNode</span> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a>;
+			<a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r18 rd" class="r18 r">createContent</span>;
+			<b>if</b> (<span class="r17 r">parentElement</span> != <b>null</b> &amp;&amp; <span class="r17 r">parentElement</span>.<a href="/Xamarin.Forms.Xaml/A.html#ca11b3b288ccdec1" class="i property">Properties</a>.<a href="@0@mscorlib/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<a href="/Xamarin.Forms.Xaml/A.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="/Xamarin.Forms.Xaml/A.html#f9fb8fcdb5a2a4db" class="i field">_CreateContent</a>, <b>out</b> <span class="r18 r">createContent</span>) &amp;&amp;
+			    <span class="r18 r">createContent</span> == <span class="r15 r">node</span>)
+				<b>return true</b>;
+			<b>return false</b>;
+		}
+ 
+		<b>static bool</b> <a id="a5a99ab4e814fb75" href="R/a5a99ab4e814fb75.html" target="n" data-glyph="76,1" class="i method">IsStyle</a>(<a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r19 rd" class="r19 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r20 rd" class="r20 r">parentNode</span>)
+		{
+			<a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="k">var</a> <span id="r21 rd" class="r21 r">pnode</span> = <span class="r20 r">parentNode</span> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="t t">ElementNode</a>;
+			<b>return</b> <span class="r21 r">pnode</span> != <b>null</b> &amp;&amp; <span class="r21 r">pnode</span>.<a href="/Xamarin.Forms.Xaml/A.html#8505373ce60c6127" class="i property">XmlType</a>.<a href="/Xamarin.Forms.Xaml/A.html#1561698d7b8a155c" class="i property">Name</a> == <span class="s">&quot;Style&quot;</span>;
+		}
+ 
+		<b>static bool</b> <a id="7208e4fe478605ca" href="R/7208e4fe478605ca.html" target="n" data-glyph="76,1" class="i method">IsXNameProperty</a>(<a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a> <span id="r22 rd" class="r22 r">node</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r23 rd" class="r23 r">parentNode</span>)
+		{
+			<a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="k">var</a> <span id="r24 rd" class="r24 r">parentElement</span> = <span class="r23 r">parentNode</span> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a>;
+			<a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r25 rd" class="r25 r">xNameNode</span>;
+			<b>if</b> (<span class="r24 r">parentElement</span> != <b>null</b> &amp;&amp; <span class="r24 r">parentElement</span>.<a href="/Xamarin.Forms.Xaml/A.html#ca11b3b288ccdec1" class="i property">Properties</a>.<a href="@0@mscorlib/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<a href="/Xamarin.Forms.Xaml/A.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="/Xamarin.Forms.Xaml/A.html#4dd36ca233878b27" class="i field">xName</a>, <b>out</b> <span class="r25 r">xNameNode</span>) &amp;&amp; <span class="r25 r">xNameNode</span> == <span class="r22 r">node</span>)
+				<b>return true</b>;
+			<b>return false</b>;
+		}
+ 
+		<span class="i">VariableDefinition</span> <a id="d3d4cf0030e85ea4" href="R/d3d4cf0030e85ea4.html" target="n" data-glyph="76,1" class="i method">CreateNamescope</a>()
+		{
+			<b>var</b> <span id="r26 rd" class="r26 r">module</span> = <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>;
+			<b>var</b> <span id="r27 rd" class="r27 r">nsRef</span> = <span class="r26 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#70f946ab5204918a" class="t t">NameScope</a>));
+			<b>var</b> <span id="r28 rd" class="r28 r">vardef</span> = <b>new</b> <span class="i">VariableDefinition</span>(<span class="r27 r">nsRef</span>);
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Variables</span>.<span class="i">Add</span>(<span class="r28 r">vardef</span>);
+			<b>var</b> <span id="r29 rd" class="r29 r">nsDef</span> = <span class="r27 r">nsRef</span>.<span class="i">Resolve</span>();
+			<b>var</b> <span id="r30 rd" class="r30 r">ctorinfo</span> = <span class="r29 r">nsDef</span>.<span class="i">Methods</span>.<span class="i">First</span>(<span id="r31 rd" class="r31 r">md</span> =&gt; <span class="r31 r">md</span>.<span class="i">IsConstructor</span> &amp;&amp; !<span class="r31 r">md</span>.<span class="i">HasParameters</span>);
+			<b>var</b> <span id="r32 rd" class="r32 r">ctor</span> = <span class="r26 r">module</span>.<span class="i">ImportReference</span>(<span class="r30 r">ctorinfo</span>);
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Newobj</span>, <span class="r32 r">ctor</span>);
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Stloc</span>, <span class="r28 r">vardef</span>);
+			<b>return</b> <span class="r28 r">vardef</span>;
+		}
+ 
+		<b>void</b> <a id="4eb64ceb4dfe74b0" href="R/4eb64ceb4dfe74b0.html" target="n" data-glyph="76,1" class="i method">SetNameScope</a>(<a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="t t">ElementNode</a> <span id="r33 rd" class="r33 r">node</span>, <span class="i">VariableDefinition</span> <span id="r34 rd" class="r34 r">ns</span>)
+		{
+			<b>var</b> <span id="r35 rd" class="r35 r">module</span> = <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>;
+			<b>var</b> <span id="r36 rd" class="r36 r">nsRef</span> = <span class="r35 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#70f946ab5204918a" class="t t">NameScope</a>));
+			<b>var</b> <span id="r37 rd" class="r37 r">nsDef</span> = <span class="r36 r">nsRef</span>.<span class="i">Resolve</span>();
+			<b>var</b> <span id="r38 rd" class="r38 r">setNSInfo</span> = <span class="r37 r">nsDef</span>.<span class="i">Methods</span>.<span class="i">First</span>(<span id="r39 rd" class="r39 r">md</span> =&gt; <span class="r39 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;SetNameScope&quot;</span> &amp;&amp; <span class="r39 r">md</span>.<span class="i">IsStatic</span>);
+			<b>var</b> <span id="r40 rd" class="r40 r">setNS</span> = <span class="r35 r">module</span>.<span class="i">ImportReference</span>(<span class="r38 r">setNSInfo</span>);
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#3a594383a1a7a590" class="i property">Variables</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r33 r">node</span>]);
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <span class="r34 r">ns</span>);
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r40 r">setNS</span>);
+		}
+ 
+		<b>void</b> <a id="26d90d61120dd3f6" href="R/26d90d61120dd3f6.html" target="n" data-glyph="76,1" class="i method">RegisterName</a>(<b>string</b> <span id="r41 rd" class="r41 r">str</span>, <span class="i">VariableDefinition</span> <span id="r42 rd" class="r42 r">namescopeVarDef</span>, <a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<b>string</b>&gt; <span id="r43 rd" class="r43 r">namesInNamescope</span>, <span class="i">VariableDefinition</span> <span id="r44 rd" class="r44 r">element</span>, <a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r45 rd" class="r45 r">node</span>)
+		{
+			<b>if</b> (<span class="r43 r">namesInNamescope</span>.<a href="@0@mscorlib/A.html#8f74065d140cfe04" class="i method">Contains</a>(<span class="r41 r">str</span>))
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">An element with the name \&quot;</span>{<span class="r41 r">str</span>}<span class="s">\&quot; already exists in this NameScope</span><span class="s">&quot;</span>, <span class="r45 r">node</span> <b>as</b> <a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a>);
+			<span class="r43 r">namesInNamescope</span>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r41 r">str</span>);
+ 
+			<b>var</b> <span id="r46 rd" class="r46 r">module</span> = <a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#cac61ff1aeca890c" class="i property">Body</a>.<span class="i">Method</span>.<span class="i">Module</span>;
+			<b>var</b> <span id="r47 rd" class="r47 r">nsRef</span> = <span class="r46 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#331b4b9c22ff94f5" class="t t">INameScope</a>));
+			<b>var</b> <span id="r48 rd" class="r48 r">nsDef</span> = <span class="r47 r">nsRef</span>.<span class="i">Resolve</span>();
+			<b>var</b> <span id="r49 rd" class="r49 r">registerInfo</span> = <span class="r48 r">nsDef</span>.<span class="i">Methods</span>.<span class="i">First</span>(<span id="r50 rd" class="r50 r">md</span> =&gt; <span class="r50 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;RegisterName&quot;</span> &amp;&amp; <span class="r50 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 2);
+			<b>var</b> <span id="r51 rd" class="r51 r">register</span> = <span class="r46 r">module</span>.<span class="i">ImportReference</span>(<span class="r49 r">registerInfo</span>);
+ 
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <span class="r42 r">namescopeVarDef</span>);
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, <span class="r41 r">str</span>);
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldloc</span>, <span class="r44 r">element</span>);
+			<a href="#df7b48c44d8173b4" class="i property">Context</a>.<a href="ILContext.cs.html#5aa52f8a473a67c9" class="i property">IL</a>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r51 r">register</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

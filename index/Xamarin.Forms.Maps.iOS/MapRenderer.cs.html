@@ -1,0 +1,438 @@
+﻿<!DOCTYPE html>
+<html><head><title>MapRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(429);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Maps.iOS/MapRenderer.cs" target="_top">MapRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Maps.iOS" target="_top">Xamarin.Forms.Maps.iOS\Xamarin.Forms.Maps.iOS.csproj</a> (Xamarin.Forms.Maps.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">ObjectModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Specialized</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">CoreLocation</span>;
+<b>using</b> <span class="i">MapKit</span>;
+<b>using</b> <span class="i">ObjCRuntime</span>;
+<b>using</b> <span class="i">RectangleF</span> = <span class="i">CoreGraphics</span>.<span class="i">CGRect</span>;
+<b>using</b> <span class="i">Foundation</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<b>using</b> <span class="i">UIKit</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>;
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Maps</span>.<span class="i n">iOS</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">using AppKit;
+using Xamarin.Forms.Platform.MacOS;
+namespace Xamarin.Forms.Maps.MacOS
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal class</b> <a id="c25430f96c0c8c98" href="R/c25430f96c0c8c98.html" target="n" data-glyph="2,0" class="t t">MapDelegate</a> : <span class="i">MKMapViewDelegate</span>
+	{
+		<span class="c">// keep references alive, removing this will cause a segfault</span>
+		<b>readonly</b> <span class="i">List</span>&lt;<b>object</b>&gt; <a id="81214e35c9e1fc42" href="R/81214e35c9e1fc42.html" target="n" data-glyph="46,1" class="i field">List</a> = <b>new</b> <span class="i">List</span>&lt;<b>object</b>&gt;();
+		<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a> <a id="d713cd95c6a1c11d" href="R/d713cd95c6a1c11d.html" target="n" data-glyph="46,1" class="i field">_map</a>;
+		<b>object</b> <a id="379520c52a5215ac" href="R/379520c52a5215ac.html" target="n" data-glyph="46,1" class="i field">_lastTouchedView</a>;
+		<b>bool</b> <a id="b7716ed932ab5e9b" href="R/b7716ed932ab5e9b.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<b>internal</b> <a id="2a792e98e804addf" href="R/2a792e98e804addf.html" target="n" data-glyph="74,1" class="i constructor">MapDelegate</a>(<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a> <span id="r0 rd" class="r0 r">map</span>)
+		{
+			<a href="#d713cd95c6a1c11d" class="i field">_map</a> = <span class="r0 r">map</span>;
+		}
+ 
+		<b>public override</b> <span class="i">MKAnnotationView</span> <a id="797f8471f0620a3b" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetViewForAnnotation</a>(<span class="i">MKMapView</span> <span id="r1 rd" class="r1 r">mapView</span>, <span class="i">IMKAnnotation</span> <span id="r2 rd" class="r2 r">annotation</span>)
+		{
+			<span class="i">MKPinAnnotationView</span> <span id="r3 rd" class="r3 r">mapPin</span> = <b>null</b>;
+ 
+			<span class="c">// https://bugzilla.xamarin.com/show_bug.cgi?id=26416</span>
+			<b>var</b> <span id="r4 rd" class="r4 r">userLocationAnnotation</span> = <span class="i">Runtime</span>.<span class="i">GetNSObject</span>(<span class="r2 r">annotation</span>.<span class="i">Handle</span>) <b>as</b> <span class="i">MKUserLocation</span>;
+			<b>if</b> (<span class="r4 r">userLocationAnnotation</span> != <b>null</b>)
+				<b>return null</b>;
+ 
+			<b>const string</b> <span id="r5 rd" class="r5 r">defaultPinId</span> = <span class="s">&quot;defaultPin&quot;</span>;
+			<span class="r3 r">mapPin</span> = (<span class="i">MKPinAnnotationView</span>)<span class="r1 r">mapView</span>.<span class="i">DequeueReusableAnnotation</span>(<span class="r5 r">defaultPinId</span>);
+			<b>if</b> (<span class="r3 r">mapPin</span> == <b>null</b>)
+			{
+				<span class="r3 r">mapPin</span> = <b>new</b> <span class="i">MKPinAnnotationView</span>(<span class="r2 r">annotation</span>, <span class="r5 r">defaultPinId</span>);
+				<span class="r3 r">mapPin</span>.<span class="i">CanShowCallout</span> = <b>true</b>;
+			}
+ 
+			<span class="r3 r">mapPin</span>.<span class="i">Annotation</span> = <span class="r2 r">annotation</span>;
+			<a href="#9a934bf7538b3378" class="i method">AttachGestureToPin</a>(<span class="r3 r">mapPin</span>, <span class="r2 r">annotation</span>);
+ 
+			<b>return</b> <span class="r3 r">mapPin</span>;
+		}
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<b>void</b> <a id="9a934bf7538b3378" href="R/9a934bf7538b3378.html" target="n" data-glyph="76,1" class="i method">AttachGestureToPin</a>(<span class="i">MKPinAnnotationView</span> <span id="r6 rd" class="r6 r">mapPin</span>, <span class="i">IMKAnnotation</span> <span id="r7 rd" class="r7 r">annotation</span>)
+		{
+ 
+			<span class="i">UIGestureRecognizer</span>[] <span id="r8 rd" class="r8 r">recognizers</span> = <span class="r6 r">mapPin</span>.<span class="i">GestureRecognizers</span>;
+ 
+			<b>if</b> (<span class="r8 r">recognizers</span> != <b>null</b>)
+			{
+				<b>foreach</b> (<span class="i">UIGestureRecognizer</span> <span id="r9 rd" class="r9 r">r</span> <b>in</b> <span class="r8 r">recognizers</span>)
+				{
+					<span class="r6 r">mapPin</span>.<span class="i">RemoveGestureRecognizer</span>(<span class="r9 r">r</span>);
+				}
+			}
+ 
+			<span class="i">Action</span>&lt;<span class="i">UITapGestureRecognizer</span>&gt; <span id="r10 rd" class="r10 r">action</span> = <span id="r11 rd" class="r11 r">g</span> =&gt; <span class="i">OnClick</span>(<span class="r7 r">annotation</span>, <span class="r11 r">g</span>);
+			<b>var</b> <span id="r12 rd" class="r12 r">recognizer</span> = <b>new</b> <span class="i">UITapGestureRecognizer</span>(<span class="r10 r">action</span>) { <span class="i">ShouldReceiveTouch</span> = (<span id="r13 rd" class="r13 r">gestureRecognizer</span>, <span id="r14 rd" class="r14 r">touch</span>) =&gt;
+			{
+				<a href="#379520c52a5215ac" class="i field">_lastTouchedView</a> = <span class="r14 r">touch</span>.<span class="i">View</span>;
+				<b>return true</b>;
+			} };
+			<a href="#81214e35c9e1fc42" class="i field">List</a>.<span class="i">Add</span>(<span class="r10 r">action</span>);
+			<a href="#81214e35c9e1fc42" class="i field">List</a>.<span class="i">Add</span>(<span class="r12 r">recognizer</span>);
+			<span class="r6 r">mapPin</span>.<span class="i">AddGestureRecognizer</span>(<span class="r12 r">recognizer</span>);
+			}
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">		void AttachGestureToPin(MKPinAnnotationView mapPin, IMKAnnotation annotation)
+		{
+			NSGestureRecognizer[] recognizers = mapPin.GestureRecognizers;
+ 
+			if (recognizers != null)
+			{
+				foreach (NSGestureRecognizer r in recognizers)
+				{
+					mapPin.RemoveGestureRecognizer(r);
+				}
+			}
+ 
+			Action&lt;NSClickGestureRecognizer&gt; action = g =&gt; OnClick(annotation, g);
+			var recognizer = new NSClickGestureRecognizer(action);
+			List.Add(action);
+			List.Add(recognizer);
+			mapPin.AddGestureRecognizer(recognizer);
+ 
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<b>void</b> <a id="1f3614ce8eded46c" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnClick</a>(<b>object</b> <span id="r15 rd" class="r15 r">annotationObject</span>, <span class="i">UITapGestureRecognizer</span> <span id="r16 rd" class="r16 r">recognizer</span>)
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">		void OnClick(object annotationObject, NSClickGestureRecognizer recognizer)
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		{
+			<span class="c">// https://bugzilla.xamarin.com/show_bug.cgi?id=26416</span>
+			<span class="i">NSObject</span> <span id="r17 rd" class="r17 r">annotation</span> = <span class="i">Runtime</span>.<span class="i">GetNSObject</span>(((<span class="i">IMKAnnotation</span>)<span class="r15 r">annotationObject</span>).<span class="i">Handle</span>);
+			<b>if</b> (<span class="r17 r">annotation</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<span class="c">// lookup pin</span>
+			<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r18 rd" class="r18 r">targetPin</span> = <b>null</b>;
+			<b>for</b> (<b>var</b> <span id="r19 rd" class="r19 r">i</span> = 0; <span class="r19 r">i</span> &lt; <a href="#d713cd95c6a1c11d" class="i field">_map</a>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>.<span class="i">Count</span>; <span class="r19 r">i</span>++)
+			{
+				<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r20 rd" class="r20 r">pin</span> = <a href="#d713cd95c6a1c11d" class="i field">_map</a>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>[<span class="r19 r">i</span>];
+				<b>object</b> <span id="r21 rd" class="r21 r">target</span> = <span class="r20 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#52306723f4b0b98f" class="i property">Id</a>;
+				<b>if</b> (<span class="r21 r">target</span> != <span class="r17 r">annotation</span>)
+					<b>continue</b>;
+ 
+				<span class="r18 r">targetPin</span> = <span class="r20 r">pin</span>;
+				<b>break</b>;
+			}
+ 
+			<span class="c">// pin not found. Must have been activated outside of forms</span>
+			<b>if</b> (<span class="r18 r">targetPin</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<span class="c">// if the tap happened on the annotation view itself, skip because this is what happens when the callout is showing</span>
+			<span class="c">// when the callout is already visible the tap comes in on a different view</span>
+			<b>if</b> (<a href="#379520c52a5215ac" class="i field">_lastTouchedView</a> <b>is</b> <span class="i">MKAnnotationView</span>)
+				<b>return</b>;
+ 
+			<span class="r18 r">targetPin</span>.<span class="i">SendTap</span>();
+		}
+ 
+		<b>protected override void</b> <a id="a488ea30fad51474" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r22 rd" class="r22 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#b7716ed932ab5e9b" class="i field">_disposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="#b7716ed932ab5e9b" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<b>if</b> (<span class="r22 r">disposing</span>)
+			{
+				<a href="#d713cd95c6a1c11d" class="i field">_map</a> = <b>null</b>;
+				<a href="#379520c52a5215ac" class="i field">_lastTouchedView</a> = <b>null</b>;
+			}
+ 
+			<b>base</b>.<span class="i">Dispose</span>(<span class="r22 r">disposing</span>);
+		}
+	}
+ 
+	<b>public class</b> <a id="165a6c527e4bbcd4" href="R/165a6c527e4bbcd4.html" target="n" data-glyph="0,0" class="t t"><span id="2e69c2d688718a4f">MapRenderer</span></a> : <a href="/Xamarin.Forms.Platform.iOS/A.html#0be4ef726068bc97" class="t t">ViewRenderer</a>
+	{
+		<span class="i">CLLocationManager</span> <a id="7610e83dbb13ebd8" href="R/7610e83dbb13ebd8.html" target="n" data-glyph="46,1" class="i field">_locationManager</a>;
+		<b>bool</b> <a id="2193ca36e39784b3" href="R/2193ca36e39784b3.html" target="n" data-glyph="46,1" class="i field">_shouldUpdateRegion</a>;
+		<b>bool</b> <a id="f2519f8a4c375c7f" href="R/f2519f8a4c375c7f.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<b>const string</b> <a id="70f8a7c75b845d15" href="R/70f8a7c75b845d15.html" target="n" data-glyph="10,1" class="i field">MoveMessageName</a> = <span class="s">&quot;MapMoveToRegion&quot;</span>;
+ 
+		<b>public override</b> <a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="95448f8d3eaf9bcf" href="R/95448f8d3eaf9bcf.html" target="n" data-glyph="72,1" class="i method">GetDesiredSize</a>(<b>double</b> <span id="r23 rd" class="r23 r">widthConstraint</span>, <b>double</b> <span id="r24 rd" class="r24 r">heightConstraint</span>)
+		{
+			<b>return</b> <a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i">GetSizeRequest</span>(<span class="r23 r">widthConstraint</span>, <span class="r24 r">heightConstraint</span>);
+		}
+ 
+		<span class="c">// iOS 9/10 have some issues with releasing memory from map views; each one we create allocates</span>
+		<span class="c">// a bunch of memory we can never get back. Until that&#39;s fixed, we&#39;ll just reuse MKMapViews</span>
+		<span class="c">// as much as possible to prevent creating new ones and losing more memory</span>
+ 
+		<span class="c">// For the time being, we don&#39;t want ViewRenderer handling disposal of the MKMapView</span>
+		<span class="c">// if we&#39;re on iOS 9 or 10; during Dispose we&#39;ll be putting the MKMapView in a pool instead</span>
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<b>protected override bool</b> <a id="4b2e73321aa5ae47" href="R/4b2e73321aa5ae47.html" target="n" data-glyph="105,1" class="i property">ManageNativeControlLifetime</a> =&gt; !<a href="FormsMaps.cs.html#c79f0e51c842c8ba" class="t t">FormsMaps</a>.<a href="FormsMaps.cs.html#2f8b04e62b88ee85" class="i property">IsiOs9OrNewer</a>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		<b>protected override void</b> <a id="1b50af997a956935" href="R/1b50af997a956935.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r25 rd" class="r25 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#f2519f8a4c375c7f" class="i field">_disposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="#f2519f8a4c375c7f" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<b>if</b> (<span class="r25 r">disposing</span>)
+			{
+				<b>if</b> (<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a> != <b>null</b>)
+				{
+					<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="k">var</a> <span id="r26 rd" class="r26 r">mapModel</span> = (<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a>;
+					<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Unsubscribe</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>, <a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a>&gt;(<a href="#165a6c527e4bbcd4" class="k">this</a>, <a href="#70f8a7c75b845d15" class="i field">MoveMessageName</a>);
+					((<span class="i">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a>&gt;)<span class="r26 r">mapModel</span>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>).<span class="i">CollectionChanged</span> -= <span class="i">OnCollectionChanged</span>;
+				}
+ 
+				<b>var</b> <span id="r27 rd" class="r27 r">mkMapView</span> = (<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>;
+				<span class="r27 r">mkMapView</span>.<span class="i">RegionChanged</span> -= <span class="i">MkMapViewOnRegionChanged</span>;
+				<span class="r27 r">mkMapView</span>.<span class="i">GetViewForAnnotation</span> = <b>null</b>;
+				<b>if</b> (<span class="r27 r">mkMapView</span>.<span class="i">Delegate</span> != <b>null</b>)
+				{
+					<span class="r27 r">mkMapView</span>.<span class="i">Delegate</span>.<span class="i">Dispose</span>();
+					<span class="r27 r">mkMapView</span>.<span class="i">Delegate</span> = <b>null</b>;
+				}
+				<span class="r27 r">mkMapView</span>.<span class="i">RemoveFromSuperview</span>();
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+				<b>if</b> (<a href="FormsMaps.cs.html#c79f0e51c842c8ba" class="t t">FormsMaps</a>.<a href="FormsMaps.cs.html#2f8b04e62b88ee85" class="i property">IsiOs9OrNewer</a>)
+				{
+					<span class="c">// This renderer is done with the MKMapView; we can put it in the pool</span>
+					<span class="c">// for other rendererers to use in the future</span>
+					<a href="MapPool.cs.html#02800a65d7744db8" class="t t">MapPool</a>.<a href="MapPool.cs.html#856808d6e3a74df9" class="i method">Add</a>(<span class="r27 r">mkMapView</span>);
+				}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+				<span class="c">// For iOS versions &lt; 9, the MKMapView will be disposed in ViewRenderer&#39;s Dispose method</span>
+ 
+				<b>if</b> (<a href="#7610e83dbb13ebd8" class="i field">_locationManager</a> != <b>null</b>)
+				{
+					<a href="#7610e83dbb13ebd8" class="i field">_locationManager</a>.<span class="i">Dispose</span>();
+					<a href="#7610e83dbb13ebd8" class="i field">_locationManager</a> = <b>null</b>;
+				}
+			}
+ 
+			<a href="/Xamarin.Forms.Platform.iOS/A.html#0be4ef726068bc97" class="k">base</a>.<span class="i">Dispose</span>(<span class="r25 r">disposing</span>);
+		}
+ 
+		<b>protected override void</b> <a id="4d51a2f9a6d3d552" href="R/4d51a2f9a6d3d552.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="/Xamarin.Forms.Platform.iOS/A.html#8cd59c48d876c811" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>&gt; <span id="r28 rd" class="r28 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Platform.iOS/A.html#0be4ef726068bc97" class="k">base</a>.<span class="i">OnElementChanged</span>(<span class="r28 r">e</span>);
+ 
+			<b>if</b> (<span class="r28 r">e</span>.<a href="/Xamarin.Forms.Platform.iOS/A.html#4f3197519f522690" class="i property">OldElement</a> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="k">var</a> <span id="r29 rd" class="r29 r">mapModel</span> = (<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<span class="r28 r">e</span>.<a href="/Xamarin.Forms.Platform.iOS/A.html#4f3197519f522690" class="i property">OldElement</a>;
+				<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Unsubscribe</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>, <a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a>&gt;(<a href="#165a6c527e4bbcd4" class="k">this</a>, <a href="#70f8a7c75b845d15" class="i field">MoveMessageName</a>);
+				((<span class="i">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a>&gt;)<span class="r29 r">mapModel</span>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>).<span class="i">CollectionChanged</span> -= <span class="i">OnCollectionChanged</span>;
+			}
+ 
+			<b>if</b> (<span class="r28 r">e</span>.<a href="/Xamarin.Forms.Platform.iOS/A.html#d2a2951b1359cace" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="k">var</a> <span id="r30 rd" class="r30 r">mapModel</span> = (<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<span class="r28 r">e</span>.<a href="/Xamarin.Forms.Platform.iOS/A.html#d2a2951b1359cace" class="i property">NewElement</a>;
+ 
+				<b>if</b> (<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a> == <b>null</b>)
+				{
+					<span class="i">MKMapView</span> <span id="r31 rd" class="r31 r">mapView</span> = <b>null</b>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+					<b>if</b> (<a href="FormsMaps.cs.html#c79f0e51c842c8ba" class="t t">FormsMaps</a>.<a href="FormsMaps.cs.html#2f8b04e62b88ee85" class="i property">IsiOs9OrNewer</a>)
+					{
+						<span class="c">// See if we&#39;ve got an MKMapView available in the pool; if so, use it</span>
+						<span class="r31 r">mapView</span> = <a href="MapPool.cs.html#02800a65d7744db8" class="t t">MapPool</a>.<a href="MapPool.cs.html#22b8ff7534065f3e" class="i method">Get</a>();
+					}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+					<b>if</b> (<span class="r31 r">mapView</span> == <b>null</b>)
+					{
+						<span class="c">// If this is iOS 8 or lower, or if there weren&#39;t any MKMapViews in the pool,</span>
+						<span class="c">// create a new one</span>
+						<span class="r31 r">mapView</span> = <b>new</b> <span class="i">MKMapView</span>(<span class="i">RectangleF</span>.<span class="i">Empty</span>);
+					}
+ 
+					<span class="i">SetNativeControl</span>(<span class="r31 r">mapView</span>);
+ 
+					<b>var</b> <span id="r32 rd" class="r32 r">mkMapView</span> = (<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>;
+					<a href="#c25430f96c0c8c98" class="k">var</a> <span id="r33 rd" class="r33 r">mapDelegate</span> = <b>new</b> <a href="#2a792e98e804addf" class="t constructor">MapDelegate</a>(<span class="r30 r">mapModel</span>);
+					<span class="r32 r">mkMapView</span>.<span class="i">GetViewForAnnotation</span> = <span class="r33 r">mapDelegate</span>.<span class="i">GetViewForAnnotation</span>;
+					<span class="r32 r">mkMapView</span>.<span class="i">RegionChanged</span> += <span class="i">MkMapViewOnRegionChanged</span>;
+				}
+ 
+				<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Subscribe</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>, <a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a>&gt;(<a href="#165a6c527e4bbcd4" class="k">this</a>, <a href="#70f8a7c75b845d15" class="i field">MoveMessageName</a>, (<span id="r34 rd" class="r34 r">s</span>, <span id="r35 rd" class="r35 r">a</span>) =&gt; <span class="i">MoveToRegion</span>(<span class="r35 r">a</span>), <span class="r30 r">mapModel</span>);
+				<b>if</b> (<span class="r30 r">mapModel</span>.<a href="/Xamarin.Forms.Maps/A.html#bb4915c64f5fd075" class="i property">LastMoveToRegion</a> != <b>null</b>)
+					<a href="#0162935706ca2d6b" class="i method">MoveToRegion</a>(<span class="r30 r">mapModel</span>.<a href="/Xamarin.Forms.Maps/A.html#bb4915c64f5fd075" class="i property">LastMoveToRegion</a>, <b>false</b>);
+ 
+				<a href="#c24619658808c73e" class="i method">UpdateMapType</a>();
+				<a href="#47002466aa5d129a" class="i method">UpdateIsShowingUser</a>();
+				<a href="#c8fe192fd9eb7915" class="i method">UpdateHasScrollEnabled</a>();
+				<a href="#7e470aed2b84ac15" class="i method">UpdateHasZoomEnabled</a>();
+ 
+				((<span class="i">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a>&gt;)<span class="r30 r">mapModel</span>.<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>).<span class="i">CollectionChanged</span> += <span class="i">OnCollectionChanged</span>;
+ 
+				<span class="i">OnCollectionChanged</span>(((<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>, <b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>));
+			}
+		}
+ 
+		<b>protected override void</b> <a id="0e0dea4549b27b7e" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r36 rd" class="r36 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r37 rd" class="r37 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Platform.iOS/A.html#0be4ef726068bc97" class="k">base</a>.<span class="i">OnElementPropertyChanged</span>(<span class="r36 r">sender</span>, <span class="r37 r">e</span>);
+ 
+			<b>if</b> (<span class="r37 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#3b6d2b786b0314bc" class="i field">MapTypeProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#c24619658808c73e" class="i method">UpdateMapType</a>();
+			<b>else if</b> (<span class="r37 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#bf2b214a23f02e9c" class="i field">IsShowingUserProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#47002466aa5d129a" class="i method">UpdateIsShowingUser</a>();
+			<b>else if</b> (<span class="r37 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#8b18114f57384d35" class="i field">HasScrollEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#c8fe192fd9eb7915" class="i method">UpdateHasScrollEnabled</a>();
+			<b>else if</b> (<span class="r37 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>.<a href="/Xamarin.Forms.Maps/A.html#b1081bfe51b8b9e3" class="i field">HasZoomEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#7e470aed2b84ac15" class="i method">UpdateHasZoomEnabled</a>();
+			<b>else if</b> (<span class="r37 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#bd8332aab95ecbe7" class="i field">HeightProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> &amp;&amp; ((<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Maps/A.html#bb4915c64f5fd075" class="i property">LastMoveToRegion</a> != <b>null</b>)
+				<a href="#2193ca36e39784b3" class="i field">_shouldUpdateRegion</a> = <b>true</b>;
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<b>public override void</b> <a id="b1df8ef5f68156f7" href="R/b1df8ef5f68156f7.html" target="n" data-glyph="72,1" class="i method">LayoutSubviews</a>()
+		{
+			<a href="/Xamarin.Forms.Platform.iOS/A.html#0be4ef726068bc97" class="k">base</a>.<span class="i">LayoutSubviews</span>();
+			<a href="#877e12e3b5be55af" class="i method">UpdateRegion</a>();
+		}
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">		public override void Layout()
+		{
+			base.Layout();
+			UpdateRegion();
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected virtual</b> <span class="i">IMKAnnotation</span> <a id="83b177de44bbb833" href="R/83b177de44bbb833.html" target="n" data-glyph="75,1" class="i method">CreateAnnotation</a>(<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r38 rd" class="r38 r">pin</span>)
+		{
+			<b>return</b> <b>new</b> <span class="i">MKPointAnnotation</span>
+			{
+				<span class="i">Title</span> = <span class="r38 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#0ea2a21012eec1be" class="i property">Label</a>,
+				<span class="i">Subtitle</span> = <span class="r38 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#dcdc719bbd77bc7e" class="i property">Address</a> ?? <span class="s">&quot;&quot;</span>,
+				<span class="i">Coordinate</span> = <b>new</b> <span class="i">CLLocationCoordinate2D</span>(<span class="r38 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#d18675f8cc691ee2" class="i property">Position</a>.<a href="/Xamarin.Forms.Maps/A.html#cb5045a0674344be" class="i property">Latitude</a>, <span class="r38 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#d18675f8cc691ee2" class="i property">Position</a>.<a href="/Xamarin.Forms.Maps/A.html#e52379d680105ddc" class="i property">Longitude</a>)
+			};
+		}
+ 
+		<b>void</b> <a id="877e12e3b5be55af" href="R/877e12e3b5be55af.html" target="n" data-glyph="76,1" class="i method">UpdateRegion</a>()
+		{
+			<b>if</b> (<a href="#2193ca36e39784b3" class="i field">_shouldUpdateRegion</a>)
+			{
+				<a href="#0162935706ca2d6b" class="i method">MoveToRegion</a>(((<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Maps/A.html#bb4915c64f5fd075" class="i property">LastMoveToRegion</a>, <b>false</b>);
+				<a href="#2193ca36e39784b3" class="i field">_shouldUpdateRegion</a> = <b>false</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="938f9ab5c57719e7" href="R/938f9ab5c57719e7.html" target="n" data-glyph="76,1" class="i method">AddPins</a>(<span class="i">IList</span> <span id="r39 rd" class="r39 r">pins</span>)
+		{
+			<b>foreach</b> (<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a> <span id="r40 rd" class="r40 r">pin</span> <b>in</b> <span class="r39 r">pins</span>)
+			{
+				<b>var</b> <span id="r41 rd" class="r41 r">annotation</span> = <a href="#83b177de44bbb833" class="i method">CreateAnnotation</a>(<span class="r40 r">pin</span>);
+				<span class="r40 r">pin</span>.<a href="/Xamarin.Forms.Maps/A.html#52306723f4b0b98f" class="i property">Id</a> = <span class="r41 r">annotation</span>;
+				((<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>).<span class="i">AddAnnotation</span>(<span class="r41 r">annotation</span>);
+			}
+		}
+ 
+		<b>void</b> <a id="15daa204bf54b532" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">MkMapViewOnRegionChanged</a>(<b>object</b> <span id="r42 rd" class="r42 r">sender</span>, <span class="i">MKMapViewChangeEventArgs</span> <span id="r43 rd" class="r43 r">mkMapViewChangeEventArgs</span>)
+		{
+			<b>if</b> (<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="k">var</a> <span id="r44 rd" class="r44 r">mapModel</span> = (<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a>;
+			<b>var</b> <span id="r45 rd" class="r45 r">mkMapView</span> = (<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>;
+ 
+			<span class="r44 r">mapModel</span>.<span class="i">SetVisibleRegion</span>(<b>new</b> <span class="t">MapSpan</span>(<b>new</b> <span class="t">Position</span>(<span class="r45 r">mkMapView</span>.<span class="i">Region</span>.<span class="i">Center</span>.<span class="i">Latitude</span>, <span class="r45 r">mkMapView</span>.<span class="i">Region</span>.<span class="i">Center</span>.<span class="i">Longitude</span>), <span class="r45 r">mkMapView</span>.<span class="i">Region</span>.<span class="i">Span</span>.<span class="i">LatitudeDelta</span>, <span class="r45 r">mkMapView</span>.<span class="i">Region</span>.<span class="i">Span</span>.<span class="i">LongitudeDelta</span>));
+		}
+ 
+		<b>void</b> <a id="0162935706ca2d6b" href="R/0162935706ca2d6b.html" target="n" data-glyph="76,1" class="i method">MoveToRegion</a>(<a href="/Xamarin.Forms.Maps/A.html#d45c5b2a7d147b89" class="t t">MapSpan</a> <span id="r46 rd" class="r46 r">mapSpan</span>, <b>bool</b> <span id="r47 rd" class="r47 r">animated</span> = <b>true</b>)
+		{
+			<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a> <span id="r48 rd" class="r48 r">center</span> = <span class="r46 r">mapSpan</span>.<a href="/Xamarin.Forms.Maps/A.html#db8995ab43bb9e7c" class="i property">Center</a>;
+			<b>var</b> <span id="r49 rd" class="r49 r">mapRegion</span> = <b>new</b> <span class="i">MKCoordinateRegion</span>(<b>new</b> <span class="i">CLLocationCoordinate2D</span>(<span class="r48 r">center</span>.<a href="/Xamarin.Forms.Maps/A.html#cb5045a0674344be" class="i property">Latitude</a>, <span class="r48 r">center</span>.<a href="/Xamarin.Forms.Maps/A.html#e52379d680105ddc" class="i property">Longitude</a>), <b>new</b> <span class="i">MKCoordinateSpan</span>(<span class="r46 r">mapSpan</span>.<a href="/Xamarin.Forms.Maps/A.html#183edcf551a5acf3" class="i property">LatitudeDegrees</a>, <span class="r46 r">mapSpan</span>.<a href="/Xamarin.Forms.Maps/A.html#dea3c3352e2ce320" class="i property">LongitudeDegrees</a>));
+			((<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>).<span class="i">SetRegion</span>(<span class="r49 r">mapRegion</span>, <span class="r47 r">animated</span>);
+		}
+ 
+		<b>void</b> <a id="49141df522d6622a" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnCollectionChanged</a>(<b>object</b> <span id="r50 rd" class="r50 r">sender</span>, <span class="i">NotifyCollectionChangedEventArgs</span> <span id="r51 rd" class="r51 r">notifyCollectionChangedEventArgs</span>)
+		{
+			<b>switch</b> (<span class="r51 r">notifyCollectionChangedEventArgs</span>.<span class="i">Action</span>)
+			{
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Add</span>:
+					<span class="i">AddPins</span>(<span class="r51 r">notifyCollectionChangedEventArgs</span>.<span class="i">NewItems</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Remove</span>:
+					<span class="i">RemovePins</span>(<span class="r51 r">notifyCollectionChangedEventArgs</span>.<span class="i">OldItems</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Replace</span>:
+					<span class="i">RemovePins</span>(<span class="r51 r">notifyCollectionChangedEventArgs</span>.<span class="i">OldItems</span>);
+					<span class="i">AddPins</span>(<span class="r51 r">notifyCollectionChangedEventArgs</span>.<span class="i">NewItems</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>:
+					<b>var</b> <span id="r52 rd" class="r52 r">mapView</span> = (<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>;
+					<span class="r52 r">mapView</span>.<span class="i">RemoveAnnotations</span>(<span class="r52 r">mapView</span>.<span class="i">Annotations</span>);
+					<a href="#938f9ab5c57719e7" class="i method">AddPins</a>((<span class="i">IList</span>)(<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>).<a href="/Xamarin.Forms.Maps/A.html#d9bbfa571d409a98" class="i property">Pins</a>);
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Move</span>:
+					<span class="c">//do nothing</span>
+					<b>break</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="93534ea0e40c9f4a" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">RemovePins</a>(<span class="i">IList</span> <span id="r53 rd" class="r53 r">pins</span>)
+		{
+			<b>foreach</b> (<b>object</b> <span id="r54 rd" class="r54 r">pin</span> <b>in</b> <span class="r53 r">pins</span>)
+				((<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>).<span class="i">RemoveAnnotation</span>((<span class="i">IMKAnnotation</span>)((<a href="/Xamarin.Forms.Maps/A.html#b9d94cd106ea8525" class="t t">Pin</a>)<span class="r54 r">pin</span>).<a href="/Xamarin.Forms.Maps/A.html#52306723f4b0b98f" class="i property">Id</a>);
+		}
+ 
+		<b>void</b> <a id="c8fe192fd9eb7915" href="R/c8fe192fd9eb7915.html" target="n" data-glyph="76,1" class="i method">UpdateHasScrollEnabled</a>()
+		{
+			((<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>).<span class="i">ScrollEnabled</span> = ((<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Maps/A.html#e1aed0f4dcabef9c" class="i property">HasScrollEnabled</a>;
+		}
+ 
+		<b>void</b> <a id="7e470aed2b84ac15" href="R/7e470aed2b84ac15.html" target="n" data-glyph="76,1" class="i method">UpdateHasZoomEnabled</a>()
+		{
+			((<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>).<span class="i">ZoomEnabled</span> = ((<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Maps/A.html#b05e726284c21b79" class="i property">HasZoomEnabled</a>;
+		}
+ 
+		<b>void</b> <a id="47002466aa5d129a" href="R/47002466aa5d129a.html" target="n" data-glyph="76,1" class="i method">UpdateIsShowingUser</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+			<b>if</b> (<a href="FormsMaps.cs.html#c79f0e51c842c8ba" class="t t">FormsMaps</a>.<a href="FormsMaps.cs.html#ceee36a5b50f1ef1" class="i property">IsiOs8OrNewer</a> &amp;&amp; ((<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Maps/A.html#b66098d7a63da5d6" class="i property">IsShowingUser</a>)
+			{
+				<a href="#7610e83dbb13ebd8" class="i field">_locationManager</a> = <b>new</b> <span class="i">CLLocationManager</span>();
+				<a href="#7610e83dbb13ebd8" class="i field">_locationManager</a>.<span class="i">RequestWhenInUseAuthorization</span>();
+			}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+			((<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>).<span class="i">ShowsUserLocation</span> = ((<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Maps/A.html#b66098d7a63da5d6" class="i property">IsShowingUser</a>;
+		}
+ 
+		<b>void</b> <a id="c24619658808c73e" href="R/c24619658808c73e.html" target="n" data-glyph="76,1" class="i method">UpdateMapType</a>()
+		{
+			<b>switch</b> (((<a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>)<a href="/Xamarin.Forms.Platform.iOS/A.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Maps/A.html#d6630e58ca345e1e" class="i property">MapType</a>)
+			{
+				<b>case</b> <a href="/Xamarin.Forms.Maps/A.html#b0e9d5c3230d3151" class="t t">MapType</a>.<a href="/Xamarin.Forms.Maps/A.html#90e190283631cdac" class="i field">Street</a>:
+					((<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>).<span class="i">MapType</span> = <span class="i">MKMapType</span>.<span class="i">Standard</span>;
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Maps/A.html#b0e9d5c3230d3151" class="t t">MapType</a>.<a href="/Xamarin.Forms.Maps/A.html#9ae79d4b65b5112a" class="i field">Satellite</a>:
+					((<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>).<span class="i">MapType</span> = <span class="i">MKMapType</span>.<span class="i">Satellite</span>;
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Maps/A.html#b0e9d5c3230d3151" class="t t">MapType</a>.<a href="/Xamarin.Forms.Maps/A.html#4cb316bfe27c64d6" class="i field">Hybrid</a>:
+					((<span class="i">MKMapView</span>)<a href="/Xamarin.Forms.Platform.iOS/A.html#ea5394d10e713fe0" class="i property">Control</a>).<span class="i">MapType</span> = <span class="i">MKMapType</span>.<span class="i">Hybrid</span>;
+					<b>break</b>;
+			}
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

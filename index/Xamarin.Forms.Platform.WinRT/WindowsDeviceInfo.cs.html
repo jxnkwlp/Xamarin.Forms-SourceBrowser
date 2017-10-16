@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html><head><title>WindowsDeviceInfo.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(115);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.WinRT/WindowsDeviceInfo.cs" target="_top">WindowsDeviceInfo.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.WinRT" target="_top">Xamarin.Forms.Platform.WinRT\Xamarin.Forms.Platform.WinRT.csproj</a> (Xamarin.Forms.Platform.WinRT)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Graphics</span>.<span class="i n">Display</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal class</b> <a id="dc2d9e5e783c79c6" href="R/dc2d9e5e783c79c6.html" target="n" data-glyph="2,0" class="t t">WindowsDeviceInfo</a> : <a href="/Xamarin.Forms.Core/A.html#7a78723b79e3a0d3" class="t t">DeviceInfo</a>
+	{
+		<span class="t t">DisplayInformation</span> <a id="21722556311a6023" href="R/21722556311a6023.html" target="n" data-glyph="46,1" class="i field">_information</a>;
+		<b>bool</b> <a id="da0a780dbd9d6770" href="R/da0a780dbd9d6770.html" target="n" data-glyph="46,1" class="i field">_isDisposed</a>;
+ 
+		<b>public</b> <a id="1981da55fdcca453" href="R/1981da55fdcca453.html" target="n" data-glyph="72,1" class="i constructor">WindowsDeviceInfo</a>()
+		{
+			<span class="c">// TODO: Screen size and DPI can change at any time</span>
+			<a href="#21722556311a6023" class="i field">_information</a> = <span class="t t">DisplayInformation</span>.<span class="i method">GetForCurrentView</span>();
+			<a href="#21722556311a6023" class="i field">_information</a>.<span class="i">OrientationChanged</span> += <a href="#85ac9579fe8d8673" class="i method">OnOrientationChanged</a>;
+			<a href="/Xamarin.Forms.Core/A.html#578640b1d635e4d0" class="i property">CurrentOrientation</a> = <a href="#8cfdacadf6f643d7" class="i method">GetDeviceOrientation</a>(<a href="#21722556311a6023" class="i field">_information</a>.<span class="i property">CurrentOrientation</span>);
+		}
+ 
+		<b>public override</b> <a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <a id="84bdbbd0696d6113" href="R/84bdbbd0696d6113.html" target="n" data-glyph="102,1" class="i property">PixelScreenSize</a>
+		{
+			<b>get</b>
+			{
+				<b>double</b> <span id="r0 rd" class="r0 r">scaling</span> = <a href="#b34bb18640087f9b" class="i property">ScalingFactor</a>;
+				<a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <span id="r1 rd" class="r1 r">scaled</span> = <a href="#49f3eca8e159fd3f" class="i property">ScaledScreenSize</a>;
+				<b>double</b> <span id="r2 rd" class="r2 r">width</span> = <span class="t t">Math</span>.<span class="i method">Round</span>(<span class="r1 r">scaled</span>.<a href="/Xamarin.Forms.Core/A.html#6207d8e3826352f7" class="i property">Width</a> * <span class="r0 r">scaling</span>);
+				<b>double</b> <span id="r3 rd" class="r3 r">height</span> = <span class="t t">Math</span>.<span class="i method">Round</span>(<span class="r1 r">scaled</span>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a> * <span class="r0 r">scaling</span>);
+ 
+				<b>return</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#1727209bca650e71" class="t constructor">Size</a>(<span class="r2 r">width</span>, <span class="r3 r">height</span>);
+			}
+		}
+ 
+		<b>public override</b> <a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <a id="49f3eca8e159fd3f" href="R/49f3eca8e159fd3f.html" target="n" data-glyph="102,1" class="i property">ScaledScreenSize</a>
+		{
+			<b>get</b>
+			{
+				<span class="t t">Rect</span> <span id="r4 rd" class="r4 r">windowSize</span> = <span class="t t">Window</span>.<span class="i property">Current</span>.<span class="i property">Bounds</span>;
+				<b>return</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#1727209bca650e71" class="t constructor">Size</a>(<span class="r4 r">windowSize</span>.<span class="i property">Width</span>, <span class="r4 r">windowSize</span>.<span class="i property">Height</span>);
+			}
+		}
+ 
+		<b>public override double</b> <a id="b34bb18640087f9b" href="R/b34bb18640087f9b.html" target="n" data-glyph="102,1" class="i property">ScalingFactor</a>
+		{
+			<b>get</b>
+			{
+				<span class="t t">ResolutionScale</span> <span id="r5 rd" class="r5 r">scale</span> = <a href="#21722556311a6023" class="i field">_information</a>.<span class="i property">ResolutionScale</span>;
+				<b>switch</b> (<span class="r5 r">scale</span>)
+				{
+					<b>case</b> <span class="t t">ResolutionScale</span>.<span class="i field">Scale120Percent</span>:
+						<b>return</b> 1.2;
+					<b>case</b> <span class="t t">ResolutionScale</span>.<span class="i field">Scale140Percent</span>:
+						<b>return</b> 1.4;
+					<b>case</b> <span class="t t">ResolutionScale</span>.<span class="i field">Scale150Percent</span>:
+						<b>return</b> 1.5;
+					<b>case</b> <span class="t t">ResolutionScale</span>.<span class="i field">Scale160Percent</span>:
+						<b>return</b> 1.6;
+					<b>case</b> <span class="t t">ResolutionScale</span>.<span class="i field">Scale180Percent</span>:
+						<b>return</b> 1.8;
+					<b>case</b> <span class="t t">ResolutionScale</span>.<span class="i field">Scale225Percent</span>:
+						<b>return</b> 2.25;
+					<b>case</b> <span class="t t">ResolutionScale</span>.<span class="i field">Scale100Percent</span>:
+					<b>default</b>:
+						<b>return</b> 1;
+				}
+			}
+		}
+ 
+		<b>protected override void</b> <a id="b04f35a7dd5e78a5" href="R/b04f35a7dd5e78a5.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r6 rd" class="r6 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#da0a780dbd9d6770" class="i field">_isDisposed</a>)
+				<b>return</b>;
+ 
+			<b>if</b> (<span class="r6 r">disposing</span>)
+			{
+				<a href="#21722556311a6023" class="i field">_information</a>.<span class="i">OrientationChanged</span> -= <a href="#85ac9579fe8d8673" class="i method">OnOrientationChanged</a>;
+				<a href="#21722556311a6023" class="i field">_information</a> = <b>null</b>;
+			}
+ 
+			<a href="#da0a780dbd9d6770" class="i field">_isDisposed</a> = <b>true</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#7a78723b79e3a0d3" class="k">base</a>.<a href="/Xamarin.Forms.Core/A.html#5d0fe4f45992231f" class="i method">Dispose</a>(<span class="r6 r">disposing</span>);
+		}
+ 
+		<b>static</b> <a href="/Xamarin.Forms.Core/A.html#a771844f9214e374" class="t t">DeviceOrientation</a> <a id="8cfdacadf6f643d7" href="R/8cfdacadf6f643d7.html" target="n" data-glyph="76,1" class="i method">GetDeviceOrientation</a>(<span class="t t">DisplayOrientations</span> <span id="r7 rd" class="r7 r">orientations</span>)
+		{
+			<b>switch</b> (<span class="r7 r">orientations</span>)
+			{
+				<b>case</b> <span class="t t">DisplayOrientations</span>.<span class="i field">Landscape</span>:
+				<b>case</b> <span class="t t">DisplayOrientations</span>.<span class="i field">LandscapeFlipped</span>:
+					<b>return</b> <a href="/Xamarin.Forms.Core/A.html#a771844f9214e374" class="t t">DeviceOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#289be0727051851f" class="i field">Landscape</a>;
+ 
+				<b>case</b> <span class="t t">DisplayOrientations</span>.<span class="i field">Portrait</span>:
+				<b>case</b> <span class="t t">DisplayOrientations</span>.<span class="i field">PortraitFlipped</span>:
+					<b>return</b> <a href="/Xamarin.Forms.Core/A.html#a771844f9214e374" class="t t">DeviceOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#668d3332182cc9a6" class="i field">Portrait</a>;
+ 
+				<b>default</b>:
+				<b>case</b> <span class="t t">DisplayOrientations</span>.<span class="i field">None</span>:
+					<b>return</b> <a href="/Xamarin.Forms.Core/A.html#a771844f9214e374" class="t t">DeviceOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#9de5026c37e15d5b" class="i field">Other</a>;
+			}
+		}
+ 
+		<b>void</b> <a id="85ac9579fe8d8673" href="R/85ac9579fe8d8673.html" target="n" data-glyph="76,1" class="i method">OnOrientationChanged</a>(<span class="t t">DisplayInformation</span> <span id="r8 rd" class="r8 r">sender</span>, <b>object</b> <span id="r9 rd" class="r9 r">args</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#578640b1d635e4d0" class="i property">CurrentOrientation</a> = <a href="#8cfdacadf6f643d7" class="i method">GetDeviceOrientation</a>(<span class="r8 r">sender</span>.<span class="i property">CurrentOrientation</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

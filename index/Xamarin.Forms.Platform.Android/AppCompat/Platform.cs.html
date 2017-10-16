@@ -1,0 +1,417 @@
+﻿<!DOCTYPE html>
+<html><head><title>Platform.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(408);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/AppCompat/Platform.cs" target="_top">AppCompat\Platform.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">OS</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>.<span class="i">Animations</span>;
+<b>using</b> <span class="i">ARelativeLayout</span> = <span class="i">Android</span>.<span class="i">Widget</span>.<span class="i">RelativeLayout</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>.<span class="i n">AppCompat</span>
+{
+	<b>internal class</b> <a id="2431577fc7669ff2" href="../R/2431577fc7669ff2.html" target="n" data-glyph="2,0" class="t t">Platform</a> : <a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a>, <a href="/Xamarin.Forms.Core/A.html#2acea58e362089cf" class="t t">IPlatform</a>, <a href="../IPlatformLayout.cs.html#91c435c34376bab6" class="t t">IPlatformLayout</a>, <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>, <span class="i">IDisposable</span>
+	{
+		<b>readonly</b> <span class="i">Context</span> <a id="3bdb80f6bef51ba8" href="../R/3bdb80f6bef51ba8.html" target="n" data-glyph="46,1" class="i field">_context</a>;
+		<b>readonly</b> <a href="../PlatformRenderer.cs.html#9a61029a153036d6" class="t t">PlatformRenderer</a> <a id="ba13070be980064f" href="../R/ba13070be980064f.html" target="n" data-glyph="46,1" class="i field">_renderer</a>;
+		<b>bool</b> <a id="142d4cc762b9b52f" href="../R/142d4cc762b9b52f.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+		<b>bool</b> <a id="3b2da286ec4f5be7" href="../R/3b2da286ec4f5be7.html" target="n" data-glyph="46,1" class="i field">_navAnimationInProgress</a>;
+		<a href="/Xamarin.Forms.Core/A.html#f88ffb8f19544f58" class="t t">NavigationModel</a> <a id="bfe1e861fda4669a" href="../R/bfe1e861fda4669a.html" target="n" data-glyph="46,1" class="i field">_navModel</a> = <b>new</b> <span class="t">NavigationModel</span>();
+ 
+		<b>public</b> <a id="b822a3afd1d4b4e5" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">Platform</a>(<span class="i">Context</span> <span id="r0 rd" class="r0 r">context</span>)
+		{
+			<a href="#3bdb80f6bef51ba8" class="i field">_context</a> = <span class="r0 r">context</span>;
+ 
+			<a href="#ba13070be980064f" class="i field">_renderer</a> = <b>new</b> <a href="../PlatformRenderer.cs.html#a7f9baa23667b1a9" class="t constructor">PlatformRenderer</a>(<span class="r0 r">context</span>, <a href="#2431577fc7669ff2" class="k">this</a>);
+ 
+			<a href="FormsAppCompatActivity.cs.html#73a28a031ead4b7d" class="t t">FormsAppCompatActivity</a>.<a href="FormsAppCompatActivity.cs.html#9530537e23e84ec0" class="i">BackPressed</a> += <a href="#ade4962d91e8058f" class="i method">HandleBackPressed</a>;
+		}
+ 
+		<b>internal bool</b> <a id="802e3908bd6cbe5e" href="../R/802e3908bd6cbe5e.html" target="n" data-glyph="104,1" class="i property">NavAnimationInProgress</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#3b2da286ec4f5be7" class="i field">_navAnimationInProgress</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#3b2da286ec4f5be7" class="i field">_navAnimationInProgress</a> == <b>value</b>)
+					<b>return</b>;
+				<a href="#3b2da286ec4f5be7" class="i field">_navAnimationInProgress</a> = <b>value</b>;
+				<b>if</b> (<b>value</b>)
+					<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Send</span>(<a href="#2431577fc7669ff2" class="k">this</a>, <a href="#9cf35a9c7ab0b1fd" class="i field">CloseContextActionsSignalName</a>);
+			}
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <a id="91491530aab51bac" href="../R/91491530aab51bac.html" target="n" data-glyph="106,1" class="i property">Page</a> { <b>get</b>; <b>set</b>; }
+ 
+		<a href="/Xamarin.Forms.Core/A.html#b23cf6cd1d6182c9" class="t t">IPageController</a> <a id="ef259f14b8515f8a" href="../R/ef259f14b8515f8a.html" target="n" data-glyph="106,1" class="i property">CurrentPageController</a> =&gt; <a href="#bfe1e861fda4669a" class="i field">_navModel</a>.<a href="/Xamarin.Forms.Core/A.html#f23affd61f66f990" class="i property">CurrentPage</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#b23cf6cd1d6182c9" class="t t">IPageController</a>;
+ 
+		<b>public void</b> <a id="dae925640afc83d8" href="../R/dae925640afc83d8.html" target="n" data-glyph="72,1" class="i method">Dispose</a>()
+		{
+			<b>if</b> (<a href="#142d4cc762b9b52f" class="i field">_disposed</a>)
+				<b>return</b>;
+			<a href="#142d4cc762b9b52f" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<a href="#f84e27eea6abf64a" class="i method">SetPage</a>(<b>null</b>);
+ 
+			<a href="FormsAppCompatActivity.cs.html#73a28a031ead4b7d" class="t t">FormsAppCompatActivity</a>.<a href="FormsAppCompatActivity.cs.html#9530537e23e84ec0" class="i">BackPressed</a> -= <a href="#ade4962d91e8058f" class="i method">HandleBackPressed</a>;
+		}
+ 
+		<b>void</b> <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a href="/Xamarin.Forms.Core/A.html#99c68b2ac14d01cb" class="i method">InsertPageBefore</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r1 rd" class="r1 r">page</span>, <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r2 rd" class="r2 r">before</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">InvalidOperationException</span>(<span class="s">&quot;InsertPageBefore is not supported globally on Android, please use a NavigationPage.&quot;</span>);
+		}
+ 
+		<span class="i">IReadOnlyList</span>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="33c69f6fa04090e3" href="../R/../../0000000000.html" target="n" data-glyph="106,1" class="i property">ModalStack</a> =&gt; <a href="#bfe1e861fda4669a" class="i field">_navModel</a>.<a href="/Xamarin.Forms.Core/A.html#fcd25054df1a7801" class="i property">Modals</a>.<span class="i">ToList</span>();
+ 
+		<span class="i">IReadOnlyList</span>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="9bb6297561c69b97" href="../R/../../0000000000.html" target="n" data-glyph="106,1" class="i property">NavigationStack</a> =&gt; <b>new</b> <span class="i">List</span>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt;();
+ 
+		<span class="i">Task</span>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="ffe1231f55063af1" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PopAsync</a>()
+		{
+			<b>return</b> ((<a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>)<a href="#2431577fc7669ff2" class="k">this</a>).<span class="i">PopAsync</span>(<b>true</b>);
+		}
+ 
+		<span class="i">Task</span>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="20f6f505da9321ce" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PopAsync</a>(<b>bool</b> <span id="r3 rd" class="r3 r">animated</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">InvalidOperationException</span>(<span class="s">&quot;PopAsync is not supported globally on Android, please use a NavigationPage.&quot;</span>);
+		}
+ 
+		<span class="i">Task</span>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="d72b67c524901941" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PopModalAsync</a>()
+		{
+			<b>return</b> ((<a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>)<a href="#2431577fc7669ff2" class="k">this</a>).<span class="i">PopModalAsync</span>(<b>true</b>);
+		}
+ 
+		<span class="i">Task</span>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="7f45189f00b48265" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PopModalAsync</a>(<b>bool</b> <span id="r4 rd" class="r4 r">animated</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r5 rd" class="r5 r">modal</span> = <a href="#bfe1e861fda4669a" class="i field">_navModel</a>.<a href="/Xamarin.Forms.Core/A.html#e4d0e58c7f0b54f9" class="i method">PopModal</a>();
+			((<a href="/Xamarin.Forms.Core/A.html#b23cf6cd1d6182c9" class="t t">IPageController</a>)<span class="r5 r">modal</span>).<span class="i">SendDisappearing</span>();
+			<b>var</b> <span id="r6 rd" class="r6 r">source</span> = <b>new</b> <span class="i">TaskCompletionSource</span>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt;();
+ 
+			<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r7 rd" class="r7 r">modalRenderer</span> = <span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<span class="r5 r">modal</span>);
+			<b>if</b> (<span class="r7 r">modalRenderer</span> != <b>null</b>)
+			{
+				<a href="#2a0a54702a963d9e" class="k">var</a> <span id="r8 rd" class="r8 r">modalContainer</span> = <span class="r7 r">modalRenderer</span>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">Parent</span> <b>as</b> <a href="#2a0a54702a963d9e" class="t t">ModalContainer</a>;
+				<b>if</b> (<span class="r4 r">animated</span>)
+				{
+					<span class="r8 r">modalContainer</span>.<span class="i">Animate</span>().<span class="i">TranslationY</span>(<a href="#ba13070be980064f" class="i field">_renderer</a>.<span class="i">Height</span>).<span class="i">SetInterpolator</span>(<b>new</b> <span class="i">AccelerateInterpolator</span>(1)).<span class="i">SetDuration</span>(300).<span class="i">SetListener</span>(<b>new</b> <a href="../Renderers/GenericAnimatorListener.cs.html#66ee90b6726ffd25" class="t constructor">GenericAnimatorListener</a>
+					{
+						<a href="../Renderers/GenericAnimatorListener.cs.html#241e986cf3ad6cd0" class="i property">OnEnd</a> = <span id="r9 rd" class="r9 r">a</span> =&gt;
+						{
+							<span class="r8 r">modalContainer</span>.<span class="i">RemoveFromParent</span>();
+							<span class="r8 r">modalContainer</span>.<span class="i">Dispose</span>();
+							<span class="r6 r">source</span>.<span class="i">TrySetResult</span>(<span class="r5 r">modal</span>);
+							<a href="#ef259f14b8515f8a" class="i property">CurrentPageController</a>?.<span class="i">SendAppearing</span>();
+							<span class="r8 r">modalContainer</span> = <b>null</b>;
+						}
+					});
+				}
+				<b>else</b>
+				{
+					<span class="r8 r">modalContainer</span>.<span class="i">RemoveFromParent</span>();
+					<span class="r8 r">modalContainer</span>.<span class="i">Dispose</span>();
+					<span class="r6 r">source</span>.<span class="i">TrySetResult</span>(<span class="r5 r">modal</span>);
+					<a href="#ef259f14b8515f8a" class="i property">CurrentPageController</a>?.<span class="i">SendAppearing</span>();
+				}
+			}
+ 
+			<b>return</b> <span class="r6 r">source</span>.<span class="i">Task</span>;
+		}
+ 
+		<span class="i">Task</span> <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="b9d9d24def79d2b5" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PopToRootAsync</a>()
+		{
+			<b>return</b> ((<a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>)<a href="#2431577fc7669ff2" class="k">this</a>).<span class="i">PopToRootAsync</span>(<b>true</b>);
+		}
+ 
+		<span class="i">Task</span> <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="fb1d5acfbea106e2" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PopToRootAsync</a>(<b>bool</b> <span id="r10 rd" class="r10 r">animated</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">InvalidOperationException</span>(<span class="s">&quot;PopToRootAsync is not supported globally on Android, please use a NavigationPage.&quot;</span>);
+		}
+ 
+		<span class="i">Task</span> <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="66dac6babb7f0d92" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PushAsync</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r11 rd" class="r11 r">root</span>)
+		{
+			<b>return</b> ((<a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>)<a href="#2431577fc7669ff2" class="k">this</a>).<span class="i">PushAsync</span>(<span class="r11 r">root</span>, <b>true</b>);
+		}
+ 
+		<span class="i">Task</span> <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="1f7b736fe0922c4c" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PushAsync</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r12 rd" class="r12 r">root</span>, <b>bool</b> <span id="r13 rd" class="r13 r">animated</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">InvalidOperationException</span>(<span class="s">&quot;PushAsync is not supported globally on Android, please use a NavigationPage.&quot;</span>);
+		}
+ 
+		<span class="i">Task</span> <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="f91961bc747e35ca" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PushModalAsync</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r14 rd" class="r14 r">modal</span>)
+		{
+			<b>return</b> ((<a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>)<a href="#2431577fc7669ff2" class="k">this</a>).<span class="i">PushModalAsync</span>(<span class="r14 r">modal</span>, <b>true</b>);
+		}
+ 
+		<b>async</b> <span class="i">Task</span> <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a id="d406843b2bc1c6ab" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">PushModalAsync</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r15 rd" class="r15 r">modal</span>, <b>bool</b> <span id="r16 rd" class="r16 r">animated</span>)
+		{
+			<a href="#ef259f14b8515f8a" class="i property">CurrentPageController</a>?.<span class="i">SendDisappearing</span>();
+ 
+			<a href="#bfe1e861fda4669a" class="i field">_navModel</a>.<span class="i">PushModal</span>(<span class="r15 r">modal</span>);
+ 
+			<span class="r15 r">modal</span>.<span class="i">Platform</span> = <a href="#2431577fc7669ff2" class="k">this</a>;
+ 
+			<span class="i">Task</span> <span id="r17 rd" class="r17 r">presentModal</span> = <a href="#f0c5f2e1cdf8db3c" class="i method">PresentModal</a>(<span class="r15 r">modal</span>, <span class="r16 r">animated</span>);
+ 
+			<b>await</b> <span class="r17 r">presentModal</span>;
+ 
+			<span class="c">// Verify that the modal is still on the stack</span>
+			<b>if</b> (<a href="#bfe1e861fda4669a" class="i field">_navModel</a>.<a href="/Xamarin.Forms.Core/A.html#f23affd61f66f990" class="i property">CurrentPage</a> == <span class="r15 r">modal</span>)
+				((<a href="/Xamarin.Forms.Core/A.html#b23cf6cd1d6182c9" class="t t">IPageController</a>)<span class="r15 r">modal</span>).<span class="i">SendAppearing</span>();
+		}
+ 
+		<b>void</b> <a href="/Xamarin.Forms.Core/A.html#e1264a5a1d22c3f2" class="t t">INavigation</a>.<a href="/Xamarin.Forms.Core/A.html#cdfb103e18d2447a" class="i method">RemovePage</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r18 rd" class="r18 r">page</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">InvalidOperationException</span>(<span class="s">&quot;RemovePage is not supported globally on Android, please use a NavigationPage.&quot;</span>);
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a href="/Xamarin.Forms.Core/A.html#2acea58e362089cf" class="t t">IPlatform</a>.<a href="/Xamarin.Forms.Core/A.html#f7f60f76263b6adb" class="i method">GetNativeSize</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r19 rd" class="r19 r">view</span>, <b>double</b> <span id="r20 rd" class="r20 r">widthConstraint</span>, <b>double</b> <span id="r21 rd" class="r21 r">heightConstraint</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>();
+ 
+			<span class="c">// FIXME: potential crash</span>
+			<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r22 rd" class="r22 r">viewRenderer</span> = <span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<span class="r19 r">view</span>);
+ 
+			<span class="c">// negative numbers have special meanings to android they don&#39;t to us</span>
+			<span class="r20 r">widthConstraint</span> = <span class="r20 r">widthConstraint</span> &lt;= -1 ? <b>double</b>.<span class="i">PositiveInfinity</span> : <a href="#3bdb80f6bef51ba8" class="i field">_context</a>.<a href="../ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r20 r">widthConstraint</span>);
+			<span class="r21 r">heightConstraint</span> = <span class="r21 r">heightConstraint</span> &lt;= -1 ? <b>double</b>.<span class="i">PositiveInfinity</span> : <a href="#3bdb80f6bef51ba8" class="i field">_context</a>.<a href="../ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r21 r">heightConstraint</span>);
+ 
+			<b>int</b> <span id="r23 rd" class="r23 r">width</span> = !<b>double</b>.<span class="i">IsPositiveInfinity</span>(<span class="r20 r">widthConstraint</span>)
+							? <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>((<b>int</b>)<span class="r20 r">widthConstraint</span>, <span class="i">MeasureSpecMode</span>.<span class="i">AtMost</span>)
+							: <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(0, <span class="i">MeasureSpecMode</span>.<span class="i">Unspecified</span>);
+ 
+			<b>int</b> <span id="r24 rd" class="r24 r">height</span> = !<b>double</b>.<span class="i">IsPositiveInfinity</span>(<span class="r21 r">heightConstraint</span>)
+							 ? <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>((<b>int</b>)<span class="r21 r">heightConstraint</span>, <span class="i">MeasureSpecMode</span>.<span class="i">AtMost</span>)
+							 : <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(0, <span class="i">MeasureSpecMode</span>.<span class="i">Unspecified</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <span id="r25 rd" class="r25 r">rawResult</span> = <span class="r22 r">viewRenderer</span>.<a href="../IVisualElementRenderer.cs.html#bb0c64306434c3a0" class="i method">GetDesiredSize</a>(<span class="r23 r">width</span>, <span class="r24 r">height</span>);
+			<b>if</b> (<span class="r25 r">rawResult</span>.<a href="/Xamarin.Forms.Core/A.html#bb6f162e62c2a687" class="i property">Minimum</a> == <a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a>.<a href="/Xamarin.Forms.Core/A.html#4acb0f167f44e11e" class="i field">Zero</a>)
+				<span class="r25 r">rawResult</span>.<span class="i">Minimum</span> = <span class="r25 r">rawResult</span>.<a href="/Xamarin.Forms.Core/A.html#18756f69c7ccde74" class="i property">Request</a>;
+			<a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="k">var</a> <span id="r26 rd" class="r26 r">result</span> = <b>new</b> <span class="t">SizeRequest</span>(<b>new</b> <span class="t">Size</span>(<a href="#3bdb80f6bef51ba8" class="i field">_context</a>.<a href="../ContextExtensions.cs.html#cce5139585f8ebc7" class="i method">FromPixels</a>(<span class="r25 r">rawResult</span>.<a href="/Xamarin.Forms.Core/A.html#18756f69c7ccde74" class="i property">Request</a>.<a href="/Xamarin.Forms.Core/A.html#6207d8e3826352f7" class="i property">Width</a>), <a href="#3bdb80f6bef51ba8" class="i field">_context</a>.<a href="../ContextExtensions.cs.html#cce5139585f8ebc7" class="i method">FromPixels</a>(<span class="r25 r">rawResult</span>.<a href="/Xamarin.Forms.Core/A.html#18756f69c7ccde74" class="i property">Request</a>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a>)),
+				<b>new</b> <span class="t">Size</span>(<a href="#3bdb80f6bef51ba8" class="i field">_context</a>.<a href="../ContextExtensions.cs.html#cce5139585f8ebc7" class="i method">FromPixels</a>(<span class="r25 r">rawResult</span>.<a href="/Xamarin.Forms.Core/A.html#bb6f162e62c2a687" class="i property">Minimum</a>.<a href="/Xamarin.Forms.Core/A.html#6207d8e3826352f7" class="i property">Width</a>), <a href="#3bdb80f6bef51ba8" class="i field">_context</a>.<a href="../ContextExtensions.cs.html#cce5139585f8ebc7" class="i method">FromPixels</a>(<span class="r25 r">rawResult</span>.<a href="/Xamarin.Forms.Core/A.html#bb6f162e62c2a687" class="i property">Minimum</a>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a>)));
+ 
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>();
+			<b>return</b> <span class="r26 r">result</span>;
+		}
+ 
+		<b>void</b> <a href="../IPlatformLayout.cs.html#91c435c34376bab6" class="t t">IPlatformLayout</a>.<a href="../IPlatformLayout.cs.html#c770a459a67efda7" class="i method">OnLayout</a>(<b>bool</b> <span id="r27 rd" class="r27 r">changed</span>, <b>int</b> <span id="r28 rd" class="r28 r">l</span>, <b>int</b> <span id="r29 rd" class="r29 r">t</span>, <b>int</b> <span id="r30 rd" class="r30 r">r</span>, <b>int</b> <span id="r31 rd" class="r31 r">b</span>)
+		{
+			<b>if</b> (<span class="r27 r">changed</span>)
+			{
+				<span class="i">LayoutRootPage</span>(<a href="#91491530aab51bac" class="i property">Page</a>, <span class="r30 r">r</span> - <span class="r28 r">l</span>, <span class="r31 r">b</span> - <span class="r29 r">t</span>);
+			}
+ 
+			<span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<a href="#91491530aab51bac" class="i property">Page</a>).<a href="../IVisualElementRenderer.cs.html#45d0cfa8761dcd6c" class="i method">UpdateLayout</a>();
+ 
+			<b>for</b> (<b>var</b> <span id="r32 rd" class="r32 r">i</span> = 0; <span class="r32 r">i</span> &lt; <a href="#ba13070be980064f" class="i field">_renderer</a>.<span class="i">ChildCount</span>; <span class="r32 r">i</span>++)
+			{
+				<b>global</b>::<span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span> <span id="r33 rd" class="r33 r">child</span> = <a href="#ba13070be980064f" class="i field">_renderer</a>.<span class="i">GetChildAt</span>(<span class="r32 r">i</span>);
+				<b>if</b> (<span class="r33 r">child</span> <b>is</b> <a href="#2a0a54702a963d9e" class="t t">ModalContainer</a>)
+				{
+					<span class="r33 r">child</span>.<span class="i">Measure</span>(<a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r30 r">r</span> - <span class="r28 r">l</span>, <span class="i">MeasureSpecMode</span>.<span class="i">Exactly</span>), <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r29 r">t</span> - <span class="r31 r">b</span>, <span class="i">MeasureSpecMode</span>.<span class="i">Exactly</span>));
+					<span class="r33 r">child</span>.<span class="i">Layout</span>(<span class="r28 r">l</span>, <span class="r29 r">t</span>, <span class="r30 r">r</span>, <span class="r31 r">b</span>);
+				}
+			}
+		}
+ 
+		<b>protected override void</b> <a id="cc2b96a6c0e87f41" href="../R/cc2b96a6c0e87f41.html" target="n" data-glyph="75,1" class="i method">OnBindingContextChanged</a>()
+		{
+			<span class="i">SetInheritedBindingContext</span>(<a href="#91491530aab51bac" class="i property">Page</a>, <a href="/Xamarin.Forms.Core/A.html#ec31b23be1ce91d4" class="i property">BindingContext</a>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="k">base</a>.<span class="i">OnBindingContextChanged</span>();
+		}
+ 
+		<b>internal void</b> <a id="f84e27eea6abf64a" href="../R/f84e27eea6abf64a.html" target="n" data-glyph="74,1" class="i method">SetPage</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r34 rd" class="r34 r">newRoot</span>)
+		{
+			<b>var</b> <span id="r35 rd" class="r35 r">layout</span> = <b>false</b>;
+			<span class="i">List</span>&lt;<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>&gt; <span id="r36 rd" class="r36 r">toDispose</span> = <b>null</b>;
+ 
+			<b>if</b> (<a href="#91491530aab51bac" class="i property">Page</a> != <b>null</b>)
+			{
+				<a href="#ba13070be980064f" class="i field">_renderer</a>.<span class="i">RemoveAllViews</span>();
+ 
+				<span class="r36 r">toDispose</span> = <a href="#bfe1e861fda4669a" class="i field">_navModel</a>.<a href="/Xamarin.Forms.Core/A.html#5f878ce08421c41e" class="i property">Roots</a>.<span class="i">Select</span>(<span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<span class="i">GetRenderer</span>).<span class="i">ToList</span>();
+ 
+				<a href="#bfe1e861fda4669a" class="i field">_navModel</a> = <b>new</b> <span class="t">NavigationModel</span>();
+ 
+				<span class="r35 r">layout</span> = <b>true</b>;
+			}
+ 
+			<b>if</b> (<span class="r34 r">newRoot</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="#bfe1e861fda4669a" class="i field">_navModel</a>.<span class="i">Push</span>(<span class="r34 r">newRoot</span>, <b>null</b>);
+ 
+			<a href="#91491530aab51bac" class="i property">Page</a> = <span class="r34 r">newRoot</span>;
+			<a href="#91491530aab51bac" class="i property">Page</a>.<span class="i">Platform</span> = <a href="#2431577fc7669ff2" class="k">this</a>;
+			<a href="#4df3b3c41e9edfbb" class="i method">AddChild</a>(<a href="#91491530aab51bac" class="i property">Page</a>, <span class="r35 r">layout</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a>.<a href="/Xamarin.Forms.Core/A.html#f64242468de64fbc" class="i property">Current</a>.<a href="/Xamarin.Forms.Core/A.html#aea43c5f98798697" class="i property">NavigationProxy</a>.<span class="i">Inner</span> = <a href="#2431577fc7669ff2" class="k">this</a>;
+ 
+			<b>if</b> (<span class="r36 r">toDispose</span>?.<span class="i">Count</span> &gt; 0)
+			{
+				<span class="c">// Queue up disposal of the previous renderers after the current layout updates have finished</span>
+				<b>new</b> <span class="i">Handler</span>(<span class="i">Looper</span>.<span class="i">MainLooper</span>).<span class="i">Post</span>(() =&gt;
+				{	
+					<b>foreach</b> (<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r37 rd" class="r37 r">rootRenderer</span> <b>in</b> <span class="r36 r">toDispose</span>)
+					{
+						<span class="r37 r">rootRenderer</span>.<span class="i">Dispose</span>();
+					}
+				});
+			}
+		}
+ 
+		<b>void</b> <a id="4df3b3c41e9edfbb" href="../R/4df3b3c41e9edfbb.html" target="n" data-glyph="76,1" class="i method">AddChild</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r38 rd" class="r38 r">page</span>, <b>bool</b> <span id="r39 rd" class="r39 r">layout</span> = <b>false</b>)
+		{
+			<b>if</b> (<span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<span class="r38 r">page</span>) != <b>null</b>)
+				<b>return</b>;
+ 
+			<span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#6f6ab347b945cc87" class="i method">SetPageContext</a>(<span class="r38 r">page</span>, <a href="#3bdb80f6bef51ba8" class="i field">_context</a>);
+			<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r40 rd" class="r40 r">renderView</span> = <span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#4ec2143da4c61d5f" class="i method">CreateRenderer</a>(<span class="r38 r">page</span>);
+			<span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#fd4d9b7c2836c5e6" class="i method">SetRenderer</a>(<span class="r38 r">page</span>, <span class="r40 r">renderView</span>);
+ 
+			<b>if</b> (<span class="r39 r">layout</span>)
+				<span class="i">LayoutRootPage</span>(<span class="r38 r">page</span>, <a href="#ba13070be980064f" class="i field">_renderer</a>.<span class="i">Width</span>, <a href="#ba13070be980064f" class="i field">_renderer</a>.<span class="i">Height</span>);
+ 
+			<a href="#ba13070be980064f" class="i field">_renderer</a>.<span class="i">AddView</span>(<span class="r40 r">renderView</span>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>);
+		}
+ 
+		<b>bool</b> <a id="ade4962d91e8058f" href="../R/ade4962d91e8058f.html" target="n" data-glyph="76,1" class="i method">HandleBackPressed</a>(<b>object</b> <span id="r41 rd" class="r41 r">sender</span>, <span class="i">EventArgs</span> <span id="r42 rd" class="r42 r">e</span>)
+		{
+			<b>if</b> (<a href="#802e3908bd6cbe5e" class="i property">NavAnimationInProgress</a>)
+				<b>return true</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r43 rd" class="r43 r">root</span> = <a href="#bfe1e861fda4669a" class="i field">_navModel</a>.<a href="/Xamarin.Forms.Core/A.html#5f878ce08421c41e" class="i property">Roots</a>.<span class="i">Last</span>();
+			<b>bool</b> <span id="r44 rd" class="r44 r">handled</span> = <span class="r43 r">root</span>.<span class="i">SendBackButtonPressed</span>();
+ 
+			<b>return</b> <span class="r44 r">handled</span>;
+		}
+ 
+		<b>void</b> <a id="fe847f80fc4b6742" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">LayoutRootPage</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r45 rd" class="r45 r">page</span>, <b>int</b> <span id="r46 rd" class="r46 r">width</span>, <b>int</b> <span id="r47 rd" class="r47 r">height</span>)
+		{
+			<a href="FormsAppCompatActivity.cs.html#73a28a031ead4b7d" class="k">var</a> <span id="r48 rd" class="r48 r">activity</span> = (<a href="FormsAppCompatActivity.cs.html#73a28a031ead4b7d" class="t t">FormsAppCompatActivity</a>)<a href="#3bdb80f6bef51ba8" class="i field">_context</a>;
+			<span class="r45 r">page</span>.<span class="i">Layout</span>(<b>new</b> <span class="t">Rectangle</span>(0, 0, <span class="r48 r">activity</span>.<span class="i">FromPixels</span>(<span class="r46 r">width</span>), <span class="r48 r">activity</span>.<span class="i">FromPixels</span>(<span class="r47 r">height</span>)));
+		}
+ 
+		<span class="i">Task</span> <a id="f0c5f2e1cdf8db3c" href="../R/f0c5f2e1cdf8db3c.html" target="n" data-glyph="76,1" class="i method">PresentModal</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r49 rd" class="r49 r">modal</span>, <b>bool</b> <span id="r50 rd" class="r50 r">animated</span>)
+		{
+			<a href="#2a0a54702a963d9e" class="k">var</a> <span id="r51 rd" class="r51 r">modalContainer</span> = <b>new</b> <a href="#d8d9b572477aa052" class="t constructor">ModalContainer</a>(<a href="#3bdb80f6bef51ba8" class="i field">_context</a>, <span class="r49 r">modal</span>);
+ 
+			<a href="#ba13070be980064f" class="i field">_renderer</a>.<span class="i">AddView</span>(<span class="r51 r">modalContainer</span>);
+ 
+			<b>var</b> <span id="r52 rd" class="r52 r">source</span> = <b>new</b> <span class="i">TaskCompletionSource</span>&lt;<b>bool</b>&gt;();
+			<a href="#802e3908bd6cbe5e" class="i property">NavAnimationInProgress</a> = <b>true</b>;
+			<b>if</b> (<span class="r50 r">animated</span>)
+			{
+				<span class="r51 r">modalContainer</span>.<span class="i">TranslationY</span> = <a href="#ba13070be980064f" class="i field">_renderer</a>.<span class="i">Height</span>;
+				<span class="r51 r">modalContainer</span>.<span class="i">Animate</span>().<span class="i">TranslationY</span>(0).<span class="i">SetInterpolator</span>(<b>new</b> <span class="i">DecelerateInterpolator</span>(1)).<span class="i">SetDuration</span>(300).<span class="i">SetListener</span>(<b>new</b> <a href="../Renderers/GenericAnimatorListener.cs.html#66ee90b6726ffd25" class="t constructor">GenericAnimatorListener</a>
+				{
+					<a href="../Renderers/GenericAnimatorListener.cs.html#241e986cf3ad6cd0" class="i property">OnEnd</a> = <span id="r53 rd" class="r53 r">a</span> =&gt;
+					{
+						<span class="r52 r">source</span>.<span class="i">TrySetResult</span>(<b>false</b>);
+						<a href="#802e3908bd6cbe5e" class="i property">NavAnimationInProgress</a> = <b>false</b>;
+						<span class="r51 r">modalContainer</span> = <b>null</b>;
+					},
+					<a href="../Renderers/GenericAnimatorListener.cs.html#265471c40d333b8c" class="i property">OnCancel</a> = <span id="r54 rd" class="r54 r">a</span> =&gt;
+					{
+						<span class="r52 r">source</span>.<span class="i">TrySetResult</span>(<b>true</b>);
+						<a href="#802e3908bd6cbe5e" class="i property">NavAnimationInProgress</a> = <b>false</b>;
+						<span class="r51 r">modalContainer</span> = <b>null</b>;
+					}
+				});
+			}
+			<b>else</b>
+			{
+				<a href="#802e3908bd6cbe5e" class="i property">NavAnimationInProgress</a> = <b>false</b>;
+				<span class="r52 r">source</span>.<span class="i">TrySetResult</span>(<b>true</b>);
+			}
+ 
+			<b>return</b> <span class="r52 r">source</span>.<span class="i">Task</span>;
+		}
+ 
+		<b>sealed class</b> <a id="2a0a54702a963d9e" href="../R/2a0a54702a963d9e.html" target="n" data-glyph="4,1" class="t t">ModalContainer</a> : <span class="i">ViewGroup</span>
+		{
+			<b>global</b>::<span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span> <a id="6763df1cc66cddc1" href="../R/6763df1cc66cddc1.html" target="n" data-glyph="46,2" class="i field">_backgroundView</a>;
+			<b>bool</b> <a id="39b0501155d456fd" href="../R/39b0501155d456fd.html" target="n" data-glyph="46,2" class="i field">_disposed</a>;
+			<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <a id="9963c31142768067" href="../R/9963c31142768067.html" target="n" data-glyph="46,2" class="i field">_modal</a>;
+			<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <a id="c42a19924528ebdd" href="../R/c42a19924528ebdd.html" target="n" data-glyph="46,2" class="i field">_renderer</a>;
+ 
+			<b>public</b> <a id="d8d9b572477aa052" href="../R/d8d9b572477aa052.html" target="n" data-glyph="72,2" class="i constructor">ModalContainer</a>(<span class="i">Context</span> <span id="r55 rd" class="r55 r">context</span>, <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r56 rd" class="r56 r">modal</span>) : <b>base</b>(<span class="r55 r">context</span>)
+			{
+				<a href="#9963c31142768067" class="i field">_modal</a> = <span class="r56 r">modal</span>;
+ 
+				<a href="#6763df1cc66cddc1" class="i field">_backgroundView</a> = <b>new</b> <b>global</b>::<span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span>(<span class="r55 r">context</span>);
+				<a href="#6763df1cc66cddc1" class="i field">_backgroundView</a>.<span class="i">SetWindowBackground</span>();
+				<span class="i">AddView</span>(<a href="#6763df1cc66cddc1" class="i field">_backgroundView</a>);
+ 
+				<span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#6f6ab347b945cc87" class="i method">SetPageContext</a>(<span class="r56 r">modal</span>, <span class="r55 r">context</span>);
+				<a href="#c42a19924528ebdd" class="i field">_renderer</a> = <span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#4ec2143da4c61d5f" class="i method">CreateRenderer</a>(<span class="r56 r">modal</span>);
+				<span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#fd4d9b7c2836c5e6" class="i method">SetRenderer</a>(<span class="r56 r">modal</span>, <a href="#c42a19924528ebdd" class="i field">_renderer</a>);
+ 
+				<span class="i">AddView</span>(<a href="#c42a19924528ebdd" class="i field">_renderer</a>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>);
+ 
+				<span class="i">Id</span> = <a href="#2431577fc7669ff2" class="t t">Platform</a>.<a href="#d1ae339db7fd1f7c" class="i method">GenerateViewId</a>();
+			}
+ 
+			<b>protected override void</b> <a id="a59549da79cbfeb3" href="../R/../../0000000000.html" target="n" data-glyph="75,2" class="i method">Dispose</a>(<b>bool</b> <span id="r57 rd" class="r57 r">disposing</span>)
+			{
+				<b>if</b> (<span class="r57 r">disposing</span> &amp;&amp; !<a href="#39b0501155d456fd" class="i field">_disposed</a>)
+				{
+					<a href="#39b0501155d456fd" class="i field">_disposed</a> = <b>true</b>;
+					<span class="i">RemoveAllViews</span>();
+					<b>if</b> (<a href="#c42a19924528ebdd" class="i field">_renderer</a> != <b>null</b>)
+					{
+						<a href="#c42a19924528ebdd" class="i field">_renderer</a>.<span class="i">Dispose</span>();
+						<a href="#c42a19924528ebdd" class="i field">_renderer</a> = <b>null</b>;
+						<a href="#9963c31142768067" class="i field">_modal</a>.<span class="i">ClearValue</span>(<span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#cda3e6f7841c17d4" class="i field">RendererProperty</a>);
+						<a href="#9963c31142768067" class="i field">_modal</a> = <b>null</b>;
+					}
+ 
+					<b>if</b> (<a href="#6763df1cc66cddc1" class="i field">_backgroundView</a> != <b>null</b>)
+					{
+						<a href="#6763df1cc66cddc1" class="i field">_backgroundView</a>.<span class="i">Dispose</span>();
+						<a href="#6763df1cc66cddc1" class="i field">_backgroundView</a> = <b>null</b>;
+					}
+				}
+ 
+				<b>base</b>.<span class="i">Dispose</span>(<span class="r57 r">disposing</span>);
+			}
+ 
+			<b>protected override void</b> <a id="037018be8a7db5de" href="../R/../../0000000000.html" target="n" data-glyph="75,2" class="i method">OnLayout</a>(<b>bool</b> <span id="r58 rd" class="r58 r">changed</span>, <b>int</b> <span id="r59 rd" class="r59 r">l</span>, <b>int</b> <span id="r60 rd" class="r60 r">t</span>, <b>int</b> <span id="r61 rd" class="r61 r">r</span>, <b>int</b> <span id="r62 rd" class="r62 r">b</span>)
+			{
+				<b>if</b> (<span class="r58 r">changed</span>)
+				{
+					<a href="FormsAppCompatActivity.cs.html#73a28a031ead4b7d" class="k">var</a> <span id="r63 rd" class="r63 r">activity</span> = (<a href="FormsAppCompatActivity.cs.html#73a28a031ead4b7d" class="t t">FormsAppCompatActivity</a>)<span class="i">Context</span>;
+ 
+					<a href="#9963c31142768067" class="i field">_modal</a>.<span class="i">Layout</span>(<b>new</b> <span class="t">Rectangle</span>(0, 0, <span class="r63 r">activity</span>.<span class="i">FromPixels</span>(<span class="r61 r">r</span> - <span class="r59 r">l</span>), <span class="r63 r">activity</span>.<span class="i">FromPixels</span>(<span class="r62 r">b</span> - <span class="r60 r">t</span>)));
+					<a href="#6763df1cc66cddc1" class="i field">_backgroundView</a>.<span class="i">Layout</span>(0, 0, <span class="r61 r">r</span> - <span class="r59 r">l</span>, <span class="r62 r">b</span> - <span class="r60 r">t</span>);
+				}
+ 
+				<a href="#c42a19924528ebdd" class="i field">_renderer</a>.<a href="../IVisualElementRenderer.cs.html#45d0cfa8761dcd6c" class="i method">UpdateLayout</a>();
+			}
+		}
+ 
+		<b>internal static int</b> <a id="d1ae339db7fd1f7c" href="../R/d1ae339db7fd1f7c.html" target="n" data-glyph="74,1" class="i method">GenerateViewId</a>()
+		{
+			<b>return</b> <span class="i n">Android</span>.<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#9fd6596afa9dfc79" class="i method">GenerateViewId</a>();
+		}
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">region</span> Statics
+ 
+		<b>public static implicit operator</b> <span class="i">ViewGroup</span>(<a href="#2431577fc7669ff2" class="t t">Platform</a> <span id="r64 rd" class="r64 r">canvas</span>)
+		{
+			<b>return</b> <span class="r64 r">canvas</span>.<a href="#ba13070be980064f" class="i field">_renderer</a>;
+		}
+ 
+		<b>internal const string</b> <a id="9cf35a9c7ab0b1fd" href="../R/9cf35a9c7ab0b1fd.html" target="n" data-glyph="8,1" class="i field">CloseContextActionsSignalName</a> = <span class="s">&quot;Xamarin.CloseContextActions&quot;</span>;
+ 
+		<span class="k preprocess">#</span><span class="k preprocess">endregion</span>
+	}
+}</pre></td></tr></table></div></body></html>

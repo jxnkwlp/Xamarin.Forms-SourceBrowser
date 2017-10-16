@@ -1,0 +1,352 @@
+﻿<!DOCTYPE html>
+<html><head><title>BindableProperty.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(343);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/BindableProperty.cs" target="_top">BindableProperty.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>.<span class="i n">Expressions</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	[<span class="t constructor">DebuggerDisplay</span>(<span class="s">&quot;{PropertyName}&quot;</span>)]
+	[<a href="TypeConverterAttribute.cs.html#ba9bf382c7a66e7b" class="t constructor">TypeConverter</a>(<b>typeof</b>(<a href="BindablePropertyConverter.cs.html#f73fd035254cac08" class="t t">BindablePropertyConverter</a>))]
+	<b>public sealed class</b> <a id="743d6dd5177e1828" href="R/743d6dd5177e1828.html" target="n" data-glyph="0,0" class="t t">BindableProperty</a>
+	{
+		<b>public delegate void</b> <a id="c1bbc3de02500c90" href="R/c1bbc3de02500c90.html" target="n" data-glyph="12,1" class="t t"><span id="0fb2f7a1ed0b5044">BindingPropertyChangedDelegate</span></a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r0 rd" class="r0 r">bindable</span>, <b>object</b> <span id="r1 rd" class="r1 r">oldValue</span>, <b>object</b> <span id="r2 rd" class="r2 r">newValue</span>);
+ 
+		<b>public delegate void</b> <a id="468451a6f4abcb47" href="R/468451a6f4abcb47.html" target="n" data-glyph="12,1" class="t t"><span id="5664adadbd78f62e">BindingPropertyChangedDelegate</span></a>&lt;<b>in</b> <span id="r3 rd t" class="r3 r t">TPropertyType</span>&gt;(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r4 rd" class="r4 r">bindable</span>, <span class="r3 r t">TPropertyType</span> <span id="r5 rd" class="r5 r">oldValue</span>, <span class="r3 r t">TPropertyType</span> <span id="r6 rd" class="r6 r">newValue</span>);
+ 
+		<b>public delegate void</b> <a id="7fbf666ac53c4750" href="R/7fbf666ac53c4750.html" target="n" data-glyph="12,1" class="t t"><span id="428fc0cf9450ff25">BindingPropertyChangingDelegate</span></a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r7 rd" class="r7 r">bindable</span>, <b>object</b> <span id="r8 rd" class="r8 r">oldValue</span>, <b>object</b> <span id="r9 rd" class="r9 r">newValue</span>);
+ 
+		<b>public delegate void</b> <a id="bb8adcfb2d3ff292" href="R/bb8adcfb2d3ff292.html" target="n" data-glyph="12,1" class="t t"><span id="c86f9bd36af02f6b">BindingPropertyChangingDelegate</span></a>&lt;<b>in</b> <span id="r10 rd t" class="r10 r t">TPropertyType</span>&gt;(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r11 rd" class="r11 r">bindable</span>, <span class="r10 r t">TPropertyType</span> <span id="r12 rd" class="r12 r">oldValue</span>, <span class="r10 r t">TPropertyType</span> <span id="r13 rd" class="r13 r">newValue</span>);
+ 
+		<b>public delegate object</b> <a id="318e37132e8f9005" href="R/318e37132e8f9005.html" target="n" data-glyph="12,1" class="t t"><span id="4568d21b3228cbc2">CoerceValueDelegate</span></a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r14 rd" class="r14 r">bindable</span>, <b>object</b> <span id="r15 rd" class="r15 r">value</span>);
+ 
+		<b>public delegate</b> <span class="r16 r t">TPropertyType</span> <a id="fa0fc06d3186585d" href="R/fa0fc06d3186585d.html" target="n" data-glyph="12,1" class="t t"><span id="f8cb883ce9bdc87f">CoerceValueDelegate</span></a>&lt;<span id="r16 rd t" class="r16 r t">TPropertyType</span>&gt;(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r17 rd" class="r17 r">bindable</span>, <span class="r16 r t">TPropertyType</span> <span id="r18 rd" class="r18 r">value</span>);
+ 
+		<b>public delegate object</b> <a id="a61a241bf6880707" href="R/a61a241bf6880707.html" target="n" data-glyph="12,1" class="t t"><span id="b3a3fb085bc5df56">CreateDefaultValueDelegate</span></a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r19 rd" class="r19 r">bindable</span>);
+ 
+		<b>public delegate</b> <span class="r20 r t">TPropertyType</span> <a id="5a22aca9aeb4a99c" href="R/5a22aca9aeb4a99c.html" target="n" data-glyph="12,1" class="t t"><span id="40add2fc3734eb64">CreateDefaultValueDelegate</span></a>&lt;<b>in</b> <span id="r21 rd t" class="r21 r t">TDeclarer</span>, <b>out</b> <span id="r20 rd t" class="r20 r t">TPropertyType</span>&gt;(<span class="r21 r t">TDeclarer</span> <span id="r22 rd" class="r22 r">bindable</span>);
+ 
+		<b>public delegate bool</b> <a id="43d376b46acb8e2e" href="R/43d376b46acb8e2e.html" target="n" data-glyph="12,1" class="t t"><span id="dbea61b3a99a6366">ValidateValueDelegate</span></a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r23 rd" class="r23 r">bindable</span>, <b>object</b> <span id="r24 rd" class="r24 r">value</span>);
+ 
+		<b>public delegate bool</b> <a id="bbc5661b644e5446" href="R/bbc5661b644e5446.html" target="n" data-glyph="12,1" class="t t"><span id="d7d03a7fdc5d8e79">ValidateValueDelegate</span></a>&lt;<b>in</b> <span id="r25 rd t" class="r25 r t">TPropertyType</span>&gt;(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r26 rd" class="r26 r">bindable</span>, <span class="r25 r t">TPropertyType</span> <span id="r27 rd" class="r27 r">value</span>);
+ 
+		<b>static readonly</b> <a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <a href="TypeConverter.cs.html#07b618880a109e92" class="t t">TypeConverter</a>&gt; <a id="b62567dfec04e25f" href="R/b62567dfec04e25f.html" target="n" data-glyph="46,1" class="i field">WellKnownConvertTypes</a> = <b>new</b>  <a href="@1@System.Collections/A.html#bf6849e410b43c4c" class="t constructor">Dictionary</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>,<a href="TypeConverter.cs.html#07b618880a109e92" class="t t">TypeConverter</a>&gt;
+		{
+			{ <b>typeof</b>(<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a>), <b>new</b> <a href="UriTypeConverter.cs.html#8ddda47869d91bcf" class="t constructor">UriTypeConverter</a>() },
+			{ <b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>), <b>new</b> <a href="ColorTypeConverter.cs.html#0cda1a82f890aa86" class="t constructor">ColorTypeConverter</a>() },
+		};
+ 
+		<span class="c">// more or less the encoding of this, without the need to reflect</span>
+		<span class="c">// http://msdn.microsoft.com/en-us/library/y5b434w4.aspx</span>
+		<b>static readonly</b> <a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>[]&gt; <a id="1085a63f31e41bdb" href="R/1085a63f31e41bdb.html" target="n" data-glyph="46,1" class="i field">SimpleConvertTypes</a> = <b>new</b> <a href="@1@System.Collections/A.html#bf6849e410b43c4c" class="t constructor">Dictionary</a>&lt;<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>[]&gt;
+		{
+			{ <b>typeof</b>(<b>sbyte</b>), <b>new</b>[] { <b>typeof</b>(<b>string</b>), <b>typeof</b>(<b>short</b>), <b>typeof</b>(<b>int</b>), <b>typeof</b>(<b>long</b>), <b>typeof</b>(<b>float</b>), <b>typeof</b>(<b>double</b>), <b>typeof</b>(<b>decimal</b>) } },
+			{ <b>typeof</b>(<b>byte</b>), <b>new</b>[] { <b>typeof</b>(<b>string</b>), <b>typeof</b>(<b>short</b>), <b>typeof</b>(<b>ushort</b>), <b>typeof</b>(<b>int</b>), <b>typeof</b>(<b>uint</b>), <b>typeof</b>(<b>ulong</b>), <b>typeof</b>(<b>float</b>), <b>typeof</b>(<b>double</b>), <b>typeof</b>(<b>decimal</b>) } },
+			{ <b>typeof</b>(<b>short</b>), <b>new</b>[] { <b>typeof</b>(<b>string</b>), <b>typeof</b>(<b>int</b>), <b>typeof</b>(<b>long</b>), <b>typeof</b>(<b>float</b>), <b>typeof</b>(<b>double</b>), <b>typeof</b>(<b>decimal</b>) } },
+			{ <b>typeof</b>(<b>ushort</b>), <b>new</b>[] { <b>typeof</b>(<b>string</b>), <b>typeof</b>(<b>int</b>), <b>typeof</b>(<b>uint</b>), <b>typeof</b>(<b>long</b>), <b>typeof</b>(<b>ulong</b>), <b>typeof</b>(<b>float</b>), <b>typeof</b>(<b>double</b>), <b>typeof</b>(<b>decimal</b>) } },
+			{ <b>typeof</b>(<b>int</b>), <b>new</b>[] { <b>typeof</b>(<b>string</b>), <b>typeof</b>(<b>long</b>), <b>typeof</b>(<b>float</b>), <b>typeof</b>(<b>double</b>), <b>typeof</b>(<b>decimal</b>) } },
+			{ <b>typeof</b>(<b>uint</b>), <b>new</b>[] { <b>typeof</b>(<b>string</b>), <b>typeof</b>(<b>long</b>), <b>typeof</b>(<b>ulong</b>), <b>typeof</b>(<b>float</b>), <b>typeof</b>(<b>double</b>), <b>typeof</b>(<b>decimal</b>) } },
+			{ <b>typeof</b>(<b>long</b>), <b>new</b>[] { <b>typeof</b>(<b>string</b>), <b>typeof</b>(<b>float</b>), <b>typeof</b>(<b>double</b>), <b>typeof</b>(<b>decimal</b>) } },
+			{ <b>typeof</b>(<b>char</b>), <b>new</b>[] { <b>typeof</b>(<b>string</b>), <b>typeof</b>(<b>ushort</b>), <b>typeof</b>(<b>int</b>), <b>typeof</b>(<b>uint</b>), <b>typeof</b>(<b>long</b>), <b>typeof</b>(<b>ulong</b>), <b>typeof</b>(<b>float</b>), <b>typeof</b>(<b>double</b>), <b>typeof</b>(<b>decimal</b>) } },
+			{ <b>typeof</b>(<b>float</b>), <b>new</b>[] { <b>typeof</b>(<b>string</b>), <b>typeof</b>(<b>double</b>) } },
+			{ <b>typeof</b>(<b>ulong</b>), <b>new</b>[] { <b>typeof</b>(<b>string</b>), <b>typeof</b>(<b>float</b>), <b>typeof</b>(<b>double</b>), <b>typeof</b>(<b>decimal</b>) } }
+		};
+ 
+		<a id="a2bf110a7d0b8f0e" href="R/a2bf110a7d0b8f0e.html" target="n" data-glyph="76,1" class="i constructor">BindableProperty</a>(<b>string</b> <span id="r28 rd" class="r28 r">propertyName</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r29 rd" class="r29 r">returnType</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r30 rd" class="r30 r">declaringType</span>, <b>object</b> <span id="r31 rd" class="r31 r">defaultValue</span>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r32 rd" class="r32 r">defaultBindingMode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a>,
+								 <a href="#43d376b46acb8e2e" class="t t">ValidateValueDelegate</a> <span id="r33 rd" class="r33 r">validateValue</span> = <b>null</b>, <a href="#c1bbc3de02500c90" class="t t">BindingPropertyChangedDelegate</a> <span id="r34 rd" class="r34 r">propertyChanged</span> = <b>null</b>, <a href="#7fbf666ac53c4750" class="t t">BindingPropertyChangingDelegate</a> <span id="r35 rd" class="r35 r">propertyChanging</span> = <b>null</b>,
+								 <a href="#318e37132e8f9005" class="t t">CoerceValueDelegate</a> <span id="r36 rd" class="r36 r">coerceValue</span> = <b>null</b>, <a href="#e4dadec48fc34f87" class="t t">BindablePropertyBindingChanging</a> <span id="r37 rd" class="r37 r">bindingChanging</span> = <b>null</b>, <b>bool</b> <span id="r38 rd" class="r38 r">isReadOnly</span> = <b>false</b>, <a href="#a61a241bf6880707" class="t t">CreateDefaultValueDelegate</a> <span id="r39 rd" class="r39 r">defaultValueCreator</span> = <b>null</b>)
+		{
+			<b>if</b> (<span class="r28 r">propertyName</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;propertyName&quot;</span>);
+			<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r29 r">returnType</span>, <b>null</b>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;returnType&quot;</span>);
+			<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r30 r">declaringType</span>, <b>null</b>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;declaringType&quot;</span>);
+ 
+			<span class="c">// don&#39;t use Enum.IsDefined as its redonkulously expensive for what it does</span>
+			<b>if</b> (<span class="r32 r">defaultBindingMode</span> != <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#522c71ff522d1c2c" class="i field">Default</a> &amp;&amp; <span class="r32 r">defaultBindingMode</span> != <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a> &amp;&amp; <span class="r32 r">defaultBindingMode</span> != <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5827e0a716ae341d" class="i field">OneWayToSource</a> &amp;&amp; <span class="r32 r">defaultBindingMode</span> != <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5b5de329b5adbce9" class="i field">TwoWay</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;Not a valid type of BindingMode&quot;</span>, <span class="s">&quot;defaultBindingMode&quot;</span>);
+			<b>if</b> (<span class="r31 r">defaultValue</span> == <b>null</b> &amp;&amp; <a href="@1@System.Runtime/A.html#c9505a785f9fd8c5" class="t t">Nullable</a>.<a href="@1@System.Runtime/A.html#ae2ae0d65dd71ecb" class="i method">GetUnderlyingType</a>(<span class="r29 r">returnType</span>) == <b>null</b> &amp;&amp; <span class="r29 r">returnType</span>.<span class="i method">GetTypeInfo</span>().<span class="i property">IsValueType</span>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;Not a valid default value&quot;</span>, <span class="s">&quot;defaultValue&quot;</span>);
+			<b>if</b> (<span class="r31 r">defaultValue</span> != <b>null</b> &amp;&amp; !<span class="r29 r">returnType</span>.<a href="ReflectionExtensions.cs.html#8c499ef170a390f5" class="i method">IsInstanceOfType</a>(<span class="r31 r">defaultValue</span>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;Default value did not match return type&quot;</span>, <span class="s">&quot;defaultValue&quot;</span>);
+			<b>if</b> (<span class="r32 r">defaultBindingMode</span> == <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#522c71ff522d1c2c" class="i field">Default</a>)
+				<span class="r32 r">defaultBindingMode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a>;
+ 
+			<a href="#3e8a9f30dd5c9578" class="i property">PropertyName</a> = <span class="r28 r">propertyName</span>;
+			<a href="#3a88e13a70e1553a" class="i property">ReturnType</a> = <span class="r29 r">returnType</span>;
+			<a href="#769dda66686e9efa" class="i property">ReturnTypeInfo</a> = <span class="r29 r">returnType</span>.<span class="i method">GetTypeInfo</span>();
+			<a href="#7a0e7c9a8e08c999" class="i property">DeclaringType</a> = <span class="r30 r">declaringType</span>;
+			<a href="#b20da29b32c9aaff" class="i property">DefaultValue</a> = <span class="r31 r">defaultValue</span>;
+			<a href="#9e0bf40e44040ebd" class="i property">DefaultBindingMode</a> = <span class="r32 r">defaultBindingMode</span>;
+			<a href="#e5f36a54dbacac01" class="i property">PropertyChanged</a> = <span class="r34 r">propertyChanged</span>;
+			<a href="#f469f9f42df41cfa" class="i property">PropertyChanging</a> = <span class="r35 r">propertyChanging</span>;
+			<a href="#f88c66d2b615d482" class="i property">ValidateValue</a> = <span class="r33 r">validateValue</span>;
+			<a href="#04cc0bc930946ee1" class="i property">CoerceValue</a> = <span class="r36 r">coerceValue</span>;
+			<a href="#3ca80ab8ad51fd32" class="i property">BindingChanging</a> = <span class="r37 r">bindingChanging</span>;
+			<a href="#da2279a1bffafd1f" class="i property">IsReadOnly</a> = <span class="r38 r">isReadOnly</span>;
+			<a href="#b59f6352e415afa9" class="i property">DefaultValueCreator</a> = <span class="r39 r">defaultValueCreator</span>;
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <a id="7a0e7c9a8e08c999" href="R/7a0e7c9a8e08c999.html" target="n" data-glyph="102,1" class="i property">DeclaringType</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public</b> <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <a id="9e0bf40e44040ebd" href="R/9e0bf40e44040ebd.html" target="n" data-glyph="102,1" class="i property">DefaultBindingMode</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public object</b> <a id="b20da29b32c9aaff" href="R/b20da29b32c9aaff.html" target="n" data-glyph="102,1" class="i property">DefaultValue</a> { <b>get</b>; }
+ 
+		<b>public bool</b> <a id="da2279a1bffafd1f" href="R/da2279a1bffafd1f.html" target="n" data-glyph="102,1" class="i property">IsReadOnly</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public string</b> <a id="3e8a9f30dd5c9578" href="R/3e8a9f30dd5c9578.html" target="n" data-glyph="102,1" class="i property">PropertyName</a> { <b>get</b>; }
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <a id="3a88e13a70e1553a" href="R/3a88e13a70e1553a.html" target="n" data-glyph="102,1" class="i property">ReturnType</a> { <b>get</b>; }
+ 
+		<b>internal</b> <a href="#e4dadec48fc34f87" class="t t">BindablePropertyBindingChanging</a> <a id="3ca80ab8ad51fd32" href="R/3ca80ab8ad51fd32.html" target="n" data-glyph="104,1" class="i property">BindingChanging</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>internal</b> <a href="#318e37132e8f9005" class="t t">CoerceValueDelegate</a> <a id="04cc0bc930946ee1" href="R/04cc0bc930946ee1.html" target="n" data-glyph="104,1" class="i property">CoerceValue</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>internal</b> <a href="#a61a241bf6880707" class="t t">CreateDefaultValueDelegate</a> <a id="b59f6352e415afa9" href="R/b59f6352e415afa9.html" target="n" data-glyph="104,1" class="i property">DefaultValueCreator</a> { <b>get</b>; }
+ 
+		<b>internal</b> <a href="#c1bbc3de02500c90" class="t t">BindingPropertyChangedDelegate</a> <a id="e5f36a54dbacac01" href="R/e5f36a54dbacac01.html" target="n" data-glyph="104,1" class="i property">PropertyChanged</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>internal</b> <a href="#7fbf666ac53c4750" class="t t">BindingPropertyChangingDelegate</a> <a id="f469f9f42df41cfa" href="R/f469f9f42df41cfa.html" target="n" data-glyph="104,1" class="i property">PropertyChanging</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>internal</b> <span class="t t">TypeInfo</span> <a id="769dda66686e9efa" href="R/769dda66686e9efa.html" target="n" data-glyph="104,1" class="i property">ReturnTypeInfo</a> { <b>get</b>; }
+ 
+		<b>internal</b> <a href="#43d376b46acb8e2e" class="t t">ValidateValueDelegate</a> <a id="f88c66d2b615d482" href="R/f88c66d2b615d482.html" target="n" data-glyph="104,1" class="i property">ValidateValue</a> { <b>get</b>; <b>private set</b>; }
+ 
+		[<a href="@1@System.Runtime/A.html#66ed4e142f4e14e7" class="t constructor">Obsolete</a>(<span class="s">&quot;Create&lt;&gt; (generic) is obsolete as of version 2.1.0 and is no longer supported.&quot;</span>)]
+		<b>public static</b> <a href="#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="e7af34058ead981b" href="R/e7af34058ead981b.html" target="n" data-glyph="72,1" class="i method">Create</a>&lt;<span id="r40 rd t" class="r40 r t">TDeclarer</span>, <span id="r41 rd t" class="r41 r t">TPropertyType</span>&gt;(<span class="t t">Expression</span>&lt;<a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="r40 r t">TDeclarer</span>, <span class="r41 r t">TPropertyType</span>&gt;&gt; <span id="r42 rd" class="r42 r">getter</span>, <span class="r41 r t">TPropertyType</span> <span id="r43 rd" class="r43 r">defaultValue</span>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r44 rd" class="r44 r">defaultBindingMode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a>,
+																		<a href="#bbc5661b644e5446" class="t t">ValidateValueDelegate</a>&lt;<span class="r41 r t">TPropertyType</span>&gt; <span id="r45 rd" class="r45 r">validateValue</span> = <b>null</b>, <a href="#468451a6f4abcb47" class="t t">BindingPropertyChangedDelegate</a>&lt;<span class="r41 r t">TPropertyType</span>&gt; <span id="r46 rd" class="r46 r">propertyChanged</span> = <b>null</b>,
+																		<a href="#bb8adcfb2d3ff292" class="t t">BindingPropertyChangingDelegate</a>&lt;<span class="r41 r t">TPropertyType</span>&gt; <span id="r47 rd" class="r47 r">propertyChanging</span> = <b>null</b>, <a href="#fa0fc06d3186585d" class="t t">CoerceValueDelegate</a>&lt;<span class="r41 r t">TPropertyType</span>&gt; <span id="r48 rd" class="r48 r">coerceValue</span> = <b>null</b>,
+																		<a href="#5a22aca9aeb4a99c" class="t t">CreateDefaultValueDelegate</a>&lt;<span class="r40 r t">TDeclarer</span>, <span class="r41 r t">TPropertyType</span>&gt; <span id="r49 rd" class="r49 r">defaultValueCreator</span> = <b>null</b>) <b>where</b> <span class="r40 r t">TDeclarer</span> : <a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>
+		{
+			<b>return</b> <a href="#50360cc50413fa5a" class="i method">Create</a>(<span class="r42 r">getter</span>, <span class="r43 r">defaultValue</span>, <span class="r44 r">defaultBindingMode</span>, <span class="r45 r">validateValue</span>, <span class="r46 r">propertyChanged</span>, <span class="r47 r">propertyChanging</span>, <span class="r48 r">coerceValue</span>, <b>null</b>, <span class="r50 r">defaultValueCreator</span>: <span class="r49 r">defaultValueCreator</span>);
+		}
+ 
+		<b>public static</b> <a href="#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="d20d5764687c67bb" href="R/d20d5764687c67bb.html" target="n" data-glyph="72,1" class="i method">Create</a>(<b>string</b> <span id="r51 rd" class="r51 r">propertyName</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r52 rd" class="r52 r">returnType</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r53 rd" class="r53 r">declaringType</span>, <b>object</b> <span id="r54 rd" class="r54 r">defaultValue</span> = <b>null</b>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r55 rd" class="r55 r">defaultBindingMode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a>,
+											  <a href="#43d376b46acb8e2e" class="t t">ValidateValueDelegate</a> <span id="r56 rd" class="r56 r">validateValue</span> = <b>null</b>, <a href="#c1bbc3de02500c90" class="t t">BindingPropertyChangedDelegate</a> <span id="r57 rd" class="r57 r">propertyChanged</span> = <b>null</b>, <a href="#7fbf666ac53c4750" class="t t">BindingPropertyChangingDelegate</a> <span id="r58 rd" class="r58 r">propertyChanging</span> = <b>null</b>,
+											  <a href="#318e37132e8f9005" class="t t">CoerceValueDelegate</a> <span id="r59 rd" class="r59 r">coerceValue</span> = <b>null</b>, <a href="#a61a241bf6880707" class="t t">CreateDefaultValueDelegate</a> <span id="r60 rd" class="r60 r">defaultValueCreator</span> = <b>null</b>)
+		{
+			<b>return</b> <b>new</b> <a href="#a2bf110a7d0b8f0e" class="t constructor">BindableProperty</a>(<span class="r51 r">propertyName</span>, <span class="r52 r">returnType</span>, <span class="r53 r">declaringType</span>, <span class="r54 r">defaultValue</span>, <span class="r55 r">defaultBindingMode</span>, <span class="r56 r">validateValue</span>, <span class="r57 r">propertyChanged</span>, <span class="r58 r">propertyChanging</span>, <span class="r59 r">coerceValue</span>,
+				<span class="r39 r">defaultValueCreator</span>: <span class="r60 r">defaultValueCreator</span>);
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#66ed4e142f4e14e7" class="t constructor">Obsolete</a>(<span class="s">&quot;CreateAttached&lt;&gt; (generic) is obsolete as of version 2.1.0 and is no longer supported.&quot;</span>)]
+		<b>public static</b> <a href="#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="7c5f459c806cb197" href="R/7c5f459c806cb197.html" target="n" data-glyph="72,1" class="i method">CreateAttached</a>&lt;<span id="r61 rd t" class="r61 r t">TDeclarer</span>, <span id="r62 rd t" class="r62 r t">TPropertyType</span>&gt;(<span class="t t">Expression</span>&lt;<a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>, <span class="r62 r t">TPropertyType</span>&gt;&gt; <span id="r63 rd" class="r63 r">staticgetter</span>, <span class="r62 r t">TPropertyType</span> <span id="r64 rd" class="r64 r">defaultValue</span>,
+																				<a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r65 rd" class="r65 r">defaultBindingMode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a>, <a href="#bbc5661b644e5446" class="t t">ValidateValueDelegate</a>&lt;<span class="r62 r t">TPropertyType</span>&gt; <span id="r66 rd" class="r66 r">validateValue</span> = <b>null</b>, <a href="#468451a6f4abcb47" class="t t">BindingPropertyChangedDelegate</a>&lt;<span class="r62 r t">TPropertyType</span>&gt; <span id="r67 rd" class="r67 r">propertyChanged</span> = <b>null</b>,
+																				<a href="#bb8adcfb2d3ff292" class="t t">BindingPropertyChangingDelegate</a>&lt;<span class="r62 r t">TPropertyType</span>&gt; <span id="r68 rd" class="r68 r">propertyChanging</span> = <b>null</b>, <a href="#fa0fc06d3186585d" class="t t">CoerceValueDelegate</a>&lt;<span class="r62 r t">TPropertyType</span>&gt; <span id="r69 rd" class="r69 r">coerceValue</span> = <b>null</b>,
+																				<a href="#5a22aca9aeb4a99c" class="t t">CreateDefaultValueDelegate</a>&lt;<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>, <span class="r62 r t">TPropertyType</span>&gt; <span id="r70 rd" class="r70 r">defaultValueCreator</span> = <b>null</b>)
+		{
+			<b>return</b> <a href="#1f93ed744a106ca9" class="i method">CreateAttached</a>&lt;<span class="r61 r t">TDeclarer</span>, <span class="r62 r t">TPropertyType</span>&gt;(<span class="r63 r">staticgetter</span>, <span class="r64 r">defaultValue</span>, <span class="r65 r">defaultBindingMode</span>, <span class="r66 r">validateValue</span>, <span class="r67 r">propertyChanged</span>, <span class="r68 r">propertyChanging</span>, <span class="r69 r">coerceValue</span>, <b>null</b>,
+				<span class="r71 r">defaultValueCreator</span>: <span class="r70 r">defaultValueCreator</span>);
+		}
+ 
+		<b>public static</b> <a href="#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="85f89c6bab9ae593" href="R/85f89c6bab9ae593.html" target="n" data-glyph="72,1" class="i method">CreateAttached</a>(<b>string</b> <span id="r72 rd" class="r72 r">propertyName</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r73 rd" class="r73 r">returnType</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r74 rd" class="r74 r">declaringType</span>, <b>object</b> <span id="r75 rd" class="r75 r">defaultValue</span>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r76 rd" class="r76 r">defaultBindingMode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a>,
+													  <a href="#43d376b46acb8e2e" class="t t">ValidateValueDelegate</a> <span id="r77 rd" class="r77 r">validateValue</span> = <b>null</b>, <a href="#c1bbc3de02500c90" class="t t">BindingPropertyChangedDelegate</a> <span id="r78 rd" class="r78 r">propertyChanged</span> = <b>null</b>, <a href="#7fbf666ac53c4750" class="t t">BindingPropertyChangingDelegate</a> <span id="r79 rd" class="r79 r">propertyChanging</span> = <b>null</b>,
+													  <a href="#318e37132e8f9005" class="t t">CoerceValueDelegate</a> <span id="r80 rd" class="r80 r">coerceValue</span> = <b>null</b>, <a href="#a61a241bf6880707" class="t t">CreateDefaultValueDelegate</a> <span id="r81 rd" class="r81 r">defaultValueCreator</span> = <b>null</b>)
+		{
+			<b>return</b> <a href="#856d9d317e477ea9" class="i method">CreateAttached</a>(<span class="r72 r">propertyName</span>, <span class="r73 r">returnType</span>, <span class="r74 r">declaringType</span>, <span class="r75 r">defaultValue</span>, <span class="r76 r">defaultBindingMode</span>, <span class="r77 r">validateValue</span>, <span class="r78 r">propertyChanged</span>, <span class="r79 r">propertyChanging</span>, <span class="r80 r">coerceValue</span>, <b>null</b>, <b>false</b>, <span class="r81 r">defaultValueCreator</span>);
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#66ed4e142f4e14e7" class="t constructor">Obsolete</a>(<span class="s">&quot;CreateAttachedReadOnly&lt;&gt; (generic) is obsolete as of version 2.1.0 and is no longer supported.&quot;</span>)]
+		<b>public static</b> <a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <a id="06d70c7cd4262ee0" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">CreateAttachedReadOnly</a>&lt;<span id="r82 rd t" class="r82 r t">TDeclarer</span>, <span id="r83 rd t" class="r83 r t">TPropertyType</span>&gt;(<span class="t t">Expression</span>&lt;<a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>, <span class="r83 r t">TPropertyType</span>&gt;&gt; <span id="r84 rd" class="r84 r">staticgetter</span>, <span class="r83 r t">TPropertyType</span> <span id="r85 rd" class="r85 r">defaultValue</span>,
+																						   <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r86 rd" class="r86 r">defaultBindingMode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5827e0a716ae341d" class="i field">OneWayToSource</a>, <a href="#bbc5661b644e5446" class="t t">ValidateValueDelegate</a>&lt;<span class="r83 r t">TPropertyType</span>&gt; <span id="r87 rd" class="r87 r">validateValue</span> = <b>null</b>,
+																						   <a href="#468451a6f4abcb47" class="t t">BindingPropertyChangedDelegate</a>&lt;<span class="r83 r t">TPropertyType</span>&gt; <span id="r88 rd" class="r88 r">propertyChanged</span> = <b>null</b>, <a href="#bb8adcfb2d3ff292" class="t t">BindingPropertyChangingDelegate</a>&lt;<span class="r83 r t">TPropertyType</span>&gt; <span id="r89 rd" class="r89 r">propertyChanging</span> = <b>null</b>,
+																						   <a href="#fa0fc06d3186585d" class="t t">CoerceValueDelegate</a>&lt;<span class="r83 r t">TPropertyType</span>&gt; <span id="r90 rd" class="r90 r">coerceValue</span> = <b>null</b>, <a href="#5a22aca9aeb4a99c" class="t t">CreateDefaultValueDelegate</a>&lt;<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>, <span class="r83 r t">TPropertyType</span>&gt; <span id="r91 rd" class="r91 r">defaultValueCreator</span> = <b>null</b>)
+ 
+		{
+			<b>return</b>
+				<b>new</b> <a href="BindablePropertyKey.cs.html#b1c5d20e9d6cff62" class="t constructor">BindablePropertyKey</a>(<a href="#1f93ed744a106ca9" class="i method">CreateAttached</a>&lt;<span class="r82 r t">TDeclarer</span>, <span class="r83 r t">TPropertyType</span>&gt;(<span class="r84 r">staticgetter</span>, <span class="r85 r">defaultValue</span>, <span class="r86 r">defaultBindingMode</span>, <span class="r87 r">validateValue</span>, <span class="r88 r">propertyChanged</span>, <span class="r89 r">propertyChanging</span>, <span class="r90 r">coerceValue</span>, <b>null</b>, <b>true</b>,
+					<span class="r91 r">defaultValueCreator</span>));
+		}
+ 
+		<b>public static</b> <a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <a id="a6dd64302b8e6a3b" href="R/a6dd64302b8e6a3b.html" target="n" data-glyph="72,1" class="i method">CreateAttachedReadOnly</a>(<b>string</b> <span id="r92 rd" class="r92 r">propertyName</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r93 rd" class="r93 r">returnType</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r94 rd" class="r94 r">declaringType</span>, <b>object</b> <span id="r95 rd" class="r95 r">defaultValue</span>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r96 rd" class="r96 r">defaultBindingMode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5827e0a716ae341d" class="i field">OneWayToSource</a>,
+																 <a href="#43d376b46acb8e2e" class="t t">ValidateValueDelegate</a> <span id="r97 rd" class="r97 r">validateValue</span> = <b>null</b>, <a href="#c1bbc3de02500c90" class="t t">BindingPropertyChangedDelegate</a> <span id="r98 rd" class="r98 r">propertyChanged</span> = <b>null</b>, <a href="#7fbf666ac53c4750" class="t t">BindingPropertyChangingDelegate</a> <span id="r99 rd" class="r99 r">propertyChanging</span> = <b>null</b>,
+																 <a href="#318e37132e8f9005" class="t t">CoerceValueDelegate</a> <span id="r100 rd" class="r100 r">coerceValue</span> = <b>null</b>, <a href="#a61a241bf6880707" class="t t">CreateDefaultValueDelegate</a> <span id="r101 rd" class="r101 r">defaultValueCreator</span> = <b>null</b>)
+		{
+			<b>return</b>
+				<b>new</b> <a href="BindablePropertyKey.cs.html#b1c5d20e9d6cff62" class="t constructor">BindablePropertyKey</a>(<a href="#856d9d317e477ea9" class="i method">CreateAttached</a>(<span class="r92 r">propertyName</span>, <span class="r93 r">returnType</span>, <span class="r94 r">declaringType</span>, <span class="r95 r">defaultValue</span>, <span class="r96 r">defaultBindingMode</span>, <span class="r97 r">validateValue</span>, <span class="r98 r">propertyChanged</span>, <span class="r99 r">propertyChanging</span>, <span class="r100 r">coerceValue</span>, <b>null</b>, <b>true</b>,
+					<span class="r101 r">defaultValueCreator</span>));
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#66ed4e142f4e14e7" class="t constructor">Obsolete</a>(<span class="s">&quot;CreateReadOnly&lt;&gt; (generic) is obsolete as of version 2.1.0 and is no longer supported.&quot;</span>)]
+		<b>public static</b> <a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <a id="8aef3e0180538904" href="R/8aef3e0180538904.html" target="n" data-glyph="72,1" class="i method">CreateReadOnly</a>&lt;<span id="r102 rd t" class="r102 r t">TDeclarer</span>, <span id="r103 rd t" class="r103 r t">TPropertyType</span>&gt;(<span class="t t">Expression</span>&lt;<a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="r102 r t">TDeclarer</span>, <span class="r103 r t">TPropertyType</span>&gt;&gt; <span id="r104 rd" class="r104 r">getter</span>, <span class="r103 r t">TPropertyType</span> <span id="r105 rd" class="r105 r">defaultValue</span>,
+																				   <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r106 rd" class="r106 r">defaultBindingMode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5827e0a716ae341d" class="i field">OneWayToSource</a>, <a href="#bbc5661b644e5446" class="t t">ValidateValueDelegate</a>&lt;<span class="r103 r t">TPropertyType</span>&gt; <span id="r107 rd" class="r107 r">validateValue</span> = <b>null</b>,
+																				   <a href="#468451a6f4abcb47" class="t t">BindingPropertyChangedDelegate</a>&lt;<span class="r103 r t">TPropertyType</span>&gt; <span id="r108 rd" class="r108 r">propertyChanged</span> = <b>null</b>, <a href="#bb8adcfb2d3ff292" class="t t">BindingPropertyChangingDelegate</a>&lt;<span class="r103 r t">TPropertyType</span>&gt; <span id="r109 rd" class="r109 r">propertyChanging</span> = <b>null</b>,
+																				   <a href="#fa0fc06d3186585d" class="t t">CoerceValueDelegate</a>&lt;<span class="r103 r t">TPropertyType</span>&gt; <span id="r110 rd" class="r110 r">coerceValue</span> = <b>null</b>, <a href="#5a22aca9aeb4a99c" class="t t">CreateDefaultValueDelegate</a>&lt;<span class="r102 r t">TDeclarer</span>, <span class="r103 r t">TPropertyType</span>&gt; <span id="r111 rd" class="r111 r">defaultValueCreator</span> = <b>null</b>) <b>where</b> <span class="r102 r t">TDeclarer</span> : <a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>
+		{
+			<b>return</b> <b>new</b> <a href="BindablePropertyKey.cs.html#b1c5d20e9d6cff62" class="t constructor">BindablePropertyKey</a>(<a href="#50360cc50413fa5a" class="i method">Create</a>(<span class="r104 r">getter</span>, <span class="r105 r">defaultValue</span>, <span class="r106 r">defaultBindingMode</span>, <span class="r107 r">validateValue</span>, <span class="r108 r">propertyChanged</span>, <span class="r109 r">propertyChanging</span>, <span class="r110 r">coerceValue</span>, <b>null</b>, <b>true</b>, <span class="r111 r">defaultValueCreator</span>));
+		}
+ 
+		<b>public static</b> <a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <a id="59da471949b1603c" href="R/59da471949b1603c.html" target="n" data-glyph="72,1" class="i method">CreateReadOnly</a>(<b>string</b> <span id="r112 rd" class="r112 r">propertyName</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r113 rd" class="r113 r">returnType</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r114 rd" class="r114 r">declaringType</span>, <b>object</b> <span id="r115 rd" class="r115 r">defaultValue</span>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r116 rd" class="r116 r">defaultBindingMode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5827e0a716ae341d" class="i field">OneWayToSource</a>,
+														 <a href="#43d376b46acb8e2e" class="t t">ValidateValueDelegate</a> <span id="r117 rd" class="r117 r">validateValue</span> = <b>null</b>, <a href="#c1bbc3de02500c90" class="t t">BindingPropertyChangedDelegate</a> <span id="r118 rd" class="r118 r">propertyChanged</span> = <b>null</b>, <a href="#7fbf666ac53c4750" class="t t">BindingPropertyChangingDelegate</a> <span id="r119 rd" class="r119 r">propertyChanging</span> = <b>null</b>,
+														 <a href="#318e37132e8f9005" class="t t">CoerceValueDelegate</a> <span id="r120 rd" class="r120 r">coerceValue</span> = <b>null</b>, <a href="#a61a241bf6880707" class="t t">CreateDefaultValueDelegate</a> <span id="r121 rd" class="r121 r">defaultValueCreator</span> = <b>null</b>)
+		{
+			<b>return</b>
+				<b>new</b> <a href="BindablePropertyKey.cs.html#b1c5d20e9d6cff62" class="t constructor">BindablePropertyKey</a>(<b>new</b> <a href="#a2bf110a7d0b8f0e" class="t constructor">BindableProperty</a>(<span class="r112 r">propertyName</span>, <span class="r113 r">returnType</span>, <span class="r114 r">declaringType</span>, <span class="r115 r">defaultValue</span>, <span class="r116 r">defaultBindingMode</span>, <span class="r117 r">validateValue</span>, <span class="r118 r">propertyChanged</span>, <span class="r119 r">propertyChanging</span>, <span class="r120 r">coerceValue</span>,
+					<span class="r38 r">isReadOnly</span>: <b>true</b>, <span class="r39 r">defaultValueCreator</span>: <span class="r121 r">defaultValueCreator</span>));
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#66ed4e142f4e14e7" class="t constructor">Obsolete</a>(<span class="s">&quot;Create&lt;&gt; (generic) is obsolete as of version 2.1.0 and is no longer supported.&quot;</span>)]
+		<b>internal static</b> <a href="#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="50360cc50413fa5a" href="R/50360cc50413fa5a.html" target="n" data-glyph="74,1" class="i method">Create</a>&lt;<span id="r122 rd t" class="r122 r t">TDeclarer</span>, <span id="r123 rd t" class="r123 r t">TPropertyType</span>&gt;(<span class="t t">Expression</span>&lt;<a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="r122 r t">TDeclarer</span>, <span class="r123 r t">TPropertyType</span>&gt;&gt; <span id="r124 rd" class="r124 r">getter</span>, <span class="r123 r t">TPropertyType</span> <span id="r125 rd" class="r125 r">defaultValue</span>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r126 rd" class="r126 r">defaultBindingMode</span>,
+																		  <a href="#bbc5661b644e5446" class="t t">ValidateValueDelegate</a>&lt;<span class="r123 r t">TPropertyType</span>&gt; <span id="r127 rd" class="r127 r">validateValue</span>, <a href="#468451a6f4abcb47" class="t t">BindingPropertyChangedDelegate</a>&lt;<span class="r123 r t">TPropertyType</span>&gt; <span id="r128 rd" class="r128 r">propertyChanged</span>, <a href="#bb8adcfb2d3ff292" class="t t">BindingPropertyChangingDelegate</a>&lt;<span class="r123 r t">TPropertyType</span>&gt; <span id="r129 rd" class="r129 r">propertyChanging</span>,
+																		  <a href="#fa0fc06d3186585d" class="t t">CoerceValueDelegate</a>&lt;<span class="r123 r t">TPropertyType</span>&gt; <span id="r130 rd" class="r130 r">coerceValue</span>, <a href="#e4dadec48fc34f87" class="t t">BindablePropertyBindingChanging</a> <span id="r131 rd" class="r131 r">bindingChanging</span>, <b>bool</b> <span id="r132 rd" class="r132 r">isReadOnly</span> = <b>false</b>,
+																		  <a href="#5a22aca9aeb4a99c" class="t t">CreateDefaultValueDelegate</a>&lt;<span class="r122 r t">TDeclarer</span>, <span class="r123 r t">TPropertyType</span>&gt; <span id="r133 rd" class="r133 r">defaultValueCreator</span> = <b>null</b>) <b>where</b> <span class="r122 r t">TDeclarer</span> : <a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>
+		{
+			<b>if</b> (<span class="r124 r">getter</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;getter&quot;</span>);
+ 
+			<span class="t t">Expression</span> <span id="r134 rd" class="r134 r">expr</span> = <span class="r124 r">getter</span>.<span class="i property">Body</span>;
+ 
+			<b>var</b> <span id="r135 rd" class="r135 r">unary</span> = <span class="r134 r">expr</span> <b>as</b> <span class="t t">UnaryExpression</span>;
+			<b>if</b> (<span class="r135 r">unary</span> != <b>null</b>)
+				<span class="r134 r">expr</span> = <span class="r135 r">unary</span>.<span class="i property">Operand</span>;
+ 
+			<b>var</b> <span id="r136 rd" class="r136 r">member</span> = <span class="r134 r">expr</span> <b>as</b> <span class="t t">MemberExpression</span>;
+			<b>if</b> (<span class="r136 r">member</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;getter must be a MemberExpression&quot;</span>, <span class="s">&quot;getter&quot;</span>);
+ 
+			<b>var</b> <span id="r137 rd" class="r137 r">property</span> = (<span class="t t">PropertyInfo</span>)<span class="r136 r">member</span>.<span class="i property">Member</span>;
+ 
+			<a href="#43d376b46acb8e2e" class="t t">ValidateValueDelegate</a> <span id="r138 rd" class="r138 r">untypedValidateValue</span> = <b>null</b>;
+			<a href="#c1bbc3de02500c90" class="t t">BindingPropertyChangedDelegate</a> <span id="r139 rd" class="r139 r">untypedBindingPropertyChanged</span> = <b>null</b>;
+			<a href="#7fbf666ac53c4750" class="t t">BindingPropertyChangingDelegate</a> <span id="r140 rd" class="r140 r">untypedBindingPropertyChanging</span> = <b>null</b>;
+			<a href="#318e37132e8f9005" class="t t">CoerceValueDelegate</a> <span id="r141 rd" class="r141 r">untypedCoerceValue</span> = <b>null</b>;
+			<a href="#a61a241bf6880707" class="t t">CreateDefaultValueDelegate</a> <span id="r142 rd" class="r142 r">untypedDefaultValueCreator</span> = <b>null</b>;
+			<b>if</b> (<span class="r127 r">validateValue</span> != <b>null</b>)
+				<span class="r138 r">untypedValidateValue</span> = (<span id="r143 rd" class="r143 r">bindable</span>, <span id="r144 rd" class="r144 r">value</span>) =&gt; <span class="r127 r">validateValue</span>(<span class="r143 r">bindable</span>, (<span class="r123 r t">TPropertyType</span>)<span class="r144 r">value</span>);
+			<b>if</b> (<span class="r128 r">propertyChanged</span> != <b>null</b>)
+				<span class="r139 r">untypedBindingPropertyChanged</span> = (<span id="r145 rd" class="r145 r">bindable</span>, <span id="r146 rd" class="r146 r">oldValue</span>, <span id="r147 rd" class="r147 r">newValue</span>) =&gt; <span class="r128 r">propertyChanged</span>(<span class="r145 r">bindable</span>, (<span class="r123 r t">TPropertyType</span>)<span class="r146 r">oldValue</span>, (<span class="r123 r t">TPropertyType</span>)<span class="r147 r">newValue</span>);
+			<b>if</b> (<span class="r129 r">propertyChanging</span> != <b>null</b>)
+				<span class="r140 r">untypedBindingPropertyChanging</span> = (<span id="r148 rd" class="r148 r">bindable</span>, <span id="r149 rd" class="r149 r">oldValue</span>, <span id="r150 rd" class="r150 r">newValue</span>) =&gt; <span class="r129 r">propertyChanging</span>(<span class="r148 r">bindable</span>, (<span class="r123 r t">TPropertyType</span>)<span class="r149 r">oldValue</span>, (<span class="r123 r t">TPropertyType</span>)<span class="r150 r">newValue</span>);
+			<b>if</b> (<span class="r130 r">coerceValue</span> != <b>null</b>)
+				<span class="r141 r">untypedCoerceValue</span> = (<span id="r151 rd" class="r151 r">bindable</span>, <span id="r152 rd" class="r152 r">value</span>) =&gt; <span class="r130 r">coerceValue</span>(<span class="r151 r">bindable</span>, (<span class="r123 r t">TPropertyType</span>)<span class="r152 r">value</span>);
+			<b>if</b> (<span class="r133 r">defaultValueCreator</span> != <b>null</b>)
+				<span class="r142 r">untypedDefaultValueCreator</span> = <span id="r153 rd" class="r153 r">o</span> =&gt; <span class="r133 r">defaultValueCreator</span>((<span class="r122 r t">TDeclarer</span>)<span class="r153 r">o</span>);
+ 
+			<b>return</b> <b>new</b> <a href="#a2bf110a7d0b8f0e" class="t constructor">BindableProperty</a>(<span class="r137 r">property</span>.<span class="i property">Name</span>, <span class="r137 r">property</span>.<span class="i property">PropertyType</span>, <b>typeof</b>(<span class="r122 r t">TDeclarer</span>), <span class="r125 r">defaultValue</span>, <span class="r126 r">defaultBindingMode</span>, <span class="r138 r">untypedValidateValue</span>, <span class="r139 r">untypedBindingPropertyChanged</span>,
+				<span class="r140 r">untypedBindingPropertyChanging</span>, <span class="r141 r">untypedCoerceValue</span>, <span class="r131 r">bindingChanging</span>, <span class="r132 r">isReadOnly</span>, <span class="r142 r">untypedDefaultValueCreator</span>);
+		}
+ 
+		<b>internal static</b> <a href="#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="8d373e489118277e" href="R/8d373e489118277e.html" target="n" data-glyph="74,1" class="i method">Create</a>(<b>string</b> <span id="r154 rd" class="r154 r">propertyName</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r155 rd" class="r155 r">returnType</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r156 rd" class="r156 r">declaringType</span>, <b>object</b> <span id="r157 rd" class="r157 r">defaultValue</span>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r158 rd" class="r158 r">defaultBindingMode</span>, <a href="#43d376b46acb8e2e" class="t t">ValidateValueDelegate</a> <span id="r159 rd" class="r159 r">validateValue</span>,
+												<a href="#c1bbc3de02500c90" class="t t">BindingPropertyChangedDelegate</a> <span id="r160 rd" class="r160 r">propertyChanged</span>, <a href="#7fbf666ac53c4750" class="t t">BindingPropertyChangingDelegate</a> <span id="r161 rd" class="r161 r">propertyChanging</span>, <a href="#318e37132e8f9005" class="t t">CoerceValueDelegate</a> <span id="r162 rd" class="r162 r">coerceValue</span>, <a href="#e4dadec48fc34f87" class="t t">BindablePropertyBindingChanging</a> <span id="r163 rd" class="r163 r">bindingChanging</span>,
+												<a href="#a61a241bf6880707" class="t t">CreateDefaultValueDelegate</a> <span id="r164 rd" class="r164 r">defaultValueCreator</span> = <b>null</b>)
+		{
+			<b>return</b> <b>new</b> <a href="#a2bf110a7d0b8f0e" class="t constructor">BindableProperty</a>(<span class="r154 r">propertyName</span>, <span class="r155 r">returnType</span>, <span class="r156 r">declaringType</span>, <span class="r157 r">defaultValue</span>, <span class="r158 r">defaultBindingMode</span>, <span class="r159 r">validateValue</span>, <span class="r160 r">propertyChanged</span>, <span class="r161 r">propertyChanging</span>, <span class="r162 r">coerceValue</span>, <span class="r163 r">bindingChanging</span>,
+				<span class="r39 r">defaultValueCreator</span>: <span class="r164 r">defaultValueCreator</span>);
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#66ed4e142f4e14e7" class="t constructor">Obsolete</a>(<span class="s">&quot;CreateAttached&lt;&gt; (generic) is obsolete as of version 2.1.0 and is no longer supported.&quot;</span>)]
+		<b>internal static</b> <a href="#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="1f93ed744a106ca9" href="R/1f93ed744a106ca9.html" target="n" data-glyph="74,1" class="i method">CreateAttached</a>&lt;<span id="r165 rd t" class="r165 r t">TDeclarer</span>, <span id="r166 rd t" class="r166 r t">TPropertyType</span>&gt;(<span class="t t">Expression</span>&lt;<a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>, <span class="r166 r t">TPropertyType</span>&gt;&gt; <span id="r167 rd" class="r167 r">staticgetter</span>, <span class="r166 r t">TPropertyType</span> <span id="r168 rd" class="r168 r">defaultValue</span>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r169 rd" class="r169 r">defaultBindingMode</span>,
+																				  <a href="#bbc5661b644e5446" class="t t">ValidateValueDelegate</a>&lt;<span class="r166 r t">TPropertyType</span>&gt; <span id="r170 rd" class="r170 r">validateValue</span>, <a href="#468451a6f4abcb47" class="t t">BindingPropertyChangedDelegate</a>&lt;<span class="r166 r t">TPropertyType</span>&gt; <span id="r171 rd" class="r171 r">propertyChanged</span>, <a href="#bb8adcfb2d3ff292" class="t t">BindingPropertyChangingDelegate</a>&lt;<span class="r166 r t">TPropertyType</span>&gt; <span id="r172 rd" class="r172 r">propertyChanging</span>,
+																				  <a href="#fa0fc06d3186585d" class="t t">CoerceValueDelegate</a>&lt;<span class="r166 r t">TPropertyType</span>&gt; <span id="r173 rd" class="r173 r">coerceValue</span>, <a href="#e4dadec48fc34f87" class="t t">BindablePropertyBindingChanging</a> <span id="r174 rd" class="r174 r">bindingChanging</span>, <b>bool</b> <span id="r175 rd" class="r175 r">isReadOnly</span> = <b>false</b>,
+																				  <a href="#5a22aca9aeb4a99c" class="t t">CreateDefaultValueDelegate</a>&lt;<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>, <span class="r166 r t">TPropertyType</span>&gt; <span id="r176 rd" class="r176 r">defaultValueCreator</span> = <b>null</b>)
+		{
+			<b>if</b> (<span class="r167 r">staticgetter</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;staticgetter&quot;</span>);
+ 
+			<span class="t t">Expression</span> <span id="r177 rd" class="r177 r">expr</span> = <span class="r167 r">staticgetter</span>.<span class="i property">Body</span>;
+ 
+			<b>var</b> <span id="r178 rd" class="r178 r">unary</span> = <span class="r177 r">expr</span> <b>as</b> <span class="t t">UnaryExpression</span>;
+			<b>if</b> (<span class="r178 r">unary</span> != <b>null</b>)
+				<span class="r177 r">expr</span> = <span class="r178 r">unary</span>.<span class="i property">Operand</span>;
+ 
+			<b>var</b> <span id="r179 rd" class="r179 r">methodcall</span> = <span class="r177 r">expr</span> <b>as</b> <span class="t t">MethodCallExpression</span>;
+			<b>if</b> (<span class="r179 r">methodcall</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;staticgetter must be a MethodCallExpression&quot;</span>, <span class="s">&quot;staticgetter&quot;</span>);
+ 
+			<span class="t t">MethodInfo</span> <span id="r180 rd" class="r180 r">method</span> = <span class="r179 r">methodcall</span>.<span class="i property">Method</span>;
+			<b>if</b> (!<span class="r180 r">method</span>.<span class="i property">Name</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;Get&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;staticgetter name must start with Get&quot;</span>, <span class="s">&quot;staticgetter&quot;</span>);
+ 
+			<b>string</b> <span id="r181 rd" class="r181 r">propertyname</span> = <span class="r180 r">method</span>.<span class="i property">Name</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(3);
+ 
+			<a href="#43d376b46acb8e2e" class="t t">ValidateValueDelegate</a> <span id="r182 rd" class="r182 r">untypedValidateValue</span> = <b>null</b>;
+			<a href="#c1bbc3de02500c90" class="t t">BindingPropertyChangedDelegate</a> <span id="r183 rd" class="r183 r">untypedBindingPropertyChanged</span> = <b>null</b>;
+			<a href="#7fbf666ac53c4750" class="t t">BindingPropertyChangingDelegate</a> <span id="r184 rd" class="r184 r">untypedBindingPropertyChanging</span> = <b>null</b>;
+			<a href="#318e37132e8f9005" class="t t">CoerceValueDelegate</a> <span id="r185 rd" class="r185 r">untypedCoerceValue</span> = <b>null</b>;
+			<a href="#a61a241bf6880707" class="t t">CreateDefaultValueDelegate</a> <span id="r186 rd" class="r186 r">untypedDefaultValueCreator</span> = <b>null</b>;
+			<b>if</b> (<span class="r170 r">validateValue</span> != <b>null</b>)
+				<span class="r182 r">untypedValidateValue</span> = (<span id="r187 rd" class="r187 r">bindable</span>, <span id="r188 rd" class="r188 r">value</span>) =&gt; <span class="r170 r">validateValue</span>(<span class="r187 r">bindable</span>, (<span class="r166 r t">TPropertyType</span>)<span class="r188 r">value</span>);
+			<b>if</b> (<span class="r171 r">propertyChanged</span> != <b>null</b>)
+				<span class="r183 r">untypedBindingPropertyChanged</span> = (<span id="r189 rd" class="r189 r">bindable</span>, <span id="r190 rd" class="r190 r">oldValue</span>, <span id="r191 rd" class="r191 r">newValue</span>) =&gt; <span class="r171 r">propertyChanged</span>(<span class="r189 r">bindable</span>, (<span class="r166 r t">TPropertyType</span>)<span class="r190 r">oldValue</span>, (<span class="r166 r t">TPropertyType</span>)<span class="r191 r">newValue</span>);
+			<b>if</b> (<span class="r172 r">propertyChanging</span> != <b>null</b>)
+				<span class="r184 r">untypedBindingPropertyChanging</span> = (<span id="r192 rd" class="r192 r">bindable</span>, <span id="r193 rd" class="r193 r">oldValue</span>, <span id="r194 rd" class="r194 r">newValue</span>) =&gt; <span class="r172 r">propertyChanging</span>(<span class="r192 r">bindable</span>, (<span class="r166 r t">TPropertyType</span>)<span class="r193 r">oldValue</span>, (<span class="r166 r t">TPropertyType</span>)<span class="r194 r">newValue</span>);
+			<b>if</b> (<span class="r173 r">coerceValue</span> != <b>null</b>)
+				<span class="r185 r">untypedCoerceValue</span> = (<span id="r195 rd" class="r195 r">bindable</span>, <span id="r196 rd" class="r196 r">value</span>) =&gt; <span class="r173 r">coerceValue</span>(<span class="r195 r">bindable</span>, (<span class="r166 r t">TPropertyType</span>)<span class="r196 r">value</span>);
+			<b>if</b> (<span class="r176 r">defaultValueCreator</span> != <b>null</b>)
+				<span class="r186 r">untypedDefaultValueCreator</span> = <span id="r197 rd" class="r197 r">o</span> =&gt; <span class="r176 r">defaultValueCreator</span>(<span class="r197 r">o</span>);
+ 
+			<b>return</b> <b>new</b> <a href="#a2bf110a7d0b8f0e" class="t constructor">BindableProperty</a>(<span class="r181 r">propertyname</span>, <span class="r180 r">method</span>.<span class="i property">ReturnType</span>, <b>typeof</b>(<span class="r165 r t">TDeclarer</span>), <span class="r168 r">defaultValue</span>, <span class="r169 r">defaultBindingMode</span>, <span class="r182 r">untypedValidateValue</span>, <span class="r183 r">untypedBindingPropertyChanged</span>, <span class="r184 r">untypedBindingPropertyChanging</span>,
+				<span class="r185 r">untypedCoerceValue</span>, <span class="r174 r">bindingChanging</span>, <span class="r175 r">isReadOnly</span>, <span class="r186 r">untypedDefaultValueCreator</span>);
+		}
+ 
+		<b>internal static</b> <a href="#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="856d9d317e477ea9" href="R/856d9d317e477ea9.html" target="n" data-glyph="74,1" class="i method">CreateAttached</a>(<b>string</b> <span id="r198 rd" class="r198 r">propertyName</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r199 rd" class="r199 r">returnType</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r200 rd" class="r200 r">declaringType</span>, <b>object</b> <span id="r201 rd" class="r201 r">defaultValue</span>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r202 rd" class="r202 r">defaultBindingMode</span>, <a href="#43d376b46acb8e2e" class="t t">ValidateValueDelegate</a> <span id="r203 rd" class="r203 r">validateValue</span>,
+														<a href="#c1bbc3de02500c90" class="t t">BindingPropertyChangedDelegate</a> <span id="r204 rd" class="r204 r">propertyChanged</span>, <a href="#7fbf666ac53c4750" class="t t">BindingPropertyChangingDelegate</a> <span id="r205 rd" class="r205 r">propertyChanging</span>, <a href="#318e37132e8f9005" class="t t">CoerceValueDelegate</a> <span id="r206 rd" class="r206 r">coerceValue</span>, <a href="#e4dadec48fc34f87" class="t t">BindablePropertyBindingChanging</a> <span id="r207 rd" class="r207 r">bindingChanging</span>,
+														<b>bool</b> <span id="r208 rd" class="r208 r">isReadOnly</span>, <a href="#a61a241bf6880707" class="t t">CreateDefaultValueDelegate</a> <span id="r209 rd" class="r209 r">defaultValueCreator</span> = <b>null</b>)
+		{
+			<b>return</b> <b>new</b> <a href="#a2bf110a7d0b8f0e" class="t constructor">BindableProperty</a>(<span class="r198 r">propertyName</span>, <span class="r199 r">returnType</span>, <span class="r200 r">declaringType</span>, <span class="r201 r">defaultValue</span>, <span class="r202 r">defaultBindingMode</span>, <span class="r203 r">validateValue</span>, <span class="r204 r">propertyChanged</span>, <span class="r205 r">propertyChanging</span>, <span class="r206 r">coerceValue</span>, <span class="r207 r">bindingChanging</span>, <span class="r208 r">isReadOnly</span>,
+				<span class="r209 r">defaultValueCreator</span>);
+		}
+ 
+		<b>internal object</b> <a id="d0c9ea63ddd6dda9" href="R/d0c9ea63ddd6dda9.html" target="n" data-glyph="74,1" class="i method">GetDefaultValue</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r210 rd" class="r210 r">bindable</span>)
+		{
+			<b>if</b> (<a href="#b59f6352e415afa9" class="i property">DefaultValueCreator</a> != <b>null</b>)
+				<b>return</b> <a href="#b59f6352e415afa9" class="i property">DefaultValueCreator</a>(<span class="r210 r">bindable</span>);
+ 
+			<b>return</b> <a href="#b20da29b32c9aaff" class="i property">DefaultValue</a>;
+		}
+ 
+		<b>internal bool</b> <a id="c50e83cb086bedd0" href="R/c50e83cb086bedd0.html" target="n" data-glyph="74,1" class="i method">TryConvert</a>(<b>ref object</b> <span id="r211 rd" class="r211 r">value</span>)
+		{
+			<b>if</b> (<span class="r211 r">value</span> == <b>null</b>)
+			{
+				<b>return</b> !<a href="#769dda66686e9efa" class="i property">ReturnTypeInfo</a>.<span class="i property">IsValueType</span> || <a href="#769dda66686e9efa" class="i property">ReturnTypeInfo</a>.<span class="i property">IsGenericType</span> &amp;&amp; <a href="#769dda66686e9efa" class="i property">ReturnTypeInfo</a>.<span class="i method">GetGenericTypeDefinition</span>() == <b>typeof</b>(<a href="@1@System.Runtime/A.html#ffebe438fd9cbf0e" class="t t">Nullable</a>&lt;&gt;);
+			}
+ 
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r212 rd" class="r212 r">valueType</span> = <span class="r211 r">value</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r213 rd" class="r213 r">type</span> = <a href="#3a88e13a70e1553a" class="i property">ReturnType</a>;
+ 
+			<span class="c">// Dont support arbitrary IConvertible by limiting which types can use this</span>
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>[] <span id="r214 rd" class="r214 r">convertableTo</span>;
+			<a href="TypeConverter.cs.html#07b618880a109e92" class="t t">TypeConverter</a> <span id="r215 rd" class="r215 r">typeConverterTo</span>;
+			<b>if</b> (<a href="#1085a63f31e41bdb" class="i field">SimpleConvertTypes</a>.<a href="@1@System.Collections/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<span class="r212 r">valueType</span>, <b>out</b> <span class="r214 r">convertableTo</span>) &amp;&amp; <a href="@1@System.Runtime/A.html#156e066ecc4ccedf" class="t t">Array</a>.<a href="@1@System.Runtime/A.html#9dfd2c89c8d18414" class="i method">IndexOf</a>(<span class="r214 r">convertableTo</span>, <span class="r213 r">type</span>) != -1)
+			{
+				<span class="r211 r">value</span> = <span class="t t">Convert</span>.<span class="i method">ChangeType</span>(<span class="r211 r">value</span>, <span class="r213 r">type</span>);
+			}
+			<b>else if</b> (<a href="#b62567dfec04e25f" class="i field">WellKnownConvertTypes</a>.<a href="@1@System.Collections/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<span class="r213 r">type</span>, <b>out</b> <span class="r215 r">typeConverterTo</span>) &amp;&amp; <span class="r215 r">typeConverterTo</span>.<a href="TypeConverter.cs.html#66d8de3dc5aefd55" class="i method">CanConvertFrom</a>(<span class="r212 r">valueType</span>))
+			{
+				<span class="r211 r">value</span> = <span class="r215 r">typeConverterTo</span>.<a href="TypeConverter.cs.html#1bdd406e099a54c3" class="i method">ConvertFromInvariantString</a>(<span class="r211 r">value</span>.<a href="@1@System.Runtime/A.html#ff31a6bf27c58f89" class="i method">ToString</a>());
+			}
+			<b>else if</b> (!<a href="#769dda66686e9efa" class="i property">ReturnTypeInfo</a>.<span class="i method">IsAssignableFrom</span>(<span class="r212 r">valueType</span>.<span class="i method">GetTypeInfo</span>()))
+			{
+				<span class="c">// Is there an implicit cast operator ?</span>
+				<span class="t t">MethodInfo</span> <span id="r216 rd" class="r216 r">cast</span> = <span class="r213 r">type</span>.<span class="i method">GetRuntimeMethod</span>(<span class="s">&quot;op_Implicit&quot;</span>, <b>new</b>[] { <span class="r212 r">valueType</span> });
+				<b>if</b> (<span class="r216 r">cast</span> != <b>null</b> &amp;&amp; <span class="r216 r">cast</span>.<span class="i property">ReturnType</span> != <span class="r213 r">type</span>)
+					<span class="r216 r">cast</span> = <b>null</b>;
+				<b>if</b> (<span class="r216 r">cast</span> == <b>null</b>)
+					<span class="r216 r">cast</span> = <span class="r212 r">valueType</span>.<span class="i method">GetRuntimeMethod</span>(<span class="s">&quot;op_Implicit&quot;</span>, <b>new</b>[] { <span class="r212 r">valueType</span> });
+				<b>if</b> (<span class="r216 r">cast</span> != <b>null</b> &amp;&amp; <span class="r216 r">cast</span>.<span class="i property">ReturnType</span> != <span class="r213 r">type</span>)
+					<span class="r216 r">cast</span> = <b>null</b>;
+				<b>if</b> (<span class="r216 r">cast</span> == <b>null</b>)
+					<b>return false</b>;
+ 
+				<span class="r211 r">value</span> = <span class="r216 r">cast</span>.<span class="i method">Invoke</span>(<b>null</b>, <b>new</b>[] { <span class="r211 r">value</span> });
+			}
+ 
+			<b>return true</b>;
+		}
+ 
+		<b>internal delegate void</b> <a id="e4dadec48fc34f87" href="R/e4dadec48fc34f87.html" target="n" data-glyph="14,1" class="t t"><span id="d9a3601eaec85882">BindablePropertyBindingChanging</span></a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r217 rd" class="r217 r">bindable</span>, <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r218 rd" class="r218 r">oldValue</span>, <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r219 rd" class="r219 r">newValue</span>);
+	}
+}</pre></td></tr></table></div></body></html>

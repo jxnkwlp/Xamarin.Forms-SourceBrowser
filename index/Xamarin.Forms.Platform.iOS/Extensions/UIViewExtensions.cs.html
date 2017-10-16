@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html><head><title>UIViewExtensions.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(153);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/Extensions/UIViewExtensions.cs" target="_top">Extensions\UIViewExtensions.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Drawing</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using static</b> <span class="i n">System</span>.<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="t t">String</a>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<b>using</b> <span class="i n">UIKit</span>;
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">using UIView = AppKit.NSView;
+ 
+namespace Xamarin.Forms.Platform.MacOS
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public static class</b> <a id="fc1f062149f1dc5d" href="../R/../../0000000000.html" target="n" data-glyph="0,0" class="t t">UIViewExtensions</a>
+	{
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="t t">UIView</span>&gt; <a id="4284d82be59344a5" href="../R/4284d82be59344a5.html" target="n" data-glyph="220,1" class="i method">Descendants</a>(<b>this</b> <span class="t t">UIView</span> <span id="r0 rd" class="r0 r">self</span>)
+		{
+			<b>if</b> (<span class="r0 r">self</span>.<span class="i property">Subviews</span> == <b>null</b>)
+				<b>return</b> <a href="@0@System.Core/A.html#577032c8811e20d3" class="t t">Enumerable</a>.<a href="@0@System.Core/A.html#4d026772cf3399f5" class="i method">Empty</a>&lt;<span class="t t">UIView</span>&gt;();
+			<b>return</b> <span class="r0 r">self</span>.<span class="i property">Subviews</span>.<a href="@0@System.Core/A.html#9c0a66e386e37265" class="i method">Concat</a>(<span class="r0 r">self</span>.<span class="i property">Subviews</span>.<a href="@0@System.Core/A.html#8f3471331178bcb0" class="i method">SelectMany</a>(<span id="r1 rd" class="r1 r">s</span> =&gt; <span class="r1 r">s</span>.<a href="#4284d82be59344a5" class="i method">Descendants</a>()));
+		}
+ 
+		<b>public static</b> <a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="c981fc7314706e11" href="../R/c981fc7314706e11.html" target="n" data-glyph="220,1" class="i method">GetSizeRequest</a>(<b>this</b> <span class="t t">UIView</span> <span id="r2 rd" class="r2 r">self</span>, <b>double</b> <span id="r3 rd" class="r3 r">widthConstraint</span>, <b>double</b> <span id="r4 rd" class="r4 r">heightConstraint</span>,
+			<b>double</b> <span id="r5 rd" class="r5 r">minimumWidth</span> = -1, <b>double</b> <span id="r6 rd" class="r6 r">minimumHeight</span> = -1)
+		{
+			<span class="i n">CoreGraphics</span>.<span class="t t">CGSize</span> <span id="r7 rd" class="r7 r">s</span>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+			<span class="r7 r">s</span> = <span class="r2 r">self</span>.<span class="i method">SizeThatFits</span>(<b>new</b> <span class="t constructor">SizeF</span>((<b>float</b>)<span class="r3 r">widthConstraint</span>, (<b>float</b>)<span class="r4 r">heightConstraint</span>));
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">			var control = self as AppKit.NSControl;
+			if (control != null)
+				s = control.SizeThatFits(new CoreGraphics.CGSize(widthConstraint, heightConstraint));
+			else
+				s = self.FittingSize;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+			<a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="k">var</a> <span id="r8 rd" class="r8 r">request</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#1727209bca650e71" class="t constructor">Size</a>(<span class="r7 r">s</span>.<span class="i property">Width</span> == <b>float</b>.<a href="@0@mscorlib/A.html#0c63f4be2478e15f" class="i field">PositiveInfinity</a> ? <b>double</b>.<a href="@0@mscorlib/A.html#704210f8dd6afaed" class="i field">PositiveInfinity</a> : <span class="r7 r">s</span>.<span class="i property">Width</span>,
+				<span class="r7 r">s</span>.<span class="i property">Height</span> == <b>float</b>.<a href="@0@mscorlib/A.html#0c63f4be2478e15f" class="i field">PositiveInfinity</a> ? <b>double</b>.<a href="@0@mscorlib/A.html#704210f8dd6afaed" class="i field">PositiveInfinity</a> : <span class="r7 r">s</span>.<span class="i property">Height</span>);
+			<a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="k">var</a> <span id="r9 rd" class="r9 r">minimum</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#1727209bca650e71" class="t constructor">Size</a>(<span class="r5 r">minimumWidth</span> &lt; 0 ? <span class="r8 r">request</span>.<a href="/Xamarin.Forms.Core/A.html#6207d8e3826352f7" class="i property">Width</a> : <span class="r5 r">minimumWidth</span>,
+				<span class="r6 r">minimumHeight</span> &lt; 0 ? <span class="r8 r">request</span>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a> : <span class="r6 r">minimumHeight</span>);
+			<b>return</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#e57ae25284fd9c9e" class="t constructor">SizeRequest</a>(<span class="r8 r">request</span>, <span class="r9 r">minimum</span>);
+		}
+ 
+		<b>public static void</b> <a id="6ec9f9818959fb07" href="../R/6ec9f9818959fb07.html" target="n" data-glyph="220,1" class="i method">SetBinding</a>(<b>this</b> <span class="t t">UIView</span> <span id="r10 rd" class="r10 r">view</span>, <b>string</b> <span id="r11 rd" class="r11 r">propertyName</span>, <a href="/Xamarin.Forms.Core/A.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r12 rd" class="r12 r">bindingBase</span>,
+			<b>string</b> <span id="r13 rd" class="r13 r">updateSourceEventName</span> = <b>null</b>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#2dbd2de7439b0217" class="k">var</a> <span id="r14 rd" class="r14 r">binding</span> = <span class="r12 r">bindingBase</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#2dbd2de7439b0217" class="t t">Binding</a>;
+			<span class="c">//This will allow setting bindings from Xaml by reusing the MarkupExtension</span>
+			<span class="r13 r">updateSourceEventName</span> = <span class="r13 r">updateSourceEventName</span> ?? <span class="r14 r">binding</span>?.<a href="/Xamarin.Forms.Core/A.html#9a02eb9cd13ca528" class="i property">UpdateSourceEventName</a>;
+ 
+			<b>if</b> (!<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r13 r">updateSourceEventName</span>))
+			{
+				<a href="/Xamarin.Forms.Core/A.html#cd94403d1a408955" class="t t">NativeBindingHelpers</a>.<a href="/Xamarin.Forms.Core/A.html#2f5aa05bd5d87f5a" class="i method">SetBinding</a>(<span class="r10 r">view</span>, <span class="r11 r">propertyName</span>, <span class="r12 r">bindingBase</span>, <span class="r13 r">updateSourceEventName</span>);
+				<b>return</b>;
+			}
+ 
+			<a href="../NativeViewPropertyListener.cs.html#baf528cf853de3a2" class="t t">NativeViewPropertyListener</a> <span id="r15 rd" class="r15 r">nativePropertyListener</span> = <b>null</b>;
+			<b>if</b> (<span class="r12 r">bindingBase</span>.<a href="/Xamarin.Forms.Core/A.html#6a8c8005d33f1648" class="i property">Mode</a> == <a href="/Xamarin.Forms.Core/A.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="/Xamarin.Forms.Core/A.html#5b5de329b5adbce9" class="i field">TwoWay</a>)
+			{
+				<span class="r15 r">nativePropertyListener</span> = <b>new</b> <a href="../NativeViewPropertyListener.cs.html#f53f876a7a3d40aa" class="t constructor">NativeViewPropertyListener</a>(<span class="r11 r">propertyName</span>);
+				<b>try</b>
+				{
+					<span class="c">//TODO: We need to figure a way to map the value back to the real objectiveC property.</span>
+					<span class="c">//the X.IOS camelcase property name won&#39;t work</span>
+					<b>var</b> <span id="r16 rd" class="r16 r">key</span> = <b>new</b> <span class="i n">Foundation</span>.<span class="t constructor">NSString</span>(<span class="r11 r">propertyName</span>.<a href="@0@mscorlib/A.html#0b5a1ee33618e0b3" class="i method">ToLower</a>());
+					<b>var</b> <span id="r17 rd" class="r17 r">valueKey</span> = <span class="r10 r">view</span>.<span class="i method">ValueForKey</span>(<span class="r16 r">key</span>);
+					<b>if</b> (<span class="r17 r">valueKey</span> != <b>null</b>)
+					{
+						<span class="r10 r">view</span>.<span class="i method">AddObserver</span>(<span class="r15 r">nativePropertyListener</span>, <span class="r16 r">key</span>, <span class="i n">Foundation</span>.<span class="t t">NSKeyValueObservingOptions</span>.<span class="i field">New</span>, <a href="@0@mscorlib/A.html#d99bf6ad49979009" class="t t">IntPtr</a>.<a href="@0@mscorlib/A.html#d46202ed9b6005b2" class="i field">Zero</a>);
+					}
+				}
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+				<b>catch</b> (<span class="i n">Foundation</span>.<span class="t t">MonoTouchException</span> <span id="r18 rd" class="r18 r">ex</span>)
+				{
+					<span class="r15 r">nativePropertyListener</span> = <b>null</b>;
+					<b>if</b> (<span class="r18 r">ex</span>.<span class="i property">Name</span> == <span class="s">&quot;NSUnknownKeyException&quot;</span>)
+					{
+						<span class="i n">System</span>.<span class="i n">Diagnostics</span>.<a href="@0@System/A.html#632c6da37ce825df" class="t t">Debug</a>.<a href="@0@System/A.html#73de7bb60da320d3" class="i method">WriteLine</a>(<span class="s">&quot;KVO not supported, try specify a UpdateSourceEventName instead.&quot;</span>);
+						<b>return</b>;
+					}
+					<b>throw</b> <span class="r18 r">ex</span>;
+				}
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">				catch (Exception ex)
+				{
+					throw ex;
+				}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#cd94403d1a408955" class="t t">NativeBindingHelpers</a>.<a href="/Xamarin.Forms.Core/A.html#86b9c4a289731819" class="i method">SetBinding</a>(<span class="r10 r">view</span>, <span class="r11 r">propertyName</span>, <span class="r12 r">bindingBase</span>, <span class="r15 r">nativePropertyListener</span>);
+		}
+ 
+		<b>public static void</b> <a id="6b7c437a6eb5ae97" href="../R/6b7c437a6eb5ae97.html" target="n" data-glyph="220,1" class="i method">SetBinding</a>(<b>this</b> <span class="t t">UIView</span> <span id="r19 rd" class="r19 r">self</span>, <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r20 rd" class="r20 r">targetProperty</span>, <a href="/Xamarin.Forms.Core/A.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r21 rd" class="r21 r">binding</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#cd94403d1a408955" class="t t">NativeBindingHelpers</a>.<a href="/Xamarin.Forms.Core/A.html#ff5597f19f5ab068" class="i method">SetBinding</a>(<span class="r19 r">self</span>, <span class="r20 r">targetProperty</span>, <span class="r21 r">binding</span>);
+		}
+ 
+		<b>public static void</b> <a id="397323c4a3ce6b91" href="../R/397323c4a3ce6b91.html" target="n" data-glyph="220,1" class="i method">SetValue</a>(<b>this</b> <span class="t t">UIView</span> <span id="r22 rd" class="r22 r">target</span>, <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r23 rd" class="r23 r">targetProperty</span>, <b>object</b> <span id="r24 rd" class="r24 r">value</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#cd94403d1a408955" class="t t">NativeBindingHelpers</a>.<a href="/Xamarin.Forms.Core/A.html#d35543eec9ce8289" class="i method">SetValue</a>(<span class="r22 r">target</span>, <span class="r23 r">targetProperty</span>, <span class="r24 r">value</span>);
+		}
+ 
+		<b>public static void</b> <a id="1558e2d7f0aa24af" href="../R/1558e2d7f0aa24af.html" target="n" data-glyph="220,1" class="i method">SetBindingContext</a>(<b>this</b> <span class="t t">UIView</span> <span id="r25 rd" class="r25 r">target</span>, <b>object</b> <span id="r26 rd" class="r26 r">bindingContext</span>,
+			<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="t t">UIView</span>, <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="t t">UIView</span>&gt;&gt; <span id="r27 rd" class="r27 r">getChildren</span> = <b>null</b>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#cd94403d1a408955" class="t t">NativeBindingHelpers</a>.<a href="/Xamarin.Forms.Core/A.html#880b437ece35e772" class="i method">SetBindingContext</a>(<span class="r25 r">target</span>, <span class="r26 r">bindingContext</span>, <span class="r27 r">getChildren</span>);
+		}
+ 
+		<b>internal static void</b> <a id="3774286bccdff97e" href="../R/3774286bccdff97e.html" target="n" data-glyph="221,1" class="i method">TransferbindablePropertiesToWrapper</a>(<b>this</b> <span class="t t">UIView</span> <span id="r28 rd" class="r28 r">target</span>, <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a> <span id="r29 rd" class="r29 r">wrapper</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#cd94403d1a408955" class="t t">NativeBindingHelpers</a>.<a href="/Xamarin.Forms.Core/A.html#2a008f57163c968f" class="i method">TransferBindablePropertiesToWrapper</a>(<span class="r28 r">target</span>, <span class="r29 r">wrapper</span>);
+		}
+ 
+		<b>internal static</b> <span class="r30 r t">T</span> <a id="638a4fde2e7ef373" href="../R/638a4fde2e7ef373.html" target="n" data-glyph="221,1" class="i method">FindDescendantView</a>&lt;<span id="r30 rd t" class="r30 r t">T</span>&gt;(<b>this</b> <span class="t t">UIView</span> <span id="r31 rd" class="r31 r">view</span>) <b>where</b> <span class="r30 r t">T</span> : <span class="t t">UIView</span>
+		{
+			<a href="@0@System/A.html#aa3beab99b2e0db2" class="k">var</a> <span id="r32 rd" class="r32 r">queue</span> = <b>new</b> <a href="@0@System/A.html#a09109def640b7b1" class="t constructor">Queue</a>&lt;<span class="t t">UIView</span>&gt;();
+			<span class="r32 r">queue</span>.<a href="@0@System/A.html#14c3cc45ceaf1566" class="i method">Enqueue</a>(<span class="r31 r">view</span>);
+ 
+			<b>while</b> (<span class="r32 r">queue</span>.<a href="@0@System/A.html#2d2504e4ca700843" class="i property">Count</a> &gt; 0)
+			{
+				<b>var</b> <span id="r33 rd" class="r33 r">descendantView</span> = <span class="r32 r">queue</span>.<a href="@0@System/A.html#e68caf2d91344411" class="i method">Dequeue</a>();
+ 
+				<span class="r30 r t">var</span> <span id="r34 rd" class="r34 r">result</span> = <span class="r33 r">descendantView</span> <b>as</b> <span class="r30 r t">T</span>;
+				<b>if</b> (<span class="r34 r">result</span> != <b>null</b>)
+					<b>return</b> <span class="r34 r">result</span>;
+ 
+				<b>for</b> (<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r35 rd" class="r35 r">i</span> = 0; <span class="r35 r">i</span> &lt; <span class="r33 r">descendantView</span>.<span class="i property">Subviews</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a>; <span class="r35 r">i</span>++)
+					<span class="r32 r">queue</span>.<a href="@0@System/A.html#14c3cc45ceaf1566" class="i method">Enqueue</a>(<span class="r33 r">descendantView</span>.<span class="i property">Subviews</span>[<span class="r35 r">i</span>]);
+			}
+ 
+			<b>return null</b>;
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<b>internal static</b> <span class="t t">UIView</span> <a id="c83da841fa87f340" href="../R/c83da841fa87f340.html" target="n" data-glyph="221,1" class="i method">FindFirstResponder</a>(<b>this</b> <span class="t t">UIView</span> <span id="r36 rd" class="r36 r">view</span>)
+		{
+			<b>if</b> (<span class="r36 r">view</span>.<span class="i property">IsFirstResponder</span>)
+				<b>return</b> <span class="r36 r">view</span>;
+ 
+			<b>foreach</b> (<b>var</b> <span id="r37 rd" class="r37 r">subView</span> <b>in</b> <span class="r36 r">view</span>.<span class="i property">Subviews</span>)
+			{
+				<b>var</b> <span id="r38 rd" class="r38 r">firstResponder</span> = <span class="r37 r">subView</span>.<a href="#c83da841fa87f340" class="i method">FindFirstResponder</a>();
+				<b>if</b> (<span class="r38 r">firstResponder</span> != <b>null</b>)
+					<b>return</b> <span class="r38 r">firstResponder</span>;
+			}
+ 
+			<b>return null</b>;
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,263 @@
+﻿<!DOCTYPE html>
+<html><head><title>PickerRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(254);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/Renderers/PickerRenderer.cs" target="_top">Renderers\PickerRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">UIKit</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">iOSSpecific</span>;
+<b>using</b> <span class="t">RectangleF</span> = <span class="i n">CoreGraphics</span>.<span class="t t">CGRect</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+{
+	<b>public class</b> <a id="0c86c5dfe562b668" href="../R/0c86c5dfe562b668.html" target="n" data-glyph="0,0" class="t t"><span id="bed3ca8c2aa38626">PickerRenderer</span></a> : <a href="../ViewRenderer.cs.html#a26bff279160b03e" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>, <span class="t t">UITextField</span>&gt;
+	{
+		<span class="t t">UIPickerView</span> <a id="b8ed352557109060" href="../R/b8ed352557109060.html" target="n" data-glyph="46,1" class="i field">_picker</a>;
+		<span class="t t">UIColor</span> <a id="e127c364990e822f" href="../R/e127c364990e822f.html" target="n" data-glyph="46,1" class="i field">_defaultTextColor</a>;
+		<b>bool</b> <a id="7370a57cfe19e9a2" href="../R/7370a57cfe19e9a2.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a> <a id="637cecd8d522f644" href="../R/637cecd8d522f644.html" target="n" data-glyph="106,1" class="i property">ElementController</a> =&gt; <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a>;
+ 
+		<b>protected override void</b> <a id="def1723d2f953f90" href="../R/def1723d2f953f90.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#8cd59c48d876c811" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>&gt; <span id="r0 rd" class="r0 r">e</span>)
+		{
+			<b>if</b> (<span class="r0 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#4f3197519f522690" class="i property">OldElement</a> != <b>null</b>)
+				((<a href="@0@System/A.html#c0af625dba98c968" class="t t">INotifyCollectionChanged</a>)<span class="r0 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#4f3197519f522690" class="i property">OldElement</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>).<a href="@0@System/A.html#26300c777385ef7c" class="i">CollectionChanged</a> -= <a href="#4a6b14443ffd4f16" class="i method">RowsCollectionChanged</a>;
+ 
+			<b>if</b> (<span class="r0 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<b>if</b> (<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> == <b>null</b>)
+				{
+					<a href="DatePickerRenderer.cs.html#d8da96eff7cdd059" class="k">var</a> <span id="r1 rd" class="r1 r">entry</span> = <b>new</b> <a href="DatePickerRenderer.cs.html#f9268b155066f53b" class="t constructor">NoCaretField</a> { <span class="i property">BorderStyle</span> = <span class="t t">UITextBorderStyle</span>.<span class="i field">RoundedRect</span> };
+ 
+					<span class="r1 r">entry</span>.<span class="i">EditingDidBegin</span> += <a href="#bb847ebc5a92915e" class="i method">OnStarted</a>;
+					<span class="r1 r">entry</span>.<span class="i">EditingDidEnd</span> += <a href="#ee8ab325d791d5ae" class="i method">OnEnded</a>;
+					<span class="r1 r">entry</span>.<span class="i">EditingChanged</span> += <a href="#1f332dcf6c398b1b" class="i method">OnEditing</a>;
+ 
+					<a href="#b8ed352557109060" class="i field">_picker</a> = <b>new</b> <span class="t constructor">UIPickerView</span>();
+ 
+					<b>var</b> <span id="r2 rd" class="r2 r">width</span> = <span class="t t">UIScreen</span>.<span class="i property">MainScreen</span>.<span class="i property">Bounds</span>.<span class="i property">Width</span>;
+					<b>var</b> <span id="r3 rd" class="r3 r">toolbar</span> = <b>new</b> <span class="t constructor">UIToolbar</span>(<b>new</b> <span class="t constructor">RectangleF</span>(0, 0, <span class="r2 r">width</span>, 44)) { <span class="i property">BarStyle</span> = <span class="t t">UIBarStyle</span>.<span class="i field">Default</span>, <span class="i property">Translucent</span> = <b>true</b> };
+					<b>var</b> <span id="r4 rd" class="r4 r">spacer</span> = <b>new</b> <span class="t constructor">UIBarButtonItem</span>(<span class="t t">UIBarButtonSystemItem</span>.<span class="i field">FlexibleSpace</span>);
+					<b>var</b> <span id="r5 rd" class="r5 r">doneButton</span> = <b>new</b> <span class="t constructor">UIBarButtonItem</span>(<span class="t t">UIBarButtonSystemItem</span>.<span class="i field">Done</span>, (<span id="r6 rd" class="r6 r">o</span>, <span id="r7 rd" class="r7 r">a</span>) =&gt;
+					{
+						<a href="#82f70cdc04c74c79" class="k">var</a> <span id="r8 rd" class="r8 r">s</span> = (<a href="#82f70cdc04c74c79" class="t t">PickerSource</a>)<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i property">Model</span>;
+						<b>if</b> (<span class="r8 r">s</span>.<a href="#aa6328b9020f9480" class="i property">SelectedIndex</a> == -1 &amp;&amp; <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a> != <b>null</b> &amp;&amp; <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>.<a href="@0@mscorlib/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> &gt; 0)
+							<a href="#3e8a07d9f16fc6c4" class="i method">UpdatePickerSelectedIndex</a>(0);
+						<a href="#2d7c785271a77934" class="i method">UpdatePickerFromModel</a>(<span class="r8 r">s</span>);
+						<span class="r1 r">entry</span>.<span class="i method">ResignFirstResponder</span>();
+					});
+ 
+					<span class="r3 r">toolbar</span>.<span class="i method">SetItems</span>(<b>new</b>[] { <span class="r4 r">spacer</span>, <span class="r5 r">doneButton</span> }, <b>false</b>);
+ 
+					<span class="r1 r">entry</span>.<span class="i property">InputView</span> = <a href="#b8ed352557109060" class="i field">_picker</a>;
+					<span class="r1 r">entry</span>.<span class="i property">InputAccessoryView</span> = <span class="r3 r">toolbar</span>;
+ 
+					<a href="#e127c364990e822f" class="i field">_defaultTextColor</a> = <span class="r1 r">entry</span>.<span class="i property">TextColor</span>;
+ 
+					<a href="../ViewRenderer.cs.html#5a05fd07ede87b4f" class="i method">SetNativeControl</a>(<span class="r1 r">entry</span>);
+				}
+ 
+				<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i property">Model</span> = <b>new</b> <a href="#54a47727fbc048d1" class="t constructor">PickerSource</a>(<a href="#0c86c5dfe562b668" class="k">this</a>);
+ 
+				<a href="#f7e3843f7ee68459" class="i method">UpdatePicker</a>();
+				<a href="#91dcd4bd6ec14d72" class="i method">UpdateTextColor</a>();
+ 
+				((<a href="@0@System/A.html#c0af625dba98c968" class="t t">INotifyCollectionChanged</a>)<span class="r0 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>).<a href="@0@System/A.html#26300c777385ef7c" class="i">CollectionChanged</a> += <a href="#4a6b14443ffd4f16" class="i method">RowsCollectionChanged</a>;
+			}
+ 
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#8d6908150c52ef88" class="i method">OnElementChanged</a>(<span class="r0 r">e</span>);
+		}
+ 
+		<b>protected override void</b> <a id="a1df854ee291cf1e" href="../R/a1df854ee291cf1e.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#9d8f9c1b9a699acd" class="i method">OnElementPropertyChanged</a>(<span class="r9 r">sender</span>, <span class="r10 r">e</span>);
+			<b>if</b> (<span class="r10 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>.<a href="/Xamarin.Forms.Core/A.html#5573ce67f57c099b" class="i field">TitleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#f7e3843f7ee68459" class="i method">UpdatePicker</a>();
+			<b>if</b> (<span class="r10 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>.<a href="/Xamarin.Forms.Core/A.html#4cc8ed30ae38dc2c" class="i field">SelectedIndexProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#f7e3843f7ee68459" class="i method">UpdatePicker</a>();
+			<b>if</b> (<span class="r10 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>.<a href="/Xamarin.Forms.Core/A.html#660c507935b16122" class="i field">TextColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r10 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#d798cc16e0e87f98" class="i field">IsEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#91dcd4bd6ec14d72" class="i method">UpdateTextColor</a>();
+		}
+ 
+		<b>void</b> <a id="1f332dcf6c398b1b" href="../R/1f332dcf6c398b1b.html" target="n" data-glyph="76,1" class="i method">OnEditing</a>(<b>object</b> <span id="r11 rd" class="r11 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r12 rd" class="r12 r">eventArgs</span>)
+		{
+			<span class="c">// Reset the TextField&#39;s Text so it appears as if typing with a keyboard does not work.</span>
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r13 rd" class="r13 r">selectedIndex</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2a86e2fcc8f3e266" class="i property">SelectedIndex</a>;
+			<a href="@0@mscorlib/A.html#b19f71a84062554b" class="k">var</a> <span id="r14 rd" class="r14 r">items</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>;
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Text</span> = <span class="r13 r">selectedIndex</span> == -1 || <span class="r14 r">items</span> == <b>null</b> ? <span class="s">&quot;&quot;</span> : <span class="r14 r">items</span><a href="@0@mscorlib/A.html#396bb785d31f5979">[</a><span class="r13 r">selectedIndex</span>];
+		}
+ 
+		<b>void</b> <a id="ee8ab325d791d5ae" href="../R/ee8ab325d791d5ae.html" target="n" data-glyph="76,1" class="i method">OnEnded</a>(<b>object</b> <span id="r15 rd" class="r15 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r16 rd" class="r16 r">eventArgs</span>)
+		{
+			<a href="#82f70cdc04c74c79" class="k">var</a> <span id="r17 rd" class="r17 r">s</span> = (<a href="#82f70cdc04c74c79" class="t t">PickerSource</a>)<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i property">Model</span>;
+			<b>if</b> (<span class="r17 r">s</span>.<a href="#aa6328b9020f9480" class="i property">SelectedIndex</a> != <a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i method">SelectedRowInComponent</span>(0))
+			{
+				<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i method">Select</span>(<span class="r17 r">s</span>.<a href="#aa6328b9020f9480" class="i property">SelectedIndex</a>, 0, <b>false</b>);
+			}
+			<a href="#637cecd8d522f644" class="i property">ElementController</a>.<a href="/Xamarin.Forms.Core/A.html#4fa5976d0a57f29b" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <b>false</b>);
+		}
+ 
+		<b>void</b> <a id="bb847ebc5a92915e" href="../R/bb847ebc5a92915e.html" target="n" data-glyph="76,1" class="i method">OnStarted</a>(<b>object</b> <span id="r18 rd" class="r18 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r19 rd" class="r19 r">eventArgs</span>)
+		{
+			<a href="#637cecd8d522f644" class="i property">ElementController</a>.<a href="/Xamarin.Forms.Core/A.html#4fa5976d0a57f29b" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <b>true</b>);
+		}
+ 
+		<b>void</b> <a id="4a6b14443ffd4f16" href="../R/4a6b14443ffd4f16.html" target="n" data-glyph="76,1" class="i method">RowsCollectionChanged</a>(<b>object</b> <span id="r20 rd" class="r20 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r21 rd" class="r21 r">e</span>)
+		{
+			<a href="#f7e3843f7ee68459" class="i method">UpdatePicker</a>();
+		}
+ 
+		<b>void</b> <a id="f7e3843f7ee68459" href="../R/f7e3843f7ee68459.html" target="n" data-glyph="76,1" class="i method">UpdatePicker</a>()
+		{
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r22 rd" class="r22 r">selectedIndex</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2a86e2fcc8f3e266" class="i property">SelectedIndex</a>;
+			<a href="@0@mscorlib/A.html#b19f71a84062554b" class="k">var</a> <span id="r23 rd" class="r23 r">items</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>;
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Placeholder</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#f944f721fe11576b" class="i property">Title</a>;
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r24 rd" class="r24 r">oldText</span> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Text</span>;
+			<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Text</span> = <span class="r22 r">selectedIndex</span> == -1 || <span class="r23 r">items</span> == <b>null</b> ? <span class="s">&quot;&quot;</span> : <span class="r23 r">items</span><a href="@0@mscorlib/A.html#396bb785d31f5979">[</a><span class="r22 r">selectedIndex</span>];
+			<a href="#21d0977255466ee0" class="i method">UpdatePickerNativeSize</a>(<span class="r24 r">oldText</span>);
+			<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i method">ReloadAllComponents</span>();
+			<b>if</b> (<span class="r23 r">items</span> == <b>null</b> || <span class="r23 r">items</span>.<a href="@0@mscorlib/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> == 0)
+				<b>return</b>;
+ 
+			<a href="#3e8a07d9f16fc6c4" class="i method">UpdatePickerSelectedIndex</a>(<span class="r22 r">selectedIndex</span>);
+		}
+ 
+		<b>void</b> <a id="2d7c785271a77934" href="../R/2d7c785271a77934.html" target="n" data-glyph="76,1" class="i method">UpdatePickerFromModel</a>(<a href="#82f70cdc04c74c79" class="t t">PickerSource</a> <span id="r25 rd" class="r25 r">s</span>)
+		{
+			<b>if</b> (<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a> != <b>null</b>)
+			{
+				<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r26 rd" class="r26 r">oldText</span> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Text</span>;
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Text</span> = <span class="r25 r">s</span>.<a href="#0158ae2c691cb988" class="i property">SelectedItem</a>;
+				<a href="#21d0977255466ee0" class="i method">UpdatePickerNativeSize</a>(<span class="r26 r">oldText</span>);
+				<a href="#637cecd8d522f644" class="i property">ElementController</a>.<a href="/Xamarin.Forms.Core/A.html#5e644259f42c0939" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#38f5ff9ee9ef242a" class="t t">Picker</a>.<a href="/Xamarin.Forms.Core/A.html#4cc8ed30ae38dc2c" class="i field">SelectedIndexProperty</a>, <span class="r25 r">s</span>.<a href="#aa6328b9020f9480" class="i property">SelectedIndex</a>);
+			}
+		}
+ 
+		<b>void</b> <a id="21d0977255466ee0" href="../R/21d0977255466ee0.html" target="n" data-glyph="76,1" class="i method">UpdatePickerNativeSize</a>(<b>string</b> <span id="r27 rd" class="r27 r">oldText</span>)
+		{
+			<b>if</b> (<span class="r27 r">oldText</span> != <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">Text</span>)
+				((<a href="/Xamarin.Forms.Core/A.html#d605b7264f63ff57" class="t t">IVisualElementController</a>)<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#b12b5140a1053cdd" class="i method">NativeSizeChanged</a>();
+		}
+ 
+		<b>void</b> <a id="3e8a07d9f16fc6c4" href="../R/3e8a07d9f16fc6c4.html" target="n" data-glyph="76,1" class="i method">UpdatePickerSelectedIndex</a>(<b>int</b> <span id="r28 rd" class="r28 r">formsIndex</span>)
+		{
+			<a href="#82f70cdc04c74c79" class="k">var</a> <span id="r29 rd" class="r29 r">source</span> = (<a href="#82f70cdc04c74c79" class="t t">PickerSource</a>)<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i property">Model</span>;
+			<span class="r29 r">source</span>.<a href="#aa6328b9020f9480" class="i property">SelectedIndex</a> = <span class="r28 r">formsIndex</span>;
+			<span class="r29 r">source</span>.<a href="#0158ae2c691cb988" class="i property">SelectedItem</a> = <span class="r28 r">formsIndex</span> &gt;= 0 ? <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a><a href="@0@mscorlib/A.html#396bb785d31f5979">[</a><span class="r28 r">formsIndex</span>] : <b>null</b>;
+			<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i method">Select</span>(<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#80ff956e9ca8e414" class="i method">Max</a>(<span class="r28 r">formsIndex</span>, 0), 0, <b>true</b>);
+		}
+ 
+		<b>void</b> <a id="91dcd4bd6ec14d72" href="../R/91dcd4bd6ec14d72.html" target="n" data-glyph="76,1" class="i method">UpdateTextColor</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="k">var</a> <span id="r30 rd" class="r30 r">textColor</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d4fea928c5d48f63" class="i property">TextColor</a>;
+ 
+			<b>if</b> (<span class="r30 r">textColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a> || !<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>)
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">TextColor</span> = <a href="#e127c364990e822f" class="i field">_defaultTextColor</a>;
+			<b>else</b>
+				<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i property">TextColor</span> = <span class="r30 r">textColor</span>.<a href="../Extensions/ColorExtensions.cs.html#76dd85b8fcdc3ec0" class="i method">ToUIColor</a>();
+		}
+ 
+		<b>protected override void</b> <a id="cd74ccbd3b684502" href="../R/cd74ccbd3b684502.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r31 rd" class="r31 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#7370a57cfe19e9a2" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<a href="#7370a57cfe19e9a2" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<b>if</b> (<span class="r31 r">disposing</span>)
+			{
+				<a href="#e127c364990e822f" class="i field">_defaultTextColor</a> = <b>null</b>;
+ 
+				<b>if</b> (<a href="#b8ed352557109060" class="i field">_picker</a> != <b>null</b>)
+				{
+					<b>if</b> (<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i property">Model</span> != <b>null</b>)
+					{
+						<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i property">Model</span>.<span class="i method">Dispose</span>();
+						<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i property">Model</span> = <b>null</b>;
+					}
+ 
+					<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i method">RemoveFromSuperview</span>();
+					<a href="#b8ed352557109060" class="i field">_picker</a>.<span class="i method">Dispose</span>();
+					<a href="#b8ed352557109060" class="i field">_picker</a> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a> != <b>null</b>)
+				{
+					<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i">EditingDidBegin</span> -= <a href="#bb847ebc5a92915e" class="i method">OnStarted</a>;
+					<a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>.<span class="i">EditingDidEnd</span> -= <a href="#ee8ab325d791d5ae" class="i method">OnEnded</a>;
+				}
+ 
+				<b>if</b>(<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a> != <b>null</b>)
+					((<a href="@0@System/A.html#c0af625dba98c968" class="t t">INotifyCollectionChanged</a>)<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>).<a href="@0@System/A.html#26300c777385ef7c" class="i">CollectionChanged</a> -= <a href="#4a6b14443ffd4f16" class="i method">RowsCollectionChanged</a>;
+			}
+ 
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#0263ff95aef8d32c" class="i method">Dispose</a>(<span class="r31 r">disposing</span>);
+		}
+ 
+		<b>class</b> <a id="82f70cdc04c74c79" href="../R/82f70cdc04c74c79.html" target="n" data-glyph="4,1" class="t t">PickerSource</a> : <span class="t t">UIPickerViewModel</span>
+		{
+			<a href="#0c86c5dfe562b668" class="t t">PickerRenderer</a> <a id="fa2cbcfe3fe86258" href="../R/fa2cbcfe3fe86258.html" target="n" data-glyph="46,2" class="i field">_renderer</a>;
+			<b>bool</b> <a id="98a85995c9042186" href="../R/98a85995c9042186.html" target="n" data-glyph="46,2" class="i field">_disposed</a>;
+ 
+			<b>public</b> <a id="54a47727fbc048d1" href="../R/54a47727fbc048d1.html" target="n" data-glyph="72,2" class="i constructor">PickerSource</a>(<a href="#0c86c5dfe562b668" class="t t">PickerRenderer</a> <span id="r32 rd" class="r32 r">renderer</span>)
+			{
+				<a href="#fa2cbcfe3fe86258" class="i field">_renderer</a> = <span class="r32 r">renderer</span>;
+			}
+ 
+			<b>public int</b> <a id="aa6328b9020f9480" href="../R/aa6328b9020f9480.html" target="n" data-glyph="102,2" class="i property">SelectedIndex</a> { <b>get</b>; <b>internal set</b>; }
+ 
+			<b>public string</b> <a id="0158ae2c691cb988" href="../R/0158ae2c691cb988.html" target="n" data-glyph="102,2" class="i property">SelectedItem</a> { <b>get</b>; <b>internal set</b>; }
+ 
+			<b>public override</b> <span class="t t">nint</span> <a id="44b097d22099440a" href="../R/44b097d22099440a.html" target="n" data-glyph="72,2" class="i method">GetComponentCount</a>(<span class="t t">UIPickerView</span> <span id="r33 rd" class="r33 r">picker</span>)
+			{
+				<b>return</b> 1;
+			}
+ 
+			<b>public override</b> <span class="t t">nint</span> <a id="41790d41eb131780" href="../R/41790d41eb131780.html" target="n" data-glyph="72,2" class="i method">GetRowsInComponent</a>(<span class="t t">UIPickerView</span> <span id="r34 rd" class="r34 r">pickerView</span>, <span class="t t">nint</span> <span id="r35 rd" class="r35 r">component</span>)
+			{
+				<b>return</b> <a href="#fa2cbcfe3fe86258" class="i field">_renderer</a>.<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a> != <b>null</b> ? <a href="#fa2cbcfe3fe86258" class="i field">_renderer</a>.<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>.<a href="@0@mscorlib/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> : 0;
+			}
+ 
+			<b>public override string</b> <a id="341d17423dae5298" href="../R/341d17423dae5298.html" target="n" data-glyph="72,2" class="i method">GetTitle</a>(<span class="t t">UIPickerView</span> <span id="r36 rd" class="r36 r">picker</span>, <span class="t t">nint</span> <span id="r37 rd" class="r37 r">row</span>, <span class="t t">nint</span> <span id="r38 rd" class="r38 r">component</span>)
+			{
+				<b>return</b> <a href="#fa2cbcfe3fe86258" class="i field">_renderer</a>.<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>[(<b>int</b>)<span class="r37 r">row</span>];
+			}
+ 
+			<b>public override void</b> <a id="0779ba6dbc1b4bfe" href="../R/0779ba6dbc1b4bfe.html" target="n" data-glyph="72,2" class="i method">Selected</a>(<span class="t t">UIPickerView</span> <span id="r39 rd" class="r39 r">picker</span>, <span class="t t">nint</span> <span id="r40 rd" class="r40 r">row</span>, <span class="t t">nint</span> <span id="r41 rd" class="r41 r">component</span>)
+			{
+				<b>if</b> (<a href="#fa2cbcfe3fe86258" class="i field">_renderer</a>.<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>.<a href="@0@mscorlib/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> == 0)
+				{
+					<a href="#0158ae2c691cb988" class="i property">SelectedItem</a> = <b>null</b>;
+					<a href="#aa6328b9020f9480" class="i property">SelectedIndex</a> = -1;
+				}
+				<b>else</b>
+				{
+					<a href="#0158ae2c691cb988" class="i property">SelectedItem</a> = <a href="#fa2cbcfe3fe86258" class="i field">_renderer</a>.<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5cf436c5796aa747" class="i property">Items</a>[(<b>int</b>)<span class="r40 r">row</span>];
+					<a href="#aa6328b9020f9480" class="i property">SelectedIndex</a> = (<b>int</b>)<span class="r40 r">row</span>;
+				}
+ 
+				<b>if</b>(<a href="#fa2cbcfe3fe86258" class="i field">_renderer</a>.<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#cb91ea2b636a0957" class="i method">On</a>&lt;<span class="i n">PlatformConfiguration</span>.<a href="/Xamarin.Forms.Core/A.html#ce50eb548079ddaa" class="t t">iOS</a>&gt;().<a href="/Xamarin.Forms.Core/A.html#28c2839ad1e5ca0f" class="i method">UpdateMode</a>() == <a href="/Xamarin.Forms.Core/A.html#4e961c2297bc22ff" class="t t">UpdateMode</a>.<a href="/Xamarin.Forms.Core/A.html#408fcab98dacb8ce" class="i field">Immediately</a>)
+					<a href="#fa2cbcfe3fe86258" class="i field">_renderer</a>.<a href="#2d7c785271a77934" class="i method">UpdatePickerFromModel</a>(<a href="#82f70cdc04c74c79" class="k">this</a>);
+			}
+ 
+			<b>protected override void</b> <a id="afdd8351a57654c6" href="../R/afdd8351a57654c6.html" target="n" data-glyph="75,2" class="i method">Dispose</a>(<b>bool</b> <span id="r42 rd" class="r42 r">disposing</span>)
+			{
+				<b>if</b> (<a href="#98a85995c9042186" class="i field">_disposed</a>)
+					<b>return</b>;
+ 
+				<a href="#98a85995c9042186" class="i field">_disposed</a> = <b>true</b>;
+ 
+				<b>if</b> (<span class="r42 r">disposing</span>)
+					<a href="#fa2cbcfe3fe86258" class="i field">_renderer</a> = <b>null</b>;
+ 
+				<b>base</b>.<span class="i method">Dispose</span>(<span class="r42 r">disposing</span>);
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

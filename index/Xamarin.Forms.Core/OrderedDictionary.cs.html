@@ -1,0 +1,461 @@
+﻿<!DOCTYPE html>
+<html><head><title>OrderedDictionary.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(452);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/OrderedDictionary.cs" target="_top">OrderedDictionary.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<span class="c">//</span>
+<span class="c">// OrderedDictionary.cs</span>
+<span class="c">//</span>
+<span class="c">// Author:</span>
+<span class="c">//   Eric Maupin  &lt;me@ermau.com&gt;</span>
+<span class="c">//</span>
+<span class="c">// Copyright (c) 2009 Eric Maupin (http://www.ermau.com)</span>
+<span class="c">//</span>
+<span class="c">// Permission is hereby granted, free of charge, to any person obtaining</span>
+<span class="c">// a copy of this software and associated documentation files (the</span>
+<span class="c">// &quot;Software&quot;), to deal in the Software without restriction, including</span>
+<span class="c">// without limitation the rights to use, copy, modify, merge, publish,</span>
+<span class="c">// distribute, sublicense, and/or sell copies of the Software, and to</span>
+<span class="c">// permit persons to whom the Software is furnished to do so, subject to</span>
+<span class="c">// the following conditions:</span>
+<span class="c">//</span>
+<span class="c">// The above copyright notice and this permission notice shall be</span>
+<span class="c">// included in all copies or substantial portions of the Software.</span>
+<span class="c">//</span>
+<span class="c">// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,</span>
+<span class="c">// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</span>
+<span class="c">// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</span>
+<span class="c">// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE</span>
+<span class="c">// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION</span>
+<span class="c">// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION</span>
+<span class="c">// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<span class="c">//</span>
+ 
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Cadenza</span>.<span class="i n">Collections</span>
+{
+	<b>internal sealed class</b> <a id="c61296e013b8b395" href="R/c61296e013b8b395.html" target="n" data-glyph="2,0" class="t t">OrderedDictionary</a>&lt;<span id="r0 rd t" class="r0 r t">TKey</span>, <span id="r1 rd t" class="r1 r t">TValue</span>&gt; : <a href="@1@System.Runtime/A.html#20343df0c96b629b" class="t t">IDictionary</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;, <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt;
+	{
+		<b>readonly</b> <a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt; <a id="c8a054881f3dc85f" href="R/c8a054881f3dc85f.html" target="n" data-glyph="46,1" class="i field">_dict</a>;
+		<b>readonly</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<span class="r0 r t">TKey</span>&gt; <a id="17101828b3dd1d62" href="R/17101828b3dd1d62.html" target="n" data-glyph="46,1" class="i field">_keyOrder</a>;
+		<b>readonly</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt; <a id="d32132b434477a31" href="R/d32132b434477a31.html" target="n" data-glyph="46,1" class="i field">_kvpCollection</a>;
+		<b>readonly</b> <a href="@1@System.Runtime/A.html#aafef79f3fced6c2" class="t t">ReadOnlyCollection</a>&lt;<span class="r0 r t">TKey</span>&gt; <a id="d0825f99d4e18063" href="R/d0825f99d4e18063.html" target="n" data-glyph="46,1" class="i field">_roKeys</a>;
+ 
+		<b>readonly</b> <a href="#06f902121b4cea40" class="t t">ReadOnlyValueCollection</a> <a id="5e4066abe45d03d8" href="R/5e4066abe45d03d8.html" target="n" data-glyph="46,1" class="i field">_roValues</a>;
+ 
+		<b>public</b> <a id="45818dbc22be61e9" href="R/45818dbc22be61e9.html" target="n" data-glyph="72,1" class="i constructor">OrderedDictionary</a>() : <a href="#926314c324d7acb6" class="k">this</a>(0)
+		{
+		}
+ 
+		<b>public</b> <a id="926314c324d7acb6" href="R/926314c324d7acb6.html" target="n" data-glyph="72,1" class="i constructor">OrderedDictionary</a>(<b>int</b> <span id="r2 rd" class="r2 r">capacity</span>) : <a href="#59a7c14215384cd4" class="k">this</a>(<span class="r2 r">capacity</span>, <a href="@1@System.Collections/A.html#d8e28972e89a3e86" class="t t">EqualityComparer</a>&lt;<span class="r0 r t">TKey</span>&gt;.<a href="@1@System.Collections/A.html#910b559cdb8bd73e" class="i property">Default</a>)
+		{
+		}
+ 
+		<b>public</b> <a id="6b1109bbbc8089fb" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">OrderedDictionary</a>(<a href="@1@System.Runtime/A.html#66a06cfe895400c7" class="t t">IEqualityComparer</a>&lt;<span class="r0 r t">TKey</span>&gt; <span id="r3 rd" class="r3 r">equalityComparer</span>) : <a href="#59a7c14215384cd4" class="k">this</a>(0, <span class="r3 r">equalityComparer</span>)
+		{
+		}
+ 
+		<b>public</b> <a id="59a7c14215384cd4" href="R/59a7c14215384cd4.html" target="n" data-glyph="72,1" class="i constructor">OrderedDictionary</a>(<b>int</b> <span id="r4 rd" class="r4 r">capacity</span>, <a href="@1@System.Runtime/A.html#66a06cfe895400c7" class="t t">IEqualityComparer</a>&lt;<span class="r0 r t">TKey</span>&gt; <span id="r5 rd" class="r5 r">equalityComparer</span>)
+		{
+			<a href="#c8a054881f3dc85f" class="i field">_dict</a> = <b>new</b> <a href="@1@System.Collections/A.html#523713dd12290314" class="t constructor">Dictionary</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;(<span class="r4 r">capacity</span>, <span class="r5 r">equalityComparer</span>);
+			<a href="#d32132b434477a31" class="i field">_kvpCollection</a> = <a href="#c8a054881f3dc85f" class="i field">_dict</a>;
+			<a href="#17101828b3dd1d62" class="i field">_keyOrder</a> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<span class="r0 r t">TKey</span>&gt;(<span class="r4 r">capacity</span>);
+			<a href="#d0825f99d4e18063" class="i field">_roKeys</a> = <b>new</b> <a href="@1@System.Runtime/A.html#64e45c8a9b38b1c2" class="t constructor">ReadOnlyCollection</a>&lt;<span class="r0 r t">TKey</span>&gt;(<a href="#17101828b3dd1d62" class="i field">_keyOrder</a>);
+			<a href="#5e4066abe45d03d8" class="i field">_roValues</a> = <b>new</b> <a href="#4ba5535ff53b062e" class="t constructor">ReadOnlyValueCollection</a>(<a href="#c61296e013b8b395" class="k">this</a>);
+		}
+ 
+		<b>public</b> <a id="867d571315e99856" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">OrderedDictionary</a>(<a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt; <span id="r6 rd" class="r6 r">dictionary</span>) : <a href="#b9627c5c72819560" class="k">this</a>(<span class="r6 r">dictionary</span>, <a href="@1@System.Collections/A.html#d8e28972e89a3e86" class="t t">EqualityComparer</a>&lt;<span class="r0 r t">TKey</span>&gt;.<a href="@1@System.Collections/A.html#910b559cdb8bd73e" class="i property">Default</a>)
+		{
+		}
+ 
+		<b>public</b> <a id="b9627c5c72819560" href="R/b9627c5c72819560.html" target="n" data-glyph="72,1" class="i constructor">OrderedDictionary</a>(<a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt; <span id="r7 rd" class="r7 r">dictionary</span>, <a href="@1@System.Runtime/A.html#66a06cfe895400c7" class="t t">IEqualityComparer</a>&lt;<span class="r0 r t">TKey</span>&gt; <span id="r8 rd" class="r8 r">equalityComparer</span>) : <a href="#59a7c14215384cd4" class="k">this</a>(<span class="r7 r">dictionary</span> != <b>null</b> ? <span class="r7 r">dictionary</span>.<a href="@1@System.Runtime/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> : 0, <span class="r8 r">equalityComparer</span>)
+		{
+			<b>if</b> (<span class="r7 r">dictionary</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;dictionary&quot;</span>);
+ 
+			<b>foreach</b> (<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt; <span id="r9 rd" class="r9 r">kvp</span> <b>in</b> <span class="r7 r">dictionary</span>)
+				<a href="#ae807881b0ef3ee8" class="i method">Add</a>(<span class="r9 r">kvp</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>, <span class="r9 r">kvp</span>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets the equality comparer being used for</span>
+		<span class="c">///</span><span class="c">     </span><span class="c">&lt;</span><span class="c">typeparam</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="i">TKey</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span>
+		<span class="c">///</span><span class="c">     .</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>public</b> <a href="@1@System.Runtime/A.html#66a06cfe895400c7" class="t t">IEqualityComparer</a>&lt;<span class="r0 r t">TKey</span>&gt; <a id="4067a25c654b2d60" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Comparer</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#c8a054881f3dc85f" class="i field">_dict</a>.<a href="@1@System.Collections/A.html#7c36cf00f3c1e427" class="i property">Comparer</a>; }
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets the value at the specified index.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r10 r">index</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The index to get the value at.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">The value at the specified index.</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#acba961d918b2408" class="t t">IndexOutOfRangeException</a><span class="c">&quot;</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r10 r">index</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is less than 0 or greater than</span>
+		<span class="c">///</span><span class="c">     </span><span class="c">&lt;</span><span class="c">see</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="#8d6327406a273614" class="i property">Count</a><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c">.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<b>public</b> <span class="r1 r t">TValue</span> <a id="e24f4eeedbf6ce8e" href="R/e24f4eeedbf6ce8e.html" target="n" data-glyph="102,1" class="k">this</a>[<b>int</b> <span id="r10 rd" class="r10 r">index</span>]
+		{
+			<b>get</b> { <b>return</b> <a href="#c8a054881f3dc85f" class="i field">_dict</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><a href="#17101828b3dd1d62" class="i field">_keyOrder</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r10 r">index</span>]]; }
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt;.<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt; <span id="r11 rd" class="r11 r">item</span>)
+		{
+			<a href="#ae807881b0ef3ee8" class="i method">Add</a>(<span class="r11 r">item</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>, <span class="r11 r">item</span>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Clears the dictionary.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>public void</b> <a id="ffbd106a08eac510" href="R/ffbd106a08eac510.html" target="n" data-glyph="72,1" class="i method">Clear</a>()
+		{
+			<a href="#c8a054881f3dc85f" class="i field">_dict</a>.<a href="@1@System.Collections/A.html#36b30e4c0708a88c" class="i method">Clear</a>();
+			<a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#ca7bce81a50b0aeb" class="i method">Clear</a>();
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt;.<a href="@1@System.Runtime/A.html#8f74065d140cfe04" class="i method">Contains</a>(<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt; <span id="r12 rd" class="r12 r">item</span>)
+		{
+			<b>return</b> <a href="#d32132b434477a31" class="i field">_kvpCollection</a>.<a href="@1@System.Runtime/A.html#8f74065d140cfe04" class="i method">Contains</a>(<span class="r12 r">item</span>);
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt;.<a href="@1@System.Runtime/A.html#e60f08f14be7e099" class="i method">CopyTo</a>(<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;[] <span id="r13 rd" class="r13 r">array</span>, <b>int</b> <span id="r14 rd" class="r14 r">arrayIndex</span>)
+		{
+			<b>if</b> (<span class="r13 r">array</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;array&quot;</span>);
+			<b>if</b> (<a href="#8d6327406a273614" class="i property">Count</a> &gt; <span class="r13 r">array</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> - <span class="r14 r">arrayIndex</span>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;Not enough space in array to copy&quot;</span>);
+			<b>if</b> (<span class="r14 r">arrayIndex</span> &lt; 0)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;arrayIndex&quot;</span>);
+ 
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r15 rd" class="r15 r">i</span> = 0; <span class="r15 r">i</span> &lt; <a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; ++<span class="r15 r">i</span>)
+			{
+				<span class="r0 r t">TKey</span> <span id="r16 rd" class="r16 r">key</span> = <a href="#17101828b3dd1d62" class="i field">_keyOrder</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r15 r">i</span>];
+				<span class="r13 r">array</span>[<span class="r14 r">arrayIndex</span>++] = <b>new</b> <a href="@1@System.Runtime/A.html#0d04c81b31e41262" class="t constructor">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;(<span class="r16 r">key</span>, <a href="#c8a054881f3dc85f" class="i field">_dict</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r16 r">key</span>]);
+			}
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets the number of items in the dictionary.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>public int</b> <a id="8d6327406a273614" href="R/8d6327406a273614.html" target="n" data-glyph="102,1" class="i property">Count</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#c8a054881f3dc85f" class="i field">_dict</a>.<a href="@1@System.Collections/A.html#12b9bba2a1f9c3e2" class="i property">Count</a>; }
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt;.<a href="@1@System.Runtime/A.html#30768a81e456ea74" class="i property">IsReadOnly</a>
+		{
+			<b>get</b> { <b>return false</b>; }
+		}
+ 
+		<b>bool</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt;.<a href="@1@System.Runtime/A.html#12ab6cfa5ca2ceec" class="i method">Remove</a>(<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt; <span id="r17 rd" class="r17 r">item</span>)
+		{
+			<b>return</b> <a href="#d32132b434477a31" class="i field">_kvpCollection</a>.<a href="@1@System.Runtime/A.html#12ab6cfa5ca2ceec" class="i method">Remove</a>(<span class="r17 r">item</span>) &amp;&amp; <a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#db8cdd552a0bb10c" class="i method">Remove</a>(<span class="r17 r">item</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Adds the </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r18 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> and </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r19 r">value</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> to the dictionary.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r18 r">key</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The key to associate with the </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r19 r">value</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c">.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r19 r">value</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The value to add.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#c742289497493bb8" class="t t">ArgumentNullException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r18 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">null</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c">.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#109b3ef6299ef9df" class="t t">ArgumentException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r18 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> already exists in the dictionary.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<b>public void</b> <a id="ae807881b0ef3ee8" href="R/ae807881b0ef3ee8.html" target="n" data-glyph="72,1" class="i method">Add</a>(<span class="r0 r t">TKey</span> <span id="r18 rd" class="r18 r">key</span>, <span class="r1 r t">TValue</span> <span id="r19 rd" class="r19 r">value</span>)
+		{
+			<a href="#c8a054881f3dc85f" class="i field">_dict</a>.<a href="@1@System.Collections/A.html#a7861da7aaa500fe" class="i method">Add</a>(<span class="r18 r">key</span>, <span class="r19 r">value</span>);
+			<a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r18 r">key</span>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets whether or not </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r20 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is in the dictionary.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r20 r">key</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The key to look for.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">true</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c"> if the key was found, </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">false</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c"> if not.</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#c742289497493bb8" class="t t">ArgumentNullException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">If </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r20 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">null</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c">.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<b>public bool</b> <a id="fc71d56bcce7af97" href="R/fc71d56bcce7af97.html" target="n" data-glyph="72,1" class="i method">ContainsKey</a>(<span class="r0 r t">TKey</span> <span id="r20 rd" class="r20 r">key</span>)
+		{
+			<b>return</b> <a href="#c8a054881f3dc85f" class="i field">_dict</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r20 r">key</span>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets or sets the value associated with </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r21 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c">.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r21 r">key</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The key to get or set the value for.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">The value associated with the key.</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#4e5d8fbb690f6391" class="t t">KeyNotFoundException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r21 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> was not found attempting to get.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<b>public</b> <span class="r1 r t">TValue</span> <a id="55e8213b68b4845f" href="R/55e8213b68b4845f.html" target="n" data-glyph="102,1" class="k">this</a>[<span class="r0 r t">TKey</span> <span id="r21 rd" class="r21 r">key</span>]
+		{
+			<b>get</b> { <b>return</b> <a href="#c8a054881f3dc85f" class="i field">_dict</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r21 r">key</span>]; }
+			<b>set</b>
+			{
+				<b>if</b> (!<a href="#c8a054881f3dc85f" class="i field">_dict</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r21 r">key</span>))
+					<a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r21 r">key</span>);
+ 
+				<a href="#c8a054881f3dc85f" class="i field">_dict</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r21 r">key</span>] = <b>value</b>;
+			}
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets a read only collection of keys in the dictionary.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>public</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<span class="r0 r t">TKey</span>&gt; <a id="7a5c49f494e2dd1b" href="R/7a5c49f494e2dd1b.html" target="n" data-glyph="102,1" class="i property">Keys</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#d0825f99d4e18063" class="i field">_roKeys</a>; }
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Removes the key and associated value from the dictionary if found.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r22 r">key</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The key to remove.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">true</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c"> if the key was found, </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">false</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c"> if not.</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#c742289497493bb8" class="t t">ArgumentNullException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r22 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">null</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c">.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<b>public bool</b> <a id="a7ebd9ab2a3a66e7" href="R/a7ebd9ab2a3a66e7.html" target="n" data-glyph="72,1" class="i method">Remove</a>(<span class="r0 r t">TKey</span> <span id="r22 rd" class="r22 r">key</span>)
+		{
+			<b>return</b> <a href="#c8a054881f3dc85f" class="i field">_dict</a>.<a href="@1@System.Collections/A.html#a6db5ffdec557169" class="i method">Remove</a>(<span class="r22 r">key</span>) &amp;&amp; <a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#db8cdd552a0bb10c" class="i method">Remove</a>(<span class="r22 r">key</span>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Attempts to get the </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r23 r">value</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> for the </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r24 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c">.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r24 r">key</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The key to search for.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r23 r">value</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The value, if found.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">true</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c"> if the key was found, </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">false</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c"> otherwise.</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#c742289497493bb8" class="t t">ArgumentNullException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">If </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r24 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">null</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c">.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<b>public bool</b> <a id="a15d0ed7b2e11658" href="R/a15d0ed7b2e11658.html" target="n" data-glyph="72,1" class="i method">TryGetValue</a>(<span class="r0 r t">TKey</span> <span id="r24 rd" class="r24 r">key</span>, <b>out</b> <span class="r1 r t">TValue</span> <span id="r23 rd" class="r23 r">value</span>)
+		{
+			<b>return</b> <a href="#c8a054881f3dc85f" class="i field">_dict</a>.<a href="@1@System.Collections/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<span class="r24 r">key</span>, <b>out</b> <span class="r23 r">value</span>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets a read only collection of values in the dictionary.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>public</b> <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<span class="r1 r t">TValue</span>&gt; <a id="51968358479fdb4d" href="R/51968358479fdb4d.html" target="n" data-glyph="102,1" class="i property">Values</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#5e4066abe45d03d8" class="i field">_roValues</a>; }
+		}
+ 
+		<a href="@1@System.Runtime/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>.<a href="@1@System.Runtime/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <a href="#b8f363550b246153" class="i method">GetEnumerator</a>();
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt; <a id="b8f363550b246153" href="R/b8f363550b246153.html" target="n" data-glyph="72,1" class="i method">GetEnumerator</a>()
+		{
+			<b>foreach</b> (<span class="r0 r t">TKey</span> <span id="r25 rd" class="r25 r">key</span> <b>in</b> <a href="#17101828b3dd1d62" class="i field">_keyOrder</a>)
+				<b>yield return</b> <b>new</b> <a href="@1@System.Runtime/A.html#0d04c81b31e41262" class="t constructor">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;(<span class="r25 r">key</span>, <a href="#c61296e013b8b395" class="k">this</a><a href="#55e8213b68b4845f">[</a><span class="r25 r">key</span>]);
+		}
+ 
+		<b>int</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt;.<a href="@1@System.Runtime/A.html#5fd4a456a7fab8b0" class="i method">IndexOf</a>(<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt; <span id="r26 rd" class="r26 r">item</span>)
+		{
+			<b>return</b> <a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#242756beb6e8749e" class="i method">IndexOf</a>(<span class="r26 r">item</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>);
+		}
+ 
+		<b>void</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt;.<a href="@1@System.Runtime/A.html#11453faf8022b027" class="i method">Insert</a>(<b>int</b> <span id="r27 rd" class="r27 r">index</span>, <a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt; <span id="r28 rd" class="r28 r">item</span>)
+		{
+			<a href="#2a0381c5cbbffde7" class="i method">Insert</a>(<span class="r27 r">index</span>, <span class="r28 r">item</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>, <span class="r28 r">item</span>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>);
+		}
+ 
+		<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt; <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="@1@System.Runtime/A.html#8585965bb176a426" class="t t">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;&gt;.<a href="@1@System.Runtime/A.html#396bb785d31f5979" class="k">this</a>[<b>int</b> <span id="r29 rd" class="r29 r">index</span>]
+		{
+			<b>get</b> { <b>return</b> <b>new</b> <a href="@1@System.Runtime/A.html#0d04c81b31e41262" class="t constructor">KeyValuePair</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt;(<a href="#17101828b3dd1d62" class="i field">_keyOrder</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r29 r">index</span>], <a href="#c61296e013b8b395" class="k">this</a><a href="#e24f4eeedbf6ce8e">[</a><span class="r29 r">index</span>]); }
+			<b>set</b>
+			{
+				<a href="#17101828b3dd1d62" class="i field">_keyOrder</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r29 r">index</span>] = <b>value</b>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>;
+				<a href="#c8a054881f3dc85f" class="i field">_dict</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><b>value</b>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>] = <b>value</b>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>;
+			}
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Removes they key and associated value from the dictionary located at </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r30 r">index</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c">.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r30 r">index</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The index at which to remove an item.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<b>public void</b> <a id="4f4d2fd343e44803" href="R/4f4d2fd343e44803.html" target="n" data-glyph="72,1" class="i method">RemoveAt</a>(<b>int</b> <span id="r30 rd" class="r30 r">index</span>)
+		{
+			<span class="r0 r t">TKey</span> <span id="r31 rd" class="r31 r">key</span> = <a href="#17101828b3dd1d62" class="i field">_keyOrder</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r30 r">index</span>];
+			<a href="#a7ebd9ab2a3a66e7" class="i method">Remove</a>(<span class="r31 r">key</span>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets whether or not </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r32 r">value</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is in the dictionary.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r32 r">value</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The value to look for.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">true</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c"> if the value was found, </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">false</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c"> if not.</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<b>public bool</b> <a id="2ad66eff55864a46" href="R/2ad66eff55864a46.html" target="n" data-glyph="72,1" class="i method">ContainsValue</a>(<span class="r1 r t">TValue</span> <span id="r32 rd" class="r32 r">value</span>)
+		{
+			<b>return</b> <a href="#c8a054881f3dc85f" class="i field">_dict</a>.<a href="@1@System.Collections/A.html#0c84534e1447d1de" class="i method">ContainsValue</a>(<span class="r32 r">value</span>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets the index of </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r33 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c">.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r33 r">key</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The key to find the index of.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">-1 if the key was not found, the index otherwise.</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#c742289497493bb8" class="t t">ArgumentNullException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r33 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">null</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c">.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<b>public int</b> <a id="577c376fcadf48a0" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">IndexOf</a>(<span class="r0 r t">TKey</span> <span id="r33 rd" class="r33 r">key</span>)
+		{
+			<b>if</b> (<span class="r33 r">key</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;key&quot;</span>);
+ 
+			<b>return</b> <a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#242756beb6e8749e" class="i method">IndexOf</a>(<span class="r33 r">key</span>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets the index of </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r34 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> starting with </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r35 r">startIndex</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c">.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r34 r">key</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The key to find the index of.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r35 r">startIndex</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The index to start the search at.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">-1 if the key was not found, the index otherwise.</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#c742289497493bb8" class="t t">ArgumentNullException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r34 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">null</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c">.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#2975f0aa875d4a32" class="t t">ArgumentOutOfRangeException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r35 r">startIndex</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is not within the valid range of indexes.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<b>public int</b> <a id="284d8201b63a4111" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">IndexOf</a>(<span class="r0 r t">TKey</span> <span id="r34 rd" class="r34 r">key</span>, <b>int</b> <span id="r35 rd" class="r35 r">startIndex</span>)
+		{
+			<b>if</b> (<span class="r34 r">key</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;key&quot;</span>);
+ 
+			<b>return</b> <a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#3be9c75bca72d89a" class="i method">IndexOf</a>(<span class="r34 r">key</span>, <span class="r35 r">startIndex</span>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Gets the index of </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r36 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> between the range given by </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r37 r">startIndex</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> and</span>
+		<span class="c">///</span><span class="c">     </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r38 r">count</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c">.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r36 r">key</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The key to find the index of.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r37 r">startIndex</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The index to start the search at.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r38 r">count</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">How many items to search, including the </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r37 r">startIndex</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c">.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">returns</span><span class="c">&gt;</span><span class="c">-1 if the key was not found, the index otherwise.</span><span class="c">&lt;/</span><span class="c">returns</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#c742289497493bb8" class="t t">ArgumentNullException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r36 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">null</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c">.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#2975f0aa875d4a32" class="t t">ArgumentOutOfRangeException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r37 r">startIndex</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is not within the valid range of indexes.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#2975f0aa875d4a32" class="t t">ArgumentOutOfRangeException</a><span class="c">&quot;</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r37 r">startIndex</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> and </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r38 r">count</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> are not a</span>
+		<span class="c">///</span><span class="c">     valid range.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#2975f0aa875d4a32" class="t t">ArgumentOutOfRangeException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r38 r">count</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is less than 0.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<b>public int</b> <a id="0932c5b75ef2fc64" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">IndexOf</a>(<span class="r0 r t">TKey</span> <span id="r36 rd" class="r36 r">key</span>, <b>int</b> <span id="r37 rd" class="r37 r">startIndex</span>, <b>int</b> <span id="r38 rd" class="r38 r">count</span>)
+		{
+			<b>if</b> (<span class="r36 r">key</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;key&quot;</span>);
+ 
+			<b>return</b> <a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#d838df8089672f12" class="i method">IndexOf</a>(<span class="r36 r">key</span>, <span class="r37 r">startIndex</span>, <span class="r38 r">count</span>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Inserts the </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r39 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> and </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r40 r">value</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> at the specified index.</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r41 r">index</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The index to insert the key and value at.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r39 r">key</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The key to assicate with the </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r40 r">value</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c">.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r40 r">value</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">The value to insert.</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#c742289497493bb8" class="t t">ArgumentNullException</a><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r39 r">key</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is </span><span class="c">&lt;</span><span class="c">c</span><span class="c">&gt;</span><span class="c">null</span><span class="c">&lt;/</span><span class="c">c</span><span class="c">&gt;</span><span class="c">.</span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">exception</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="@1@System.Runtime/A.html#2975f0aa875d4a32" class="t t">ArgumentOutOfRangeException</a><span class="c">&quot;</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     </span><span class="c">&lt;</span><span class="c">paramref</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r41 r">index</span><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span><span class="c"> is less than 0 or greater than</span>
+		<span class="c">///</span><span class="c">     </span><span class="c">&lt;</span><span class="c">see</span><span class="c"> </span><span class="c">cref</span><span class="c">=</span><span class="c">&quot;</span><a href="#8d6327406a273614" class="i property">Count</a><span class="c">&quot;</span><span class="c"> </span><span class="c">/&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">exception</span><span class="c">&gt;</span>
+		<b>public void</b> <a id="2a0381c5cbbffde7" href="R/2a0381c5cbbffde7.html" target="n" data-glyph="72,1" class="i method">Insert</a>(<b>int</b> <span id="r41 rd" class="r41 r">index</span>, <span class="r0 r t">TKey</span> <span id="r39 rd" class="r39 r">key</span>, <span class="r1 r t">TValue</span> <span id="r40 rd" class="r40 r">value</span>)
+		{
+			<a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#49c519bce0cdbd82" class="i method">Insert</a>(<span class="r41 r">index</span>, <span class="r39 r">key</span>);
+			<a href="#c8a054881f3dc85f" class="i field">_dict</a>.<a href="@1@System.Collections/A.html#a7861da7aaa500fe" class="i method">Add</a>(<span class="r39 r">key</span>, <span class="r40 r">value</span>);
+		}
+ 
+		<b>public void</b> <a id="9a9ed9f4e782145b" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Move</a>(<b>int</b> <span id="r42 rd" class="r42 r">oldIndex</span>, <b>int</b> <span id="r43 rd" class="r43 r">newIndex</span>)
+		{
+			<span class="r0 r t">TKey</span> <span id="r44 rd" class="r44 r">key</span> = <a href="#17101828b3dd1d62" class="i field">_keyOrder</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r42 r">oldIndex</span>];
+			<a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#3d46113cc199059a" class="i method">RemoveAt</a>(<span class="r42 r">oldIndex</span>);
+			<a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#49c519bce0cdbd82" class="i method">Insert</a>(<span class="r43 r">newIndex</span>, <span class="r44 r">key</span>);
+		}
+ 
+		<b>class</b> <a id="06f902121b4cea40" href="R/06f902121b4cea40.html" target="n" data-glyph="4,1" class="t t">ReadOnlyValueCollection</a> : <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<span class="r1 r t">TValue</span>&gt;
+		{
+			<b>readonly</b> <a href="#c61296e013b8b395" class="t t">OrderedDictionary</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt; <a id="5c73603d3f6a4a24" href="R/5c73603d3f6a4a24.html" target="n" data-glyph="46,2" class="i field">_odict</a>;
+ 
+			<b>public</b> <a id="4ba5535ff53b062e" href="R/4ba5535ff53b062e.html" target="n" data-glyph="72,2" class="i constructor">ReadOnlyValueCollection</a>(<a href="#c61296e013b8b395" class="t t">OrderedDictionary</a>&lt;<span class="r0 r t">TKey</span>, <span class="r1 r t">TValue</span>&gt; <span id="r45 rd" class="r45 r">dict</span>)
+			{
+				<a href="#5c73603d3f6a4a24" class="i field">_odict</a> = <span class="r45 r">dict</span>;
+			}
+ 
+			<b>public void</b> <a id="4bdd6e896bba159d" href="R/4bdd6e896bba159d.html" target="n" data-glyph="72,2" class="i method">Add</a>(<span class="r1 r t">TValue</span> <span id="r46 rd" class="r46 r">item</span>)
+			{
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+			}
+ 
+			<b>public void</b> <a id="fe98b98b28822a5d" href="R/fe98b98b28822a5d.html" target="n" data-glyph="72,2" class="i method">Clear</a>()
+			{
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+			}
+ 
+			<b>public bool</b> <a id="e539e9c59e12fbc9" href="R/e539e9c59e12fbc9.html" target="n" data-glyph="72,2" class="i method">Contains</a>(<span class="r1 r t">TValue</span> <span id="r47 rd" class="r47 r">item</span>)
+			{
+				<b>return</b> <a href="#5c73603d3f6a4a24" class="i field">_odict</a>.<a href="#2ad66eff55864a46" class="i method">ContainsValue</a>(<span class="r47 r">item</span>);
+			}
+ 
+			<b>public void</b> <a id="532723b66b2eb5ce" href="R/532723b66b2eb5ce.html" target="n" data-glyph="72,2" class="i method">CopyTo</a>(<span class="r1 r t">TValue</span>[] <span id="r48 rd" class="r48 r">array</span>, <b>int</b> <span id="r49 rd" class="r49 r">arrayIndex</span>)
+			{
+				<b>if</b> (<span class="r48 r">array</span> == <b>null</b>)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;array&quot;</span>);
+				<b>if</b> (<a href="#c11ae60d9cf4e8df" class="i property">Count</a> &gt; <span class="r48 r">array</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> - <span class="r49 r">arrayIndex</span>)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;Not enough space in array to copy&quot;</span>);
+				<b>if</b> (<span class="r49 r">arrayIndex</span> &lt; 0 || <span class="r49 r">arrayIndex</span> &gt; <span class="r48 r">array</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a>)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;arrayIndex&quot;</span>);
+ 
+				<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r50 rd" class="r50 r">i</span> = 0; <span class="r50 r">i</span> &lt; <a href="#5c73603d3f6a4a24" class="i field">_odict</a>.<a href="#8d6327406a273614" class="i property">Count</a>; ++<span class="r50 r">i</span>)
+					<span class="r48 r">array</span>[<span class="r49 r">arrayIndex</span>++] = <a href="#5c73603d3f6a4a24" class="i field">_odict</a><a href="#e24f4eeedbf6ce8e">[</a><span class="r50 r">i</span>];
+			}
+ 
+			<b>public int</b> <a id="c11ae60d9cf4e8df" href="R/c11ae60d9cf4e8df.html" target="n" data-glyph="102,2" class="i property">Count</a>
+			{
+				<b>get</b> { <b>return</b> <a href="#5c73603d3f6a4a24" class="i field">_odict</a>.<a href="#8d6327406a273614" class="i property">Count</a>; }
+			}
+ 
+			<b>public bool</b> <a id="7396b6ae28cd2b07" href="R/7396b6ae28cd2b07.html" target="n" data-glyph="102,2" class="i property">IsReadOnly</a>
+			{
+				<b>get</b> { <b>return true</b>; }
+			}
+ 
+			<b>public bool</b> <a id="2d6920bdcfaff135" href="R/2d6920bdcfaff135.html" target="n" data-glyph="72,2" class="i method">Remove</a>(<span class="r1 r t">TValue</span> <span id="r51 rd" class="r51 r">item</span>)
+			{
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+			}
+ 
+			<a href="@1@System.Runtime/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>.<a href="@1@System.Runtime/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>()
+			{
+				<b>return</b> <a href="#c5d8f857a4585a9c" class="i method">GetEnumerator</a>();
+			}
+ 
+			<b>public</b> <a href="@1@System.Runtime/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<span class="r1 r t">TValue</span>&gt; <a id="c5d8f857a4585a9c" href="R/c5d8f857a4585a9c.html" target="n" data-glyph="72,2" class="i method">GetEnumerator</a>()
+			{
+				<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r52 rd" class="r52 r">i</span> = 0; <span class="r52 r">i</span> &lt; <a href="#5c73603d3f6a4a24" class="i field">_odict</a>.<a href="#17101828b3dd1d62" class="i field">_keyOrder</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; ++<span class="r52 r">i</span>)
+					<b>yield return</b> <a href="#5c73603d3f6a4a24" class="i field">_odict</a><a href="#e24f4eeedbf6ce8e">[</a><span class="r52 r">i</span>];
+			}
+ 
+			<b>public int</b> <a id="1ef9e95602fdaade" href="R/1ef9e95602fdaade.html" target="n" data-glyph="72,2" class="i method">IndexOf</a>(<span class="r1 r t">TValue</span> <span id="r53 rd" class="r53 r">item</span>)
+			{
+				<b>return</b> <a href="#5c73603d3f6a4a24" class="i field">_odict</a>.<a href="#c8a054881f3dc85f" class="i field">_dict</a>.<a href="@1@System.Collections/A.html#4367dd1e300ae797" class="i property">Values</a>.<a href="EnumerableExtensions.cs.html#ae78fe906aea45a9" class="i method">IndexOf</a>(<span class="r53 r">item</span>);
+			}
+ 
+			<b>public void</b> <a id="e46207f0a3aad9dc" href="R/e46207f0a3aad9dc.html" target="n" data-glyph="72,2" class="i method">Insert</a>(<b>int</b> <span id="r54 rd" class="r54 r">index</span>, <span class="r1 r t">TValue</span> <span id="r55 rd" class="r55 r">item</span>)
+			{
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+			}
+ 
+			<b>public</b> <span class="r1 r t">TValue</span> <a id="b586476b502d1b20" href="R/b586476b502d1b20.html" target="n" data-glyph="102,2" class="k">this</a>[<b>int</b> <span id="r56 rd" class="r56 r">index</span>]
+			{
+				<b>get</b> { <b>return</b> <a href="#5c73603d3f6a4a24" class="i field">_odict</a><a href="#e24f4eeedbf6ce8e">[</a><span class="r56 r">index</span>]; }
+				<b>set</b> { <b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>(); }
+			}
+ 
+			<b>public void</b> <a id="6db600655315e4c6" href="R/6db600655315e4c6.html" target="n" data-glyph="72,2" class="i method">RemoveAt</a>(<b>int</b> <span id="r57 rd" class="r57 r">index</span>)
+			{
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

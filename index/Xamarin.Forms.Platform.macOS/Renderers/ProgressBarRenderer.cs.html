@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html><head><title>ProgressBarRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(67);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/Renderers/ProgressBarRenderer.cs" target="_top">Renderers\ProgressBarRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="i n">CoreImage</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>public class</b> <a id="2b5ea96af7a4bf10" href="../R/2b5ea96af7a4bf10.html" target="n" data-glyph="0,0" class="t t"><span id="7b1d95488ce5ed9b">ProgressBarRenderer</span></a> : <a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#80848d95884d5446" class="t t">ProgressBar</a>, <span class="t t">NSProgressIndicator</span>&gt;
+	{
+		<b>static</b> <span class="t t">CIColorPolynomial</span> <a id="ddb8490c65a352e4" href="../R/ddb8490c65a352e4.html" target="n" data-glyph="46,1" class="i field">s_currentColorFilter</a>;
+		<b>static</b> <span class="t t">NSColor</span> <a id="88a7bac51c4522b8" href="../R/88a7bac51c4522b8.html" target="n" data-glyph="46,1" class="i field">s_currentColor</a>;
+ 
+		<b>protected override void</b> <a id="d42dcdc8e85b9ed8" href="../R/d42dcdc8e85b9ed8.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#62949d367d44776c" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#80848d95884d5446" class="t t">ProgressBar</a>&gt; <span id="r0 rd" class="r0 r">e</span>)
+		{
+			<b>if</b> (<span class="r0 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#40dbdea99da1d4c0" class="i property">NewElement</a> == <b>null</b>) <b>return</b>;
+			<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> == <b>null</b>)
+				<a href="../ViewRenderer.cs.html#de42360b129a5181" class="i method">SetNativeControl</a>(<b>new</b> <span class="t constructor">NSProgressIndicator</span>
+				{
+					<span class="i property">IsDisplayedWhenStopped</span> = <b>true</b>,
+					<span class="i property">Indeterminate</span> = <b>false</b>,
+					<span class="i property">Style</span> = <span class="t t">NSProgressIndicatorStyle</span>.<span class="i field">Bar</span>,
+					<span class="i property">MinValue</span> = 0,
+					<span class="i property">MaxValue</span> = 1
+				});
+			<a href="#d21eff3d704b5c79" class="i method">UpdateProgress</a>();
+		}
+ 
+		<b>protected override void</b> <a id="3f5f41b6448f1b2d" href="../R/3f5f41b6448f1b2d.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r1 rd" class="r1 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r2 rd" class="r2 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#97a635fbd9f5d4cd" class="i method">OnElementPropertyChanged</a>(<span class="r1 r">sender</span>, <span class="r2 r">e</span>);
+ 
+			<b>if</b> (<span class="r2 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#80848d95884d5446" class="t t">ProgressBar</a>.<a href="/Xamarin.Forms.Core/A.html#18a224141300e426" class="i field">ProgressProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#d21eff3d704b5c79" class="i method">UpdateProgress</a>();
+		}
+ 
+		<b>protected override void</b> <a id="f850bf763c6051c1" href="../R/f850bf763c6051c1.html" target="n" data-glyph="75,1" class="i method">SetBackgroundColor</a>(<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r3 rd" class="r3 r">color</span>)
+		{
+			<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#ddb8490c65a352e4" class="i field">s_currentColorFilter</a> == <b>null</b> &amp;&amp; <span class="r3 r">color</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a>)
+				<b>return</b>;
+ 
+			<b>if</b> (<span class="r3 r">color</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a>)
+				<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">ContentFilters</span> = <b>new</b> <span class="t t">CIFilter</span>[0];
+ 
+			<b>var</b> <span id="r4 rd" class="r4 r">newColor</span> = <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a>.<a href="../Extensions/ColorExtensions.cs.html#315625aceeb93f91" class="i method">ToNSColor</a>();
+			<b>if</b> (<a href="@0@mscorlib/A.html#f2a579c50b414717" class="i method">Equals</a>(<a href="#88a7bac51c4522b8" class="i field">s_currentColor</a>, <span class="r4 r">newColor</span>))
+				<b>return</b>;
+ 
+			<a href="#88a7bac51c4522b8" class="i field">s_currentColor</a> = <span class="r4 r">newColor</span>;
+ 
+			<a href="#ddb8490c65a352e4" class="i field">s_currentColorFilter</a> = <b>new</b> <span class="t constructor">CIColorPolynomial</span>
+			{
+				<span class="i property">RedCoefficients</span> = <b>new</b> <span class="t constructor">CIVector</span>(<a href="#88a7bac51c4522b8" class="i field">s_currentColor</a>.<span class="i property">RedComponent</span>),
+				<span class="i property">BlueCoefficients</span> = <b>new</b> <span class="t constructor">CIVector</span>(<a href="#88a7bac51c4522b8" class="i field">s_currentColor</a>.<span class="i property">BlueComponent</span>),
+				<span class="i property">GreenCoefficients</span> = <b>new</b> <span class="t constructor">CIVector</span>(<a href="#88a7bac51c4522b8" class="i field">s_currentColor</a>.<span class="i property">GreenComponent</span>)
+			};
+ 
+			<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">ContentFilters</span> = <b>new</b> <span class="t t">CIFilter</span>[] { <a href="#ddb8490c65a352e4" class="i field">s_currentColorFilter</a> };
+		}
+ 
+		<b>void</b> <a id="d21eff3d704b5c79" href="../R/d21eff3d704b5c79.html" target="n" data-glyph="76,1" class="i method">UpdateProgress</a>()
+		{
+			<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">DoubleValue</span> = <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#0e555bd65643e7f6" class="i property">Progress</a>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,438 @@
+﻿<!DOCTYPE html>
+<html><head><title>ListViewRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(429);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Renderers/ListViewRenderer.cs" target="_top">Renderers\ListViewRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">App</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Support</span>.<span class="i">V4</span>.<span class="i">Widget</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">AListView</span> = <span class="i">Android</span>.<span class="i">Widget</span>.<span class="i">ListView</span>;
+<b>using</b> <span class="i">AView</span> = <span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">AndroidSpecific</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>public class</b> <a id="4adb92aac73dcc0c" href="../R/4adb92aac73dcc0c.html" target="n" data-glyph="0,0" class="t t">ListViewRenderer</a> : <a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>, <span class="i">AListView</span>&gt;, <span class="i">SwipeRefreshLayout</span>.<span class="i">IOnRefreshListener</span>
+	{
+		<a href="ListViewAdapter.cs.html#b87f4edfd60d1b0d" class="t t">ListViewAdapter</a> <a id="2b99dd2c713bdb69" href="../R/2b99dd2c713bdb69.html" target="n" data-glyph="46,1" class="i field">_adapter</a>;
+		<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <a id="a51fedf776fd7e0d" href="../R/a51fedf776fd7e0d.html" target="n" data-glyph="46,1" class="i field">_headerRenderer</a>;
+		<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <a id="e3a8b0983d76b0b6" href="../R/e3a8b0983d76b0b6.html" target="n" data-glyph="46,1" class="i field">_footerRenderer</a>;
+		<a href="#9f94951fc9beaa39" class="t t">Container</a> <a id="89ddb288807feaee" href="../R/89ddb288807feaee.html" target="n" data-glyph="46,1" class="i field">_headerView</a>;
+		<a href="#9f94951fc9beaa39" class="t t">Container</a> <a id="f9af6a193c73d5fc" href="../R/f9af6a193c73d5fc.html" target="n" data-glyph="46,1" class="i field">_footerView</a>;
+		<b>bool</b> <a id="c987943b8dd41c16" href="../R/c987943b8dd41c16.html" target="n" data-glyph="46,1" class="i field">_isAttached</a>;
+		<a href="/Xamarin.Forms.Core/A.html#f03c2a98424144b5" class="t t">ScrollToRequestedEventArgs</a> <a id="8a3685fe0658e7a9" href="../R/8a3685fe0658e7a9.html" target="n" data-glyph="46,1" class="i field">_pendingScrollTo</a>;
+ 
+		<span class="i">SwipeRefreshLayout</span> <a id="3c736b771e1e6c3a" href="../R/3c736b771e1e6c3a.html" target="n" data-glyph="46,1" class="i field">_refresh</a>;
+		<a href="/Xamarin.Forms.Core/A.html#1720dc26cd820061" class="t t">IListViewController</a> <a id="105a984695f262f4" href="../R/105a984695f262f4.html" target="n" data-glyph="106,1" class="i property">Controller</a> =&gt; <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>;
+		<a href="/Xamarin.Forms.Core/A.html#7d7c0ddfee2f7ca3" class="t t">ITemplatedItemsView</a>&lt;<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>&gt; <a id="f3d0a683e9e6620a" href="../R/f3d0a683e9e6620a.html" target="n" data-glyph="106,1" class="i property">TemplatedItemsView</a> =&gt; <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>;
+ 
+		<b>public</b> <a id="dfc3c1e0bd5e4b6c" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">ListViewRenderer</a>()
+		{
+			<a href="../VisualElementRenderer.cs.html#51c5d397dcb4f87a" class="i property">AutoPackage</a> = <b>false</b>;
+		}
+ 
+		<b>void</b> <span class="i">SwipeRefreshLayout</span>.<span class="i">IOnRefreshListener</span>.<a id="8ecbd379df19c014" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnRefresh</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#1720dc26cd820061" class="t t">IListViewController</a> <span id="r0 rd" class="r0 r">controller</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>;
+			<span class="r0 r">controller</span>.<span class="i">SendRefreshing</span>();
+		}
+ 
+		<b>protected override void</b> <a id="7a4999a1150233bf" href="../R/7a4999a1150233bf.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r1 rd" class="r1 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r1 r">disposing</span>)
+			{
+				<b>if</b> (<a href="#89ddb288807feaee" class="i field">_headerView</a> == <b>null</b>)
+					<b>return</b>;
+ 
+				<b>if</b> (<a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a> != <b>null</b>)
+				{
+					(<a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a> <b>as</b> <span class="i">ViewGroup</span>)?.<span class="i">RemoveAllViews</span>();
+					<a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a>.<span class="i">Dispose</span>();
+					<a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a> != <b>null</b>)
+				{
+					(<a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a> <b>as</b> <span class="i">ViewGroup</span>)?.<span class="i">RemoveAllViews</span>();
+					<a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a>.<span class="i">Dispose</span>();
+					<a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a> = <b>null</b>;
+				}
+ 
+				<a href="#89ddb288807feaee" class="i field">_headerView</a>.<span class="i">Dispose</span>();
+				<a href="#89ddb288807feaee" class="i field">_headerView</a> = <b>null</b>;
+ 
+				<a href="#f9af6a193c73d5fc" class="i field">_footerView</a>.<span class="i">Dispose</span>();
+				<a href="#f9af6a193c73d5fc" class="i field">_footerView</a> = <b>null</b>;
+ 
+				<b>if</b> (<a href="#2b99dd2c713bdb69" class="i field">_adapter</a> != <b>null</b>)
+				{
+					<a href="#2b99dd2c713bdb69" class="i field">_adapter</a>.<span class="i">Dispose</span>();
+					<a href="#2b99dd2c713bdb69" class="i field">_adapter</a> = <b>null</b>;
+				}
+ 
+				<a href="#105a984695f262f4" class="i property">Controller</a>.<a href="/Xamarin.Forms.Core/A.html#9bb626c269400706" class="i">ScrollToRequested</a> -= <span class="i">OnScrollToRequested</span>;
+			}
+ 
+			<a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="k">base</a>.<a href="../ViewRenderer.cs.html#2257743d08fe8ebc" class="i method">Dispose</a>(<span class="r1 r">disposing</span>);
+		}
+ 
+		<b>protected override</b> <a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <a id="24dea4baac70438f" href="../R/24dea4baac70438f.html" target="n" data-glyph="75,1" class="i method">MinimumSize</a>()
+		{
+			<b>return</b> <b>new</b> <span class="t">Size</span>(40, 40);
+		}
+ 
+		<b>protected override void</b> <a id="8d4bf8b50c849937" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnAttachedToWindow</a>()
+		{
+			<a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="k">base</a>.<span class="i">OnAttachedToWindow</span>();
+ 
+			<a href="#c987943b8dd41c16" class="i field">_isAttached</a> = <b>true</b>;
+			<a href="#2b99dd2c713bdb69" class="i field">_adapter</a>.<a href="ListViewAdapter.cs.html#475bd1335ac9ea0a" class="i property">IsAttachedToWindow</a> = <a href="#c987943b8dd41c16" class="i field">_isAttached</a>;
+			<a href="#75781b510b559b45" class="i method">UpdateIsRefreshing</a>(<span class="r2 r">isInitialValue</span>: <b>true</b>);
+		}
+ 
+		<b>protected override void</b> <a id="b5843fd99f52f5de" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnDetachedFromWindow</a>()
+		{
+			<a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="k">base</a>.<span class="i">OnDetachedFromWindow</span>();
+ 
+			<a href="#c987943b8dd41c16" class="i field">_isAttached</a> = <b>false</b>;
+			<a href="#2b99dd2c713bdb69" class="i field">_adapter</a>.<a href="ListViewAdapter.cs.html#475bd1335ac9ea0a" class="i property">IsAttachedToWindow</a> = <a href="#c987943b8dd41c16" class="i field">_isAttached</a>;
+		}
+ 
+		<b>protected override</b> <span class="i">AListView</span> <a id="3c3788514523dd73" href="../R/3c3788514523dd73.html" target="n" data-glyph="75,1" class="i method">CreateNativeControl</a>()
+		{
+			<b>return</b> <b>new</b> <span class="i">AListView</span>(<span class="i">Context</span>);
+		}
+ 
+		<b>protected override void</b> <a id="76ec7cfa31cf6334" href="../R/76ec7cfa31cf6334.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#9a1366c2961f4fde" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>&gt; <span id="r3 rd" class="r3 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="k">base</a>.<a href="../ViewRenderer.cs.html#5d5d3ece35573040" class="i method">OnElementChanged</a>(<span class="r3 r">e</span>);
+ 
+			<b>if</b> (<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a> != <b>null</b>)
+			{
+				((<a href="/Xamarin.Forms.Core/A.html#1720dc26cd820061" class="t t">IListViewController</a>)<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>).<a href="/Xamarin.Forms.Core/A.html#9bb626c269400706" class="i">ScrollToRequested</a> -= <span class="i">OnScrollToRequested</span>;
+ 
+				<b>if</b> (<a href="#2b99dd2c713bdb69" class="i field">_adapter</a> != <b>null</b>)
+				{
+					<a href="#2b99dd2c713bdb69" class="i field">_adapter</a>.<span class="i">Dispose</span>();
+					<a href="#2b99dd2c713bdb69" class="i field">_adapter</a> = <b>null</b>;
+				}
+			}
+ 
+			<b>if</b> (<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<span class="i">AListView</span> <span id="r4 rd" class="r4 r">nativeListView</span> = <a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>;
+				<b>if</b> (<span class="r4 r">nativeListView</span> == <b>null</b>)
+				{
+					<b>var</b> <span id="r5 rd" class="r5 r">ctx</span> = <span class="i">Context</span>;
+					<span class="r4 r">nativeListView</span> = <a href="#3c3788514523dd73" class="i method">CreateNativeControl</a>();
+					<a href="#3c736b771e1e6c3a" class="i field">_refresh</a> = <b>new</b> <span class="i">SwipeRefreshLayout</span>(<span class="r5 r">ctx</span>);
+					<a href="#3c736b771e1e6c3a" class="i field">_refresh</a>.<span class="i">SetOnRefreshListener</span>(<a href="#4adb92aac73dcc0c" class="k">this</a>);
+					<a href="#3c736b771e1e6c3a" class="i field">_refresh</a>.<span class="i">AddView</span>(<span class="r4 r">nativeListView</span>, <span class="i">LayoutParams</span>.<span class="i">MatchParent</span>);
+					<span class="i">SetNativeControl</span>(<span class="r4 r">nativeListView</span>, <a href="#3c736b771e1e6c3a" class="i field">_refresh</a>);
+ 
+					<a href="#89ddb288807feaee" class="i field">_headerView</a> = <b>new</b> <span class="t">Container</span>(<span class="r5 r">ctx</span>);
+					<span class="r4 r">nativeListView</span>.<span class="i">AddHeaderView</span>(<a href="#89ddb288807feaee" class="i field">_headerView</a>, <b>null</b>, <b>false</b>);
+					<a href="#f9af6a193c73d5fc" class="i field">_footerView</a> = <b>new</b> <span class="t">Container</span>(<span class="r5 r">ctx</span>);
+					<span class="r4 r">nativeListView</span>.<span class="i">AddFooterView</span>(<a href="#f9af6a193c73d5fc" class="i field">_footerView</a>, <b>null</b>, <b>false</b>);
+				}
+ 
+				((<a href="/Xamarin.Forms.Core/A.html#1720dc26cd820061" class="t t">IListViewController</a>)<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>).<a href="/Xamarin.Forms.Core/A.html#9bb626c269400706" class="i">ScrollToRequested</a> += <span class="i">OnScrollToRequested</span>;
+ 
+				<span class="r4 r">nativeListView</span>.<span class="i">DividerHeight</span> = 0;
+				<span class="r4 r">nativeListView</span>.<span class="i">Focusable</span> = <b>false</b>;
+				<span class="r4 r">nativeListView</span>.<span class="i">DescendantFocusability</span> = <span class="i">DescendantFocusability</span>.<span class="i">AfterDescendants</span>;
+				<span class="r4 r">nativeListView</span>.<span class="i">OnFocusChangeListener</span> = <a href="#4adb92aac73dcc0c" class="k">this</a>;
+				<span class="r4 r">nativeListView</span>.<span class="i">Adapter</span> = <a href="#2b99dd2c713bdb69" class="i field">_adapter</a> = <span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#0b780b61bce76534" class="i property">IsGroupingEnabled</a> &amp;&amp; <span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>.<a href="../PlatformConfigurationExtensions.cs.html#e5d2b3b6cebe48c2" class="i method">OnThisPlatform</a> ().<span class="i">IsFastScrollEnabled</span> () ? <b>new</b> <span class="t">GroupedListViewAdapter</span> (<span class="i">Context</span>, <span class="r4 r">nativeListView</span>, <span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>) : <b>new</b> <span class="t">ListViewAdapter</span>(<span class="i">Context</span>, <span class="r4 r">nativeListView</span>, <span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>);
+				<a href="#2b99dd2c713bdb69" class="i field">_adapter</a>.<a href="ListViewAdapter.cs.html#8e20eba3448efe27" class="i property">HeaderView</a> = <a href="#89ddb288807feaee" class="i field">_headerView</a>;
+				<a href="#2b99dd2c713bdb69" class="i field">_adapter</a>.<a href="ListViewAdapter.cs.html#0e044392d76ff2dd" class="i property">FooterView</a> = <a href="#f9af6a193c73d5fc" class="i field">_footerView</a>;
+				<a href="#2b99dd2c713bdb69" class="i field">_adapter</a>.<a href="ListViewAdapter.cs.html#475bd1335ac9ea0a" class="i property">IsAttachedToWindow</a> = <a href="#c987943b8dd41c16" class="i field">_isAttached</a>;
+ 
+				<a href="#b00437c99c0a0efb" class="i method">UpdateHeader</a>();
+				<a href="#7bfb0358368b5b40" class="i method">UpdateFooter</a>();
+				<a href="#42eeef73e9416644" class="i method">UpdateIsSwipeToRefreshEnabled</a>();
+				<a href="#2acb0267f85badfd" class="i method">UpdateFastScrollEnabled</a>();
+ 
+				
+			}
+		}
+ 
+		<b>internal void</b> <a id="259edbed07670363" href="../R/../../0000000000.html" target="n" data-glyph="74,1" class="i method">LongClickOn</a>(<span class="i">AView</span> <span id="r6 rd" class="r6 r">viewCell</span>)
+		{
+			<b>if</b> (<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>var</b> <span id="r7 rd" class="r7 r">position</span> = <a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">GetPositionForView</span>(<span class="r6 r">viewCell</span>);
+			<b>var</b> <span id="r8 rd" class="r8 r">id</span> = <a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">GetItemIdAtPosition</span>(<span class="r7 r">position</span>);
+ 
+			<a href="#2b99dd2c713bdb69" class="i field">_adapter</a>.<span class="i">OnItemLongClick</span>(<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>, <span class="r6 r">viewCell</span>, <span class="r7 r">position</span>, <span class="r8 r">id</span>);
+		}
+ 
+		<b>protected override void</b> <a id="7cb764ad392f91ac" href="../R/7cb764ad392f91ac.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="k">base</a>.<a href="../ViewRenderer.cs.html#84343e2467a361c4" class="i method">OnElementPropertyChanged</a>(<span class="r9 r">sender</span>, <span class="r10 r">e</span>);
+ 
+			<b>if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <span class="s">&quot;HeaderElement&quot;</span>)
+				<a href="#b00437c99c0a0efb" class="i method">UpdateHeader</a>();
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <span class="s">&quot;FooterElement&quot;</span>)
+				<a href="#7bfb0358368b5b40" class="i method">UpdateFooter</a>();
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <span class="s">&quot;RefreshAllowed&quot;</span>)
+				<a href="#42eeef73e9416644" class="i method">UpdateIsSwipeToRefreshEnabled</a>();
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#b54e2569acd8ac17" class="i field">IsPullToRefreshEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#42eeef73e9416644" class="i method">UpdateIsSwipeToRefreshEnabled</a>();
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#537695c2dff1da16" class="i field">IsRefreshingProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#75781b510b559b45" class="i method">UpdateIsRefreshing</a>();
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#036a38ee3d0699e3" class="i field">SeparatorColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r10 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#5e95022dbc52611a" class="i field">SeparatorVisibilityProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#2b99dd2c713bdb69" class="i field">_adapter</a>.<span class="i">NotifyDataSetChanged</span>();
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <span class="i n">PlatformConfiguration</span>.<span class="i n">AndroidSpecific</span>.<a href="/Xamarin.Forms.Core/A.html#a8c87ba59d87bbc4" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#f9f28442ecaa63b8" class="i field">IsFastScrollEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#2acb0267f85badfd" class="i method">UpdateFastScrollEnabled</a>();
+		}
+ 
+		<b>protected override void</b> <a id="e771fea5852511f4" href="../R/e771fea5852511f4.html" target="n" data-glyph="75,1" class="i method">OnLayout</a>(<b>bool</b> <span id="r11 rd" class="r11 r">changed</span>, <b>int</b> <span id="r12 rd" class="r12 r">l</span>, <b>int</b> <span id="r13 rd" class="r13 r">t</span>, <b>int</b> <span id="r14 rd" class="r14 r">r</span>, <b>int</b> <span id="r15 rd" class="r15 r">b</span>)
+		{
+			<a href="../ViewRenderer.cs.html#71cff1c98136dff0" class="k">base</a>.<a href="../ViewRenderer.cs.html#5a89f7ab69a7b6c5" class="i method">OnLayout</a>(<span class="r11 r">changed</span>, <span class="r12 r">l</span>, <span class="r13 r">t</span>, <span class="r14 r">r</span>, <span class="r15 r">b</span>);
+ 
+			<b>if</b> (<a href="#8a3685fe0658e7a9" class="i field">_pendingScrollTo</a> != <b>null</b>)
+			{
+				<a href="#bdcd5f41d6240597" class="i method">OnScrollToRequested</a>(<a href="#4adb92aac73dcc0c" class="k">this</a>, <a href="#8a3685fe0658e7a9" class="i field">_pendingScrollTo</a>);
+				<a href="#8a3685fe0658e7a9" class="i field">_pendingScrollTo</a> = <b>null</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="bdcd5f41d6240597" href="../R/bdcd5f41d6240597.html" target="n" data-glyph="76,1" class="i method">OnScrollToRequested</a>(<b>object</b> <span id="r16 rd" class="r16 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#f03c2a98424144b5" class="t t">ScrollToRequestedEventArgs</a> <span id="r17 rd" class="r17 r">e</span>)
+		{
+			<b>if</b> (!<a href="#c987943b8dd41c16" class="i field">_isAttached</a>)
+			{
+				<a href="#8a3685fe0658e7a9" class="i field">_pendingScrollTo</a> = <span class="r17 r">e</span>;
+				<b>return</b>;
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r18 rd" class="r18 r">cell</span>;
+			<b>int</b> <span id="r19 rd" class="r19 r">position</span>;
+			<a href="/Xamarin.Forms.Core/A.html#bbee832be42424be" class="k">var</a> <span id="r20 rd" class="r20 r">scrollArgs</span> = (<a href="/Xamarin.Forms.Core/A.html#bbee832be42424be" class="t t">ITemplatedItemsListScrollToRequestedEventArgs</a>)<span class="r17 r">e</span>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r21 rd" class="r21 r">templatedItems</span> = <a href="#f3d0a683e9e6620a" class="i property">TemplatedItemsView</a>.<a href="/Xamarin.Forms.Core/A.html#5c03fae343562417" class="i property">TemplatedItems</a>;
+			<b>if</b> (<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#0b780b61bce76534" class="i property">IsGroupingEnabled</a>)
+			{
+				<b>var</b> <span id="r22 rd" class="r22 r">results</span> = <span class="r21 r">templatedItems</span>.<span class="i">GetGroupAndIndexOfItem</span>(<span class="r20 r">scrollArgs</span>.<a href="/Xamarin.Forms.Core/A.html#57f314f5cc333237" class="i property">Group</a>, <span class="r20 r">scrollArgs</span>.<a href="/Xamarin.Forms.Core/A.html#2b6b4e5119bda668" class="i property">Item</a>);
+				<b>if</b> (<span class="r22 r">results</span>.<span class="i">Item1</span> == -1 || <span class="r22 r">results</span>.<span class="i">Item2</span> == -1)
+					<b>return</b>;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r23 rd" class="r23 r">group</span> = <span class="r21 r">templatedItems</span>.<span class="i">GetGroup</span>(<span class="r22 r">results</span>.<span class="i">Item1</span>);
+				<span class="r18 r">cell</span> = <span class="r23 r">group</span>[<span class="r22 r">results</span>.<span class="i">Item2</span>];
+ 
+				<span class="r19 r">position</span> = <span class="r21 r">templatedItems</span>.<span class="i">GetGlobalIndexForGroup</span>(<span class="r23 r">group</span>) + <span class="r22 r">results</span>.<span class="i">Item2</span> + 1;
+			}
+			<b>else</b>
+			{
+				<span class="r19 r">position</span> = <span class="r21 r">templatedItems</span>.<span class="i">GetGlobalIndexOfItem</span>(<span class="r20 r">scrollArgs</span>.<a href="/Xamarin.Forms.Core/A.html#2b6b4e5119bda668" class="i property">Item</a>);
+				<b>if</b> (<span class="r19 r">position</span> == -1)
+					<b>return</b>;
+ 
+				<span class="r18 r">cell</span> = <span class="r21 r">templatedItems</span>[<span class="r19 r">position</span>];
+			}
+ 
+			<span class="c">//Android offsets position of cells when using header</span>
+			<b>int</b> <span id="r24 rd" class="r24 r">realPositionWithHeader</span> = <span class="r19 r">position</span> + 1;
+ 
+			<b>if</b> (<span class="r17 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#fc0ff6f15e752ead" class="i property">Position</a> == <a href="/Xamarin.Forms.Core/A.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a>.<a href="/Xamarin.Forms.Core/A.html#6027307adab57e1b" class="i field">MakeVisible</a>)
+			{
+				<b>if</b> (<span class="r17 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#a431f3b81325da89" class="i property">ShouldAnimate</a>)
+					<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">SmoothScrollToPosition</span>(<span class="r24 r">realPositionWithHeader</span>);
+				<b>else</b>
+					<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">SetSelection</span>(<span class="r24 r">realPositionWithHeader</span>);
+				<b>return</b>;
+			}
+ 
+			<b>int</b> <span id="r25 rd" class="r25 r">height</span> = <a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">Height</span>;
+			<b>var</b> <span id="r26 rd" class="r26 r">cellHeight</span> = (<b>int</b>)<span class="r18 r">cell</span>.<a href="/Xamarin.Forms.Core/A.html#f9c815e81f5597b4" class="i property">RenderHeight</a>;
+			<b>if</b> (<span class="r26 r">cellHeight</span> == -1)
+			{
+				<b>int</b> <span id="r27 rd" class="r27 r">first</span> = <a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">FirstVisiblePosition</span>;
+				<b>if</b> (<span class="r27 r">first</span> &lt;= <span class="r19 r">position</span> &amp;&amp; <span class="r19 r">position</span> &lt;= <a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">LastVisiblePosition</span>)
+					<span class="r26 r">cellHeight</span> = <a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">GetChildAt</span>(<span class="r19 r">position</span> - <span class="r27 r">first</span>).<span class="i">Height</span>;
+				<b>else</b>
+				{
+					<span class="i">AView</span> <span id="r28 rd" class="r28 r">view</span> = <a href="#2b99dd2c713bdb69" class="i field">_adapter</a>.<a href="ListViewAdapter.cs.html#736723a953c6ec2b" class="i method">GetView</a>(<span class="r19 r">position</span>, <b>null</b>, <b>null</b>);
+					<span class="r28 r">view</span>.<span class="i">Measure</span>(<a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">Width</span>, <span class="i">MeasureSpecMode</span>.<span class="i">AtMost</span>), <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(0, <span class="i">MeasureSpecMode</span>.<span class="i">Unspecified</span>));
+					<span class="r26 r">cellHeight</span> = <span class="r28 r">view</span>.<span class="i">MeasuredHeight</span>;
+				}
+			}
+ 
+			<b>var</b> <span id="r29 rd" class="r29 r">y</span> = 0;
+ 
+			<b>if</b> (<span class="r17 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#fc0ff6f15e752ead" class="i property">Position</a> == <a href="/Xamarin.Forms.Core/A.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a>.<a href="/Xamarin.Forms.Core/A.html#cf0e7d490192e01f" class="i field">Center</a>)
+				<span class="r29 r">y</span> = <span class="r25 r">height</span> / 2 - <span class="r26 r">cellHeight</span> / 2;
+			<b>else if</b> (<span class="r17 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#fc0ff6f15e752ead" class="i property">Position</a> == <a href="/Xamarin.Forms.Core/A.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a>.<a href="/Xamarin.Forms.Core/A.html#c986f9da5b8e7350" class="i field">End</a>)
+				<span class="r29 r">y</span> = <span class="r25 r">height</span> - <span class="r26 r">cellHeight</span>;
+ 
+			<b>if</b> (<span class="r17 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#a431f3b81325da89" class="i property">ShouldAnimate</a>)
+				<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">SmoothScrollToPositionFromTop</span>(<span class="r24 r">realPositionWithHeader</span>, <span class="r29 r">y</span>);
+			<b>else</b>
+				<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">SetSelectionFromTop</span>(<span class="r24 r">realPositionWithHeader</span>, <span class="r29 r">y</span>);
+		}
+ 
+		<b>void</b> <a id="7bfb0358368b5b40" href="../R/7bfb0358368b5b40.html" target="n" data-glyph="76,1" class="i method">UpdateFooter</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="k">var</a> <span id="r30 rd" class="r30 r">footer</span> = (<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>)<a href="#105a984695f262f4" class="i property">Controller</a>.<a href="/Xamarin.Forms.Core/A.html#754bd91edb2fbe9d" class="i property">FooterElement</a>;
+			<b>if</b> (<a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a> != <b>null</b>)
+			{
+				<b>var</b> <span id="r31 rd" class="r31 r">reflectableType</span> = <a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a> <b>as</b> <span class="i">System</span>.<span class="i">Reflection</span>.<span class="i">IReflectableType</span>;
+				<b>var</b> <span id="r32 rd" class="r32 r">rendererType</span> = <span class="r31 r">reflectableType</span> != <b>null</b> ? <span class="r31 r">reflectableType</span>.<span class="i">GetTypeInfo</span>().<span class="i">AsType</span>() : <a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a>.<span class="i">GetType</span>();
+				<b>if</b> (<span class="r30 r">footer</span> == <b>null</b> || <a href="/Xamarin.Forms.Core/A.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="/Xamarin.Forms.Core/A.html#5f29d2ac0e30bd81" class="i property">Registered</a>.<span class="i">GetHandlerTypeForObject</span>(<span class="r30 r">footer</span>) != <span class="r32 r">rendererType</span>)
+				{
+					<b>if</b> (<a href="#f9af6a193c73d5fc" class="i field">_footerView</a> != <b>null</b>)
+						<a href="#f9af6a193c73d5fc" class="i field">_footerView</a>.<a href="#19f2c21fef994ac2" class="i property">Child</a> = <b>null</b>;
+					<a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a>.<span class="i">Dispose</span>();
+					<a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a> = <b>null</b>;
+				}
+			}
+ 
+			<b>if</b> (<span class="r30 r">footer</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a> != <b>null</b>)
+				<a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a>.<a href="../IVisualElementRenderer.cs.html#149302ec71c12b79" class="i method">SetElement</a>(<span class="r30 r">footer</span>);
+			<b>else</b>
+			{
+				<a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a> = <a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#4ec2143da4c61d5f" class="i method">CreateRenderer</a>(<span class="r30 r">footer</span>);
+				<b>if</b> (<a href="#f9af6a193c73d5fc" class="i field">_footerView</a> != <b>null</b>)
+					<a href="#f9af6a193c73d5fc" class="i field">_footerView</a>.<a href="#19f2c21fef994ac2" class="i property">Child</a> = <a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a>;
+			}
+ 
+			<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#fd4d9b7c2836c5e6" class="i method">SetRenderer</a>(<span class="r30 r">footer</span>, <a href="#e3a8b0983d76b0b6" class="i field">_footerRenderer</a>);
+		}
+ 
+		<b>void</b> <a id="b00437c99c0a0efb" href="../R/b00437c99c0a0efb.html" target="n" data-glyph="76,1" class="i method">UpdateHeader</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="k">var</a> <span id="r33 rd" class="r33 r">header</span> = (<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>)<a href="#105a984695f262f4" class="i property">Controller</a>.<a href="/Xamarin.Forms.Core/A.html#3f2837bd0ec78298" class="i property">HeaderElement</a>;
+			<b>if</b> (<a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a> != <b>null</b>)
+			{
+				<b>var</b> <span id="r34 rd" class="r34 r">reflectableType</span> = <a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a> <b>as</b> <span class="i">System</span>.<span class="i">Reflection</span>.<span class="i">IReflectableType</span>;
+				<b>var</b> <span id="r35 rd" class="r35 r">rendererType</span> = <span class="r34 r">reflectableType</span> != <b>null</b> ? <span class="r34 r">reflectableType</span>.<span class="i">GetTypeInfo</span>().<span class="i">AsType</span>() : <a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a>.<span class="i">GetType</span>();
+				<b>if</b> (<span class="r33 r">header</span> == <b>null</b> || <a href="/Xamarin.Forms.Core/A.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="/Xamarin.Forms.Core/A.html#5f29d2ac0e30bd81" class="i property">Registered</a>.<span class="i">GetHandlerTypeForObject</span>(<span class="r33 r">header</span>) != <span class="r35 r">rendererType</span>)
+				{
+					<b>if</b> (<a href="#89ddb288807feaee" class="i field">_headerView</a> != <b>null</b>)
+						<a href="#89ddb288807feaee" class="i field">_headerView</a>.<a href="#19f2c21fef994ac2" class="i property">Child</a> = <b>null</b>;
+					<a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a>.<span class="i">Dispose</span>();
+					<a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a> = <b>null</b>;
+				}
+			}
+ 
+			<b>if</b> (<span class="r33 r">header</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a> != <b>null</b>)
+				<a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a>.<a href="../IVisualElementRenderer.cs.html#149302ec71c12b79" class="i method">SetElement</a>(<span class="r33 r">header</span>);
+			<b>else</b>
+			{
+				<a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a> = <a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#4ec2143da4c61d5f" class="i method">CreateRenderer</a>(<span class="r33 r">header</span>);
+				<b>if</b> (<a href="#89ddb288807feaee" class="i field">_headerView</a> != <b>null</b>)
+					<a href="#89ddb288807feaee" class="i field">_headerView</a>.<a href="#19f2c21fef994ac2" class="i property">Child</a> = <a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a>;
+			}
+ 
+			<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#fd4d9b7c2836c5e6" class="i method">SetRenderer</a>(<span class="r33 r">header</span>, <a href="#a51fedf776fd7e0d" class="i field">_headerRenderer</a>);
+		}
+ 
+		<b>void</b> <a id="75781b510b559b45" href="../R/75781b510b559b45.html" target="n" data-glyph="76,1" class="i method">UpdateIsRefreshing</a>(<b>bool</b> <span id="r2 rd" class="r2 r">isInitialValue</span> = <b>false</b>)
+		{
+			<b>if</b> (<a href="#3c736b771e1e6c3a" class="i field">_refresh</a> != <b>null</b>)
+			{
+				<b>var</b> <span id="r36 rd" class="r36 r">isRefreshing</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d61e6639459dfdf7" class="i property">IsRefreshing</a>;
+				<b>if</b> (<span class="r36 r">isRefreshing</span> &amp;&amp; <span class="r2 r">isInitialValue</span>)
+				{
+					<a href="#3c736b771e1e6c3a" class="i field">_refresh</a>.<span class="i">Refreshing</span> = <b>false</b>;
+					<a href="#3c736b771e1e6c3a" class="i field">_refresh</a>.<span class="i">Post</span>(() =&gt;
+					{
+						<a href="#3c736b771e1e6c3a" class="i field">_refresh</a>.<span class="i">Refreshing</span> = <b>true</b>;
+					});
+				}
+				<b>else</b>
+					<a href="#3c736b771e1e6c3a" class="i field">_refresh</a>.<span class="i">Refreshing</span> = <span class="r36 r">isRefreshing</span>;
+			}
+		}
+ 
+		<b>void</b> <a id="42eeef73e9416644" href="../R/42eeef73e9416644.html" target="n" data-glyph="76,1" class="i method">UpdateIsSwipeToRefreshEnabled</a>()
+		{
+			<b>if</b> (<a href="#3c736b771e1e6c3a" class="i field">_refresh</a> != <b>null</b>)
+				<a href="#3c736b771e1e6c3a" class="i field">_refresh</a>.<span class="i">Enabled</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2b34e6ba669638df" class="i property">IsPullToRefreshEnabled</a> &amp;&amp; (<a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#1720dc26cd820061" class="t t">IListViewController</a>).<a href="/Xamarin.Forms.Core/A.html#89fd2883313bc866" class="i property">RefreshAllowed</a>;
+		}
+ 
+		<b>void</b> <a id="2acb0267f85badfd" href="../R/2acb0267f85badfd.html" target="n" data-glyph="76,1" class="i method">UpdateFastScrollEnabled</a>()
+		{
+			<b>if</b> (<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a> != <b>null</b>) {
+				<a href="../ViewRenderer.cs.html#ae97bb4279742be5" class="i property">Control</a>.<span class="i">FastScrollEnabled</span> = <a href="../VisualElementRenderer.cs.html#37a572695e51b5a8" class="i property">Element</a>.<a href="../PlatformConfigurationExtensions.cs.html#e5d2b3b6cebe48c2" class="i method">OnThisPlatform</a> ().<span class="i">IsFastScrollEnabled</span> ();
+			}
+		}
+ 
+		<b>internal class</b> <a id="9f94951fc9beaa39" href="../R/9f94951fc9beaa39.html" target="n" data-glyph="2,1" class="t t">Container</a> : <span class="i">ViewGroup</span>
+		{
+			<a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <a id="447ca71dbeaf91c8" href="../R/447ca71dbeaf91c8.html" target="n" data-glyph="46,2" class="i field">_child</a>;
+ 
+			<b>public</b> <a id="93af68f09cab54ba" href="../R/../../0000000000.html" target="n" data-glyph="72,2" class="i constructor">Container</a>(<span class="i">IntPtr</span> <span id="r37 rd" class="r37 r">p</span>, <b>global</b>::<span class="i">Android</span>.<span class="i">Runtime</span>.<span class="i">JniHandleOwnership</span> <span id="r38 rd" class="r38 r">o</span>) : <b>base</b>(<span class="r37 r">p</span>, <span class="r38 r">o</span>)
+			{
+				<span class="c">// Added default constructor to prevent crash when accessing header/footer row in ListViewAdapter.Dispose</span>
+			}
+ 
+			<b>public</b> <a id="ca1c59f12231ba00" href="../R/../../0000000000.html" target="n" data-glyph="72,2" class="i constructor">Container</a>(<span class="i">Context</span> <span id="r39 rd" class="r39 r">context</span>) : <b>base</b>(<span class="r39 r">context</span>)
+			{
+			}
+ 
+			<b>public</b> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <a id="19f2c21fef994ac2" href="../R/19f2c21fef994ac2.html" target="n" data-glyph="102,2" class="i property">Child</a>
+			{
+				<b>set</b>
+				{
+					<b>if</b> (<a href="#447ca71dbeaf91c8" class="i field">_child</a> != <b>null</b>)
+						<span class="i">RemoveView</span>(<a href="#447ca71dbeaf91c8" class="i field">_child</a>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>);
+ 
+					<a href="#447ca71dbeaf91c8" class="i field">_child</a> = <b>value</b>;
+ 
+					<b>if</b> (<b>value</b> != <b>null</b>)
+						<span class="i">AddView</span>(<b>value</b>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>);
+				}
+			}
+ 
+			<b>protected override void</b> <a id="5b94dd0329774580" href="../R/../../0000000000.html" target="n" data-glyph="75,2" class="i method">OnLayout</a>(<b>bool</b> <span id="r40 rd" class="r40 r">changed</span>, <b>int</b> <span id="r41 rd" class="r41 r">l</span>, <b>int</b> <span id="r42 rd" class="r42 r">t</span>, <b>int</b> <span id="r43 rd" class="r43 r">r</span>, <b>int</b> <span id="r44 rd" class="r44 r">b</span>)
+			{
+				<b>if</b> (<a href="#447ca71dbeaf91c8" class="i field">_child</a> == <b>null</b>)
+					<b>return</b>;
+ 
+				<a href="#447ca71dbeaf91c8" class="i field">_child</a>.<a href="../IVisualElementRenderer.cs.html#45d0cfa8761dcd6c" class="i method">UpdateLayout</a>();
+			}
+ 
+			<b>protected override void</b> <a id="4a28d1856a850c10" href="../R/../../0000000000.html" target="n" data-glyph="75,2" class="i method">OnMeasure</a>(<b>int</b> <span id="r45 rd" class="r45 r">widthMeasureSpec</span>, <b>int</b> <span id="r46 rd" class="r46 r">heightMeasureSpec</span>)
+			{
+				<b>if</b> (<a href="#447ca71dbeaf91c8" class="i field">_child</a> == <b>null</b>)
+				{
+					<span class="i">SetMeasuredDimension</span>(0, 0);
+					<b>return</b>;
+				}
+ 
+				<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r47 rd" class="r47 r">element</span> = <a href="#447ca71dbeaf91c8" class="i field">_child</a>.<a href="../IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+ 
+				<span class="i">Context</span> <span id="r48 rd" class="r48 r">ctx</span> = <span class="i">Context</span>;
+ 
+				<b>var</b> <span id="r49 rd" class="r49 r">width</span> = (<b>int</b>)<span class="r48 r">ctx</span>.<a href="../ContextExtensions.cs.html#cce5139585f8ebc7" class="i method">FromPixels</a>(<a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<a href="../MeasureSpecFactory.cs.html#788566b1e44871c4" class="i method">GetSize</a>(<span class="r45 r">widthMeasureSpec</span>));
+ 
+				<a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <span id="r50 rd" class="r50 r">request</span> = <a href="#447ca71dbeaf91c8" class="i field">_child</a>.<a href="../IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>.<span class="i">Measure</span>(<span class="r49 r">width</span>, <b>double</b>.<span class="i">PositiveInfinity</span>, <a href="/Xamarin.Forms.Core/A.html#19188af5047dacb2" class="t t">MeasureFlags</a>.<a href="/Xamarin.Forms.Core/A.html#1d00849f5d3cab40" class="i field">IncludeMargins</a>);
+				<span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="t t">Layout</a>.<span class="i">LayoutChildIntoBoundingRegion</span>(<a href="#447ca71dbeaf91c8" class="i field">_child</a>.<a href="../IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>, <b>new</b> <span class="t">Rectangle</span>(0, 0, <span class="r49 r">width</span>, <span class="r50 r">request</span>.<a href="/Xamarin.Forms.Core/A.html#18756f69c7ccde74" class="i property">Request</a>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a>));
+ 
+				<b>int</b> <span id="r51 rd" class="r51 r">widthSpec</span> = <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>((<b>int</b>)<span class="r48 r">ctx</span>.<a href="../ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r49 r">width</span>), <span class="i">MeasureSpecMode</span>.<span class="i">Exactly</span>);
+				<b>int</b> <span id="r52 rd" class="r52 r">heightSpec</span> = <a href="../MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>((<b>int</b>)<span class="r48 r">ctx</span>.<a href="../ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r50 r">request</span>.<a href="/Xamarin.Forms.Core/A.html#18756f69c7ccde74" class="i property">Request</a>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a>), <span class="i">MeasureSpecMode</span>.<span class="i">Exactly</span>);
+ 
+				<a href="#447ca71dbeaf91c8" class="i field">_child</a>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">Measure</span>(<span class="r45 r">widthMeasureSpec</span>, <span class="r46 r">heightMeasureSpec</span>);
+				<span class="i">SetMeasuredDimension</span>(<span class="r51 r">widthSpec</span>, <span class="r52 r">heightSpec</span>);
+			}
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

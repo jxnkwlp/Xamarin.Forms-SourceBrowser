@@ -1,0 +1,356 @@
+﻿<!DOCTYPE html>
+<html><head><title>XamlCTask.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(347);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/XamlCTask.cs" target="_top">XamlCTask.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+ 
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Cil</span>;
+ 
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>
+{
+	<b>public class</b> <a id="b33ccd73e30ce2a8" href="R/b33ccd73e30ce2a8.html" target="n" data-glyph="0,0" class="t t"><span id="59ecef5e3d954d58">XamlCTask</span></a> : <a href="XamlTask.cs.html#4501796fd3dbcfee" class="t t">XamlTask</a>
+	{
+		<b>bool</b> <a id="e7d058c5752d93df" href="R/e7d058c5752d93df.html" target="n" data-glyph="46,1" class="i field">hasCompiledXamlResources</a>;
+		<b>public bool</b> <a id="5b8d8f654ac2b926" href="R/5b8d8f654ac2b926.html" target="n" data-glyph="102,1" class="i property">KeepXamlResources</a> { <b>get</b>; <b>set</b>; }
+		<b>public bool</b> <a id="dbfb926b8600da5e" href="R/dbfb926b8600da5e.html" target="n" data-glyph="102,1" class="i property">OptimizeIL</a> { <b>get</b>; <b>set</b>; }
+ 
+		[<a href="@0@mscorlib/A.html#66ed4e142f4e14e7" class="t constructor">Obsolete</a>(<span class="s">&quot;OutputGeneratedILAsCode is obsolete as of version 2.3.4. This option is no longer available.&quot;</span>)]
+		<b>public bool</b> <a id="ab3ff30462955008" href="R/ab3ff30462955008.html" target="n" data-glyph="102,1" class="i property">OutputGeneratedILAsCode</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public bool</b> <a id="333db863921ceedd" href="R/333db863921ceedd.html" target="n" data-glyph="102,1" class="i property">CompileByDefault</a> { <b>get</b>; <b>set</b>; }
+		<b>public bool</b> <a id="21b7298ee482bbf1" href="R/21b7298ee482bbf1.html" target="n" data-glyph="102,1" class="i property">ForceCompile</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public</b> <span class="i">IAssemblyResolver</span> <a id="3f592f8c5533f621" href="R/3f592f8c5533f621.html" target="n" data-glyph="102,1" class="i property">DefaultAssemblyResolver</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>internal string</b> <a id="56de47474d08c506" href="R/56de47474d08c506.html" target="n" data-glyph="104,1" class="i property">Type</a> { <b>get</b>; <b>set</b>; }
+		<b>internal</b> <span class="i">MethodDefinition</span> <a id="069d8dd6d00fa885" href="R/069d8dd6d00fa885.html" target="n" data-glyph="104,1" class="i property">InitCompForType</a> { <b>get</b>; <b>private set</b>; }
+		<b>internal bool</b> <a id="9ce23fb7e995939e" href="R/9ce23fb7e995939e.html" target="n" data-glyph="104,1" class="i property">ReadOnly</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public override bool</b> <a id="1e957807e4bb44b6" href="R/1e957807e4bb44b6.html" target="n" data-glyph="72,1" class="i method">Execute</a>(<b>out</b> <a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a>&gt; <span id="r0 rd" class="r0 r">thrownExceptions</span>)
+		{
+			<span class="r0 r">thrownExceptions</span> = <b>null</b>;
+			<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a> = <a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a> ?? <b>new</b> <a href="Logger.cs.html#65fef16e306d168c" class="t constructor">Logger</a>(<b>null</b>, <a href="XamlTask.cs.html#dbaf0d587ecda2f9" class="i property">Verbosity</a>);
+			<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(1, <span class="s">&quot;Compiling Xaml&quot;</span>);
+			<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(1, <span class="s">&quot;\nAssembly: {0}&quot;</span>, <a href="XamlTask.cs.html#1e7c2511a03d0b27" class="i property">Assembly</a>);
+			<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="XamlTask.cs.html#ea129edede9724d7" class="i property">DependencyPaths</a>))
+				<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(1, <span class="s">&quot;DependencyPaths: \t{0}&quot;</span>, <a href="XamlTask.cs.html#ea129edede9724d7" class="i property">DependencyPaths</a>);
+			<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="XamlTask.cs.html#2cc6240eb835fb3c" class="i property">ReferencePath</a>))
+				<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(1, <span class="s">&quot;ReferencePath: \t{0}&quot;</span>, <a href="XamlTask.cs.html#2cc6240eb835fb3c" class="i property">ReferencePath</a>.<a href="@0@mscorlib/A.html#69fc1d0aa6df8a90" class="i method">Replace</a>(<span class="s">&quot;//&quot;</span>, <span class="s">&quot;/&quot;</span>));
+			<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(3, <span class="s">&quot;DebugSymbols:\&quot;{0}\&quot;&quot;</span>, <a href="XamlTask.cs.html#05b5cdeafe1503e2" class="i property">DebugSymbols</a>);
+			<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(3, <span class="s">&quot;DebugType:\&quot;{0}\&quot;&quot;</span>, <a href="XamlTask.cs.html#5c437ee20b34b2c9" class="i property">DebugType</a>);
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r1 rd" class="r1 r">skipassembly</span> = !<a href="#333db863921ceedd" class="i property">CompileByDefault</a>;
+			<b>bool</b> <span id="r2 rd" class="r2 r">success</span> = <b>true</b>;
+ 
+			<b>if</b> (!<a href="@0@mscorlib/A.html#1c7421e464f67b7e" class="t t">File</a>.<a href="@0@mscorlib/A.html#3360368484a9f131" class="i method">Exists</a>(<a href="XamlTask.cs.html#1e7c2511a03d0b27" class="i property">Assembly</a>))
+			{
+				<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(1, <span class="s">&quot;Assembly file not found. Skipping XamlC.&quot;</span>);
+				<b>return true</b>;
+			}
+ 
+			<b>var</b> <span id="r3 rd" class="r3 r">resolver</span> = <a href="#3f592f8c5533f621" class="i property">DefaultAssemblyResolver</a> ?? <b>new</b> <a href="XamlCAssemblyResolver.cs.html#30816023c8b1b514" class="t constructor">XamlCAssemblyResolver</a>();
+			<a href="XamlCAssemblyResolver.cs.html#30816023c8b1b514" class="k">var</a> <span id="r4 rd" class="r4 r">xamlCResolver</span> = <span class="r3 r">resolver</span> <b>as</b> <a href="XamlCAssemblyResolver.cs.html#30816023c8b1b514" class="t t">XamlCAssemblyResolver</a>;
+ 
+			<b>if</b> (<span class="r4 r">xamlCResolver</span> != <b>null</b>)
+			{
+				<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="XamlTask.cs.html#ea129edede9724d7" class="i property">DependencyPaths</a>))
+				{
+					<b>foreach</b> (<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r5 rd" class="r5 r">dep</span> <b>in</b> <a href="XamlTask.cs.html#ea129edede9724d7" class="i property">DependencyPaths</a>.<a href="@0@mscorlib/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;;&#39;</span>))
+					{
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(3, <span class="s">&quot;Adding searchpath {0}&quot;</span>, <span class="r5 r">dep</span>);
+						<span class="r4 r">xamlCResolver</span>.<span class="i">AddSearchDirectory</span>(<span class="r5 r">dep</span>);
+					}
+				}
+ 
+				<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="XamlTask.cs.html#2cc6240eb835fb3c" class="i property">ReferencePath</a>))
+				{
+					<b>var</b> <span id="r6 rd" class="r6 r">paths</span> = <a href="XamlTask.cs.html#2cc6240eb835fb3c" class="i property">ReferencePath</a>.<a href="@0@mscorlib/A.html#69fc1d0aa6df8a90" class="i method">Replace</a>(<span class="s">&quot;//&quot;</span>, <span class="s">&quot;/&quot;</span>).<a href="@0@mscorlib/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;;&#39;</span>);
+					<b>foreach</b> (<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r7 rd" class="r7 r">p</span> <b>in</b> <span class="r6 r">paths</span>)
+					{
+						<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r8 rd" class="r8 r">searchpath</span> = <a href="@0@mscorlib/A.html#090eca8621a248ee" class="t t">Path</a>.<a href="@0@mscorlib/A.html#f9128b02ffd0d3ea" class="i method">GetDirectoryName</a>(<span class="r7 r">p</span>);
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(3, <span class="s">&quot;Adding searchpath {0}&quot;</span>, <span class="r8 r">searchpath</span>);
+						<span class="r4 r">xamlCResolver</span>.<span class="i">AddSearchDirectory</span>(<span class="r8 r">searchpath</span>);
+					}
+				}
+			}
+			<b>else</b> {
+				<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(3, <span class="s">&quot;Ignoring dependency and reference paths due to an unsupported resolver&quot;</span>);
+			}
+ 
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r9 rd" class="r9 r">debug</span> = <a href="XamlTask.cs.html#05b5cdeafe1503e2" class="i property">DebugSymbols</a> || (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="XamlTask.cs.html#5c437ee20b34b2c9" class="i property">DebugType</a>) &amp;&amp; <a href="XamlTask.cs.html#5c437ee20b34b2c9" class="i property">DebugType</a>.<a href="@0@mscorlib/A.html#2d51c212cb09178e" class="i method">ToLowerInvariant</a>() != <span class="s">&quot;none&quot;</span>);
+ 
+			<b>var</b> <span id="r10 rd" class="r10 r">readerParameters</span> = <b>new</b> <span class="i">ReaderParameters</span> {
+				<span class="i">AssemblyResolver</span> = <span class="r3 r">resolver</span>,
+				<span class="i">ReadWrite</span> = !<a href="#9ce23fb7e995939e" class="i property">ReadOnly</a>,
+				<span class="i">ReadSymbols</span> = <span class="r9 r">debug</span>,
+			};
+ 
+			<b>using</b> (<b>var</b> <span id="r11 rd" class="r11 r">assemblyDefinition</span> = <span class="i">AssemblyDefinition</span>.<span class="i">ReadAssembly</span>(<a href="@0@mscorlib/A.html#090eca8621a248ee" class="t t">Path</a>.<a href="@0@mscorlib/A.html#1274738792cce835" class="i method">GetFullPath</a>(<a href="XamlTask.cs.html#1e7c2511a03d0b27" class="i property">Assembly</a>),<span class="r10 r">readerParameters</span>)) {
+				<span class="i">CustomAttribute</span> <span id="r12 rd" class="r12 r">xamlcAttr</span>;
+				<b>if</b> (<span class="r11 r">assemblyDefinition</span>.<span class="i">HasCustomAttributes</span> &amp;&amp;
+					(<span class="r12 r">xamlcAttr</span> =
+						<span class="r11 r">assemblyDefinition</span>.<span class="i">CustomAttributes</span>.<span class="i">FirstOrDefault</span>(
+							<span id="r13 rd" class="r13 r">ca</span> =&gt; <span class="r13 r">ca</span>.<span class="i">AttributeType</span>.<span class="i">FullName</span> == <span class="s">&quot;Xamarin.Forms.Xaml.XamlCompilationAttribute&quot;</span>)) != <b>null</b>) {
+					<a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="k">var</a> <span id="r14 rd" class="r14 r">options</span> = (<a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>)<span class="r12 r">xamlcAttr</span>.<span class="i">ConstructorArguments</span>[0].<span class="i">Value</span>;
+					<b>if</b> ((<span class="r14 r">options</span> &amp; <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#1b997ad7683b8d10" class="i field">Skip</a>) == <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#1b997ad7683b8d10" class="i field">Skip</a>)
+						<span class="r1 r">skipassembly</span> = <b>true</b>;
+					<b>if</b> ((<span class="r14 r">options</span> &amp; <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#9f46c0a880b8db08" class="i field">Compile</a>) == <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#9f46c0a880b8db08" class="i field">Compile</a>)
+						<span class="r1 r">skipassembly</span> = <b>false</b>;
+				}
+ 
+				<b>foreach</b> (<b>var</b> <span id="r15 rd" class="r15 r">module</span> <b>in</b> <span class="r11 r">assemblyDefinition</span>.<span class="i">Modules</span>) {
+					<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r16 rd" class="r16 r">skipmodule</span> = <span class="r1 r">skipassembly</span>;
+					<b>if</b> (<span class="r15 r">module</span>.<span class="i">HasCustomAttributes</span> &amp;&amp;
+						(<span class="r12 r">xamlcAttr</span> =
+							<span class="r15 r">module</span>.<span class="i">CustomAttributes</span>.<span class="i">FirstOrDefault</span>(
+								<span id="r17 rd" class="r17 r">ca</span> =&gt; <span class="r17 r">ca</span>.<span class="i">AttributeType</span>.<span class="i">FullName</span> == <span class="s">&quot;Xamarin.Forms.Xaml.XamlCompilationAttribute&quot;</span>)) != <b>null</b>) {
+						<a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="k">var</a> <span id="r18 rd" class="r18 r">options</span> = (<a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>)<span class="r12 r">xamlcAttr</span>.<span class="i">ConstructorArguments</span>[0].<span class="i">Value</span>;
+						<b>if</b> ((<span class="r18 r">options</span> &amp; <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#1b997ad7683b8d10" class="i field">Skip</a>) == <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#1b997ad7683b8d10" class="i field">Skip</a>)
+							<span class="r16 r">skipmodule</span> = <b>true</b>;
+						<b>if</b> ((<span class="r18 r">options</span> &amp; <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#9f46c0a880b8db08" class="i field">Compile</a>) == <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#9f46c0a880b8db08" class="i field">Compile</a>)
+							<span class="r16 r">skipmodule</span> = <b>false</b>;
+					}
+ 
+					<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogLine</span>(2, <span class="s">&quot; Module: {0}&quot;</span>, <span class="r15 r">module</span>.<span class="i">Name</span>);
+					<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r19 rd" class="r19 r">resourcesToPrune</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i">EmbeddedResource</span>&gt;();
+					<b>foreach</b> (<b>var</b> <span id="r20 rd" class="r20 r">resource</span> <b>in</b> <span class="r15 r">module</span>.<span class="i">Resources</span>.<span class="i">OfType</span>&lt;<span class="i">EmbeddedResource</span>&gt;()) {
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogString</span>(2, <span class="s">&quot;  Resource: {0}... &quot;</span>, <span class="r20 r">resource</span>.<span class="i">Name</span>);
+						<b>string</b> <span id="r21 rd" class="r21 r">classname</span>;
+						<b>if</b> (!<span class="r20 r">resource</span>.<span class="i">IsXaml</span>(<b>out</b> <span class="r21 r">classname</span>)) {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;skipped.&quot;</span>);
+							<b>continue</b>;
+						}
+						<span class="i">TypeDefinition</span> <span id="r22 rd" class="r22 r">typeDef</span> = <span class="r15 r">module</span>.<span class="i">GetType</span>(<span class="r21 r">classname</span>);
+						<b>if</b> (<span class="r22 r">typeDef</span> == <b>null</b>) {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;no type found... skipped.&quot;</span>);
+							<b>continue</b>;
+						}
+						<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r23 rd" class="r23 r">skiptype</span> = <span class="r16 r">skipmodule</span>;
+						<b>if</b> (<span class="r22 r">typeDef</span>.<span class="i">HasCustomAttributes</span> &amp;&amp;
+							(<span class="r12 r">xamlcAttr</span> =
+								<span class="r22 r">typeDef</span>.<span class="i">CustomAttributes</span>.<span class="i">FirstOrDefault</span>(
+									<span id="r24 rd" class="r24 r">ca</span> =&gt; <span class="r24 r">ca</span>.<span class="i">AttributeType</span>.<span class="i">FullName</span> == <span class="s">&quot;Xamarin.Forms.Xaml.XamlCompilationAttribute&quot;</span>)) != <b>null</b>) {
+							<a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="k">var</a> <span id="r25 rd" class="r25 r">options</span> = (<a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>)<span class="r12 r">xamlcAttr</span>.<span class="i">ConstructorArguments</span>[0].<span class="i">Value</span>;
+							<b>if</b> ((<span class="r25 r">options</span> &amp; <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#1b997ad7683b8d10" class="i field">Skip</a>) == <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#1b997ad7683b8d10" class="i field">Skip</a>)
+								<span class="r23 r">skiptype</span> = <b>true</b>;
+							<b>if</b> ((<span class="r25 r">options</span> &amp; <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#9f46c0a880b8db08" class="i field">Compile</a>) == <a href="/Xamarin.Forms.Xaml/A.html#0565c303a447df6b" class="t t">XamlCompilationOptions</a>.<a href="/Xamarin.Forms.Xaml/A.html#9f46c0a880b8db08" class="i field">Compile</a>)
+								<span class="r23 r">skiptype</span> = <b>false</b>;
+						}
+ 
+						<b>if</b> (<a href="#56de47474d08c506" class="i property">Type</a> != <b>null</b>)
+							<span class="r23 r">skiptype</span> = !(<a href="#56de47474d08c506" class="i property">Type</a> == <span class="r21 r">classname</span>);
+ 
+						<b>if</b> (<span class="r23 r">skiptype</span> &amp;&amp; !<a href="#21b7298ee482bbf1" class="i property">ForceCompile</a>) {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;Has XamlCompilationAttribute set to Skip and not Compile... skipped&quot;</span>);
+							<b>continue</b>;
+						}
+ 
+						<b>var</b> <span id="r26 rd" class="r26 r">initComp</span> = <span class="r22 r">typeDef</span>.<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(<span id="r27 rd" class="r27 r">md</span> =&gt; <span class="r27 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;InitializeComponent&quot;</span>);
+						<b>if</b> (<span class="r26 r">initComp</span> == <b>null</b>) {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;no InitializeComponent found... skipped.&quot;</span>);
+							<b>continue</b>;
+						}
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;&quot;</span>);
+ 
+						<span class="i">CustomAttribute</span> <span id="r28 rd" class="r28 r">xamlFilePathAttr</span>;
+						<b>var</b> <span id="r29 rd" class="r29 r">xamlFilePath</span> = <span class="r22 r">typeDef</span>.<span class="i">HasCustomAttributes</span> &amp;&amp; (<span class="r28 r">xamlFilePathAttr</span> = <span class="r22 r">typeDef</span>.<span class="i">CustomAttributes</span>.<span class="i">FirstOrDefault</span>(<span id="r30 rd" class="r30 r">ca</span> =&gt; <span class="r30 r">ca</span>.<span class="i">AttributeType</span>.<span class="i">FullName</span> == <span class="s">&quot;Xamarin.Forms.Xaml.XamlFilePathAttribute&quot;</span>)) != <b>null</b> ?
+												  (<b>string</b>)<span class="r28 r">xamlFilePathAttr</span>.<span class="i">ConstructorArguments</span>[0].<span class="i">Value</span> :
+												  <span class="r20 r">resource</span>.<span class="i">Name</span>;
+ 
+						<b>var</b> <span id="r31 rd" class="r31 r">initCompRuntime</span> = <span class="r22 r">typeDef</span>.<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(<span id="r32 rd" class="r32 r">md</span> =&gt; <span class="r32 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;__InitComponentRuntime&quot;</span>);
+						<b>if</b> (<span class="r31 r">initCompRuntime</span> != <b>null</b>)
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;   __InitComponentRuntime already exists... not creating&quot;</span>);
+						<b>else</b> {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogString</span>(2, <span class="s">&quot;   Creating empty {0}.__InitComponentRuntime ...&quot;</span>, <span class="r22 r">typeDef</span>.<span class="i">Name</span>);
+							<span class="r31 r">initCompRuntime</span> = <b>new</b> <span class="i">MethodDefinition</span>(<span class="s">&quot;__InitComponentRuntime&quot;</span>, <span class="r26 r">initComp</span>.<span class="i">Attributes</span>, <span class="r26 r">initComp</span>.<span class="i">ReturnType</span>);
+							<span class="r31 r">initCompRuntime</span>.<span class="i">Body</span>.<span class="i">InitLocals</span> = <b>true</b>;
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;done.&quot;</span>);
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogString</span>(2, <span class="s">&quot;   Copying body of InitializeComponent to __InitComponentRuntime ...&quot;</span>, <span class="r22 r">typeDef</span>.<span class="i">Name</span>);
+							<span class="r31 r">initCompRuntime</span>.<span class="i">Body</span> = <b>new</b> <span class="i">MethodBody</span>(<span class="r31 r">initCompRuntime</span>);
+							<b>var</b> <span id="r33 rd" class="r33 r">iCRIl</span> = <span class="r31 r">initCompRuntime</span>.<span class="i">Body</span>.<span class="i">GetILProcessor</span>();
+							<b>foreach</b> (<b>var</b> <span id="r34 rd" class="r34 r">instr</span> <b>in</b> <span class="r26 r">initComp</span>.<span class="i">Body</span>.<span class="i">Instructions</span>)
+								<span class="r33 r">iCRIl</span>.<span class="i">Append</span>(<span class="r34 r">instr</span>);
+							<span class="r26 r">initComp</span>.<span class="i">Body</span>.<span class="i">Instructions</span>.<span class="i">Clear</span>();
+							<span class="r26 r">initComp</span>.<span class="i">Body</span>.<span class="i">GetILProcessor</span>().<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ret</span>);
+							<span class="r26 r">initComp</span>.<span class="i">Body</span>.<span class="i">InitLocals</span> = <b>true</b>;
+							<span class="r22 r">typeDef</span>.<span class="i">Methods</span>.<span class="i">Add</span>(<span class="r31 r">initCompRuntime</span>);
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;done.&quot;</span>);
+						}
+ 
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#7d5a4c789f2fc209" class="i method">LogString</a>(2, <span class="s">&quot;   Parsing Xaml... &quot;</span>);
+						<a href="ILRootNode.cs.html#de06ee077600c4f7" class="k">var</a> <span id="r35 rd" class="r35 r">rootnode</span> = <span class="i">ParseXaml</span>(<span class="r20 r">resource</span>.<span class="i">GetResourceStream</span>(), <span class="r22 r">typeDef</span>);
+						<b>if</b> (<span class="r35 r">rootnode</span> == <b>null</b>) {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;failed.&quot;</span>);
+							<b>continue</b>;
+						}
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;done.&quot;</span>);
+ 
+						<a href="#e7d058c5752d93df" class="i field">hasCompiledXamlResources</a> = <b>true</b>;
+ 
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogString</span>(2, <span class="s">&quot;   Replacing {0}.InitializeComponent ()... &quot;</span>, <span class="r22 r">typeDef</span>.<span class="i">Name</span>);
+						<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r36 rd" class="r36 r">e</span>;
+						<b>if</b> (!<span class="i">TryCoreCompile</span>(<span class="r26 r">initComp</span>, <span class="r31 r">initCompRuntime</span>, <span class="r35 r">rootnode</span>, <span class="r20 r">resource</span>.<span class="i">Name</span>, <b>out</b> <span class="r36 r">e</span>)) {
+							<span class="r2 r">success</span> = <b>false</b>;
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;failed.&quot;</span>);
+							(<span class="r0 r">thrownExceptions</span> = <span class="r0 r">thrownExceptions</span> ?? <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a>&gt;()).<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r36 r">e</span>);
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogException</span>(<b>null</b>, <b>null</b>, <b>null</b>, <span class="r29 r">xamlFilePath</span>, <span class="r36 r">e</span>);
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(4, <span class="r36 r">e</span>.<a href="@0@mscorlib/A.html#950d763693dd32d3" class="i property">StackTrace</a>);
+							<b>continue</b>;
+						}
+						<b>if</b> (<a href="#56de47474d08c506" class="i property">Type</a> != <b>null</b>)
+						    <a href="#069d8dd6d00fa885" class="i property">InitCompForType</a> = <span class="r26 r">initComp</span>;
+ 
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;done.&quot;</span>);
+ 
+						<b>if</b> (<a href="#dbfb926b8600da5e" class="i property">OptimizeIL</a>) {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#7d5a4c789f2fc209" class="i method">LogString</a>(2, <span class="s">&quot;   Optimizing IL... &quot;</span>);
+							<span class="r26 r">initComp</span>.<span class="i">Body</span>.<span class="i">Optimize</span>();
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;done&quot;</span>);
+						}
+ 
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;&quot;</span>);
+ 
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 0618
+						<b>if</b> (<a href="#ab3ff30462955008" class="i property">OutputGeneratedILAsCode</a>)
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;   Decompiling option has been removed. Use a 3rd party decompiler to admire the beauty of the IL generated&quot;</span>);
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 0618
+						<span class="r19 r">resourcesToPrune</span>.<span class="i">Add</span>(<span class="r20 r">resource</span>);
+					}
+					<b>if</b> (<a href="#e7d058c5752d93df" class="i field">hasCompiledXamlResources</a>) {
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#7d5a4c789f2fc209" class="i method">LogString</a>(2, <span class="s">&quot;  Changing the module MVID...&quot;</span>);
+						<span class="r15 r">module</span>.<span class="i">Mvid</span> = <a href="@0@mscorlib/A.html#b622ef5f6b76c10a" class="t t">Guid</a>.<a href="@0@mscorlib/A.html#b7fae6994c22c22e" class="i method">NewGuid</a>();
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;done.&quot;</span>);
+					}
+					<b>if</b> (!<a href="#5b8d8f654ac2b926" class="i property">KeepXamlResources</a>) {
+						<b>if</b> (<span class="r19 r">resourcesToPrune</span>.<a href="@0@System.Core/A.html#8788153112b7ffd0" class="i method">Any</a>())
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;  Removing compiled xaml resources&quot;</span>);
+						<b>foreach</b> (<b>var</b> <span id="r37 rd" class="r37 r">resource</span> <b>in</b> <span class="r19 r">resourcesToPrune</span>) {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogString</span>(2, <span class="s">&quot;   Removing {0}... &quot;</span>, <span class="r37 r">resource</span>.<span class="i">Name</span>);
+							<span class="r15 r">module</span>.<span class="i">Resources</span>.<span class="i">Remove</span>(<span class="r37 r">resource</span>);
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;done&quot;</span>);
+						}
+					}
+ 
+					<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;&quot;</span>);
+				}
+ 
+				<b>if</b> (!<a href="#e7d058c5752d93df" class="i field">hasCompiledXamlResources</a>) {
+					<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(1, <span class="s">&quot;No compiled resources. Skipping writing assembly.&quot;</span>);
+					<b>return</b> <span class="r2 r">success</span>;
+				}
+ 
+				<b>if</b> (<a href="#9ce23fb7e995939e" class="i property">ReadOnly</a>)
+					<b>return</b> <span class="r2 r">success</span>;
+				
+				<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#7d5a4c789f2fc209" class="i method">LogString</a>(1, <span class="s">&quot;Writing the assembly... &quot;</span>);
+				<b>try</b> {
+					<span class="r11 r">assemblyDefinition</span>.<span class="i">Write</span>(<b>new</b> <span class="i">WriterParameters</span> {
+						<span class="i">WriteSymbols</span> = <span class="r9 r">debug</span>,
+					});
+					<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(1, <span class="s">&quot;done.&quot;</span>);
+				} <b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r38 rd" class="r38 r">e</span>) {
+					<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(1, <span class="s">&quot;failed.&quot;</span>);
+					<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#d2dfbf40ff30a581" class="i method">LogException</a>(<b>null</b>, <b>null</b>, <b>null</b>, <b>null</b>, <span class="r38 r">e</span>);
+					(<span class="r0 r">thrownExceptions</span> = <span class="r0 r">thrownExceptions</span> ?? <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a>&gt;()).<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r38 r">e</span>);
+					<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(4, <span class="r38 r">e</span>.<a href="@0@mscorlib/A.html#950d763693dd32d3" class="i property">StackTrace</a>);
+					<span class="r2 r">success</span> = <b>false</b>;
+				}
+			}
+			<b>return</b> <span class="r2 r">success</span>;
+		}
+ 
+		<b>bool</b> <a id="fd82d7fd2d34ee4d" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">TryCoreCompile</a>(<span class="i">MethodDefinition</span> <span id="r39 rd" class="r39 r">initComp</span>, <span class="i">MethodDefinition</span> <span id="r40 rd" class="r40 r">initCompRuntime</span>, <a href="ILRootNode.cs.html#de06ee077600c4f7" class="t t">ILRootNode</a> <span id="r41 rd" class="r41 r">rootnode</span>, <b>string</b> <span id="r42 rd" class="r42 r">resourceId</span>, <b>out</b> <a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r43 rd" class="r43 r">exception</span>)
+		{
+			<b>try</b> {
+				<b>var</b> <span id="r44 rd" class="r44 r">body</span> = <b>new</b> <span class="i">MethodBody</span>(<span class="r39 r">initComp</span>);
+				<b>var</b> <span id="r45 rd" class="r45 r">module</span> = <span class="r44 r">body</span>.<span class="i">Method</span>.<span class="i">Module</span>;
+				<span class="r44 r">body</span>.<span class="i">InitLocals</span> = <b>true</b>;
+				<b>var</b> <span id="r46 rd" class="r46 r">il</span> = <span class="r44 r">body</span>.<span class="i">GetILProcessor</span>();
+				<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Nop</span>);
+ 
+				<b>if</b> (<span class="r40 r">initCompRuntime</span> != <b>null</b>) {
+					<span class="c">// Generating branching code for the Previewer</span>
+ 
+					<span class="c">//First using the ResourceLoader</span>
+					<b>var</b> <span id="r47 rd" class="r47 r">nop</span> = <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Nop</span>);
+					<b>var</b> <span id="r48 rd" class="r48 r">getResourceProvider</span> = <span class="r45 r">module</span>.<span class="i">ImportReference</span>(<span class="r45 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#b4dfcc2b236d937a" class="t t">ResourceLoader</a>))
+							 .<span class="i">Resolve</span>()
+							 .<span class="i">Properties</span>.<span class="i">FirstOrDefault</span>(<span id="r49 rd" class="r49 r">pd</span> =&gt; <span class="r49 r">pd</span>.<span class="i">Name</span> == <span class="s">&quot;ResourceProvider&quot;</span>)
+							 .<span class="i">GetMethod</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r48 r">getResourceProvider</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Brfalse</span>, <span class="r47 r">nop</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r48 r">getResourceProvider</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, <span class="r42 r">resourceId</span>);
+					<b>var</b> <span id="r50 rd" class="r50 r">func</span> = <span class="r45 r">module</span>.<span class="i">ImportReference</span>(<span class="r45 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>string</b>, <b>string</b>&gt;))
+							 .<span class="i">Resolve</span>()
+							 .<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(<span id="r51 rd" class="r51 r">md</span> =&gt; <span class="r51 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;Invoke&quot;</span>));
+					<span class="r50 r">func</span> = <span class="r50 r">func</span>.<span class="i">ResolveGenericParameters</span>(<span class="r45 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>string</b>, <b>string</b>&gt;)), <span class="r45 r">module</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r50 r">func</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Brfalse</span>, <span class="r47 r">nop</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldarg_0</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r40 r">initCompRuntime</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ret</span>);
+					<span class="r46 r">il</span>.<span class="i">Append</span>(<span class="r47 r">nop</span>);
+ 
+					<span class="c">//Or using the deprecated XamlLoader</span>
+					<span class="r47 r">nop</span> = <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Nop</span>);
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 0618
+					<b>var</b> <span id="r52 rd" class="r52 r">getXamlFileProvider</span> = <span class="r45 r">module</span>.<span class="i">ImportReference</span>(<span class="r45 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<span class="i n">Xaml</span>.<span class="i n">Internals</span>.<a href="/Xamarin.Forms.Xaml/A.html#c71dcfa4049952d5" class="t t">XamlLoader</a>))
+							.<span class="i">Resolve</span>()
+							.<span class="i">Properties</span>.<span class="i">FirstOrDefault</span>(<span id="r53 rd" class="r53 r">pd</span> =&gt; <span class="r53 r">pd</span>.<span class="i">Name</span> == <span class="s">&quot;XamlFileProvider&quot;</span>)
+							.<span class="i">GetMethod</span>);
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 0618
+ 
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r52 r">getXamlFileProvider</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Brfalse</span>, <span class="r47 r">nop</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r52 r">getXamlFileProvider</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldarg_0</span>);
+					<b>var</b> <span id="r54 rd" class="r54 r">getType</span> = <span class="r45 r">module</span>.<span class="i">ImportReference</span>(<span class="r45 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<b>object</b>))
+									  .<span class="i">Resolve</span>()
+									  .<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(<span id="r55 rd" class="r55 r">md</span> =&gt; <span class="r55 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;GetType&quot;</span>));
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r54 r">getType</span>);
+					<span class="r50 r">func</span> = <span class="r45 r">module</span>.<span class="i">ImportReference</span>(<span class="r45 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <b>string</b>&gt;))
+							 .<span class="i">Resolve</span>()
+							 .<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(<span id="r56 rd" class="r56 r">md</span> =&gt; <span class="r56 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;Invoke&quot;</span>));
+					<span class="r50 r">func</span> = <span class="r50 r">func</span>.<span class="i">ResolveGenericParameters</span>(<span class="r45 r">module</span>.<span class="i">ImportReference</span>(<b>typeof</b>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a>, <b>string</b>&gt;)), <span class="r45 r">module</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r50 r">func</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Brfalse</span>, <span class="r47 r">nop</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldarg_0</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r40 r">initCompRuntime</span>);
+					<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ret</span>);
+					<span class="r46 r">il</span>.<span class="i">Append</span>(<span class="r47 r">nop</span>);
+				}
+ 
+				<a href="ILContext.cs.html#cfeae44d09d495a0" class="k">var</a> <span id="r57 rd" class="r57 r">visitorContext</span> = <b>new</b> <span class="t">ILContext</span>(<span class="r46 r">il</span>, <span class="r44 r">body</span>, <span class="r45 r">module</span>);
+ 
+				<span class="r41 r">rootnode</span>.<a href="/Xamarin.Forms.Xaml/A.html#0217a7327e7006f0" class="i method">Accept</a>(<b>new</b> <a href="/Xamarin.Forms.Xaml/A.html#80c30157d20236c0" class="t constructor">XamlNodeVisitor</a>((<span id="r58 rd" class="r58 r">node</span>, <span id="r59 rd" class="r59 r">parent</span>) =&gt; <span class="r58 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#aaa082f00606354b" class="i property">Parent</a> = <span class="r59 r">parent</span>), <b>null</b>);
+				<span class="r41 r">rootnode</span>.<a href="/Xamarin.Forms.Xaml/A.html#0217a7327e7006f0" class="i method">Accept</a>(<b>new</b> <a href="ExpandMarkupsVisitor.cs.html#750a53fb4ae1b0a7" class="t constructor">ExpandMarkupsVisitor</a>(<span class="r57 r">visitorContext</span>), <b>null</b>);
+				<span class="r41 r">rootnode</span>.<a href="/Xamarin.Forms.Xaml/A.html#0217a7327e7006f0" class="i method">Accept</a>(<b>new</b> <a href="/Xamarin.Forms.Xaml/A.html#d655f686b8f9bd95" class="t constructor">PruneIgnoredNodesVisitor</a>(), <b>null</b>);
+				<span class="r41 r">rootnode</span>.<a href="/Xamarin.Forms.Xaml/A.html#0217a7327e7006f0" class="i method">Accept</a>(<b>new</b> <a href="CreateObjectVisitor.cs.html#b5016315583d751b" class="t constructor">CreateObjectVisitor</a>(<span class="r57 r">visitorContext</span>), <b>null</b>);
+				<span class="r41 r">rootnode</span>.<a href="/Xamarin.Forms.Xaml/A.html#0217a7327e7006f0" class="i method">Accept</a>(<b>new</b> <a href="SetNamescopesAndRegisterNamesVisitor.cs.html#b8cf7cd1f7cce875" class="t constructor">SetNamescopesAndRegisterNamesVisitor</a>(<span class="r57 r">visitorContext</span>), <b>null</b>);
+				<span class="r41 r">rootnode</span>.<a href="/Xamarin.Forms.Xaml/A.html#0217a7327e7006f0" class="i method">Accept</a>(<b>new</b> <a href="SetFieldVisitor.cs.html#b7a60075814d5d31" class="t constructor">SetFieldVisitor</a>(<span class="r57 r">visitorContext</span>), <b>null</b>);
+				<span class="r41 r">rootnode</span>.<a href="/Xamarin.Forms.Xaml/A.html#0217a7327e7006f0" class="i method">Accept</a>(<b>new</b> <a href="SetResourcesVisitor.cs.html#78d84508ea619aa3" class="t constructor">SetResourcesVisitor</a>(<span class="r57 r">visitorContext</span>), <b>null</b>);
+				<span class="r41 r">rootnode</span>.<a href="/Xamarin.Forms.Xaml/A.html#0217a7327e7006f0" class="i method">Accept</a>(<b>new</b> <a href="SetPropertiesVisitor.cs.html#4ad47baf30ec7c64" class="t constructor">SetPropertiesVisitor</a>(<span class="r57 r">visitorContext</span>, <b>true</b>), <b>null</b>);
+ 
+				<span class="r46 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ret</span>);
+				<span class="r39 r">initComp</span>.<span class="i">Body</span> = <span class="r44 r">body</span>;
+				<span class="r43 r">exception</span> = <b>null</b>;
+				<b>return true</b>;
+			} <b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r60 rd" class="r60 r">e</span>) {
+				<span class="r43 r">exception</span> = <span class="r60 r">e</span>;
+				<b>return false</b>;
+			}
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

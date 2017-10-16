@@ -1,0 +1,478 @@
+﻿<!DOCTYPE html>
+<html><head><title>ButtonRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(469);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/FastRenderers/ButtonRenderer.cs" target="_top">FastRenderers\ButtonRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Graphics</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Graphics</span>.<span class="i">Drawables</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Support</span>.<span class="i">V7</span>.<span class="i">Widget</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Util</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i">AView</span> = <span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span>;
+<b>using</b> <span class="i">AMotionEventActions</span> = <span class="i">Android</span>.<span class="i">Views</span>.<span class="i">MotionEventActions</span>;
+<b>using static</b> <span class="i">System</span>.<span class="i">String</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>.<span class="i n">FastRenderers</span>
+{
+	<b>internal sealed class</b> <a id="423ee39c2729920c" href="../R/423ee39c2729920c.html" target="n" data-glyph="2,0" class="t t">ButtonRenderer</a> : <span class="i">AppCompatButton</span>, <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>, <span class="i">AView</span>.<span class="i">IOnAttachStateChangeListener</span>,
+		<span class="i">AView</span>.<span class="i">IOnFocusChangeListener</span>, <a href="/Xamarin.Forms.Core/A.html#1ec8f97ecf2bfedd" class="t t">IEffectControlProvider</a>, <span class="i">AView</span>.<span class="i">IOnClickListener</span>, <span class="i">AView</span>.<span class="i">IOnTouchListener</span>
+	{
+		<b>float</b> <a id="088d669a25bd3bcd" href="../R/088d669a25bd3bcd.html" target="n" data-glyph="46,1" class="i field">_defaultFontSize</a>;
+		<b>int</b>? <a id="f7c841c8b87d9f11" href="../R/f7c841c8b87d9f11.html" target="n" data-glyph="46,1" class="i field">_defaultLabelFor</a>;
+		<span class="i">Typeface</span> <a id="7d4b0b91bd1607d8" href="../R/7d4b0b91bd1607d8.html" target="n" data-glyph="46,1" class="i field">_defaultTypeface</a>;
+		<b>int</b> <a id="33a5470ba4ecc3de" href="../R/33a5470ba4ecc3de.html" target="n" data-glyph="46,1" class="i field">_imageHeight</a> = -1;
+		<b>bool</b> <a id="fa4a5d5c514842fb" href="../R/fa4a5d5c514842fb.html" target="n" data-glyph="46,1" class="i field">_isDisposed</a>;
+		<b>bool</b> <a id="57619c865750bf2d" href="../R/57619c865750bf2d.html" target="n" data-glyph="46,1" class="i field">_inputTransparent</a>;
+		<b>readonly</b> <span class="i">Lazy</span>&lt;<a href="../TextColorSwitcher.cs.html#63d27b3d47d6237e" class="t t">TextColorSwitcher</a>&gt; <a id="5ac932b4413e107f" href="../R/5ac932b4413e107f.html" target="n" data-glyph="46,1" class="i field">_textColorSwitcher</a>;
+		<b>readonly</b> <a href="AutomationPropertiesProvider.cs.html#ad35515df7588551" class="t t">AutomationPropertiesProvider</a> <a id="800edb66da9e3a5b" href="../R/800edb66da9e3a5b.html" target="n" data-glyph="46,1" class="i field">_automationPropertiesProvider</a>;
+		<b>readonly</b> <a href="EffectControlProvider.cs.html#b7a1e04bab1f0b79" class="t t">EffectControlProvider</a> <a id="d9f30e46e6096265" href="../R/d9f30e46e6096265.html" target="n" data-glyph="46,1" class="i field">_effectControlProvider</a>;
+		<a href="../VisualElementTracker.cs.html#d538081d9f94da4d" class="t t">VisualElementTracker</a> <a id="4a2082122a73e7d7" href="../R/4a2082122a73e7d7.html" target="n" data-glyph="46,1" class="i field">_tracker</a>;
+		<a href="../ButtonBackgroundTracker.cs.html#02406240ff38519b" class="t t">ButtonBackgroundTracker</a> <a id="b81d8d26783df64e" href="../R/b81d8d26783df64e.html" target="n" data-glyph="46,1" class="i field">_backgroundTracker</a>;
+ 
+		<b>public event</b> <span class="i">EventHandler</span>&lt;<a href="../VisualElementChangedEventArgs.cs.html#af6d54330067744b" class="t t">VisualElementChangedEventArgs</a>&gt; <a id="3eba1e40f2b2c167" href="../R/3eba1e40f2b2c167.html" target="n" data-glyph="30,1" class="i">ElementChanged</a>;
+		<b>public event</b> <span class="i">EventHandler</span>&lt;<span class="i">PropertyChangedEventArgs</span>&gt; <a id="3fcd6e33a04bc44b" href="../R/3fcd6e33a04bc44b.html" target="n" data-glyph="30,1" class="i">ElementPropertyChanged</a>;
+ 
+		<b>public</b> <a id="edf59e539513e173" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">ButtonRenderer</a>() : <b>base</b>(<a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>)
+		{
+			<a href="#800edb66da9e3a5b" class="i field">_automationPropertiesProvider</a> = <b>new</b> <a href="AutomationPropertiesProvider.cs.html#c93467e350e0a7bc" class="t constructor">AutomationPropertiesProvider</a>(<a href="#423ee39c2729920c" class="k">this</a>);
+			<a href="#d9f30e46e6096265" class="i field">_effectControlProvider</a> = <b>new</b> <span class="t">EffectControlProvider</span>(<a href="#423ee39c2729920c" class="k">this</a>);
+			<a href="#5ac932b4413e107f" class="i field">_textColorSwitcher</a> = <b>new</b> <span class="i">Lazy</span>&lt;<a href="../TextColorSwitcher.cs.html#63d27b3d47d6237e" class="t t">TextColorSwitcher</a>&gt;(() =&gt; <b>new</b> <span class="t">TextColorSwitcher</span>(<span class="i">TextColors</span>));
+ 
+			<a href="#a5f6953a6d8138ca" class="i method">Initialize</a>();
+		}
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a id="2125fa11382f38ad" href="../R/2125fa11382f38ad.html" target="n" data-glyph="102,1" class="i property">Element</a> =&gt; <a href="#446748553e1a5b52" class="i property">Button</a>;
+		<span class="i">AView</span> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a> =&gt; <a href="#423ee39c2729920c" class="k">this</a>;
+		<span class="i">ViewGroup</span> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#9e8dee2b480dc4e6" class="i property">ViewGroup</a> =&gt; <b>null</b>;
+		<a href="../VisualElementTracker.cs.html#d538081d9f94da4d" class="t t">VisualElementTracker</a> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#cfa32eccc8f34910" class="i property">Tracker</a> =&gt; <a href="#4a2082122a73e7d7" class="i field">_tracker</a>;
+ 
+		<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a> <a id="446748553e1a5b52" href="../R/446748553e1a5b52.html" target="n" data-glyph="106,1" class="i property">Button</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public void</b> <a id="284dd6630f3e869f" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnClick</a>(<span class="i">AView</span> <span id="r0 rd" class="r0 r">v</span>)
+		{
+			((<a href="/Xamarin.Forms.Core/A.html#7affc5ed3814bae6" class="t t">IButtonController</a>)<a href="#446748553e1a5b52" class="i property">Button</a>)?.<span class="i">SendClicked</span>();
+		}
+ 
+		<b>public bool</b> <a id="9de9320e3125f77a" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnTouch</a>(<span class="i">AView</span> <span id="r1 rd" class="r1 r">v</span>, <span class="i">MotionEvent</span> <span id="r2 rd" class="r2 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#7affc5ed3814bae6" class="k">var</a> <span id="r3 rd" class="r3 r">buttonController</span> = <a href="#2125fa11382f38ad" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#7affc5ed3814bae6" class="t t">IButtonController</a>;
+			<b>switch</b> (<span class="r2 r">e</span>.<span class="i">Action</span>)
+			{
+				<b>case</b> <span class="i">AMotionEventActions</span>.<span class="i">Down</span>:
+					<span class="r3 r">buttonController</span>?.<span class="i">SendPressed</span>();
+					<b>break</b>;
+				<b>case</b> <span class="i">AMotionEventActions</span>.<span class="i">Up</span>:
+					<span class="r3 r">buttonController</span>?.<span class="i">SendReleased</span>();
+					<b>break</b>;
+			}
+ 
+			<b>return false</b>;
+		}
+ 
+		<b>void</b> <a href="/Xamarin.Forms.Core/A.html#1ec8f97ecf2bfedd" class="t t">IEffectControlProvider</a>.<a href="/Xamarin.Forms.Core/A.html#b783dcc5e3ec781f" class="i method">RegisterEffect</a>(<a href="/Xamarin.Forms.Core/A.html#e864ca63b39ef663" class="t t">Effect</a> <span id="r4 rd" class="r4 r">effect</span>)
+		{
+			<a href="#d9f30e46e6096265" class="i field">_effectControlProvider</a>.<a href="EffectControlProvider.cs.html#73ea9dde126f0bb7" class="i method">RegisterEffect</a>(<span class="r4 r">effect</span>);
+		}
+ 
+		<b>void</b> <span class="i">IOnAttachStateChangeListener</span>.<a id="70ad2dba58a1c1d6" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnViewAttachedToWindow</a>(<span class="i">AView</span> <span id="r5 rd" class="r5 r">attachedView</span>)
+		{
+			<a href="#3ce47485601bcaf8" class="i method">UpdateText</a>();
+		}
+ 
+		<b>void</b> <span class="i">IOnAttachStateChangeListener</span>.<a id="24b2b4fece2b37ec" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnViewDetachedFromWindow</a>(<span class="i">AView</span> <span id="r6 rd" class="r6 r">detachedView</span>)
+		{
+		}
+ 
+		<b>void</b> <span class="i">IOnFocusChangeListener</span>.<a id="c703c723f93d0a6e" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnFocusChange</a>(<span class="i">AView</span> <span id="r7 rd" class="r7 r">v</span>, <b>bool</b> <span id="r8 rd" class="r8 r">hasFocus</span>)
+		{
+			<a href="#2f5c4decb73c492a" class="i method">OnNativeFocusChanged</a>(<span class="r8 r">hasFocus</span>);
+ 
+			((<a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a>)<a href="#446748553e1a5b52" class="i property">Button</a>).<span class="i">SetValueFromRenderer</span>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#f3c799c4a8d3bafa" class="i field">IsFocusedPropertyKey</a>, <span class="r8 r">hasFocus</span>);
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#bb0c64306434c3a0" class="i method">GetDesiredSize</a>(<b>int</b> <span id="r9 rd" class="r9 r">widthConstraint</span>, <b>int</b> <span id="r10 rd" class="r10 r">heightConstraint</span>)
+		{
+			<a href="#3ce47485601bcaf8" class="i method">UpdateText</a>();
+ 
+			<span class="i">AView</span> <span id="r11 rd" class="r11 r">view</span> = <a href="#423ee39c2729920c" class="k">this</a>;
+			<span class="r11 r">view</span>.<span class="i">Measure</span>(<span class="r9 r">widthConstraint</span>, <span class="r10 r">heightConstraint</span>);
+ 
+			<b>return</b> <b>new</b> <span class="t">SizeRequest</span>(<b>new</b> <span class="t">Size</span>(<span class="i">MeasuredWidth</span>, <span class="i">MeasuredHeight</span>), <a href="#c2e099a57a760158" class="i method">MinimumSize</a>());
+		}
+ 
+		<b>void</b> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#149302ec71c12b79" class="i method">SetElement</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r12 rd" class="r12 r">element</span>)
+		{
+			<b>if</b> (<span class="r12 r">element</span> == <b>null</b>)
+			{
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<b>nameof</b>(<span class="r12 r">element</span>));
+			}
+ 
+			<b>if</b> (!(<span class="r12 r">element</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>))
+			{
+				<b>throw</b> <b>new</b> <span class="i">ArgumentException</span>(<span class="s">$&quot;</span>{<b>nameof</b>(<span class="r12 r">element</span>)}<span class="s"> must be of type </span>{<b>nameof</b>(<a href="#446748553e1a5b52" class="i property">Button</a>)}<span class="s">&quot;</span>);
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r13 rd" class="r13 r">oldElement</span> = <a href="#446748553e1a5b52" class="i property">Button</a>;
+			<a href="#446748553e1a5b52" class="i property">Button</a> = (<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>)<span class="r12 r">element</span>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>();
+ 
+			<b>if</b> (<span class="r13 r">oldElement</span> != <b>null</b>)
+			{
+				<span class="r13 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <span class="i">OnElementPropertyChanged</span>;
+			}
+ 
+			<b>if</b> (<a href="#b81d8d26783df64e" class="i field">_backgroundTracker</a> == <b>null</b>)
+				<a href="#b81d8d26783df64e" class="i field">_backgroundTracker</a> = <b>new</b> <span class="t">ButtonBackgroundTracker</span>(<a href="#446748553e1a5b52" class="i property">Button</a>, <a href="#423ee39c2729920c" class="k">this</a>);
+			<b>else</b>
+				<a href="#b81d8d26783df64e" class="i field">_backgroundTracker</a>.<a href="../ButtonBackgroundTracker.cs.html#1800c21743977e0c" class="i property">Button</a> = <a href="#446748553e1a5b52" class="i property">Button</a>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r14 rd" class="r14 r">currentColor</span> = <span class="r13 r">oldElement</span>?.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a> ?? <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#78f150ac7d83a2c8" class="i property">Default</a>;
+			<b>if</b> (<span class="r12 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a> != <span class="r14 r">currentColor</span>)
+			{
+				<a href="#b78d42df5946225e" class="i method">UpdateBackgroundColor</a>();
+			}
+ 
+			<span class="r12 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <span class="i">OnElementPropertyChanged</span>;
+ 
+			<b>if</b> (<a href="#4a2082122a73e7d7" class="i field">_tracker</a> == <b>null</b>)
+			{
+				<span class="c">// Can&#39;t set up the tracker in the constructor because it access the Element (for now)</span>
+				<a href="#a6f172e800abf826" class="i method">SetTracker</a>(<b>new</b> <a href="../VisualElementTracker.cs.html#4656ffbcfdf6338a" class="t constructor">VisualElementTracker</a>(<a href="#423ee39c2729920c" class="k">this</a>));
+			}
+ 
+			<a href="#03cf052fd378f90b" class="i method">OnElementChanged</a>(<b>new</b> <a href="../ElementChangedEventArgs.cs.html#af39acd48262b8b2" class="t constructor">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>&gt;(<span class="r13 r">oldElement</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>, <a href="#446748553e1a5b52" class="i property">Button</a>));
+ 
+			<span class="i">SendVisualElementInitialized</span>(<span class="r12 r">element</span>, <a href="#423ee39c2729920c" class="k">this</a>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#f41400798b78aca4" class="t t">EffectUtilities</a>.<span class="i">RegisterEffectControlProvider</span>(<a href="#423ee39c2729920c" class="k">this</a>, <span class="r13 r">oldElement</span>, <span class="r12 r">element</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>();
+		}
+ 
+		<b>void</b> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#cad9af341c40f73b" class="i method">SetLabelFor</a>(<b>int</b>? <span id="r15 rd" class="r15 r">id</span>)
+		{
+			<b>if</b> (<a href="#f7c841c8b87d9f11" class="i field">_defaultLabelFor</a> == <b>null</b>)
+			{
+				<a href="#f7c841c8b87d9f11" class="i field">_defaultLabelFor</a> = <span class="i">LabelFor</span>;
+			}
+ 
+			<span class="i">LabelFor</span> = (<b>int</b>)(<span class="r15 r">id</span> ?? <a href="#f7c841c8b87d9f11" class="i field">_defaultLabelFor</a>);
+		}
+ 
+		<b>void</b> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#45d0cfa8761dcd6c" class="i method">UpdateLayout</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>();
+			<a href="#4a2082122a73e7d7" class="i field">_tracker</a>?.<a href="../VisualElementTracker.cs.html#0e37e7edf6aa3434" class="i method">UpdateLayout</a>();
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>();
+		}
+ 
+		<b>protected override void</b> <a id="ae004ad350cef161" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r16 rd" class="r16 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#fa4a5d5c514842fb" class="i field">_isDisposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="#fa4a5d5c514842fb" class="i field">_isDisposed</a> = <b>true</b>;
+ 
+			<b>if</b> (<span class="r16 r">disposing</span>)
+			{
+				<span class="i">SetOnClickListener</span>(<b>null</b>);
+				<span class="i">SetOnTouchListener</span>(<b>null</b>);
+				<span class="i">RemoveOnAttachStateChangeListener</span>(<a href="#423ee39c2729920c" class="k">this</a>);
+ 
+				<a href="#800edb66da9e3a5b" class="i field">_automationPropertiesProvider</a>?.<a href="AutomationPropertiesProvider.cs.html#9391f9e8f49331bd" class="i method">Dispose</a>();
+				<a href="#4a2082122a73e7d7" class="i field">_tracker</a>?.<a href="../VisualElementTracker.cs.html#10977b30ca8b0186" class="i method">Dispose</a>();
+ 
+				<a href="#b81d8d26783df64e" class="i field">_backgroundTracker</a>?.<a href="../ButtonBackgroundTracker.cs.html#eff0e64126d9c0f5" class="i method">Dispose</a>();
+ 
+				<b>if</b> (<a href="#2125fa11382f38ad" class="i property">Element</a> != <b>null</b>)
+				{
+					<a href="#2125fa11382f38ad" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <span class="i">OnElementPropertyChanged</span>;
+ 
+					<b>if</b> (<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<a href="#2125fa11382f38ad" class="i property">Element</a>) == <a href="#423ee39c2729920c" class="k">this</a>)
+						<a href="#2125fa11382f38ad" class="i property">Element</a>.<span class="i">ClearValue</span>(<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#cda3e6f7841c17d4" class="i field">RendererProperty</a>);
+				}
+			}
+ 
+			<b>base</b>.<span class="i">Dispose</span>(<span class="r16 r">disposing</span>);
+		}
+ 
+		<b>public override bool</b> <a id="15122098142f86ca" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnTouchEvent</a>(<span class="i">MotionEvent</span> <span id="r17 rd" class="r17 r">e</span>)
+		{
+			<b>if</b> (!<span class="i">Enabled</span> || (<a href="#57619c865750bf2d" class="i field">_inputTransparent</a> &amp;&amp; <span class="i">Enabled</span>))
+				<b>return false</b>;
+ 
+			<b>return</b> <b>base</b>.<span class="i">OnTouchEvent</span>(<span class="r17 r">e</span>);
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <a id="c2e099a57a760158" href="../R/c2e099a57a760158.html" target="n" data-glyph="76,1" class="i method">MinimumSize</a>()
+		{
+			<b>return</b> <b>new</b> <span class="t">Size</span>();
+		}
+ 
+		<b>void</b> <a id="03cf052fd378f90b" href="../R/03cf052fd378f90b.html" target="n" data-glyph="76,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#9a1366c2961f4fde" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>&gt; <span id="r18 rd" class="r18 r">e</span>)
+		{
+			<b>if</b> (<span class="r18 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a> != <b>null</b>)
+			{
+				<a href="#b81d8d26783df64e" class="i field">_backgroundTracker</a>?.<a href="../ButtonBackgroundTracker.cs.html#a7f1080bbf3b12ec" class="i method">Reset</a>();
+			}
+			<b>if</b> (<span class="r18 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a> != <b>null</b> &amp;&amp; !<a href="#fa4a5d5c514842fb" class="i field">_isDisposed</a>)
+			{
+				<a href="#423ee39c2729920c" class="k">this</a>.<span class="i">EnsureId</span>();
+ 
+				<a href="#4efe679f0b368bab" class="i method">UpdateFont</a>();
+				<a href="#3ce47485601bcaf8" class="i method">UpdateText</a>();
+				<a href="#870cc76f4cfed1b5" class="i method">UpdateBitmap</a>();
+				<a href="#1f064ddb5992ae70" class="i method">UpdateTextColor</a>();
+				<a href="#ad1392c915234e64" class="i method">UpdateIsEnabled</a>();
+				<a href="#62a8214de33ab192" class="i method">UpdateInputTransparent</a>();
+				<a href="#b78d42df5946225e" class="i method">UpdateBackgroundColor</a>();
+				<a href="#dabdcbe00bbc4ce9" class="i method">UpdateDrawable</a>();
+ 
+				<a href="../Elevation.cs.html#4878da890f34a431" class="t t">ElevationHelper</a>.<span class="i">SetElevation</span>(<a href="#423ee39c2729920c" class="k">this</a>, <span class="r18 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>);
+			}
+ 
+			<a href="#3eba1e40f2b2c167" class="i">ElementChanged</a>?.<span class="i">Invoke</span>(<a href="#423ee39c2729920c" class="k">this</a>, <b>new</b> <a href="../VisualElementChangedEventArgs.cs.html#6a37702d575e1b52" class="t constructor">VisualElementChangedEventArgs</a>(<span class="r18 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>, <span class="r18 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>));
+		}
+ 
+		<b>void</b> <a id="cbae600b29d51f41" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r19 rd" class="r19 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r20 rd" class="r20 r">e</span>)
+		{
+			<b>if</b> (<span class="r20 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#7c0c5f9cd576d26c" class="i field">TextProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#3ce47485601bcaf8" class="i method">UpdateText</a>();
+			}
+			<b>else if</b> (<span class="r20 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#d0002ab7da86058d" class="i field">TextColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#1f064ddb5992ae70" class="i method">UpdateTextColor</a>();
+			}
+			<b>else if</b> (<span class="r20 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#d798cc16e0e87f98" class="i field">IsEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#ad1392c915234e64" class="i method">UpdateIsEnabled</a>();
+			}
+			<b>else if</b> (<span class="r20 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#6bdbe85e043d51ec" class="i field">FontProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#4efe679f0b368bab" class="i method">UpdateFont</a>();
+			}
+			<b>else if</b> (<span class="r20 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#632c8a9339160c1d" class="i field">ImageProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#870cc76f4cfed1b5" class="i method">UpdateBitmap</a>();
+			}
+			<b>else if</b> (<span class="r20 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#acdb30ca7e3e8994" class="i field">IsVisibleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#3ce47485601bcaf8" class="i method">UpdateText</a>();
+			}
+			<b>else if</b> (<span class="r20 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#0a624730d6bd2c02" class="i field">InputTransparentProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#62a8214de33ab192" class="i method">UpdateInputTransparent</a>();
+			}
+ 
+			<a href="#3fcd6e33a04bc44b" class="i">ElementPropertyChanged</a>?.<span class="i">Invoke</span>(<a href="#423ee39c2729920c" class="k">this</a>, <span class="r20 r">e</span>);
+		}
+ 
+		<b>protected override void</b> <a id="4930ac7a71281022" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnLayout</a>(<b>bool</b> <span id="r21 rd" class="r21 r">changed</span>, <b>int</b> <span id="r22 rd" class="r22 r">l</span>, <b>int</b> <span id="r23 rd" class="r23 r">t</span>, <b>int</b> <span id="r24 rd" class="r24 r">r</span>, <b>int</b> <span id="r25 rd" class="r25 r">b</span>)
+		{
+			<b>if</b> (<a href="#2125fa11382f38ad" class="i property">Element</a> == <b>null</b> || <a href="#fa4a5d5c514842fb" class="i field">_isDisposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<a href="#33a5470ba4ecc3de" class="i field">_imageHeight</a> &gt; -1)
+			{
+				<span class="c">// We&#39;ve got an image (and no text); it&#39;s already centered horizontally,</span>
+				<span class="c">// we just need to adjust the padding so it centers vertically</span>
+				<b>int</b> <span id="r26 rd" class="r26 r">diff</span> = (<span class="r25 r">b</span> - <span class="r23 r">t</span> - <a href="#33a5470ba4ecc3de" class="i field">_imageHeight</a>) / 2;
+				<span class="r26 r">diff</span> = <span class="i">Math</span>.<span class="i">Max</span>(<span class="r26 r">diff</span>, 0);
+				<span class="i">SetPadding</span>(0, <span class="r26 r">diff</span>, 0, -<span class="r26 r">diff</span>);
+			}
+ 
+			<b>base</b>.<span class="i">OnLayout</span>(<span class="r21 r">changed</span>, <span class="r22 r">l</span>, <span class="r23 r">t</span>, <span class="r24 r">r</span>, <span class="r25 r">b</span>);
+		}
+ 
+		<b>void</b> <a id="a6f172e800abf826" href="../R/a6f172e800abf826.html" target="n" data-glyph="76,1" class="i method">SetTracker</a>(<a href="../VisualElementTracker.cs.html#d538081d9f94da4d" class="t t">VisualElementTracker</a> <span id="r27 rd" class="r27 r">tracker</span>)
+		{
+			<a href="#4a2082122a73e7d7" class="i field">_tracker</a> = <span class="r27 r">tracker</span>;
+		}
+ 
+		<b>void</b> <a id="b78d42df5946225e" href="../R/b78d42df5946225e.html" target="n" data-glyph="76,1" class="i method">UpdateBackgroundColor</a>()
+		{
+			<a href="#b81d8d26783df64e" class="i field">_backgroundTracker</a>?.<a href="../ButtonBackgroundTracker.cs.html#07fcf37c42d88fb8" class="i method">UpdateBackgroundColor</a>();
+		}
+ 
+		<b>internal void</b> <a id="2f5c4decb73c492a" href="../R/2f5c4decb73c492a.html" target="n" data-glyph="74,1" class="i method">OnNativeFocusChanged</a>(<b>bool</b> <span id="r28 rd" class="r28 r">hasFocus</span>)
+		{
+		}
+ 
+		<b>internal void</b> <a id="11997e7fd673e2ea" href="../R/../../0000000000.html" target="n" data-glyph="74,1" class="i method">SendVisualElementInitialized</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r29 rd" class="r29 r">element</span>, <span class="i">AView</span> <span id="r30 rd" class="r30 r">nativeView</span>)
+		{
+			<span class="r29 r">element</span>.<span class="i">SendViewInitialized</span>(<span class="r30 r">nativeView</span>);
+		}
+ 
+		<b>void</b> <a id="a5f6953a6d8138ca" href="../R/a5f6953a6d8138ca.html" target="n" data-glyph="76,1" class="i method">Initialize</a>()
+		{
+			<span class="i">SoundEffectsEnabled</span> = <b>false</b>;
+			<span class="i">SetOnClickListener</span>(<a href="#423ee39c2729920c" class="k">this</a>);
+			<span class="i">SetOnTouchListener</span>(<a href="#423ee39c2729920c" class="k">this</a>);
+			<span class="i">AddOnAttachStateChangeListener</span>(<a href="#423ee39c2729920c" class="k">this</a>);
+			<span class="i">OnFocusChangeListener</span> = <a href="#423ee39c2729920c" class="k">this</a>;
+ 
+			<span class="i">Tag</span> = <a href="#423ee39c2729920c" class="k">this</a>;
+		}
+ 
+		<b>void</b> <a id="870cc76f4cfed1b5" href="../R/870cc76f4cfed1b5.html" target="n" data-glyph="76,1" class="i method">UpdateBitmap</a>()
+		{
+			<b>if</b> (<a href="#2125fa11382f38ad" class="i property">Element</a> == <b>null</b> || <a href="#fa4a5d5c514842fb" class="i field">_isDisposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a> <span id="r31 rd" class="r31 r">elementImage</span> = <a href="#446748553e1a5b52" class="i property">Button</a>.<a href="/Xamarin.Forms.Core/A.html#b77430877c998ab3" class="i property">Image</a>;
+			<b>string</b> <span id="r32 rd" class="r32 r">imageFile</span> = <span class="r31 r">elementImage</span>?.<a href="/Xamarin.Forms.Core/A.html#a7a7e7a7e3b9cdb3" class="i property">File</a>;
+			<a href="#33a5470ba4ecc3de" class="i field">_imageHeight</a> = -1;
+ 
+			<b>if</b> (<span class="r31 r">elementImage</span> == <b>null</b> || <span class="i">IsNullOrEmpty</span>(<span class="r32 r">imageFile</span>))
+			{
+				<span class="i">SetCompoundDrawablesWithIntrinsicBounds</span>(<b>null</b>, <b>null</b>, <b>null</b>, <b>null</b>);
+				<b>return</b>;
+			}
+ 
+			<span class="i">Drawable</span> <span id="r33 rd" class="r33 r">image</span> = <span class="i">Context</span>.<span class="i">Resources</span>.<span class="i">GetDrawable</span>(<span class="r32 r">imageFile</span>);
+ 
+			<b>if</b> (<span class="i">IsNullOrEmpty</span>(<a href="#446748553e1a5b52" class="i property">Button</a>.<a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a>))
+			{
+				<span class="c">// No text, so no need for relative position; just center the image</span>
+				<span class="c">// There&#39;s no option for just plain-old centering, so we&#39;ll use Top </span>
+				<span class="c">// (which handles the horizontal centering) and some tricksy padding (in OnLayout)</span>
+				<span class="c">// to handle the vertical centering </span>
+ 
+				<span class="c">// Clear any previous padding and set the image as top/center</span>
+				<span class="i">SetPadding</span>(0, 0, 0, 0);
+				<span class="i">SetCompoundDrawablesWithIntrinsicBounds</span>(<b>null</b>, <span class="r33 r">image</span>, <b>null</b>, <b>null</b>);
+ 
+				<span class="c">// Keep track of the image height so we can use it in OnLayout</span>
+				<a href="#33a5470ba4ecc3de" class="i field">_imageHeight</a> = <span class="r33 r">image</span>.<span class="i">IntrinsicHeight</span>;
+ 
+				<span class="r33 r">image</span>.<span class="i">Dispose</span>();
+				<b>return</b>;
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#97ae63de26cf05b4" class="t t">ButtonContentLayout</a> <span id="r34 rd" class="r34 r">layout</span> = <a href="#446748553e1a5b52" class="i property">Button</a>.<a href="/Xamarin.Forms.Core/A.html#c80039947878c76b" class="i property">ContentLayout</a>;
+ 
+			<span class="i">CompoundDrawablePadding</span> = (<b>int</b>)<span class="r34 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#d563e36ae4180060" class="i property">Spacing</a>;
+ 
+			<b>switch</b> (<span class="r34 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#d8b720813d8c9889" class="i property">Position</a>)
+			{
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#97ae63de26cf05b4" class="t t">ButtonContentLayout</a>.<a href="/Xamarin.Forms.Core/A.html#997825dad5328620" class="t t">ImagePosition</a>.<a href="/Xamarin.Forms.Core/A.html#2021c3ad2cdcfd09" class="i field">Top</a>:
+					<span class="i">SetCompoundDrawablesWithIntrinsicBounds</span>(<b>null</b>, <span class="r33 r">image</span>, <b>null</b>, <b>null</b>);
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#97ae63de26cf05b4" class="t t">ButtonContentLayout</a>.<a href="/Xamarin.Forms.Core/A.html#997825dad5328620" class="t t">ImagePosition</a>.<a href="/Xamarin.Forms.Core/A.html#aacd1b8687283a13" class="i field">Bottom</a>:
+					<span class="i">SetCompoundDrawablesWithIntrinsicBounds</span>(<b>null</b>, <b>null</b>, <b>null</b>, <span class="r33 r">image</span>);
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>.<a href="/Xamarin.Forms.Core/A.html#97ae63de26cf05b4" class="t t">ButtonContentLayout</a>.<a href="/Xamarin.Forms.Core/A.html#997825dad5328620" class="t t">ImagePosition</a>.<a href="/Xamarin.Forms.Core/A.html#5f33968dd90712ef" class="i field">Right</a>:
+					<span class="i">SetCompoundDrawablesWithIntrinsicBounds</span>(<b>null</b>, <b>null</b>, <span class="r33 r">image</span>, <b>null</b>);
+					<b>break</b>;
+				<b>default</b>:
+					<span class="c">// Defaults to image on the left</span>
+					<span class="i">SetCompoundDrawablesWithIntrinsicBounds</span>(<span class="r33 r">image</span>, <b>null</b>, <b>null</b>, <b>null</b>);
+					<b>break</b>;
+			}
+ 
+			<span class="r33 r">image</span>?.<span class="i">Dispose</span>();
+		}
+ 
+		<b>void</b> <a id="4efe679f0b368bab" href="../R/4efe679f0b368bab.html" target="n" data-glyph="76,1" class="i method">UpdateFont</a>()
+		{
+			<b>if</b> (<a href="#2125fa11382f38ad" class="i property">Element</a> == <b>null</b> || <a href="#fa4a5d5c514842fb" class="i field">_isDisposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#6e454cde35d8a0cf" class="t t">Font</a> <span id="r35 rd" class="r35 r">font</span> = <a href="#446748553e1a5b52" class="i property">Button</a>.<a href="/Xamarin.Forms.Core/A.html#08bd7ce8b3e85670" class="i property">Font</a>;
+ 
+			<b>if</b> (<span class="r35 r">font</span> == <a href="/Xamarin.Forms.Core/A.html#6e454cde35d8a0cf" class="t t">Font</a>.<a href="/Xamarin.Forms.Core/A.html#50650b14bd245d42" class="i property">Default</a> &amp;&amp; <a href="#088d669a25bd3bcd" class="i field">_defaultFontSize</a> == 0f)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<a href="#088d669a25bd3bcd" class="i field">_defaultFontSize</a> == 0f)
+			{
+				<a href="#7d4b0b91bd1607d8" class="i field">_defaultTypeface</a> = <span class="i">Typeface</span>;
+				<a href="#088d669a25bd3bcd" class="i field">_defaultFontSize</a> = <span class="i">TextSize</span>;
+			}
+ 
+			<b>if</b> (<span class="r35 r">font</span> == <a href="/Xamarin.Forms.Core/A.html#6e454cde35d8a0cf" class="t t">Font</a>.<a href="/Xamarin.Forms.Core/A.html#50650b14bd245d42" class="i property">Default</a>)
+			{
+				<span class="i">Typeface</span> = <a href="#7d4b0b91bd1607d8" class="i field">_defaultTypeface</a>;
+				<span class="i">SetTextSize</span>(<span class="i">ComplexUnitType</span>.<span class="i">Px</span>, <a href="#088d669a25bd3bcd" class="i field">_defaultFontSize</a>);
+			}
+			<b>else</b>
+			{
+				<span class="i">Typeface</span> = <span class="r35 r">font</span>.<span class="i">ToTypeface</span>();
+				<span class="i">SetTextSize</span>(<span class="i">ComplexUnitType</span>.<span class="i">Sp</span>, <span class="r35 r">font</span>.<a href="../Renderers/FontExtensions.cs.html#ccc5de1fd46cbca0" class="i method">ToScaledPixel</a>());
+			}
+		}
+ 
+		<b>void</b> <a id="ad1392c915234e64" href="../R/ad1392c915234e64.html" target="n" data-glyph="76,1" class="i method">UpdateIsEnabled</a>()
+		{
+			<b>if</b> (<a href="#2125fa11382f38ad" class="i property">Element</a> == <b>null</b> || <a href="#fa4a5d5c514842fb" class="i field">_isDisposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<span class="i">Enabled</span> = <a href="#2125fa11382f38ad" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>;
+		}
+ 
+		<b>void</b> <a id="62a8214de33ab192" href="../R/62a8214de33ab192.html" target="n" data-glyph="76,1" class="i method">UpdateInputTransparent</a>()
+		{
+			<b>if</b> (<a href="#2125fa11382f38ad" class="i property">Element</a> == <b>null</b> || <a href="#fa4a5d5c514842fb" class="i field">_isDisposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="#57619c865750bf2d" class="i field">_inputTransparent</a> = <a href="#2125fa11382f38ad" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#02b822eb508e27ff" class="i property">InputTransparent</a>;
+		}
+ 
+		<b>void</b> <a id="3ce47485601bcaf8" href="../R/3ce47485601bcaf8.html" target="n" data-glyph="76,1" class="i method">UpdateText</a>()
+		{
+			<b>if</b> (<a href="#2125fa11382f38ad" class="i property">Element</a> == <b>null</b> || <a href="#fa4a5d5c514842fb" class="i field">_isDisposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>string</b> <span id="r36 rd" class="r36 r">oldText</span> = <span class="i">Text</span>;
+			<span class="i">Text</span> = <a href="#446748553e1a5b52" class="i property">Button</a>.<a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a>;
+ 
+			<span class="c">// If we went from or to having no text, we need to update the image position</span>
+			<b>if</b> (<span class="i">IsNullOrEmpty</span>(<span class="r36 r">oldText</span>) != <span class="i">IsNullOrEmpty</span>(<span class="i">Text</span>))
+			{
+				<a href="#870cc76f4cfed1b5" class="i method">UpdateBitmap</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="1f064ddb5992ae70" href="../R/1f064ddb5992ae70.html" target="n" data-glyph="76,1" class="i method">UpdateTextColor</a>()
+		{
+			<b>if</b> (<a href="#2125fa11382f38ad" class="i property">Element</a> == <b>null</b> || <a href="#fa4a5d5c514842fb" class="i field">_isDisposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="#5ac932b4413e107f" class="i field">_textColorSwitcher</a>.<span class="i">Value</span>.<span class="i">UpdateTextColor</span>(<a href="#423ee39c2729920c" class="k">this</a>, <a href="#446748553e1a5b52" class="i property">Button</a>.<a href="/Xamarin.Forms.Core/A.html#992324b9ab13f8d4" class="i property">TextColor</a>);
+		}
+ 
+		<b>void</b> <a id="dabdcbe00bbc4ce9" href="../R/dabdcbe00bbc4ce9.html" target="n" data-glyph="76,1" class="i method">UpdateDrawable</a>()
+		{
+			<a href="#b81d8d26783df64e" class="i field">_backgroundTracker</a>?.<a href="../ButtonBackgroundTracker.cs.html#44c955b15718acb3" class="i method">UpdateDrawable</a>();
+		}
+ 
+	}
+}
+</pre></td></tr></table></div></body></html>

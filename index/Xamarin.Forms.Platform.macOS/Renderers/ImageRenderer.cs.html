@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html><head><title>ImageRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(132);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/Renderers/ImageRenderer.cs" target="_top">Renderers\ImageRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="i n">CoreAnimation</span>;
+<b>using</b> <span class="i n">CoreGraphics</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>public class</b> <a id="c078b2696671b3c1" href="../R/c078b2696671b3c1.html" target="n" data-glyph="0,0" class="t t"><span id="7ff62b02efdf5555">ImageRenderer</span></a> : <a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>, <span class="t t">NSView</span>&gt;
+	{
+		<b>bool</b> <a id="9e0c5a8b82e62a6e" href="../R/9e0c5a8b82e62a6e.html" target="n" data-glyph="46,1" class="i field">_isDisposed</a>;
+ 
+		<b>protected override void</b> <a id="808be3f0f78900cf" href="../R/808be3f0f78900cf.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r0 rd" class="r0 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#9e0c5a8b82e62a6e" class="i field">_isDisposed</a>)
+				<b>return</b>;
+ 
+			<b>if</b> (<span class="r0 r">disposing</span>)
+			{
+				<span class="t t">CGImage</span> <span id="r1 rd" class="r1 r">oldUIImage</span>;
+				<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> != <b>null</b> &amp;&amp; (<span class="r1 r">oldUIImage</span> = <a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">Layer</span>.<span class="i property">Contents</span>) != <b>null</b>)
+				{
+					<span class="r1 r">oldUIImage</span>.<span class="i method">Dispose</span>();
+				}
+			}
+ 
+			<a href="#9e0c5a8b82e62a6e" class="i field">_isDisposed</a> = <b>true</b>;
+ 
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#3cb6ec73595daa35" class="i method">Dispose</a>(<span class="r0 r">disposing</span>);
+		}
+ 
+		<b>protected override void</b> <a id="e4643fec9bd12e32" href="../R/e4643fec9bd12e32.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#62949d367d44776c" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>&gt; <span id="r2 rd" class="r2 r">e</span>)
+		{
+			<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> == <b>null</b>)
+			{
+				<a href="../Controls/FormsImageView.cs.html#28e7c75020c247c9" class="k">var</a> <span id="r3 rd" class="r3 r">imageView</span> = <b>new</b> <a href="../Controls/FormsImageView.cs.html#dc2f5ec1df179346" class="t constructor">FormsNSImageView</a>();
+				<a href="../ViewRenderer.cs.html#de42360b129a5181" class="i method">SetNativeControl</a>(<span class="r3 r">imageView</span>);
+			}
+ 
+			<b>if</b> (<span class="r2 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#40dbdea99da1d4c0" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<a href="#776f6f6dca6117d1" class="i method">SetAspect</a>();
+				<a href="#43230f6ffce1d90b" class="i method">SetImage</a>(<span class="r2 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#69c68dbc9f4fbe33" class="i property">OldElement</a>);
+				<a href="#9ace7b392c25b24b" class="i method">SetOpacity</a>();
+			}
+ 
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#90cd799abe64b9ad" class="i method">OnElementChanged</a>(<span class="r2 r">e</span>);
+		}
+ 
+		<b>protected override void</b> <a id="7a6ee673cd9eb241" href="../R/7a6ee673cd9eb241.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r4 rd" class="r4 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r5 rd" class="r5 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#97a635fbd9f5d4cd" class="i method">OnElementPropertyChanged</a>(<span class="r4 r">sender</span>, <span class="r5 r">e</span>);
+			<b>if</b> (<span class="r5 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>.<a href="/Xamarin.Forms.Core/A.html#c12a3e7016107bf8" class="i field">SourceProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#43230f6ffce1d90b" class="i method">SetImage</a>();
+			<b>else if</b> (<span class="r5 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>.<a href="/Xamarin.Forms.Core/A.html#9c3c65a240887219" class="i field">IsOpaqueProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#9ace7b392c25b24b" class="i method">SetOpacity</a>();
+			<b>else if</b> (<span class="r5 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>.<a href="/Xamarin.Forms.Core/A.html#f8b94d8bc734379f" class="i field">AspectProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#776f6f6dca6117d1" class="i method">SetAspect</a>();
+		}
+ 
+		<b>void</b> <a id="776f6f6dca6117d1" href="../R/776f6f6dca6117d1.html" target="n" data-glyph="76,1" class="i method">SetAspect</a>()
+		{
+			<b>switch</b> (<a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ee4d50419878101a" class="i property">Aspect</a>)
+			{
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#aa2595e74151573d" class="t t">Aspect</a>.<a href="/Xamarin.Forms.Core/A.html#c63d19d0a93f800b" class="i field">AspectFill</a>:
+					<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">Layer</span>.<span class="i property">ContentsGravity</span> = <span class="t t">CALayer</span>.<span class="i property">GravityResizeAspectFill</span>;
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#aa2595e74151573d" class="t t">Aspect</a>.<a href="/Xamarin.Forms.Core/A.html#ef8766a9da7a69ee" class="i field">Fill</a>:
+					<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">Layer</span>.<span class="i property">ContentsGravity</span> = <span class="t t">CALayer</span>.<span class="i property">GravityResize</span>;
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#aa2595e74151573d" class="t t">Aspect</a>.<a href="/Xamarin.Forms.Core/A.html#29713b880ffacd91" class="i field">AspectFit</a>:
+				<b>default</b>:
+					<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">Layer</span>.<span class="i property">ContentsGravity</span> = <span class="t t">CALayer</span>.<span class="i property">GravityResizeAspect</span>;
+					<b>break</b>;
+			}
+		}
+ 
+		<b>async void</b> <a id="43230f6ffce1d90b" href="../R/43230f6ffce1d90b.html" target="n" data-glyph="76,1" class="i method">SetImage</a>(<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a> <span id="r6 rd" class="r6 r">oldElement</span> = <b>null</b>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="k">var</a> <span id="r7 rd" class="r7 r">source</span> = <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a>;
+ 
+			<b>if</b> (<span class="r6 r">oldElement</span> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="k">var</a> <span id="r8 rd" class="r8 r">oldSource</span> = <span class="r6 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a>;
+				<b>if</b> (<a href="@0@mscorlib/A.html#f2a579c50b414717" class="i method">Equals</a>(<span class="r8 r">oldSource</span>, <span class="r7 r">source</span>))
+					<b>return</b>;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="k">var</a> <span id="r9 rd" class="r9 r">imageSource</span> = <span class="r8 r">oldSource</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a>;
+				<b>if</b> (<span class="r9 r">imageSource</span> != <b>null</b> &amp;&amp; <span class="r7 r">source</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a> &amp;&amp; <span class="r9 r">imageSource</span>.<a href="/Xamarin.Forms.Core/A.html#a7a7e7a7e3b9cdb3" class="i property">File</a> == ((<a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a>)<span class="r7 r">source</span>).<a href="/Xamarin.Forms.Core/A.html#a7a7e7a7e3b9cdb3" class="i property">File</a>)
+					<b>return</b>;
+ 
+				<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">Layer</span>.<span class="i property">Contents</span> = <b>null</b>;
+			}
+ 
+			<a href="../ImageSourceHandlers.cs.html#5d7bd8e5e9f5b84d" class="t t">IImageSourceHandler</a> <span id="r10 rd" class="r10 r">handler</span>;
+ 
+			<a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#f51cce94bd777fa3" class="i method">SetIsLoading</a>(<b>true</b>);
+ 
+			<b>if</b> (<span class="r7 r">source</span> != <b>null</b> &amp;&amp; (<span class="r10 r">handler</span> = <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="/Xamarin.Forms.Core/A.html#5f29d2ac0e30bd81" class="i property">Registered</a>.<a href="/Xamarin.Forms.Core/A.html#af776dc3bf4e03c2" class="i method">GetHandlerForObject</a>&lt;<a href="../ImageSourceHandlers.cs.html#5d7bd8e5e9f5b84d" class="t t">IImageSourceHandler</a>&gt;(<span class="r7 r">source</span>)) != <b>null</b>)
+			{
+				<span class="t t">NSImage</span> <span id="r11 rd" class="r11 r">nsImage</span>;
+				<b>try</b>
+				{
+					<span class="r11 r">nsImage</span> = <b>await</b> <span class="r10 r">handler</span>.<a href="../ImageSourceHandlers.cs.html#5f0281643fe4c776" class="i method">LoadImageAsync</a>(<span class="r7 r">source</span>, <span class="r12 r">scale</span>: (<b>float</b>)<span class="t t">NSScreen</span>.<span class="i property">MainScreen</span>.<span class="i property">BackingScaleFactor</span>);
+				}
+				<b>catch</b> (<a href="@0@mscorlib/A.html#a0a8b79c277cf327" class="t t">OperationCanceledException</a>)
+				{
+					<span class="r11 r">nsImage</span> = <b>null</b>;
+				}
+ 
+				<b>var</b> <span id="r13 rd" class="r13 r">imageView</span> = <a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>;
+				<b>if</b> (<span class="r13 r">imageView</span> != <b>null</b>)
+					<span class="r13 r">imageView</span>.<span class="i property">Layer</span>.<span class="i property">Contents</span> = <span class="r11 r">nsImage</span> != <b>null</b> ? <span class="r11 r">nsImage</span>.<span class="i property">CGImage</span> : <b>null</b>;
+				<b>if</b> (<span class="r11 r">nsImage</span> != <b>null</b>)
+					<span class="r11 r">nsImage</span>.<span class="i method">Dispose</span>();
+ 
+				<b>if</b> (!<a href="#9e0c5a8b82e62a6e" class="i field">_isDisposed</a>)
+					((<a href="/Xamarin.Forms.Core/A.html#d605b7264f63ff57" class="t t">IVisualElementController</a>)<a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#b12b5140a1053cdd" class="i method">NativeSizeChanged</a>();
+			}
+			<b>else</b>
+				<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a>.<span class="i property">Layer</span>.<span class="i property">Contents</span> = <b>null</b>;
+ 
+			<b>if</b> (!<a href="#9e0c5a8b82e62a6e" class="i field">_isDisposed</a>)
+				<a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#f51cce94bd777fa3" class="i method">SetIsLoading</a>(<b>false</b>);
+		}
+ 
+		<b>void</b> <a id="9ace7b392c25b24b" href="../R/9ace7b392c25b24b.html" target="n" data-glyph="76,1" class="i method">SetOpacity</a>()
+		{
+			(<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> <b>as</b> <a href="../Controls/FormsImageView.cs.html#28e7c75020c247c9" class="t t">FormsNSImageView</a>)?.<a href="../Controls/FormsImageView.cs.html#660f297e2fa90a0c" class="i method">SetIsOpaque</a>(<a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ed08f3555e8f6370" class="i property">IsOpaque</a>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

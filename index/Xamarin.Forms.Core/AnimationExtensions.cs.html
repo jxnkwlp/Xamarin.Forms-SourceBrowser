@@ -1,0 +1,313 @@
+﻿<!DOCTYPE html>
+<html><head><title>AnimationExtensions.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(304);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/AnimationExtensions.cs" target="_top">AnimationExtensions.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<span class="c">//</span>
+<span class="c">// Tweener.cs</span>
+<span class="c">//</span>
+<span class="c">// Author:</span>
+<span class="c">//       Jason Smith &lt;jason.smith@xamarin.com&gt;</span>
+<span class="c">//</span>
+<span class="c">// Copyright (c) 2012 Xamarin Inc.</span>
+<span class="c">//</span>
+<span class="c">// Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c">// of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c">// in the Software without restriction, including without limitation the rights</span>
+<span class="c">// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c">// copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c">// furnished to do so, subject to the following conditions:</span>
+<span class="c">//</span>
+<span class="c">// The above copyright notice and this permission notice shall be included in</span>
+<span class="c">// all copies or substantial portions of the Software.</span>
+<span class="c">//</span>
+<span class="c">// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c">// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c">// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c">// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c">// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c">// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span class="c">// THE SOFTWARE.</span>
+ 
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>public static class</b> <a id="8c5153c8c7b18af8" href="R/8c5153c8c7b18af8.html" target="n" data-glyph="0,0" class="t t">AnimationExtensions</a>
+	{
+		<b>static readonly</b> <a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<a href="AnimatableKey.cs.html#de2615a30d71083b" class="t t">AnimatableKey</a>, <a href="#f478b25dc73499a8" class="t t">Info</a>&gt; <a id="6da890c1e9740229" href="R/6da890c1e9740229.html" target="n" data-glyph="46,1" class="i field">s_animations</a>;
+		<b>static readonly</b> <a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<a href="AnimatableKey.cs.html#de2615a30d71083b" class="t t">AnimatableKey</a>, <b>int</b>&gt; <a id="cf027f0912b02f15" href="R/cf027f0912b02f15.html" target="n" data-glyph="46,1" class="i field">s_kinetics</a>;
+ 
+		<b>static</b> <a id="b773ead77cb6676d" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">AnimationExtensions</a>()
+		{
+			<a href="#6da890c1e9740229" class="i field">s_animations</a> = <b>new</b> <a href="@1@System.Collections/A.html#bf6849e410b43c4c" class="t constructor">Dictionary</a>&lt;<a href="AnimatableKey.cs.html#de2615a30d71083b" class="t t">AnimatableKey</a>, <a href="#f478b25dc73499a8" class="t t">Info</a>&gt;();
+			<a href="#cf027f0912b02f15" class="i field">s_kinetics</a> = <b>new</b> <a href="@1@System.Collections/A.html#bf6849e410b43c4c" class="t constructor">Dictionary</a>&lt;<a href="AnimatableKey.cs.html#de2615a30d71083b" class="t t">AnimatableKey</a>, <b>int</b>&gt;();
+		}
+ 
+		<b>public static bool</b> <a id="5b5769e029ed9258" href="R/5b5769e029ed9258.html" target="n" data-glyph="220,1" class="i method">AbortAnimation</a>(<b>this</b> <a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r0 rd" class="r0 r">self</span>, <b>string</b> <span id="r1 rd" class="r1 r">handle</span>)
+		{
+			<a href="AnimatableKey.cs.html#de2615a30d71083b" class="k">var</a> <span id="r2 rd" class="r2 r">key</span> = <b>new</b> <a href="AnimatableKey.cs.html#d74880e00784740d" class="t constructor">AnimatableKey</a>(<span class="r0 r">self</span>, <span class="r1 r">handle</span>);
+ 
+			<b>if</b> (!<a href="#6da890c1e9740229" class="i field">s_animations</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r2 r">key</span>) &amp;&amp; !<a href="#cf027f0912b02f15" class="i field">s_kinetics</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r2 r">key</span>))
+			{
+				<b>return false</b>;
+			}
+ 
+			<a href="@1@System.Runtime/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r3 rd" class="r3 r">abort</span> = () =&gt;
+			{
+				<a href="#eda24a773ceccca3" class="i method">AbortAnimation</a>(<span class="r2 r">key</span>);
+				<a href="#f1a60a7699d51a3f" class="i method">AbortKinetic</a>(<span class="r2 r">key</span>);
+			};
+ 
+			<b>if</b> (<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#5d83ac629978e91e" class="i property">IsInvokeRequired</a>)
+			{
+				<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#c01f48f642e0b305" class="i method">BeginInvokeOnMainThread</a>(<span class="r3 r">abort</span>);
+			}
+			<b>else</b>
+			{
+				<span class="r3 r">abort</span>();
+			}
+ 
+			<b>return true</b>;
+		}
+ 
+		<b>public static void</b> <a id="4d4c70a6b9d87910" href="R/4d4c70a6b9d87910.html" target="n" data-glyph="220,1" class="i method">Animate</a>(<b>this</b> <a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r4 rd" class="r4 r">self</span>, <b>string</b> <span id="r5 rd" class="r5 r">name</span>, <a href="Animation.cs.html#f93a4a2563080f0a" class="t t">Animation</a> <span id="r6 rd" class="r6 r">animation</span>, <b>uint</b> <span id="r7 rd" class="r7 r">rate</span> = 16, <b>uint</b> <span id="r8 rd" class="r8 r">length</span> = 250, <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a> <span id="r9 rd" class="r9 r">easing</span> = <b>null</b>, <a href="@1@System.Runtime/A.html#27863de72c2c9b49" class="t t">Action</a>&lt;<b>double</b>, <b>bool</b>&gt; <span id="r10 rd" class="r10 r">finished</span> = <b>null</b>,
+								   <a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>bool</b>&gt; <span id="r11 rd" class="r11 r">repeat</span> = <b>null</b>)
+		{
+			<b>if</b> (<span class="r11 r">repeat</span> == <b>null</b>)
+				<span class="r4 r">self</span>.<a href="#55f97547aac9efed" class="i method">Animate</a>(<span class="r5 r">name</span>, <span class="r6 r">animation</span>.<a href="Animation.cs.html#e835e594f9057ed1" class="i method">GetCallback</a>(), <span class="r7 r">rate</span>, <span class="r8 r">length</span>, <span class="r9 r">easing</span>, <span class="r10 r">finished</span>, <b>null</b>);
+			<b>else</b> {
+				<a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>bool</b>&gt; <span id="r12 rd" class="r12 r">r</span> = () =&gt;
+				{
+					<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r13 rd" class="r13 r">val</span> = <span class="r11 r">repeat</span>();
+					<b>if</b> (<span class="r13 r">val</span>)
+						<span class="r6 r">animation</span>.<a href="Animation.cs.html#693394eb1fc88212" class="i method">ResetChildren</a>();
+					<b>return</b> <span class="r13 r">val</span>;
+				};
+				<span class="r4 r">self</span>.<a href="#55f97547aac9efed" class="i method">Animate</a>(<span class="r5 r">name</span>, <span class="r6 r">animation</span>.<a href="Animation.cs.html#e835e594f9057ed1" class="i method">GetCallback</a>(), <span class="r7 r">rate</span>, <span class="r8 r">length</span>, <span class="r9 r">easing</span>, <span class="r10 r">finished</span>, <span class="r12 r">r</span>);
+			}
+		}
+ 
+		<b>public static void</b> <a id="644f64f152b657f3" href="R/644f64f152b657f3.html" target="n" data-glyph="220,1" class="i method">Animate</a>(<b>this</b> <a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r14 rd" class="r14 r">self</span>, <b>string</b> <span id="r15 rd" class="r15 r">name</span>, <a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>double</b>&gt; <span id="r16 rd" class="r16 r">callback</span>, <b>double</b> <span id="r17 rd" class="r17 r">start</span>, <b>double</b> <span id="r18 rd" class="r18 r">end</span>, <b>uint</b> <span id="r19 rd" class="r19 r">rate</span> = 16, <b>uint</b> <span id="r20 rd" class="r20 r">length</span> = 250, <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a> <span id="r21 rd" class="r21 r">easing</span> = <b>null</b>,
+								   <a href="@1@System.Runtime/A.html#27863de72c2c9b49" class="t t">Action</a>&lt;<b>double</b>, <b>bool</b>&gt; <span id="r22 rd" class="r22 r">finished</span> = <b>null</b>, <a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>bool</b>&gt; <span id="r23 rd" class="r23 r">repeat</span> = <b>null</b>)
+		{
+			<span class="r14 r">self</span>.<a href="#367e15e80e60cf32" class="i method">Animate</a>(<span class="r15 r">name</span>, <a href="#8550b92f3bc77943" class="i method">Interpolate</a>(<span class="r17 r">start</span>, <span class="r18 r">end</span>), <span class="r16 r">callback</span>, <span class="r19 r">rate</span>, <span class="r20 r">length</span>, <span class="r21 r">easing</span>, <span class="r22 r">finished</span>, <span class="r23 r">repeat</span>);
+		}
+ 
+		<b>public static void</b> <a id="55f97547aac9efed" href="R/55f97547aac9efed.html" target="n" data-glyph="220,1" class="i method">Animate</a>(<b>this</b> <a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r24 rd" class="r24 r">self</span>, <b>string</b> <span id="r25 rd" class="r25 r">name</span>, <a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>double</b>&gt; <span id="r26 rd" class="r26 r">callback</span>, <b>uint</b> <span id="r27 rd" class="r27 r">rate</span> = 16, <b>uint</b> <span id="r28 rd" class="r28 r">length</span> = 250, <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a> <span id="r29 rd" class="r29 r">easing</span> = <b>null</b>, <a href="@1@System.Runtime/A.html#27863de72c2c9b49" class="t t">Action</a>&lt;<b>double</b>, <b>bool</b>&gt; <span id="r30 rd" class="r30 r">finished</span> = <b>null</b>,
+								   <a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>bool</b>&gt; <span id="r31 rd" class="r31 r">repeat</span> = <b>null</b>)
+		{
+			<span class="r24 r">self</span>.<a href="#367e15e80e60cf32" class="i method">Animate</a>(<span class="r25 r">name</span>, <span id="r32 rd" class="r32 r">x</span> =&gt; <span class="r32 r">x</span>, <span class="r26 r">callback</span>, <span class="r27 r">rate</span>, <span class="r28 r">length</span>, <span class="r29 r">easing</span>, <span class="r30 r">finished</span>, <span class="r31 r">repeat</span>);
+		}
+ 
+		<b>public static void</b> <a id="367e15e80e60cf32" href="R/367e15e80e60cf32.html" target="n" data-glyph="220,1" class="i method">Animate</a>&lt;<span id="r33 rd t" class="r33 r t">T</span>&gt;(<b>this</b> <a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r34 rd" class="r34 r">self</span>, <b>string</b> <span id="r35 rd" class="r35 r">name</span>, <a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>double</b>, <span class="r33 r t">T</span>&gt; <span id="r36 rd" class="r36 r">transform</span>, <a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="r33 r t">T</span>&gt; <span id="r37 rd" class="r37 r">callback</span>,
+			<b>uint</b> <span id="r38 rd" class="r38 r">rate</span> = 16, <b>uint</b> <span id="r39 rd" class="r39 r">length</span> = 250, <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a> <span id="r40 rd" class="r40 r">easing</span> = <b>null</b>,
+			<a href="@1@System.Runtime/A.html#27863de72c2c9b49" class="t t">Action</a>&lt;<span class="r33 r t">T</span>, <b>bool</b>&gt; <span id="r41 rd" class="r41 r">finished</span> = <b>null</b>, <a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>bool</b>&gt; <span id="r42 rd" class="r42 r">repeat</span> = <b>null</b>)
+		{
+			<b>if</b> (<span class="r36 r">transform</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r36 r">transform</span>));
+			<b>if</b> (<span class="r37 r">callback</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r37 r">callback</span>));
+			<b>if</b> (<span class="r34 r">self</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r34 r">self</span>));
+ 
+			<a href="@1@System.Runtime/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r43 rd" class="r43 r">animate</span> = () =&gt; <a href="#2f692d4428d74712" class="i method">AnimateInternal</a>(<span class="r34 r">self</span>, <span class="r35 r">name</span>, <span class="r36 r">transform</span>, <span class="r37 r">callback</span>, <span class="r38 r">rate</span>, <span class="r39 r">length</span>, <span class="r40 r">easing</span>, <span class="r41 r">finished</span>, <span class="r42 r">repeat</span>);
+ 
+			<b>if</b> (<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#5d83ac629978e91e" class="i property">IsInvokeRequired</a>)
+			{
+				<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#c01f48f642e0b305" class="i method">BeginInvokeOnMainThread</a>(<span class="r43 r">animate</span>);
+			}
+			<b>else</b>
+			{
+				<span class="r43 r">animate</span>();
+			}
+		}
+ 
+ 
+		<b>public static void</b> <a id="3d6521aac18528b8" href="R/3d6521aac18528b8.html" target="n" data-glyph="220,1" class="i method">AnimateKinetic</a>(<b>this</b> <a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r44 rd" class="r44 r">self</span>, <b>string</b> <span id="r45 rd" class="r45 r">name</span>, <a href="@1@System.Runtime/A.html#8adbe0476ca899db" class="t t">Func</a>&lt;<b>double</b>, <b>double</b>, <b>bool</b>&gt; <span id="r46 rd" class="r46 r">callback</span>, <b>double</b> <span id="r47 rd" class="r47 r">velocity</span>, <b>double</b> <span id="r48 rd" class="r48 r">drag</span>, <a href="@1@System.Runtime/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r49 rd" class="r49 r">finished</span> = <b>null</b>)
+		{
+			<a href="@1@System.Runtime/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r50 rd" class="r50 r">animate</span> = () =&gt; <a href="#f292529b44a4cf12" class="i method">AnimateKineticInternal</a>(<span class="r44 r">self</span>, <span class="r45 r">name</span>, <span class="r46 r">callback</span>, <span class="r47 r">velocity</span>, <span class="r48 r">drag</span>, <span class="r49 r">finished</span>);
+ 
+			<b>if</b> (<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#5d83ac629978e91e" class="i property">IsInvokeRequired</a>)
+			{
+				<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#c01f48f642e0b305" class="i method">BeginInvokeOnMainThread</a>(<span class="r50 r">animate</span>);
+			}
+			<b>else</b>
+			{
+				<span class="r50 r">animate</span>();
+			}
+		}
+ 
+		<b>public static bool</b> <a id="9cd1c95b70e72ed7" href="R/9cd1c95b70e72ed7.html" target="n" data-glyph="220,1" class="i method">AnimationIsRunning</a>(<b>this</b> <a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r51 rd" class="r51 r">self</span>, <b>string</b> <span id="r52 rd" class="r52 r">handle</span>)
+		{
+			<a href="AnimatableKey.cs.html#de2615a30d71083b" class="k">var</a> <span id="r53 rd" class="r53 r">key</span> = <b>new</b> <a href="AnimatableKey.cs.html#d74880e00784740d" class="t constructor">AnimatableKey</a>(<span class="r51 r">self</span>, <span class="r52 r">handle</span>);
+			<b>return</b> <a href="#6da890c1e9740229" class="i field">s_animations</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r53 r">key</span>);
+		}
+ 
+		<b>public static</b> <a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>double</b>, <b>double</b>&gt; <a id="8550b92f3bc77943" href="R/8550b92f3bc77943.html" target="n" data-glyph="72,1" class="i method">Interpolate</a>(<b>double</b> <span id="r54 rd" class="r54 r">start</span>, <b>double</b> <span id="r55 rd" class="r55 r">end</span> = 1.0f, <b>double</b> <span id="r56 rd" class="r56 r">reverseVal</span> = 0.0f, <b>bool</b> <span id="r57 rd" class="r57 r">reverse</span> = <b>false</b>)
+		{
+			<b>double</b> <span id="r58 rd" class="r58 r">target</span> = <span class="r57 r">reverse</span> ? <span class="r56 r">reverseVal</span> : <span class="r55 r">end</span>;
+			<b>return</b> <span id="r59 rd" class="r59 r">x</span> =&gt; <span class="r54 r">start</span> + (<span class="r58 r">target</span> - <span class="r54 r">start</span>) * <span class="r59 r">x</span>;
+		}
+ 
+		<b>static void</b> <a id="eda24a773ceccca3" href="R/eda24a773ceccca3.html" target="n" data-glyph="76,1" class="i method">AbortAnimation</a>(<a href="AnimatableKey.cs.html#de2615a30d71083b" class="t t">AnimatableKey</a> <span id="r60 rd" class="r60 r">key</span>)
+		{
+			<b>if</b> (!<a href="#6da890c1e9740229" class="i field">s_animations</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r60 r">key</span>))
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="#f478b25dc73499a8" class="t t">Info</a> <span id="r61 rd" class="r61 r">info</span> = <a href="#6da890c1e9740229" class="i field">s_animations</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r60 r">key</span>];
+			<span class="r61 r">info</span>.<a href="#8fcf906f9e7967c4" class="i field">Tweener</a>.<a href="Tweener.cs.html#a4c596bf1ca294db" class="i">ValueUpdated</a> -= <a href="#114d43b31b64d2ac" class="i method">HandleTweenerUpdated</a>;
+			<span class="r61 r">info</span>.<a href="#8fcf906f9e7967c4" class="i field">Tweener</a>.<a href="Tweener.cs.html#f2a1df09f1f1d024" class="i">Finished</a> -= <a href="#6f511eb18b30820d" class="i method">HandleTweenerFinished</a>;
+			<span class="r61 r">info</span>.<a href="#8fcf906f9e7967c4" class="i field">Tweener</a>.<a href="Tweener.cs.html#abb9f56d2781ab5c" class="i method">Stop</a>();
+			<span class="r61 r">info</span>.<a href="#63cdc9bb9688b663" class="i field">Finished</a>?.<a href="@1@System.Runtime/A.html#928e849f54d2e4af" class="i method">Invoke</a>(1.0f, <b>true</b>);
+ 
+			<a href="#6da890c1e9740229" class="i field">s_animations</a>.<a href="@1@System.Collections/A.html#a6db5ffdec557169" class="i method">Remove</a>(<span class="r60 r">key</span>);
+		}
+ 
+		<b>static void</b> <a id="f1a60a7699d51a3f" href="R/f1a60a7699d51a3f.html" target="n" data-glyph="76,1" class="i method">AbortKinetic</a>(<a href="AnimatableKey.cs.html#de2615a30d71083b" class="t t">AnimatableKey</a> <span id="r62 rd" class="r62 r">key</span>)
+		{
+			<b>if</b> (!<a href="#cf027f0912b02f15" class="i field">s_kinetics</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r62 r">key</span>))
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="Internals/Ticker.cs.html#9ac4e7c1113aeac4" class="t t">Ticker</a>.<a href="Internals/Ticker.cs.html#daa22f70b75e15e1" class="i property">Default</a>.<a href="Internals/Ticker.cs.html#eeb3d52c462593a8" class="i method">Remove</a>(<a href="#cf027f0912b02f15" class="i field">s_kinetics</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r62 r">key</span>]);
+			<a href="#cf027f0912b02f15" class="i field">s_kinetics</a>.<a href="@1@System.Collections/A.html#a6db5ffdec557169" class="i method">Remove</a>(<span class="r62 r">key</span>);
+		}
+ 
+		<b>static void</b> <a id="2f692d4428d74712" href="R/2f692d4428d74712.html" target="n" data-glyph="76,1" class="i method">AnimateInternal</a>&lt;<span id="r63 rd t" class="r63 r t">T</span>&gt;(<a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r64 rd" class="r64 r">self</span>, <b>string</b> <span id="r65 rd" class="r65 r">name</span>, <a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>double</b>, <span class="r63 r t">T</span>&gt; <span id="r66 rd" class="r66 r">transform</span>, <a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="r63 r t">T</span>&gt; <span id="r67 rd" class="r67 r">callback</span>,
+			<b>uint</b> <span id="r68 rd" class="r68 r">rate</span>, <b>uint</b> <span id="r69 rd" class="r69 r">length</span>, <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a> <span id="r70 rd" class="r70 r">easing</span>, <a href="@1@System.Runtime/A.html#27863de72c2c9b49" class="t t">Action</a>&lt;<span class="r63 r t">T</span>, <b>bool</b>&gt; <span id="r71 rd" class="r71 r">finished</span>, <a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>bool</b>&gt; <span id="r72 rd" class="r72 r">repeat</span>)
+		{
+			<a href="AnimatableKey.cs.html#de2615a30d71083b" class="k">var</a> <span id="r73 rd" class="r73 r">key</span> = <b>new</b> <a href="AnimatableKey.cs.html#d74880e00784740d" class="t constructor">AnimatableKey</a>(<span class="r64 r">self</span>, <span class="r65 r">name</span>);
+ 
+			<a href="#eda24a773ceccca3" class="i method">AbortAnimation</a>(<span class="r73 r">key</span>);
+ 
+			<a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>double</b>&gt; <span id="r74 rd" class="r74 r">step</span> = <span id="r75 rd" class="r75 r">f</span> =&gt; <span class="r67 r">callback</span>(<span class="r66 r">transform</span>(<span class="r75 r">f</span>));
+			<a href="@1@System.Runtime/A.html#27863de72c2c9b49" class="t t">Action</a>&lt;<b>double</b>, <b>bool</b>&gt; <span id="r76 rd" class="r76 r">final</span> = <b>null</b>;
+			<b>if</b> (<span class="r71 r">finished</span> != <b>null</b>)
+				<span class="r76 r">final</span> = (<span id="r77 rd" class="r77 r">f</span>, <span id="r78 rd" class="r78 r">b</span>) =&gt; <span class="r71 r">finished</span>(<span class="r66 r">transform</span>(<span class="r77 r">f</span>), <span class="r78 r">b</span>);
+ 
+			<a href="#f478b25dc73499a8" class="k">var</a> <span id="r79 rd" class="r79 r">info</span> = <b>new</b> <a href="#f478b25dc73499a8" class="t constructor">Info</a> { <a href="#188b5264f1dd51dc" class="i property">Rate</a> = <span class="r68 r">rate</span>, <a href="#e3bd5f141a45d527" class="i property">Length</a> = <span class="r69 r">length</span>, <a href="#36c0e39a5d83f26b" class="i property">Easing</a> = <span class="r70 r">easing</span> ?? <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a>.<a href="Easing.cs.html#e7d3cb5b1ace0636" class="i field">Linear</a> };
+ 
+			<a href="Tweener.cs.html#d2e9432de3b48d8b" class="k">var</a> <span id="r80 rd" class="r80 r">tweener</span> = <b>new</b> <a href="Tweener.cs.html#f8cc8a6ef8a54f6f" class="t constructor">Tweener</a>(<span class="r79 r">info</span>.<a href="#e3bd5f141a45d527" class="i property">Length</a>);
+			<span class="r80 r">tweener</span>.<a href="Tweener.cs.html#8992431ebecec358" class="i property">Handle</a> = <span class="r73 r">key</span>;
+			<span class="r80 r">tweener</span>.<a href="Tweener.cs.html#a4c596bf1ca294db" class="i">ValueUpdated</a> += <a href="#114d43b31b64d2ac" class="i method">HandleTweenerUpdated</a>;
+			<span class="r80 r">tweener</span>.<a href="Tweener.cs.html#f2a1df09f1f1d024" class="i">Finished</a> += <a href="#6f511eb18b30820d" class="i method">HandleTweenerFinished</a>;
+ 
+			<span class="r79 r">info</span>.<a href="#8fcf906f9e7967c4" class="i field">Tweener</a> = <span class="r80 r">tweener</span>;
+			<span class="r79 r">info</span>.<a href="#a864603d19e6b8c2" class="i field">Callback</a> = <span class="r74 r">step</span>;
+			<span class="r79 r">info</span>.<a href="#63cdc9bb9688b663" class="i field">Finished</a> = <span class="r76 r">final</span>;
+			<span class="r79 r">info</span>.<a href="#88379bb118af64ad" class="i field">Repeat</a> = <span class="r72 r">repeat</span>;
+			<span class="r79 r">info</span>.<a href="#8983e0b6335d662e" class="i property">Owner</a> = <b>new</b> <a href="@1@System.Runtime/A.html#0bcc5ece65ea67eb" class="t constructor">WeakReference</a>&lt;<a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a>&gt;(<span class="r64 r">self</span>);
+ 
+			<a href="#6da890c1e9740229" class="i field">s_animations</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r73 r">key</span>] = <span class="r79 r">info</span>;
+ 
+			<span class="r79 r">info</span>.<a href="#a864603d19e6b8c2" class="i field">Callback</a>(0.0f);
+			<span class="r80 r">tweener</span>.<a href="Tweener.cs.html#229f8045d66df46f" class="i method">Start</a>();
+		}
+ 
+		<b>static void</b> <a id="f292529b44a4cf12" href="R/f292529b44a4cf12.html" target="n" data-glyph="76,1" class="i method">AnimateKineticInternal</a>(<a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r81 rd" class="r81 r">self</span>, <b>string</b> <span id="r82 rd" class="r82 r">name</span>, <a href="@1@System.Runtime/A.html#8adbe0476ca899db" class="t t">Func</a>&lt;<b>double</b>, <b>double</b>, <b>bool</b>&gt; <span id="r83 rd" class="r83 r">callback</span>, <b>double</b> <span id="r84 rd" class="r84 r">velocity</span>, <b>double</b> <span id="r85 rd" class="r85 r">drag</span>, <a href="@1@System.Runtime/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r86 rd" class="r86 r">finished</span> = <b>null</b>)
+		{
+			<a href="AnimatableKey.cs.html#de2615a30d71083b" class="k">var</a> <span id="r87 rd" class="r87 r">key</span> = <b>new</b> <a href="AnimatableKey.cs.html#d74880e00784740d" class="t constructor">AnimatableKey</a>(<span class="r81 r">self</span>, <span class="r82 r">name</span>);
+ 
+			<a href="#f1a60a7699d51a3f" class="i method">AbortKinetic</a>(<span class="r87 r">key</span>);
+ 
+			<b>double</b> <span id="r88 rd" class="r88 r">sign</span> = <span class="r84 r">velocity</span> / <span class="t t">Math</span>.<span class="i method">Abs</span>(<span class="r84 r">velocity</span>);
+			<span class="r84 r">velocity</span> = <span class="t t">Math</span>.<span class="i method">Abs</span>(<span class="r84 r">velocity</span>);
+ 
+			<b>int</b> <span id="r89 rd" class="r89 r">tick</span> = <a href="Internals/Ticker.cs.html#9ac4e7c1113aeac4" class="t t">Ticker</a>.<a href="Internals/Ticker.cs.html#daa22f70b75e15e1" class="i property">Default</a>.<a href="Internals/Ticker.cs.html#dfe30d5e31a44261" class="i method">Insert</a>(<span id="r90 rd" class="r90 r">step</span> =&gt; {
+				<b>long</b> <span id="r91 rd" class="r91 r">ms</span> = <span class="r90 r">step</span>;
+ 
+				<span class="r84 r">velocity</span> -= <span class="r85 r">drag</span> * <span class="r91 r">ms</span>;
+				<span class="r84 r">velocity</span> = <span class="t t">Math</span>.<span class="i method">Max</span>(0, <span class="r84 r">velocity</span>);
+ 
+				<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r92 rd" class="r92 r">result</span> = <b>false</b>;
+				<b>if</b> (<span class="r84 r">velocity</span> &gt; 0)
+				{
+					<span class="r92 r">result</span> = <span class="r83 r">callback</span>(<span class="r88 r">sign</span> * <span class="r84 r">velocity</span> * <span class="r91 r">ms</span>, <span class="r84 r">velocity</span>);
+				}
+ 
+				<b>if</b> (!<span class="r92 r">result</span>)
+				{
+					<span class="r86 r">finished</span>?.<a href="@1@System.Runtime/A.html#6fbb51427c383a3a" class="i method">Invoke</a>();
+					<a href="#cf027f0912b02f15" class="i field">s_kinetics</a>.<a href="@1@System.Collections/A.html#a6db5ffdec557169" class="i method">Remove</a>(<span class="r87 r">key</span>);
+				}
+				<b>return</b> <span class="r92 r">result</span>;
+			});
+ 
+			<a href="#cf027f0912b02f15" class="i field">s_kinetics</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r87 r">key</span>] = <span class="r89 r">tick</span>;
+		}
+ 
+		<b>static void</b> <a id="6f511eb18b30820d" href="R/6f511eb18b30820d.html" target="n" data-glyph="76,1" class="i method">HandleTweenerFinished</a>(<b>object</b> <span id="r93 rd" class="r93 r">o</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r94 rd" class="r94 r">args</span>)
+		{
+			<a href="Tweener.cs.html#d2e9432de3b48d8b" class="k">var</a> <span id="r95 rd" class="r95 r">tweener</span> = <span class="r93 r">o</span> <b>as</b> <a href="Tweener.cs.html#d2e9432de3b48d8b" class="t t">Tweener</a>;
+			<a href="#f478b25dc73499a8" class="t t">Info</a> <span id="r96 rd" class="r96 r">info</span>;
+			<b>if</b> (<span class="r95 r">tweener</span> != <b>null</b> &amp;&amp; <a href="#6da890c1e9740229" class="i field">s_animations</a>.<a href="@1@System.Collections/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<span class="r95 r">tweener</span>.<a href="Tweener.cs.html#8992431ebecec358" class="i property">Handle</a>, <b>out</b> <span class="r96 r">info</span>))
+			{
+				<a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r97 rd" class="r97 r">owner</span>;
+				<b>if</b> (<span class="r96 r">info</span>.<a href="#8983e0b6335d662e" class="i property">Owner</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r97 r">owner</span>))
+					<span class="r97 r">owner</span>.<a href="IAnimatable.cs.html#1746302e405bf326" class="i method">BatchBegin</a>();
+				<span class="r96 r">info</span>.<a href="#a864603d19e6b8c2" class="i field">Callback</a>(<span class="r95 r">tweener</span>.<a href="Tweener.cs.html#642500fd018d5d83" class="i property">Value</a>);
+ 
+				<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r98 rd" class="r98 r">repeat</span> = <b>false</b>;
+				<b>if</b> (<span class="r96 r">info</span>.<a href="#88379bb118af64ad" class="i field">Repeat</a> != <b>null</b>)
+					<span class="r98 r">repeat</span> = <span class="r96 r">info</span>.<a href="#88379bb118af64ad" class="i field">Repeat</a>();
+ 
+				<b>if</b> (!<span class="r98 r">repeat</span>)
+				{
+					<a href="#6da890c1e9740229" class="i field">s_animations</a>.<a href="@1@System.Collections/A.html#a6db5ffdec557169" class="i method">Remove</a>(<span class="r95 r">tweener</span>.<a href="Tweener.cs.html#8992431ebecec358" class="i property">Handle</a>);
+					<span class="r95 r">tweener</span>.<a href="Tweener.cs.html#a4c596bf1ca294db" class="i">ValueUpdated</a> -= <a href="#114d43b31b64d2ac" class="i method">HandleTweenerUpdated</a>;
+					<span class="r95 r">tweener</span>.<a href="Tweener.cs.html#f2a1df09f1f1d024" class="i">Finished</a> -= <a href="#6f511eb18b30820d" class="i method">HandleTweenerFinished</a>;
+				}
+ 
+				<span class="r96 r">info</span>.<a href="#63cdc9bb9688b663" class="i field">Finished</a>?.<a href="@1@System.Runtime/A.html#928e849f54d2e4af" class="i method">Invoke</a>(<span class="r95 r">tweener</span>.<a href="Tweener.cs.html#642500fd018d5d83" class="i property">Value</a>, <b>false</b>);
+ 
+				<b>if</b> (<span class="r96 r">info</span>.<a href="#8983e0b6335d662e" class="i property">Owner</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r97 r">owner</span>))
+					<span class="r97 r">owner</span>.<a href="IAnimatable.cs.html#5b5d29f534d49556" class="i method">BatchCommit</a>();
+ 
+				<b>if</b> (<span class="r98 r">repeat</span>)
+				{
+					<span class="r95 r">tweener</span>.<a href="Tweener.cs.html#229f8045d66df46f" class="i method">Start</a>();
+				}
+			}
+		}
+ 
+		<b>static void</b> <a id="114d43b31b64d2ac" href="R/114d43b31b64d2ac.html" target="n" data-glyph="76,1" class="i method">HandleTweenerUpdated</a>(<b>object</b> <span id="r99 rd" class="r99 r">o</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r100 rd" class="r100 r">args</span>)
+		{
+			<a href="Tweener.cs.html#d2e9432de3b48d8b" class="k">var</a> <span id="r101 rd" class="r101 r">tweener</span> = <span class="r99 r">o</span> <b>as</b> <a href="Tweener.cs.html#d2e9432de3b48d8b" class="t t">Tweener</a>;
+			<a href="#f478b25dc73499a8" class="t t">Info</a> <span id="r102 rd" class="r102 r">info</span>;
+			<a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r103 rd" class="r103 r">owner</span>;
+ 
+			<b>if</b> (<span class="r101 r">tweener</span> != <b>null</b> &amp;&amp; <a href="#6da890c1e9740229" class="i field">s_animations</a>.<a href="@1@System.Collections/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<span class="r101 r">tweener</span>.<a href="Tweener.cs.html#8992431ebecec358" class="i property">Handle</a>, <b>out</b> <span class="r102 r">info</span>) &amp;&amp; <span class="r102 r">info</span>.<a href="#8983e0b6335d662e" class="i property">Owner</a>.<a href="@1@System.Runtime/A.html#655561bce79c86cd" class="i method">TryGetTarget</a>(<b>out</b> <span class="r103 r">owner</span>))
+			{
+				<span class="r103 r">owner</span>.<a href="IAnimatable.cs.html#1746302e405bf326" class="i method">BatchBegin</a>();
+				<span class="r102 r">info</span>.<a href="#a864603d19e6b8c2" class="i field">Callback</a>(<span class="r102 r">info</span>.<a href="#36c0e39a5d83f26b" class="i property">Easing</a>.<a href="Easing.cs.html#465ea104c1db0088" class="i method">Ease</a>(<span class="r101 r">tweener</span>.<a href="Tweener.cs.html#642500fd018d5d83" class="i property">Value</a>));
+				<span class="r103 r">owner</span>.<a href="IAnimatable.cs.html#5b5d29f534d49556" class="i method">BatchCommit</a>();
+			}
+		}
+ 
+		<b>class</b> <a id="f478b25dc73499a8" href="R/f478b25dc73499a8.html" target="n" data-glyph="4,1" class="t t"><span id="02e729ed2c90511b">Info</span></a>
+		{
+			<b>public</b> <a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>double</b>&gt; <a id="a864603d19e6b8c2" href="R/a864603d19e6b8c2.html" target="n" data-glyph="42,2" class="i field">Callback</a>;
+			<b>public</b> <a href="@1@System.Runtime/A.html#27863de72c2c9b49" class="t t">Action</a>&lt;<b>double</b>, <b>bool</b>&gt; <a id="63cdc9bb9688b663" href="R/63cdc9bb9688b663.html" target="n" data-glyph="42,2" class="i field">Finished</a>;
+			<b>public</b> <a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>bool</b>&gt; <a id="88379bb118af64ad" href="R/88379bb118af64ad.html" target="n" data-glyph="42,2" class="i field">Repeat</a>;
+			<b>public</b> <a href="Tweener.cs.html#d2e9432de3b48d8b" class="t t">Tweener</a> <a id="8fcf906f9e7967c4" href="R/8fcf906f9e7967c4.html" target="n" data-glyph="42,2" class="i field">Tweener</a>;
+ 
+			<b>public</b> <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a> <a id="36c0e39a5d83f26b" href="R/36c0e39a5d83f26b.html" target="n" data-glyph="102,2" class="i property">Easing</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public uint</b> <a id="e3bd5f141a45d527" href="R/e3bd5f141a45d527.html" target="n" data-glyph="102,2" class="i property">Length</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public</b> <a href="@1@System.Runtime/A.html#809df5135c2bec67" class="t t">WeakReference</a>&lt;<a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a>&gt; <a id="8983e0b6335d662e" href="R/8983e0b6335d662e.html" target="n" data-glyph="102,2" class="i property">Owner</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public uint</b> <a id="188b5264f1dd51dc" href="R/188b5264f1dd51dc.html" target="n" data-glyph="102,2" class="i property">Rate</a> { <b>get</b>; <b>set</b>; }
+		}
+	}
+}</pre></td></tr></table></div></body></html>

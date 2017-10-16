@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html>
+<html><head><title>TableViewDataSource.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(129);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/Renderers/TableViewDataSource.cs" target="_top">Renderers\TableViewDataSource.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="i n">Foundation</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>internal class</b> <a id="b94c587c03bb79f9" href="../R/b94c587c03bb79f9.html" target="n" data-glyph="2,0" class="t t">TableViewDataSource</a> : <span class="t t">NSTableViewSource</span>
+	{
+		<b>static int</b> <a id="dfd8856de119c6fe" href="../R/dfd8856de119c6fe.html" target="n" data-glyph="46,1" class="i field">s_sectionCount</a>;
+ 
+		<b>const string</b> <a id="d19e9f23bf2152cd" href="../R/d19e9f23bf2152cd.html" target="n" data-glyph="10,1" class="i field">HeaderIdentifier</a> = <b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#ba9b70b0224a44cd" class="t t">TextCell</a>);
+		<b>const string</b> <a id="5589d4cd03000c1f" href="../R/5589d4cd03000c1f.html" target="n" data-glyph="10,1" class="i field">ItemIdentifier</a> = <b>nameof</b>(<a href="/Xamarin.Forms.Core/A.html#080f860d2adf2a57" class="t t">ViewCell</a>);
+ 
+		<b>readonly</b> <span class="t t">NSTableView</span> <a id="41e0acfb1a37f40b" href="../R/41e0acfb1a37f40b.html" target="n" data-glyph="46,1" class="i field">_nsTableView</a>;
+		<b>readonly</b> <a href="/Xamarin.Forms.Core/A.html#3fe8bdf9289cb986" class="t t">TableView</a> <a id="42cc2204305ecd13" href="../R/42cc2204305ecd13.html" target="n" data-glyph="46,1" class="i field">_tableView</a>;
+ 
+		<b>public</b> <a id="1de2acf07113ea1a" href="../R/1de2acf07113ea1a.html" target="n" data-glyph="72,1" class="i constructor">TableViewDataSource</a>(<a href="TableViewRenderer.cs.html#7ba59024a0c11453" class="t t">TableViewRenderer</a> <span id="r0 rd" class="r0 r">tableViewRenderer</span>)
+		{
+			<a href="#42cc2204305ecd13" class="i field">_tableView</a> = <span class="r0 r">tableViewRenderer</span>.<a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>;
+			<a href="#41e0acfb1a37f40b" class="i field">_nsTableView</a> = <span class="r0 r">tableViewRenderer</span>.<a href="TableViewRenderer.cs.html#b301b589a4e49738" class="i property">TableView</a>;
+			<a href="#42cc2204305ecd13" class="i field">_tableView</a>.<a href="/Xamarin.Forms.Core/A.html#4747804420834bf5" class="i">ModelChanged</a> += (<span id="r1 rd" class="r1 r">s</span>, <span id="r2 rd" class="r2 r">e</span>) =&gt; { <a href="#41e0acfb1a37f40b" class="i field">_nsTableView</a>?.<span class="i method">ReloadData</span>(); };
+			<a href="#bd489dad8d19aba6" class="i property">AutomaticallyDeselect</a> = <b>true</b>;
+		}
+ 
+		<b>public bool</b> <a id="bd489dad8d19aba6" href="../R/bd489dad8d19aba6.html" target="n" data-glyph="102,1" class="i property">AutomaticallyDeselect</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public override void</b> <a id="084b1d9cbfa9179d" href="../R/084b1d9cbfa9179d.html" target="n" data-glyph="72,1" class="i method">SelectionDidChange</a>(<span class="t t">NSNotification</span> <span id="r3 rd" class="r3 r">notification</span>)
+		{
+			<b>var</b> <span id="r4 rd" class="r4 r">row</span> = <a href="#41e0acfb1a37f40b" class="i field">_nsTableView</a>.<span class="i property">SelectedRow</span>;
+			<b>if</b> (<span class="r4 r">row</span> == -1)
+				<b>return</b>;
+ 
+			<b>int</b> <span id="r5 rd" class="r5 r">sectionIndex</span>;
+			<b>bool</b> <span id="r6 rd" class="r6 r">isHeader</span>;
+			<b>int</b> <span id="r7 rd" class="r7 r">itemIndexInSection</span>;
+ 
+			<a href="#bdfc3e2710a82d56" class="i method">GetComputedIndexes</a>(<span class="r4 r">row</span>, <b>out</b> <span class="r5 r">sectionIndex</span>, <b>out</b> <span class="r7 r">itemIndexInSection</span>, <b>out</b> <span class="r6 r">isHeader</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="k">var</a> <span id="r8 rd" class="r8 r">cell</span> = <a href="#42cc2204305ecd13" class="i field">_tableView</a>.<a href="/Xamarin.Forms.Core/A.html#77e264d98a7df845" class="i property">Model</a>.<a href="/Xamarin.Forms.Core/A.html#21a4e1694fdf1f0e" class="i method">GetCell</a>(<span class="r5 r">sectionIndex</span>, <span class="r7 r">itemIndexInSection</span>);
+			<a href="#42cc2204305ecd13" class="i field">_tableView</a>.<a href="/Xamarin.Forms.Core/A.html#77e264d98a7df845" class="i property">Model</a>.<a href="/Xamarin.Forms.Core/A.html#eb05e642a4fdd2d3" class="i method">RowSelected</a>(<span class="r8 r">cell</span>);
+			<b>if</b> (<a href="#bd489dad8d19aba6" class="i property">AutomaticallyDeselect</a>)
+				<a href="#41e0acfb1a37f40b" class="i field">_nsTableView</a>.<span class="i method">DeselectRow</span>(<span class="r4 r">row</span>);
+		}
+ 
+		<b>public override</b> <span class="t t">nint</span> <a id="f65121a8fb9594fd" href="../R/f65121a8fb9594fd.html" target="n" data-glyph="72,1" class="i method">GetRowCount</a>(<span class="t t">NSTableView</span> <span id="r9 rd" class="r9 r">tableView</span>)
+		{
+			<span class="t t">nint</span> <span id="r10 rd" class="r10 r">count</span> = 0;
+			<a href="#dfd8856de119c6fe" class="i field">s_sectionCount</a> = <a href="#42cc2204305ecd13" class="i field">_tableView</a>.<a href="/Xamarin.Forms.Core/A.html#77e264d98a7df845" class="i property">Model</a>.<a href="/Xamarin.Forms.Core/A.html#55171e2da8068273" class="i method">GetSectionCount</a>();
+			<b>for</b> (<b>int</b> <span id="r11 rd" class="r11 r">i</span> = 0; <span class="r11 r">i</span> &lt; <a href="#dfd8856de119c6fe" class="i field">s_sectionCount</a>; <span class="r11 r">i</span>++)
+			{
+				<span class="r10 r">count</span> += <a href="#42cc2204305ecd13" class="i field">_tableView</a>.<a href="/Xamarin.Forms.Core/A.html#77e264d98a7df845" class="i property">Model</a>.<a href="/Xamarin.Forms.Core/A.html#b15292538a1727ef" class="i method">GetRowCount</a>(<span class="r11 r">i</span>) + 1;
+			}
+ 
+			<b>return</b> <span class="r10 r">count</span>;
+		}
+ 
+		<b>public override bool</b> <a id="d2cf26ea184c3ffb" href="../R/d2cf26ea184c3ffb.html" target="n" data-glyph="72,1" class="i method">ShouldSelectRow</a>(<span class="t t">NSTableView</span> <span id="r12 rd" class="r12 r">tableView</span>, <span class="t t">nint</span> <span id="r13 rd" class="r13 r">row</span>)
+		{
+			<b>int</b> <span id="r14 rd" class="r14 r">sectionIndex</span>;
+			<b>bool</b> <span id="r15 rd" class="r15 r">isHeader</span>;
+			<b>int</b> <span id="r16 rd" class="r16 r">itemIndexInSection</span>;
+ 
+			<a href="#bdfc3e2710a82d56" class="i method">GetComputedIndexes</a>(<span class="r13 r">row</span>, <b>out</b> <span class="r14 r">sectionIndex</span>, <b>out</b> <span class="r16 r">itemIndexInSection</span>, <b>out</b> <span class="r15 r">isHeader</span>);
+ 
+			<b>return</b> !<span class="r15 r">isHeader</span>;
+		}
+ 
+		<b>public override</b> <span class="t t">NSView</span> <a id="bd1d542177ce8e41" href="../R/bd1d542177ce8e41.html" target="n" data-glyph="72,1" class="i method">GetViewForItem</a>(<span class="t t">NSTableView</span> <span id="r17 rd" class="r17 r">tableView</span>, <span class="t t">NSTableColumn</span> <span id="r18 rd" class="r18 r">tableColumn</span>, <span class="t t">nint</span> <span id="r19 rd" class="r19 r">row</span>)
+		{
+			<b>int</b> <span id="r20 rd" class="r20 r">sectionIndex</span>;
+			<b>bool</b> <span id="r21 rd" class="r21 r">isHeader</span>;
+			<b>int</b> <span id="r22 rd" class="r22 r">itemIndexInSection</span>;
+ 
+			<a href="#bdfc3e2710a82d56" class="i method">GetComputedIndexes</a>(<span class="r19 r">row</span>, <b>out</b> <span class="r20 r">sectionIndex</span>, <b>out</b> <span class="r22 r">itemIndexInSection</span>, <b>out</b> <span class="r21 r">isHeader</span>);
+ 
+			<b>string</b> <span id="r23 rd" class="r23 r">id</span>;
+			<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r24 rd" class="r24 r">cell</span>;
+			<b>if</b> (<span class="r21 r">isHeader</span>)
+			{
+				<span class="r23 r">id</span> = <a href="#d19e9f23bf2152cd" class="i field">HeaderIdentifier</a>;
+				<span class="r24 r">cell</span> = <a href="#42cc2204305ecd13" class="i field">_tableView</a>.<a href="/Xamarin.Forms.Core/A.html#77e264d98a7df845" class="i property">Model</a>.<a href="/Xamarin.Forms.Core/A.html#a7834861ee92bd8d" class="i method">GetHeaderCell</a>(<span class="r20 r">sectionIndex</span>) ??
+						<b>new</b> <a href="/Xamarin.Forms.Core/A.html#ba9b70b0224a44cd" class="t constructor">TextCell</a> { <a href="/Xamarin.Forms.Core/A.html#9a390bb4c00083be" class="i property">Text</a> = <a href="#42cc2204305ecd13" class="i field">_tableView</a>.<a href="/Xamarin.Forms.Core/A.html#77e264d98a7df845" class="i property">Model</a>.<a href="/Xamarin.Forms.Core/A.html#cc3cc7cc6f14cce5" class="i method">GetSectionTitle</a>(<span class="r20 r">sectionIndex</span>) };
+			}
+			<b>else</b>
+			{
+				<span class="r23 r">id</span> = <a href="#5589d4cd03000c1f" class="i field">ItemIdentifier</a>;
+				<span class="r24 r">cell</span> = <a href="#42cc2204305ecd13" class="i field">_tableView</a>.<a href="/Xamarin.Forms.Core/A.html#77e264d98a7df845" class="i property">Model</a>.<a href="/Xamarin.Forms.Core/A.html#21a4e1694fdf1f0e" class="i method">GetCell</a>(<span class="r20 r">sectionIndex</span>, <span class="r22 r">itemIndexInSection</span>);
+			}
+ 
+			<b>var</b> <span id="r25 rd" class="r25 r">nativeCell</span> = <a href="../Cells/CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a>.<a href="../Cells/CellNSView.cs.html#c89d0c39b7acbc0c" class="i method">GetNativeCell</a>(<span class="r17 r">tableView</span>, <span class="r24 r">cell</span>, <span class="r23 r">id</span>, <span class="r21 r">isHeader</span>);
+			<b>return</b> <span class="r25 r">nativeCell</span>;
+		}
+ 
+		<b>void</b> <a id="bdfc3e2710a82d56" href="../R/bdfc3e2710a82d56.html" target="n" data-glyph="76,1" class="i method">GetComputedIndexes</a>(<span class="t t">nint</span> <span id="r26 rd" class="r26 r">row</span>, <b>out int</b> <span id="r27 rd" class="r27 r">sectionIndex</span>, <b>out int</b> <span id="r28 rd" class="r28 r">itemIndexInSection</span>, <b>out bool</b> <span id="r29 rd" class="r29 r">isHeader</span>)
+		{
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r30 rd" class="r30 r">totalItems</span> = 0;
+			<span class="r29 r">isHeader</span> = <b>false</b>;
+			<span class="r27 r">sectionIndex</span> = 0;
+			<span class="r28 r">itemIndexInSection</span> = 0;
+ 
+			<b>for</b> (<b>int</b> <span id="r31 rd" class="r31 r">i</span> = 0; <span class="r31 r">i</span> &lt; <a href="#dfd8856de119c6fe" class="i field">s_sectionCount</a>; <span class="r31 r">i</span>++)
+			{
+				<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r32 rd" class="r32 r">groupCount</span> = <a href="#42cc2204305ecd13" class="i field">_tableView</a>.<a href="/Xamarin.Forms.Core/A.html#77e264d98a7df845" class="i property">Model</a>.<a href="/Xamarin.Forms.Core/A.html#b15292538a1727ef" class="i method">GetRowCount</a>(<span class="r31 r">i</span>);
+				<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r33 rd" class="r33 r">itemsInSection</span> = <span class="r32 r">groupCount</span> + 1;
+ 
+				<b>if</b> (<span class="r26 r">row</span> &lt; <span class="r30 r">totalItems</span> + <span class="r33 r">itemsInSection</span>)
+				{
+					<span class="r27 r">sectionIndex</span> = <span class="r31 r">i</span>;
+					<span class="r28 r">itemIndexInSection</span> = (<b>int</b>)<span class="r26 r">row</span> - <span class="r30 r">totalItems</span>;
+					<span class="r29 r">isHeader</span> = <span class="r28 r">itemIndexInSection</span> == 0;
+					<b>if</b> (<span class="r29 r">isHeader</span>)
+						<span class="r28 r">itemIndexInSection</span> = -1;
+					<b>else</b>
+						<span class="r28 r">itemIndexInSection</span> = <span class="r28 r">itemIndexInSection</span> - 1;
+					<b>break</b>;
+				}
+				<span class="r30 r">totalItems</span> += <span class="r33 r">itemsInSection</span>;
+			}
+		}
+	}
+ 
+	<span class="c">//TODO: Implement Uneven rows</span>
+	<b>internal class</b> <a id="48af7557b507fb0e" href="../R/48af7557b507fb0e.html" target="n" data-glyph="2,0" class="t t">UnEvenTableViewModelRenderer</a> : <a href="#b94c587c03bb79f9" class="t t">TableViewDataSource</a>
+	{
+		<b>public</b> <a id="595e0697b1da08b0" href="../R/595e0697b1da08b0.html" target="n" data-glyph="72,1" class="i constructor">UnEvenTableViewModelRenderer</a>(<a href="TableViewRenderer.cs.html#7ba59024a0c11453" class="t t">TableViewRenderer</a> <span id="r34 rd" class="r34 r">model</span>) : <a href="#1de2acf07113ea1a" class="k">base</a>(<span class="r34 r">model</span>)
+		{
+		}
+	}
+}</pre></td></tr></table></div></body></html>

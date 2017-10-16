@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html><head><title>GeocoderBackend.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(71);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Maps.macOS/GeocoderBackend.cs" target="_top">GeocoderBackend.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Maps.macOS" target="_top">Xamarin.Forms.Maps.MacOS\Xamarin.Forms.Maps.MacOS.csproj</a> (Xamarin.Forms.Maps.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Contacts</span>;
+<b>using</b> <span class="i n">CoreLocation</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<span class="e">using AddressBookUI;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<b>using</b> <span class="t">CCLGeocoder</span> = <span class="i n">CoreLocation</span>.<span class="t t">CLGeocoder</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<span class="e">namespace Xamarin.Forms.Maps.iOS
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Maps</span>.<span class="i n">MacOS</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal class</b> <a id="d298997e8414a1d5" href="R/d298997e8414a1d5.html" target="n" data-glyph="2,0" class="t t"><span id="5fad34ae8f8bba64">GeocoderBackend</span></a>
+	{
+		<b>public static void</b> <a id="b64ef4ac3fd4ae3b" href="R/b64ef4ac3fd4ae3b.html" target="n" data-glyph="72,1" class="i method">Register</a>()
+		{
+			<a href="/Xamarin.Forms.Maps/A.html#908bd5781ab8af17" class="t t">Geocoder</a>.<a href="/Xamarin.Forms.Maps/A.html#7093028813e72150" class="i field">GetPositionsForAddressAsyncFunc</a> = <a href="#36aa27fdf717a5e1" class="i method">GetPositionsForAddressAsync</a>;
+			<a href="/Xamarin.Forms.Maps/A.html#908bd5781ab8af17" class="t t">Geocoder</a>.<a href="/Xamarin.Forms.Maps/A.html#a7ac9971edd79d98" class="i field">GetAddressesForPositionFuncAsync</a> = <a href="#af91b60f02a71c2a" class="i method">GetAddressesForPositionAsync</a>;
+		}
+ 
+		<b>static</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt;&gt; <a id="af91b60f02a71c2a" href="R/af91b60f02a71c2a.html" target="n" data-glyph="76,1" class="i method">GetAddressesForPositionAsync</a>(<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a> <span id="r0 rd" class="r0 r">position</span>)
+		{
+			<b>var</b> <span id="r1 rd" class="r1 r">location</span> = <b>new</b> <span class="t constructor">CLLocation</span>(<span class="r0 r">position</span>.<a href="/Xamarin.Forms.Maps/A.html#cb5045a0674344be" class="i property">Latitude</a>, <span class="r0 r">position</span>.<a href="/Xamarin.Forms.Maps/A.html#e52379d680105ddc" class="i property">Longitude</a>);
+			<b>var</b> <span id="r2 rd" class="r2 r">geocoder</span> = <b>new</b> <span class="t constructor">CCLGeocoder</span>();
+			<a href="@0@mscorlib/A.html#94bf04047d6bd325" class="k">var</a> <span id="r3 rd" class="r3 r">source</span> = <b>new</b> <a href="@0@mscorlib/A.html#4aca22f9388e0ac8" class="t constructor">TaskCompletionSource</a>&lt;<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt;&gt;();
+			<span class="r2 r">geocoder</span>.<span class="i method">ReverseGeocodeLocation</span>(<span class="r1 r">location</span>, (<span id="r4 rd" class="r4 r">placemarks</span>, <span id="r5 rd" class="r5 r">error</span>) =&gt;
+			{
+				<b>if</b> (<span class="r4 r">placemarks</span> == <b>null</b>)
+					<span class="r4 r">placemarks</span> = <b>new</b> <span class="t t">CLPlacemark</span>[0];
+				<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>string</b>&gt; <span id="r6 rd" class="r6 r">addresses</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;();
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<span class="e">				addresses = placemarks.Select(p =&gt; ABAddressFormatting.ToString(p.AddressDictionary, false)).ToList();
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+				<b>foreach</b> (<b>var</b> <span id="r7 rd" class="r7 r">item</span> <b>in</b> <span class="r4 r">placemarks</span>)
+				{
+					<b>var</b> <span id="r8 rd" class="r8 r">address</span> = <b>new</b> <span class="t constructor">CNMutablePostalAddress</span>();
+					<span class="r8 r">address</span>.<span class="i property">Street</span> = <span class="r7 r">item</span>.<span class="i property">AddressDictionary</span>[<span class="s">&quot;Street&quot;</span>] == <b>null</b> ? <span class="s">&quot;&quot;</span> : <span class="r7 r">item</span>.<span class="i property">AddressDictionary</span>[<span class="s">&quot;Street&quot;</span>].<span class="i method">ToString</span>();
+					<span class="r8 r">address</span>.<span class="i property">State</span> = <span class="r7 r">item</span>.<span class="i property">AddressDictionary</span>[<span class="s">&quot;State&quot;</span>] == <b>null</b> ? <span class="s">&quot;&quot;</span> : <span class="r7 r">item</span>.<span class="i property">AddressDictionary</span>[<span class="s">&quot;State&quot;</span>].<span class="i method">ToString</span>();
+					<span class="r8 r">address</span>.<span class="i property">City</span> = <span class="r7 r">item</span>.<span class="i property">AddressDictionary</span>[<span class="s">&quot;City&quot;</span>] == <b>null</b> ? <span class="s">&quot;&quot;</span> : <span class="r7 r">item</span>.<span class="i property">AddressDictionary</span>[<span class="s">&quot;City&quot;</span>].<span class="i method">ToString</span>();
+					<span class="r8 r">address</span>.<span class="i property">Country</span> = <span class="r7 r">item</span>.<span class="i property">AddressDictionary</span>[<span class="s">&quot;Country&quot;</span>] == <b>null</b> ? <span class="s">&quot;&quot;</span> : <span class="r7 r">item</span>.<span class="i property">AddressDictionary</span>[<span class="s">&quot;Country&quot;</span>].<span class="i method">ToString</span>();
+					<span class="r8 r">address</span>.<span class="i property">PostalCode</span> = <span class="r7 r">item</span>.<span class="i property">AddressDictionary</span>[<span class="s">&quot;ZIP&quot;</span>] == <b>null</b> ? <span class="s">&quot;&quot;</span> : <span class="r7 r">item</span>.<span class="i property">AddressDictionary</span>[<span class="s">&quot;ZIP&quot;</span>].<span class="i method">ToString</span>();
+					<span class="r6 r">addresses</span>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="t t">CNPostalAddressFormatter</span>.<span class="i method">GetStringFrom</span>(<span class="r8 r">address</span>, <span class="t t">CNPostalAddressFormatterStyle</span>.<span class="i field">MailingAddress</span>));
+				}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+				<span class="r3 r">source</span>.<a href="@0@mscorlib/A.html#810e0ddcb0511ff1" class="i method">SetResult</a>(<span class="r6 r">addresses</span>);
+ 
+			});
+			<b>return</b> <span class="r3 r">source</span>.<a href="@0@mscorlib/A.html#14fe3876fba4607a" class="i property">Task</a>;
+		}
+ 
+		<b>static</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a>&gt;&gt; <a id="36aa27fdf717a5e1" href="R/36aa27fdf717a5e1.html" target="n" data-glyph="76,1" class="i method">GetPositionsForAddressAsync</a>(<b>string</b> <span id="r9 rd" class="r9 r">address</span>)
+		{
+			<b>var</b> <span id="r10 rd" class="r10 r">geocoder</span> = <b>new</b> <span class="t constructor">CCLGeocoder</span>();
+			<a href="@0@mscorlib/A.html#94bf04047d6bd325" class="k">var</a> <span id="r11 rd" class="r11 r">source</span> = <b>new</b> <a href="@0@mscorlib/A.html#4aca22f9388e0ac8" class="t constructor">TaskCompletionSource</a>&lt;<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a>&gt;&gt;();
+			<span class="r10 r">geocoder</span>.<span class="i method">GeocodeAddress</span>(<span class="r9 r">address</span>, (<span id="r12 rd" class="r12 r">placemarks</span>, <span id="r13 rd" class="r13 r">error</span>) =&gt;
+			{
+				<b>if</b> (<span class="r12 r">placemarks</span> == <b>null</b>)
+					<span class="r12 r">placemarks</span> = <b>new</b> <span class="t t">CLPlacemark</span>[0];
+				<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a>&gt; <span id="r14 rd" class="r14 r">positions</span> = <span class="r12 r">placemarks</span>.<a href="@0@System.Core/A.html#5c652c53e80df013" class="i method">Select</a>(<span id="r15 rd" class="r15 r">p</span> =&gt; <b>new</b> <a href="/Xamarin.Forms.Maps/A.html#1b8bd02fe4038b7b" class="t constructor">Position</a>(<span class="r15 r">p</span>.<span class="i property">Location</span>.<span class="i property">Coordinate</span>.<span class="i field">Latitude</span>, <span class="r15 r">p</span>.<span class="i property">Location</span>.<span class="i property">Coordinate</span>.<span class="i field">Longitude</span>));
+				<span class="r11 r">source</span>.<a href="@0@mscorlib/A.html#810e0ddcb0511ff1" class="i method">SetResult</a>(<span class="r14 r">positions</span>);
+			});
+			<b>return</b> <span class="r11 r">source</span>.<a href="@0@mscorlib/A.html#14fe3876fba4607a" class="i property">Task</a>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

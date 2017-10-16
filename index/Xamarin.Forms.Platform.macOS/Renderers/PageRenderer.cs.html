@@ -1,0 +1,234 @@
+﻿<!DOCTYPE html>
+<html><head><title>PageRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(225);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/Renderers/PageRenderer.cs" target="_top">Renderers\PageRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">macOSSpecific</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>public class</b> <a id="4ead5966c6990e56" href="../R/4ead5966c6990e56.html" target="n" data-glyph="0,0" class="t t">PageRenderer</a> : <span class="t t">NSViewController</span>, <a href="../IVisualElementRenderer.cs.html#06d80d1922189ea9" class="t t">IVisualElementRenderer</a>, <a href="/Xamarin.Forms.Core/A.html#1ec8f97ecf2bfedd" class="t t">IEffectControlProvider</a>
+	{
+		<b>bool</b> <a id="3b12d1d78e4e5ac0" href="../R/3b12d1d78e4e5ac0.html" target="n" data-glyph="46,1" class="i field">_init</a>;
+		<b>bool</b> <a id="796c5e938ad0c29f" href="../R/796c5e938ad0c29f.html" target="n" data-glyph="46,1" class="i field">_appeared</a>;
+		<b>bool</b> <a id="393f76d6517de918" href="../R/393f76d6517de918.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+		<a href="../EventTracker.cs.html#7d1b067875540a2a" class="t t">EventTracker</a> <a id="cfe888de51a2263a" href="../R/cfe888de51a2263a.html" target="n" data-glyph="46,1" class="i field">_events</a>;
+		<a href="../VisualElementPackager.cs.html#aeaacf3a4e074c13" class="t t">VisualElementPackager</a> <a id="1cf67c8419cf1434" href="../R/1cf67c8419cf1434.html" target="n" data-glyph="46,1" class="i field">_packager</a>;
+		<a href="../VisualElementTracker.cs.html#a936b9342a2082c9" class="t t">VisualElementTracker</a> <a id="4aa360d33dfc2650" href="../R/4aa360d33dfc2650.html" target="n" data-glyph="46,1" class="i field">_tracker</a>;
+ 
+		<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <a id="4d883f8042ad85cb" href="../R/4d883f8042ad85cb.html" target="n" data-glyph="106,1" class="i property">Page</a> =&gt; <a href="#351881c03208f73b" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>;
+ 
+		<b>public</b> <a id="eca46cd3b1cecd8f" href="../R/eca46cd3b1cecd8f.html" target="n" data-glyph="72,1" class="i constructor">PageRenderer</a>()
+		{
+			<span class="i property">View</span> = <b>new</b> <span class="t constructor">NSView</span> { <span class="i property">WantsLayer</span> = <b>true</b> };
+		}
+ 
+		<b>void</b> <a href="/Xamarin.Forms.Core/A.html#1ec8f97ecf2bfedd" class="t t">IEffectControlProvider</a>.<a href="/Xamarin.Forms.Core/A.html#b783dcc5e3ec781f" class="i method">RegisterEffect</a>(<a href="/Xamarin.Forms.Core/A.html#e864ca63b39ef663" class="t t">Effect</a> <span id="r0 rd" class="r0 r">effect</span>)
+		{
+			<a href="../PlatformEffect.cs.html#3dbf1c093cbd0d65" class="k">var</a> <span id="r1 rd" class="r1 r">platformEffect</span> = <span class="r0 r">effect</span> <b>as</b> <a href="../PlatformEffect.cs.html#3dbf1c093cbd0d65" class="t t">PlatformEffect</a>;
+			<b>if</b> (<span class="r1 r">platformEffect</span> != <b>null</b>)
+				<span class="r1 r">platformEffect</span>.<a href="/Xamarin.Forms.Core/A.html#c7b63607822cc8b6" class="i method">SetContainer</a>(<span class="i property">View</span>);
+		}
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a id="351881c03208f73b" href="../R/351881c03208f73b.html" target="n" data-glyph="102,1" class="i property">Element</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public event</b> <a href="@0@mscorlib/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="../ElementChangedEventArgs.cs.html#7f50625627bbf656" class="t t">VisualElementChangedEventArgs</a>&gt; <a id="8fec36cd4b6a33c2" href="../R/8fec36cd4b6a33c2.html" target="n" data-glyph="30,1" class="i">ElementChanged</a>;
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="a451b59222b42729" href="../R/a451b59222b42729.html" target="n" data-glyph="72,1" class="i method">GetDesiredSize</a>(<b>double</b> <span id="r2 rd" class="r2 r">widthConstraint</span>, <b>double</b> <span id="r3 rd" class="r3 r">heightConstraint</span>)
+		{
+			<b>return</b> <a href="#181f0b17c6be25ee" class="i property">NativeView</a>.<a href="../Extensions/UIViewExtensions.cs.html#a39b6dc312df2648" class="i method">GetSizeRequest</a>(<span class="r2 r">widthConstraint</span>, <span class="r3 r">heightConstraint</span>);
+		}
+ 
+		<b>public</b> <span class="t t">NSView</span> <a id="181f0b17c6be25ee" href="../R/181f0b17c6be25ee.html" target="n" data-glyph="102,1" class="i property">NativeView</a> =&gt; <a href="#393f76d6517de918" class="i field">_disposed</a> ? <b>null</b> : <span class="i property">View</span>;
+ 
+		<b>public void</b> <a id="f4e8509dfcd7c949" href="../R/f4e8509dfcd7c949.html" target="n" data-glyph="72,1" class="i method">SetElement</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r4 rd" class="r4 r">element</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r5 rd" class="r5 r">oldElement</span> = <a href="#351881c03208f73b" class="i property">Element</a>;
+			<a href="#351881c03208f73b" class="i property">Element</a> = <span class="r4 r">element</span>;
+			<a href="#c89198cacd799bd5" class="i method">UpdateTitle</a>();
+ 
+			<a href="#abc89f79e0bf95fc" class="i method">OnElementChanged</a>(<b>new</b> <a href="../ElementChangedEventArgs.cs.html#0314f049547fda27" class="t constructor">VisualElementChangedEventArgs</a>(<span class="r5 r">oldElement</span>, <span class="r4 r">element</span>));
+ 
+			<b>if</b> (<a href="#351881c03208f73b" class="i property">Element</a> != <b>null</b> &amp;&amp; !<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="#351881c03208f73b" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>))
+				<a href="#9846b93f6283511c" class="i method">SetAutomationId</a>(<a href="#351881c03208f73b" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>);
+ 
+			<a href="../EffectUtilities.cs.html#4e6ccc2d82011823" class="t t">EffectUtilities</a>.<a href="../EffectUtilities.cs.html#40aacf6fa9182fb9" class="i method">RegisterEffectControlProvider</a>(<a href="#4ead5966c6990e56" class="k">this</a>, <span class="r5 r">oldElement</span>, <span class="r4 r">element</span>);
+		}
+ 
+		<b>public void</b> <a id="d988053fff6466cb" href="../R/d988053fff6466cb.html" target="n" data-glyph="72,1" class="i method">SetElementSize</a>(<a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <span id="r6 rd" class="r6 r">size</span>)
+		{
+			<a href="#351881c03208f73b" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#fbd64ad9b55bdc37" class="i method">Layout</a>(<b>new</b> <a href="/Xamarin.Forms.Core/A.html#884b8ad2719b18bf" class="t constructor">Rectangle</a>(<a href="#351881c03208f73b" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#e18ecb86f0d3566d" class="i property">X</a>, <a href="#351881c03208f73b" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d889d87a84b3b903" class="i property">Y</a>, <span class="r6 r">size</span>.<a href="/Xamarin.Forms.Core/A.html#6207d8e3826352f7" class="i property">Width</a>, <span class="r6 r">size</span>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a>));
+		}
+ 
+		<b>public</b> <span class="t t">NSViewController</span> <a id="073c38f98b08fbf9" href="../R/073c38f98b08fbf9.html" target="n" data-glyph="102,1" class="i property">ViewController</a> =&gt; <a href="#393f76d6517de918" class="i field">_disposed</a> ? <b>null</b> : <a href="#4ead5966c6990e56" class="k">this</a>;
+ 
+		<b>public override void</b> <a id="a9080c3721c543f6" href="../R/a9080c3721c543f6.html" target="n" data-glyph="72,1" class="i method">ViewDidAppear</a>()
+		{
+			<b>base</b>.<span class="i method">ViewDidAppear</span>();
+ 
+			<b>if</b> (<a href="#796c5e938ad0c29f" class="i field">_appeared</a> || <a href="#393f76d6517de918" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<a href="#796c5e938ad0c29f" class="i field">_appeared</a> = <b>true</b>;
+			<a href="#6f2805b162c1d7af" class="i method">UpdateTabOrder</a>();
+			<a href="#4d883f8042ad85cb" class="i property">Page</a>.<a href="/Xamarin.Forms.Core/A.html#a6c1194da1127a2c" class="i method">SendAppearing</a>();
+		}
+ 
+		<b>public override void</b> <a id="8883cf6c57330710" href="../R/8883cf6c57330710.html" target="n" data-glyph="72,1" class="i method">ViewDidDisappear</a>()
+		{
+			<b>base</b>.<span class="i method">ViewDidDisappear</span>();
+ 
+			<b>if</b> (!<a href="#796c5e938ad0c29f" class="i field">_appeared</a> || <a href="#393f76d6517de918" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<a href="#796c5e938ad0c29f" class="i field">_appeared</a> = <b>false</b>;
+			<a href="#4d883f8042ad85cb" class="i property">Page</a>.<a href="/Xamarin.Forms.Core/A.html#c2a0463b27229bc1" class="i method">SendDisappearing</a>();
+		}
+ 
+		<b>public override void</b> <a id="29f92fecd76eef99" href="../R/29f92fecd76eef99.html" target="n" data-glyph="72,1" class="i method">ViewWillAppear</a>()
+		{
+			<a href="#8773b709c7c703f0" class="i method">Init</a>();
+			<b>base</b>.<span class="i method">ViewWillAppear</span>();
+		}
+ 
+		<b>protected override void</b> <a id="b1baf2284ed89ab0" href="../R/b1baf2284ed89ab0.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r7 rd" class="r7 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r7 r">disposing</span> &amp;&amp; !<a href="#393f76d6517de918" class="i field">_disposed</a>)
+			{
+				<a href="#351881c03208f73b" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#59f99b9bd2130601" class="i method">OnHandlePropertyChanged</a>;
+				<a href="../Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="../Platform.cs.html#7bbb46ae9aa0c447" class="i method">SetRenderer</a>(<a href="#351881c03208f73b" class="i property">Element</a>, <b>null</b>);
+				<b>if</b> (<a href="#796c5e938ad0c29f" class="i field">_appeared</a>)
+					<a href="#4d883f8042ad85cb" class="i property">Page</a>.<a href="/Xamarin.Forms.Core/A.html#c2a0463b27229bc1" class="i method">SendDisappearing</a>();
+ 
+				<a href="#796c5e938ad0c29f" class="i field">_appeared</a> = <b>false</b>;
+ 
+				<b>if</b> (<a href="#cfe888de51a2263a" class="i field">_events</a> != <b>null</b>)
+				{
+					<a href="#cfe888de51a2263a" class="i field">_events</a>.<a href="../EventTracker.cs.html#8be9df6b66c2cd85" class="i method">Dispose</a>();
+					<a href="#cfe888de51a2263a" class="i field">_events</a> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<a href="#1cf67c8419cf1434" class="i field">_packager</a> != <b>null</b>)
+				{
+					<a href="#1cf67c8419cf1434" class="i field">_packager</a>.<a href="../VisualElementPackager.cs.html#aca7b71e24c8d1b5" class="i method">Dispose</a>();
+					<a href="#1cf67c8419cf1434" class="i field">_packager</a> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<a href="#4aa360d33dfc2650" class="i field">_tracker</a> != <b>null</b>)
+				{
+					<a href="#4aa360d33dfc2650" class="i field">_tracker</a>.<a href="../VisualElementTracker.cs.html#eee0435685b1a545" class="i method">Dispose</a>();
+					<a href="#4aa360d33dfc2650" class="i field">_tracker</a> = <b>null</b>;
+				}
+ 
+				<a href="#351881c03208f73b" class="i property">Element</a> = <b>null</b>;
+				<a href="#393f76d6517de918" class="i field">_disposed</a> = <b>true</b>;
+			}
+ 
+			<b>base</b>.<span class="i method">Dispose</span>(<span class="r7 r">disposing</span>);
+		}
+ 
+		<b>void</b> <a id="abc89f79e0bf95fc" href="../R/abc89f79e0bf95fc.html" target="n" data-glyph="76,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#7f50625627bbf656" class="t t">VisualElementChangedEventArgs</a> <span id="r8 rd" class="r8 r">e</span>)
+		{
+			<a href="#8fec36cd4b6a33c2" class="i">ElementChanged</a>?.<a href="@0@mscorlib/A.html#48225ee7c18a0e20" class="i method">Invoke</a>(<a href="#4ead5966c6990e56" class="k">this</a>, <span class="r8 r">e</span>);
+		}
+ 
+		<b>void</b> <a id="9846b93f6283511c" href="../R/9846b93f6283511c.html" target="n" data-glyph="76,1" class="i method">SetAutomationId</a>(<b>string</b> <span id="r9 rd" class="r9 r">id</span>)
+		{
+			<b>if</b> (<a href="#181f0b17c6be25ee" class="i property">NativeView</a> != <b>null</b>)
+				<a href="#181f0b17c6be25ee" class="i property">NativeView</a>.<span class="i property">AccessibilityIdentifier</span> = <span class="r9 r">id</span>;
+		}
+ 
+		<b>void</b> <a id="8773b709c7c703f0" href="../R/8773b709c7c703f0.html" target="n" data-glyph="76,1" class="i method">Init</a>()
+		{
+			<b>if</b> (<a href="#3b12d1d78e4e5ac0" class="i field">_init</a>)
+				<b>return</b>;
+			<a href="#ff473afce47cf7dd" class="i method">UpdateBackground</a>();
+ 
+			<a href="#1cf67c8419cf1434" class="i field">_packager</a> = <b>new</b> <a href="../VisualElementPackager.cs.html#c60e0010654f2dfe" class="t constructor">VisualElementPackager</a>(<a href="#4ead5966c6990e56" class="k">this</a>);
+			<a href="#1cf67c8419cf1434" class="i field">_packager</a>.<a href="../VisualElementPackager.cs.html#81a6a89df79e0b86" class="i method">Load</a>();
+ 
+			<a href="#351881c03208f73b" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#59f99b9bd2130601" class="i method">OnHandlePropertyChanged</a>;
+			<a href="#4aa360d33dfc2650" class="i field">_tracker</a> = <b>new</b> <a href="../VisualElementTracker.cs.html#e0f6aa1e3dfd0634" class="t constructor">VisualElementTracker</a>(<a href="#4ead5966c6990e56" class="k">this</a>);
+ 
+			<a href="#cfe888de51a2263a" class="i field">_events</a> = <b>new</b> <a href="../EventTracker.cs.html#c3522a44ef5b0039" class="t constructor">EventTracker</a>(<a href="#4ead5966c6990e56" class="k">this</a>);
+			<a href="#cfe888de51a2263a" class="i field">_events</a>.<a href="../EventTracker.cs.html#396c472d4efb7b6a" class="i method">LoadEvents</a>(<span class="i property">View</span>);
+			<a href="#3b12d1d78e4e5ac0" class="i field">_init</a> = <b>true</b>;
+		}
+ 
+		<b>void</b> <a id="59f99b9bd2130601" href="../R/59f99b9bd2130601.html" target="n" data-glyph="76,1" class="i method">OnHandlePropertyChanged</a>(<b>object</b> <span id="r10 rd" class="r10 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r11 rd" class="r11 r">e</span>)
+		{
+			<b>if</b> (<span class="r11 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#4d5a7481d6e7289d" class="i field">BackgroundColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#ff473afce47cf7dd" class="i method">UpdateBackground</a>();
+			<b>else if</b> (<span class="r11 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>.<a href="/Xamarin.Forms.Core/A.html#5fa4b1c7af0e0fd6" class="i field">BackgroundImageProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#ff473afce47cf7dd" class="i method">UpdateBackground</a>();
+			<b>else if</b> (<span class="r11 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>.<a href="/Xamarin.Forms.Core/A.html#9b83529a350431f6" class="i field">TitleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#c89198cacd799bd5" class="i method">UpdateTitle</a>();
+			<b>else if</b> (<span class="r11 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <span class="i n">PlatformConfiguration</span>.<span class="i n">macOSSpecific</span>.<a href="/Xamarin.Forms.Core/A.html#a5856605d90f151f" class="t t">Page</a>.<a href="/Xamarin.Forms.Core/A.html#7c26d7267618e5f8" class="i field">TabOrderProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#6f2805b162c1d7af" class="i method">UpdateTabOrder</a>();
+		}
+ 
+		<b>void</b> <a id="ff473afce47cf7dd" href="../R/ff473afce47cf7dd.html" target="n" data-glyph="76,1" class="i method">UpdateBackground</a>()
+		{
+			<b>string</b> <span id="r12 rd" class="r12 r">bgImage</span> = ((<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>)<a href="#351881c03208f73b" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#b18578f2d0fac208" class="i property">BackgroundImage</a>;
+			<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r12 r">bgImage</span>))
+			{
+				<span class="i property">View</span>.<span class="i property">Layer</span>.<span class="i property">BackgroundColor</span> = <span class="t t">NSColor</span>.<span class="i method">FromPatternImage</span>(<span class="t t">NSImage</span>.<span class="i method">ImageNamed</span>(<span class="r12 r">bgImage</span>)).<span class="i property">CGColor</span>;
+				<b>return</b>;
+			}
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r13 rd" class="r13 r">bgColor</span> = <a href="#351881c03208f73b" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a>;
+			<span class="i property">View</span>.<span class="i property">Layer</span>.<span class="i property">BackgroundColor</span> = <span class="r13 r">bgColor</span>.<a href="/Xamarin.Forms.Core/A.html#8625c30a5ad855a0" class="i property">IsDefault</a> ? <span class="t t">NSColor</span>.<span class="i property">White</span>.<span class="i property">CGColor</span> : <span class="r13 r">bgColor</span>.<a href="../Extensions/ColorExtensions.cs.html#e7dae57c378a94ac" class="i method">ToCGColor</a>();
+		}
+ 
+		<b>void</b> <a id="c89198cacd799bd5" href="../R/c89198cacd799bd5.html" target="n" data-glyph="76,1" class="i method">UpdateTitle</a>()
+		{
+			<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(((<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>)<a href="#351881c03208f73b" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#25a9b5c9e8eb0d28" class="i property">Title</a>))
+				<span class="i property">Title</span> = ((<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>)<a href="#351881c03208f73b" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#25a9b5c9e8eb0d28" class="i property">Title</a>;
+		}
+ 
+		<span class="t t">NSView</span> <a id="3000282260dc6e5a" href="../R/3000282260dc6e5a.html" target="n" data-glyph="76,1" class="i method">GetNativeControl</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r14 rd" class="r14 r">visualElement</span>)
+		{
+			<b>var</b> <span id="r15 rd" class="r15 r">nativeView</span> = <a href="../Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="../Platform.cs.html#4ab37f9d1be4bc41" class="i method">GetRenderer</a>(<span class="r14 r">visualElement</span>)?.<a href="../IVisualElementRenderer.cs.html#cc642a2f9731ed4a" class="i property">NativeView</a>;
+			<b>var</b> <span id="r16 rd" class="r16 r">subViews</span> = <span class="r15 r">nativeView</span>?.<span class="i property">Subviews</span>;
+			<b>if</b> (<span class="r16 r">subViews</span> != <b>null</b> &amp;&amp; <span class="r16 r">subViews</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0)
+				<b>return</b> <span class="r16 r">subViews</span>[0];
+ 
+			<b>return</b> <span class="r15 r">nativeView</span>;
+		}
+ 
+		<b>void</b> <a id="6f2805b162c1d7af" href="../R/6f2805b162c1d7af.html" target="n" data-glyph="76,1" class="i method">UpdateTabOrder</a>()
+		{
+			<b>var</b> <span id="r17 rd" class="r17 r">tabOrderElements</span> = ((<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>)<a href="#351881c03208f73b" class="i property">Element</a>).<a href="../Extensions/PlatformConfigurationExtensions.cs.html#a6ae085af5eb0904" class="i method">OnThisPlatform</a>().<a href="/Xamarin.Forms.Core/A.html#39f770aac6d3b724" class="i method">GetTabOrder</a>();
+			<b>if</b>(<span class="r17 r">tabOrderElements</span> != <b>null</b> &amp;&amp; <span class="r17 r">tabOrderElements</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 0)
+			{
+				<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r18 rd" class="r18 r">count</span> = <span class="r17 r">tabOrderElements</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a>;
+ 
+				<b>var</b> <span id="r19 rd" class="r19 r">first</span> = <a href="#3000282260dc6e5a" class="i method">GetNativeControl</a>(<span class="r17 r">tabOrderElements</span>[0]);
+				<b>var</b> <span id="r20 rd" class="r20 r">last</span> = <a href="#3000282260dc6e5a" class="i method">GetNativeControl</a>(<span class="r17 r">tabOrderElements</span>[<span class="r18 r">count</span> - 1]);
+ 
+				<b>if</b> (<span class="r19 r">first</span> != <b>null</b> &amp;&amp; <span class="r20 r">last</span> != <b>null</b>)
+				{
+					<b>var</b> <span id="r21 rd" class="r21 r">previous</span> = <span class="r19 r">first</span>;
+					<b>for</b> (<b>int</b> <span id="r22 rd" class="r22 r">i</span> = 1; <span class="r22 r">i</span> &lt; <span class="r18 r">count</span>; <span class="r22 r">i</span>++)
+					{
+						<b>var</b> <span id="r23 rd" class="r23 r">control</span> = <a href="#3000282260dc6e5a" class="i method">GetNativeControl</a>(<span class="r17 r">tabOrderElements</span>[<span class="r22 r">i</span>]);
+						<b>if</b> (<span class="r23 r">control</span> != <b>null</b>)
+						{
+							<span class="r21 r">previous</span>.<span class="i property">NextKeyView</span> = <span class="r23 r">control</span>;
+							<span class="r21 r">previous</span> = <span class="r23 r">control</span>;
+						}
+					}
+ 
+					<span class="r20 r">last</span>.<span class="i property">NextKeyView</span> = <span class="r19 r">first</span>;
+					<span class="r19 r">first</span>.<span class="i property">Window</span>?.<span class="i method">MakeFirstResponder</span>(<span class="r19 r">first</span>);
+				}
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

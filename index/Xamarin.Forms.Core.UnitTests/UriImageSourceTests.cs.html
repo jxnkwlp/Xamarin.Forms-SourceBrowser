@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html><head><title>UriImageSourceTests.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(146);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core.UnitTests/UriImageSourceTests.cs" target="_top">UriImageSourceTests.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core.UnitTests" target="_top">Xamarin.Forms.Core.UnitTests\Xamarin.Forms.Core.UnitTests.csproj</a> (Xamarin.Forms.Core.UnitTests)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i">NUnit</span>.<span class="i">Framework</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>.<span class="i n">IsolatedStorage</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Core</span>.<span class="i n">UnitTests</span>
+{
+	[<span class="i">TestFixture</span>]
+	<b>public class</b> <a id="f308f534574accde" href="R/f308f534574accde.html" target="n" data-glyph="0,0" class="t t"><span id="31419bb9baed646e">UriImageSourceTests</span></a> : <a href="BaseTestFixture.cs.html#65806910ac46426e" class="t t">BaseTestFixture</a>
+	{
+		<a href="@0@mscorlib/A.html#a535e123427a84ae" class="t t">IsolatedStorageFile</a> <a id="64f0804fd1f83439" href="R/64f0804fd1f83439.html" target="n" data-glyph="106,1" class="i property">NativeStore</a> { <b>get</b>; <b>set</b>; }
+		
+		[<span class="i">SetUp</span>]
+		<b>public override void</b> <a id="1b098730c6edd65c" href="R/1b098730c6edd65c.html" target="n" data-glyph="72,1" class="i method">Setup</a>()
+		{
+			<a href="BaseTestFixture.cs.html#65806910ac46426e" class="k">base</a>.<a href="BaseTestFixture.cs.html#56e5a8a4d9d984c3" class="i method">Setup</a> ();
+			<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#4b16d4a43172fca6" class="i property">PlatformServices</a> = <b>new</b> <a href="MockPlatformServices.cs.html#d341129cbc0c5d8b" class="t constructor">MockPlatformServices</a> (<span class="r0 r">getStreamAsync</span>: <a href="#a8b1481edf85a86b" class="i method">GetStreamAsync</a>);
+			<a href="#64f0804fd1f83439" class="i property">NativeStore</a> = <a href="@0@mscorlib/A.html#a535e123427a84ae" class="t t">IsolatedStorageFile</a>.<a href="@0@mscorlib/A.html#248d0f751928b990" class="i method">GetUserStoreForAssembly</a> ();
+			<a href="#aa4aed6650eb229b" class="i field">networkcalls</a> = 0;
+		}
+ 
+		[<span class="i">TearDown</span>]
+		<b>public override void</b> <a id="83739be81871e80f" href="R/83739be81871e80f.html" target="n" data-glyph="72,1" class="i method">TearDown</a>()
+		{
+			<a href="BaseTestFixture.cs.html#65806910ac46426e" class="k">base</a>.<a href="BaseTestFixture.cs.html#d562e72bb912c960" class="i method">TearDown</a> ();
+			<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#4b16d4a43172fca6" class="i property">PlatformServices</a> = <b>null</b>;
+			<b>string</b> <span id="r1 rd" class="r1 r">cacheName</span> = <span class="s">&quot;ImageLoaderCache&quot;</span>;
+			<b>if</b> (<a href="#64f0804fd1f83439" class="i property">NativeStore</a>.<a href="@0@mscorlib/A.html#cd20627c4837658c" class="i method">DirectoryExists</a> (<span class="r1 r">cacheName</span>)) {
+				<b>foreach</b> (<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r2 rd" class="r2 r">f</span> <b>in</b> <a href="#64f0804fd1f83439" class="i property">NativeStore</a>.<a href="@0@mscorlib/A.html#8b3a158221a2d888" class="i method">GetFileNames</a> (<span class="r1 r">cacheName</span> + <span class="s">&quot;/*&quot;</span>))
+					<a href="#64f0804fd1f83439" class="i property">NativeStore</a>.<a href="@0@mscorlib/A.html#25c61a7d2ad89943" class="i method">DeleteFile</a> (<a href="@0@mscorlib/A.html#090eca8621a248ee" class="t t">Path</a>.<a href="@0@mscorlib/A.html#2d7263f86a526264" class="i method">Combine</a> (<span class="r1 r">cacheName</span>, <span class="r2 r">f</span>));
+			}
+			<a href="#64f0804fd1f83439" class="i property">NativeStore</a>.<a href="@0@mscorlib/A.html#c512bf3e1a474c4b" class="i method">Dispose</a> ();
+			<a href="#64f0804fd1f83439" class="i property">NativeStore</a> = <b>null</b>;
+		}
+ 
+		<b>static</b> <a href="@0@mscorlib/A.html#bb77e610694e64ca" class="t t">Random</a> <a id="d3457d37b0f4ae6a" href="R/d3457d37b0f4ae6a.html" target="n" data-glyph="46,1" class="i field">rnd</a> = <b>new</b> <a href="@0@mscorlib/A.html#5d22f8880fc9f8d9" class="t constructor">Random</a> ();
+		<b>static int</b> <a id="aa4aed6650eb229b" href="R/aa4aed6650eb229b.html" target="n" data-glyph="46,1" class="i field">networkcalls</a> = 0;
+		<b>static async</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="t t">Stream</a>&gt; <a id="a8b1481edf85a86b" href="R/a8b1481edf85a86b.html" target="n" data-glyph="76,1" class="i method">GetStreamAsync</a> (<a href="@0@System/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r3 rd" class="r3 r">uri</span>, <a href="@0@mscorlib/A.html#36b17ded8b1a228c" class="t t">CancellationToken</a> <span id="r4 rd" class="r4 r">cancellationToken</span>)
+		{
+			<b>await</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a>.<a href="@0@mscorlib/A.html#34b191a243434f6a" class="i method">Delay</a> (<a href="#d3457d37b0f4ae6a" class="i field">rnd</a>.<a href="@0@mscorlib/A.html#ddd1e9e09c70bab5" class="i method">Next</a> (30, 2000));
+			<b>if</b> (<span class="r4 r">cancellationToken</span>.<a href="@0@mscorlib/A.html#f32abbe8e2f1f6c1" class="i property">IsCancellationRequested</a>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#60da317efa09fc04" class="t constructor">TaskCanceledException</a> ();
+			<a href="#aa4aed6650eb229b" class="i field">networkcalls</a>++;
+			<b>return typeof</b>(<a href="#f308f534574accde" class="t t">UriImageSourceTests</a>).<a href="@0@mscorlib/A.html#e87d536bd07fab01" class="i property">Assembly</a>.<a href="@0@mscorlib/A.html#9c90fad516060e0d" class="i method">GetManifestResourceStream</a> (<span class="r3 r">uri</span>.<a href="@0@System/A.html#6da7cb1d49922d85" class="i property">LocalPath</a>.<a href="@0@mscorlib/A.html#882fa7998d6ca35a" class="i method">Substring</a> (1));
+		}
+ 
+		[<span class="i">Test</span>]
+		[<span class="i">Ignore</span>]
+		<b>public void</b> <a id="a37b1c7395d563ac" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">LoadImageFromStream</a> ()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="k">var</a> <span id="r5 rd" class="r5 r">loader</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="t constructor">UriImageSource</a> { 
+				<a href="/Xamarin.Forms.Core/A.html#081f21e8d9c61f56" class="i property">Uri</a> = <b>new</b> <a href="@0@System/A.html#9e1bb2fef0d1159b" class="t constructor">Uri</a> (<span class="s">&quot;http://foo.com/Images/crimson.jpg&quot;</span>),
+			};
+			<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="t t">Stream</a> <span id="r6 rd" class="r6 r">s0</span> = <span class="r5 r">loader</span>.<a href="/Xamarin.Forms.Core/A.html#6753618618a01e98" class="i method">GetStreamAsync</a> ().<a href="@0@mscorlib/A.html#826690b09f24e719" class="i property">Result</a>;
+ 
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (79109, <span class="r6 r">s0</span>.<a href="@0@mscorlib/A.html#48b7e39cfd844dc5" class="i property">Length</a>);
+		}
+ 
+		[<span class="i">Test</span>]
+		[<span class="i">Ignore</span>]
+		<b>public void</b> <a id="0d872711c5381200" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SecondCallLoadFromCache</a> ()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="k">var</a> <span id="r7 rd" class="r7 r">loader</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="t constructor">UriImageSource</a> { 
+				<a href="/Xamarin.Forms.Core/A.html#081f21e8d9c61f56" class="i property">Uri</a> = <b>new</b> <a href="@0@System/A.html#9e1bb2fef0d1159b" class="t constructor">Uri</a> (<span class="s">&quot;http://foo.com/Images/crimson.jpg&quot;</span>),
+			};
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (0, <a href="#aa4aed6650eb229b" class="i field">networkcalls</a>);
+ 
+			<b>using</b> (<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="k">var</a> <span id="r8 rd" class="r8 r">s0</span> = <span class="r7 r">loader</span>.<a href="/Xamarin.Forms.Core/A.html#6753618618a01e98" class="i method">GetStreamAsync</a> ().<a href="@0@mscorlib/A.html#826690b09f24e719" class="i property">Result</a>) {
+				<span class="i">Assert</span>.<span class="i">AreEqual</span> (79109, <span class="r8 r">s0</span>.<a href="@0@mscorlib/A.html#48b7e39cfd844dc5" class="i property">Length</a>);
+				<span class="i">Assert</span>.<span class="i">AreEqual</span> (1, <a href="#aa4aed6650eb229b" class="i field">networkcalls</a>);
+			}
+				
+			<b>using</b> (<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="k">var</a> <span id="r9 rd" class="r9 r">s1</span> = <span class="r7 r">loader</span>.<a href="/Xamarin.Forms.Core/A.html#6753618618a01e98" class="i method">GetStreamAsync</a> ().<a href="@0@mscorlib/A.html#826690b09f24e719" class="i property">Result</a>) {
+				<span class="i">Assert</span>.<span class="i">AreEqual</span> (79109, <span class="r9 r">s1</span>.<a href="@0@mscorlib/A.html#48b7e39cfd844dc5" class="i property">Length</a>);
+				<span class="i">Assert</span>.<span class="i">AreEqual</span> (1, <a href="#aa4aed6650eb229b" class="i field">networkcalls</a>);
+			}
+		}
+ 
+		[<span class="i">Test</span>]
+		[<span class="i">Ignore</span>]
+		<b>public void</b> <a id="7b536ec61cc100f7" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">DoNotKeepFailedRetrieveInCache</a> ()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="k">var</a> <span id="r10 rd" class="r10 r">loader</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="t constructor">UriImageSource</a> { 
+				<a href="/Xamarin.Forms.Core/A.html#081f21e8d9c61f56" class="i property">Uri</a> = <b>new</b> <a href="@0@System/A.html#9e1bb2fef0d1159b" class="t constructor">Uri</a> (<span class="s">&quot;http://foo.com/missing.png&quot;</span>),
+			};
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (0, <a href="#aa4aed6650eb229b" class="i field">networkcalls</a>);
+ 
+			<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="k">var</a> <span id="r11 rd" class="r11 r">s0</span> = <span class="r10 r">loader</span>.<a href="/Xamarin.Forms.Core/A.html#6753618618a01e98" class="i method">GetStreamAsync</a> ().<a href="@0@mscorlib/A.html#826690b09f24e719" class="i property">Result</a>;
+			<span class="i">Assert</span>.<span class="i">IsNull</span> (<span class="r11 r">s0</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (1, <a href="#aa4aed6650eb229b" class="i field">networkcalls</a>);
+ 
+			<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="k">var</a> <span id="r12 rd" class="r12 r">s1</span> = <span class="r10 r">loader</span>.<a href="/Xamarin.Forms.Core/A.html#6753618618a01e98" class="i method">GetStreamAsync</a> ().<a href="@0@mscorlib/A.html#826690b09f24e719" class="i property">Result</a>;
+			<span class="i">Assert</span>.<span class="i">IsNull</span> (<span class="r12 r">s1</span>);
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (2, <a href="#aa4aed6650eb229b" class="i field">networkcalls</a>);
+		}
+ 
+		[<span class="i">Test</span>]
+		[<span class="i">Ignore</span>]
+		<b>public void</b> <a id="00708be9ab5e78b3" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ConcurrentCallsOnSameUriAreQueued</a> ()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="k">var</a> <span id="r13 rd" class="r13 r">loader</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="t constructor">UriImageSource</a> { 
+				<a href="/Xamarin.Forms.Core/A.html#081f21e8d9c61f56" class="i property">Uri</a> = <b>new</b> <a href="@0@System/A.html#9e1bb2fef0d1159b" class="t constructor">Uri</a> (<span class="s">&quot;http://foo.com/Images/crimson.jpg&quot;</span>),
+			};
+			<span class="i">Assert</span>.<span class="i">AreEqual</span> (0, <a href="#aa4aed6650eb229b" class="i field">networkcalls</a>);
+ 
+			<a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="k">var</a> <span id="r14 rd" class="r14 r">t0</span> = <span class="r13 r">loader</span>.<a href="/Xamarin.Forms.Core/A.html#6753618618a01e98" class="i method">GetStreamAsync</a> ();
+			<a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="k">var</a> <span id="r15 rd" class="r15 r">t1</span> = <span class="r13 r">loader</span>.<a href="/Xamarin.Forms.Core/A.html#6753618618a01e98" class="i method">GetStreamAsync</a> ();
+ 
+			<span class="c">//var s0 = t0.Result;</span>
+			<b>using</b> (<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="k">var</a> <span id="r16 rd" class="r16 r">s1</span> = <span class="r15 r">t1</span>.<a href="@0@mscorlib/A.html#826690b09f24e719" class="i property">Result</a>) {
+				<span class="i">Assert</span>.<span class="i">AreEqual</span> (1, <a href="#aa4aed6650eb229b" class="i field">networkcalls</a>);
+				<span class="i">Assert</span>.<span class="i">AreEqual</span> (79109, <span class="r16 r">s1</span>.<a href="@0@mscorlib/A.html#48b7e39cfd844dc5" class="i property">Length</a>);
+			}
+		}
+ 
+		[<span class="i">Test</span>]
+		<b>public void</b> <a id="33a7cd49a0e07b64" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">NullUriDoesNotCrash</a> ()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="k">var</a> <span id="r17 rd" class="r17 r">loader</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="t constructor">UriImageSource</a> ();
+			<span class="i">Assert</span>.<span class="i">DoesNotThrow</span> (() =&gt; {
+				<span class="r17 r">loader</span>.<a href="/Xamarin.Forms.Core/A.html#081f21e8d9c61f56" class="i property">Uri</a> = <b>null</b>;
+			});
+		}
+ 
+		[<span class="i">Test</span>]
+		<b>public void</b> <a id="e984ac719275dad7" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">UrlHashKeyAreTheSame</a> ()
+		{
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r18 rd" class="r18 r">urlHash1</span> = <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#4b16d4a43172fca6" class="i property">PlatformServices</a>.<a href="/Xamarin.Forms.Core/A.html#8467f50562b17b52" class="i method">GetMD5Hash</a> (<span class="s">&quot;http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasdasdasdasd&quot;</span>);
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r19 rd" class="r19 r">urlHash2</span> = <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#4b16d4a43172fca6" class="i property">PlatformServices</a>.<a href="/Xamarin.Forms.Core/A.html#8467f50562b17b52" class="i method">GetMD5Hash</a> (<span class="s">&quot;http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasdasdasdasd&quot;</span>);
+			<span class="i">Assert</span>.<span class="i">IsTrue</span> (<span class="r18 r">urlHash1</span> == <span class="r19 r">urlHash2</span>);
+		}
+ 
+		[<span class="i">Test</span>]
+		<b>public void</b> <a id="05a9468258ee1d59" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">UrlHashKeyAreNotTheSame</a> ()
+		{
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r20 rd" class="r20 r">urlHash1</span> = <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#4b16d4a43172fca6" class="i property">PlatformServices</a>.<a href="/Xamarin.Forms.Core/A.html#8467f50562b17b52" class="i method">GetMD5Hash</a> (<span class="s">&quot;http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasdasdasdasd&quot;</span>);
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r21 rd" class="r21 r">urlHash2</span> = <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#4b16d4a43172fca6" class="i property">PlatformServices</a>.<a href="/Xamarin.Forms.Core/A.html#8467f50562b17b52" class="i method">GetMD5Hash</a> (<span class="s">&quot;http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasda&quot;</span>);
+			<span class="i">Assert</span>.<span class="i">IsTrue</span> (<span class="r20 r">urlHash1</span> != <span class="r21 r">urlHash2</span>);
+		}
+ 
+	}
+}
+</pre></td></tr></table></div></body></html>

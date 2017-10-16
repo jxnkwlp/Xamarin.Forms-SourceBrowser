@@ -1,0 +1,313 @@
+﻿<!DOCTYPE html>
+<html><head><title>VisualElementTracker.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(304);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/VisualElementTracker.cs" target="_top">VisualElementTracker.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Drawing</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">CoreAnimation</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.MacOS
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public class</b> <a id="dbca6fe3df195482" href="R/dbca6fe3df195482.html" target="n" data-glyph="0,0" class="t t">VisualElementTracker</a> : <a href="@0@mscorlib/A.html#1f55292c3174123d" class="t t">IDisposable</a>
+	{
+		<b>readonly</b> <a href="@0@mscorlib/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="/Xamarin.Forms.Core/A.html#e9ec7bae1778a320" class="t t">EventArg</a>&lt;<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>&gt;&gt; <a id="e4bc6443f41bf622" href="R/e4bc6443f41bf622.html" target="n" data-glyph="46,1" class="i field">_batchCommittedHandler</a>;
+ 
+		<b>readonly</b> <a href="@0@System/A.html#670754815f6804ff" class="t t">PropertyChangedEventHandler</a> <a id="3bea64ee1cc684c3" href="R/3bea64ee1cc684c3.html" target="n" data-glyph="46,1" class="i field">_propertyChangedHandler</a>;
+		<b>readonly</b> <a href="@0@mscorlib/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="67445ddf317ab873" href="R/67445ddf317ab873.html" target="n" data-glyph="46,1" class="i field">_sizeChangedEventHandler</a>;
+		<b>bool</b> <a id="fcbac480bd712e41" href="R/fcbac480bd712e41.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+		<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a id="df5d0faaa8f249e5" href="R/df5d0faaa8f249e5.html" target="n" data-glyph="46,1" class="i field">_element</a>;
+ 
+		<span class="c">// Track these by hand because the calls down into iOS are too expensive</span>
+		<b>bool</b> <a id="7209eae279acbfbe" href="R/7209eae279acbfbe.html" target="n" data-glyph="46,1" class="i field">_isInteractive</a>;
+		<a href="/Xamarin.Forms.Core/A.html#2ad9a305ad01941d" class="t t">Rectangle</a> <a id="a6ee78524c408bca" href="R/a6ee78524c408bca.html" target="n" data-glyph="46,1" class="i field">_lastBounds</a>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">__MOBILE__</span>
+<span class="e">		Rectangle _lastParentBounds;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		<span class="t t">CALayer</span> <a id="d8231d6fbda32c2d" href="R/d8231d6fbda32c2d.html" target="n" data-glyph="46,1" class="i field">_layer</a>;
+		<b>int</b> <a id="10449f9908c9f1d1" href="R/10449f9908c9f1d1.html" target="n" data-glyph="46,1" class="i field">_updateCount</a>;
+ 
+		<b>public</b> <a id="95474517432863cb" href="R/95474517432863cb.html" target="n" data-glyph="72,1" class="i constructor">VisualElementTracker</a>(<a href="IVisualElementRenderer.cs.html#222fbc88c8a624f8" class="t t">IVisualElementRenderer</a> <span id="r0 rd" class="r0 r">renderer</span>)
+		{
+			<b>if</b> (<span class="r0 r">renderer</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;renderer&quot;</span>);
+ 
+			<a href="#3bea64ee1cc684c3" class="i field">_propertyChangedHandler</a> = <a href="#5abb7c3407151a60" class="i method">HandlePropertyChanged</a>;
+			<a href="#67445ddf317ab873" class="i field">_sizeChangedEventHandler</a> = <a href="#36fe801dd403b875" class="i method">HandleSizeChanged</a>;
+			<a href="#e4bc6443f41bf622" class="i field">_batchCommittedHandler</a> = <a href="#6a385b424fe39dd8" class="i method">HandleRedrawNeeded</a>;
+ 
+			<a href="#cc6cc5136cb8fb1b" class="i property">Renderer</a> = <span class="r0 r">renderer</span>;
+			<span class="r0 r">renderer</span>.<a href="IVisualElementRenderer.cs.html#0a81f1f5f25f84a4" class="i">ElementChanged</a> += <a href="#55ff91a7cdd78ae3" class="i method">OnRendererElementChanged</a>;
+			<a href="#8dc02e92d51dc358" class="i method">SetElement</a>(<b>null</b>, <span class="r0 r">renderer</span>.<a href="IVisualElementRenderer.cs.html#7bd415bdbb6a8c7d" class="i property">Element</a>);
+		}
+ 
+		<a href="IVisualElementRenderer.cs.html#222fbc88c8a624f8" class="t t">IVisualElementRenderer</a> <a id="cc6cc5136cb8fb1b" href="R/cc6cc5136cb8fb1b.html" target="n" data-glyph="106,1" class="i property">Renderer</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public void</b> <a id="91c828ef2e9d27ee" href="R/91c828ef2e9d27ee.html" target="n" data-glyph="72,1" class="i method">Dispose</a>()
+		{
+			<a href="#ccc86b8f49dca5fd" class="i method">Dispose</a>(<b>true</b>);
+		}
+ 
+		<b>public event</b> <a href="@0@mscorlib/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="78c2fe077d851f29" href="R/78c2fe077d851f29.html" target="n" data-glyph="30,1" class="i">NativeControlUpdated</a>;
+ 
+		<b>protected virtual void</b> <a id="ccc86b8f49dca5fd" href="R/ccc86b8f49dca5fd.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r1 rd" class="r1 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#fcbac480bd712e41" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<a href="#fcbac480bd712e41" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<b>if</b> (<span class="r1 r">disposing</span>)
+			{
+				<a href="#8dc02e92d51dc358" class="i method">SetElement</a>(<a href="#df5d0faaa8f249e5" class="i field">_element</a>, <b>null</b>);
+ 
+				<b>if</b> (<a href="#d8231d6fbda32c2d" class="i field">_layer</a> != <b>null</b>)
+				{
+					<a href="#d8231d6fbda32c2d" class="i field">_layer</a>.<span class="i method">Dispose</span>();
+					<a href="#d8231d6fbda32c2d" class="i field">_layer</a> = <b>null</b>;
+				}
+ 
+				<a href="#cc6cc5136cb8fb1b" class="i property">Renderer</a>.<a href="IVisualElementRenderer.cs.html#0a81f1f5f25f84a4" class="i">ElementChanged</a> -= <a href="#55ff91a7cdd78ae3" class="i method">OnRendererElementChanged</a>;
+				<a href="#cc6cc5136cb8fb1b" class="i property">Renderer</a> = <b>null</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="5abb7c3407151a60" href="R/5abb7c3407151a60.html" target="n" data-glyph="76,1" class="i method">HandlePropertyChanged</a>(<b>object</b> <span id="r2 rd" class="r2 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r3 rd" class="r3 r">e</span>)
+		{
+			<b>if</b> (<span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#46ccfebde8187f9b" class="i field">XProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#dbd1b0cda0775f3b" class="i field">YProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#da94b849bc513d64" class="i field">WidthProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+				<span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#bd8332aab95ecbe7" class="i field">HeightProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#8b4971ff4c0bf69e" class="i field">AnchorXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#c36c1b05b1f88233" class="i field">AnchorYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+				<span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#c3af2bf418be5028" class="i field">TranslationXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#753acb521b5e3f04" class="i field">TranslationYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#7101c14ebc333e1d" class="i field">ScaleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+				<span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#81bca7dd24e8a626" class="i field">RotationProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#212ad62d6a9bf671" class="i field">RotationXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#818973b117d7de1f" class="i field">RotationYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+				<span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#acdb30ca7e3e8994" class="i field">IsVisibleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#d798cc16e0e87f98" class="i field">IsEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+				<span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#0a624730d6bd2c02" class="i field">InputTransparentProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r3 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#b7f80bf625ddd6d6" class="i field">OpacityProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#a57df51bdd21b262" class="i method">UpdateNativeControl</a>(); <span class="c">// poorly optimized</span>
+		}
+ 
+		<b>void</b> <a id="6a385b424fe39dd8" href="R/6a385b424fe39dd8.html" target="n" data-glyph="76,1" class="i method">HandleRedrawNeeded</a>(<b>object</b> <span id="r4 rd" class="r4 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r5 rd" class="r5 r">e</span>)
+		{
+			<a href="#a57df51bdd21b262" class="i method">UpdateNativeControl</a>();
+		}
+ 
+		<b>void</b> <a id="36fe801dd403b875" href="R/36fe801dd403b875.html" target="n" data-glyph="76,1" class="i method">HandleSizeChanged</a>(<b>object</b> <span id="r6 rd" class="r6 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r7 rd" class="r7 r">e</span>)
+		{
+			<a href="#a57df51bdd21b262" class="i method">UpdateNativeControl</a>();
+		}
+ 
+		<b>void</b> <a id="55ff91a7cdd78ae3" href="R/55ff91a7cdd78ae3.html" target="n" data-glyph="76,1" class="i method">OnRendererElementChanged</a>(<b>object</b> <span id="r8 rd" class="r8 r">s</span>, <a href="ElementChangedEventArgs.cs.html#370d799bbbdee8b8" class="t t">VisualElementChangedEventArgs</a> <span id="r9 rd" class="r9 r">e</span>)
+		{
+			<b>if</b> (<a href="#df5d0faaa8f249e5" class="i field">_element</a> == <span class="r9 r">e</span>.<a href="ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a>)
+				<b>return</b>;
+ 
+			<a href="#8dc02e92d51dc358" class="i method">SetElement</a>(<a href="#df5d0faaa8f249e5" class="i field">_element</a>, <span class="r9 r">e</span>.<a href="ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a>);
+		}
+ 
+		<b>void</b> <a id="25213f5431e78a83" href="R/25213f5431e78a83.html" target="n" data-glyph="76,1" class="i method">OnUpdateNativeControl</a>(<span class="t t">CALayer</span> <span id="r10 rd" class="r10 r">caLayer</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="k">var</a> <span id="r11 rd" class="r11 r">view</span> = <a href="#cc6cc5136cb8fb1b" class="i property">Renderer</a>.<a href="IVisualElementRenderer.cs.html#7bd415bdbb6a8c7d" class="i property">Element</a>;
+			<b>var</b> <span id="r12 rd" class="r12 r">uiview</span> = <a href="#cc6cc5136cb8fb1b" class="i property">Renderer</a>.<a href="IVisualElementRenderer.cs.html#ca22b619528a2096" class="i property">NativeView</a>;
+ 
+			<b>if</b> (<span class="r11 r">view</span> == <b>null</b> || <span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#585b4979a16bfbb1" class="i property">Batched</a>)
+				<b>return</b>;
+ 
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r13 rd" class="r13 r">shouldInteract</span> = !<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#02b822eb508e27ff" class="i property">InputTransparent</a> &amp;&amp; <span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>;
+			<b>if</b> (<a href="#7209eae279acbfbe" class="i field">_isInteractive</a> != <span class="r13 r">shouldInteract</span>)
+			{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+				<span class="r12 r">uiview</span>.<span class="i property">UserInteractionEnabled</span> = <span class="r13 r">shouldInteract</span>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+				<a href="#7209eae279acbfbe" class="i field">_isInteractive</a> = <span class="r13 r">shouldInteract</span>;
+			}
+ 
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r14 rd" class="r14 r">boundsChanged</span> = <a href="#a6ee78524c408bca" class="i field">_lastBounds</a> != <span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#0e284b498897247f" class="i property">Bounds</a>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">__MOBILE__</span>
+<span class="e">			var viewParent = view.RealParent as VisualElement;
+			var parentBoundsChanged = _lastParentBounds != (viewParent == null ? Rectangle.Zero : viewParent.Bounds);
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r15 rd" class="r15 r">thread</span> = !<span class="r14 r">boundsChanged</span> &amp;&amp; !<span class="r10 r">caLayer</span>.<span class="i property">Frame</span>.<span class="i property">IsEmpty</span>;
+ 
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r16 rd" class="r16 r">anchorX</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#a00998b71a5dcbae" class="i property">AnchorX</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r17 rd" class="r17 r">anchorY</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#f6d4e7f8be1952ed" class="i property">AnchorY</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r18 rd" class="r18 r">translationX</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#e319cb8ba4509319" class="i property">TranslationX</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r19 rd" class="r19 r">translationY</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#4f7b15503ebb471e" class="i property">TranslationY</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r20 rd" class="r20 r">rotationX</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#ac8ee4ff2947fb8f" class="i property">RotationX</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r21 rd" class="r21 r">rotationY</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#dbfc39f79da9ef5e" class="i property">RotationY</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r22 rd" class="r22 r">rotation</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#d77e9855d74702dd" class="i property">Rotation</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r23 rd" class="r23 r">scale</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#71fa0e02a53ce494" class="i property">Scale</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r24 rd" class="r24 r">width</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#4b4ff8e00e0429d0" class="i property">Width</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r25 rd" class="r25 r">height</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r26 rd" class="r26 r">x</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#e18ecb86f0d3566d" class="i property">X</a> + (<b>float</b>)<a href="/Xamarin.Forms.Core/A.html#e89c967ef6169b93" class="t t">CompressedLayout</a>.<a href="/Xamarin.Forms.Core/A.html#2a013f032c5f19af" class="i method">GetHeadlessOffset</a>(<span class="r11 r">view</span>).<a href="/Xamarin.Forms.Core/A.html#e872b708b176ccbd" class="i property">X</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r27 rd" class="r27 r">y</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#d889d87a84b3b903" class="i property">Y</a> + (<b>float</b>)<a href="/Xamarin.Forms.Core/A.html#e89c967ef6169b93" class="t t">CompressedLayout</a>.<a href="/Xamarin.Forms.Core/A.html#2a013f032c5f19af" class="i method">GetHeadlessOffset</a>(<span class="r11 r">view</span>).<a href="/Xamarin.Forms.Core/A.html#ed844b5bb67ba407" class="i property">Y</a>;
+			<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r28 rd" class="r28 r">opacity</span> = (<b>float</b>)<span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#564121ba41a80a9d" class="i property">Opacity</a>;
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r29 rd" class="r29 r">isVisible</span> = <span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#138318a4447c6c41" class="i property">IsVisible</a>;
+ 
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r30 rd" class="r30 r">updateTarget</span> = <a href="@0@mscorlib/A.html#8792520ddc6dadcb" class="t t">Interlocked</a>.<a href="@0@mscorlib/A.html#09bb1e21afd76cf2" class="i method">Increment</a>(<b>ref</b> <a href="#10449f9908c9f1d1" class="i field">_updateCount</a>);
+ 
+			<a href="@0@mscorlib/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r31 rd" class="r31 r">update</span> = () =&gt;
+			{
+				<b>if</b> (<span class="r30 r">updateTarget</span> != <a href="#10449f9908c9f1d1" class="i field">_updateCount</a>)
+					<b>return</b>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+				<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="k">var</a> <span id="r32 rd" class="r32 r">visualElement</span> = <span class="r11 r">view</span>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+				<a href="/Xamarin.Forms.Core/A.html#76098df8350c0484" class="k">var</a> <span id="r33 rd" class="r33 r">parent</span> = <span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#3a1e78d030ef9bf3" class="i property">RealParent</a>;
+ 
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r34 rd" class="r34 r">shouldRelayoutSublayers</span> = <b>false</b>;
+				<b>if</b> (<span class="r29 r">isVisible</span> &amp;&amp; <span class="r10 r">caLayer</span>.<span class="i property">Hidden</span>)
+				{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">__MOBILE__</span>
+<span class="e">					uiview.Hidden = false;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+					<span class="r10 r">caLayer</span>.<span class="i property">Hidden</span> = <b>false</b>;
+					<b>if</b> (!<span class="r10 r">caLayer</span>.<span class="i property">Frame</span>.<span class="i property">IsEmpty</span>)
+						<span class="r34 r">shouldRelayoutSublayers</span> = <b>true</b>;
+				}
+ 
+				<b>if</b> (!<span class="r29 r">isVisible</span> &amp;&amp; !<span class="r10 r">caLayer</span>.<span class="i property">Hidden</span>)
+				{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">__MOBILE__</span>
+<span class="e">					uiview.Hidden = true;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+					<span class="r10 r">caLayer</span>.<span class="i property">Hidden</span> = <b>true</b>;
+					<span class="r34 r">shouldRelayoutSublayers</span> = <b>true</b>;
+				}
+ 
+				<span class="c">// ripe for optimization</span>
+				<b>var</b> <span id="r35 rd" class="r35 r">transform</span> = <span class="t t">CATransform3D</span>.<span class="i field">Identity</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+				<b>bool</b> <span id="r36 rd" class="r36 r">shouldUpdate</span> = (!(<span class="r32 r">visualElement</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>) || <span class="r32 r">visualElement</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t t">ContentPage</a>) &amp;&amp; <span class="r24 r">width</span> &gt; 0 &amp;&amp; <span class="r25 r">height</span> &gt; 0 &amp;&amp; <span class="r33 r">parent</span> != <b>null</b> &amp;&amp; <span class="r14 r">boundsChanged</span>;
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">				// We don&#39;t care if it&#39;s a page or not since bounds of the window can change
+				// TODO: Find why it doesn&#39;t work to check if the parentsBounds changed  and remove true;
+				parentBoundsChanged = true;
+				bool shouldUpdate = width &gt; 0 &amp;&amp; height &gt; 0 &amp;&amp; parent != null &amp;&amp; (boundsChanged || parentBoundsChanged);
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+				<span class="c">// Dont ever attempt to actually change the layout of a Page unless it is a ContentPage</span>
+				<span class="c">// iOS is a really big fan of you not actually modifying the View&#39;s of the UIViewControllers</span>
+				<b>if</b> (<span class="r36 r">shouldUpdate</span>)
+				{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+					<b>var</b> <span id="r37 rd" class="r37 r">target</span> = <b>new</b> <span class="t constructor">RectangleF</span>(<span class="r26 r">x</span>, <span class="r27 r">y</span>, <span class="r24 r">width</span>, <span class="r25 r">height</span>);
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">					var visualParent = parent as VisualElement;
+					float newY = visualParent == null ? y : Math.Max(0, (float)(visualParent.Height - y - view.Height));
+					var target = new RectangleF(x, newY, width, height);
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+					<span class="c">// must reset transform prior to setting frame...</span>
+					<span class="r10 r">caLayer</span>.<span class="i property">Transform</span> = <span class="r35 r">transform</span>;
+					<span class="r12 r">uiview</span>.<span class="i property">Frame</span> = <span class="r37 r">target</span>;
+					<b>if</b> (<span class="r34 r">shouldRelayoutSublayers</span>)
+						<span class="r10 r">caLayer</span>.<span class="i method">LayoutSublayers</span>();
+				}
+				<b>else if</b> (<span class="r24 r">width</span> &lt;= 0 || <span class="r25 r">height</span> &lt;= 0)
+				{
+					<span class="c">//TODO: FInd why it doesn&#39;t work</span>
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+					<span class="r10 r">caLayer</span>.<span class="i property">Hidden</span> = <b>true</b>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+					<b>return</b>;
+				}
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+				<span class="r10 r">caLayer</span>.<span class="i property">AnchorPoint</span> = <b>new</b> <span class="t constructor">PointF</span>(<span class="r16 r">anchorX</span>, <span class="r17 r">anchorY</span>);
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">				caLayer.AnchorPoint = new PointF(anchorX - 0.5f, anchorY - 0.5f);
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+				<span class="r10 r">caLayer</span>.<span class="i property">Opacity</span> = <span class="r28 r">opacity</span>;
+				<b>const double</b> <span id="r38 rd" class="r38 r">epsilon</span> = 0.001;
+ 
+				<span class="c">// position is relative to anchor point</span>
+				<b>if</b> (<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#36d8f3b3bd14bad6" class="i method">Abs</a>(<span class="r16 r">anchorX</span> - .5) &gt; <span class="r38 r">epsilon</span>)
+					<span class="r35 r">transform</span> = <span class="r35 r">transform</span>.<span class="i method">Translate</span>((<span class="r16 r">anchorX</span> - .5f) * <span class="r24 r">width</span>, 0, 0);
+				<b>if</b> (<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#36d8f3b3bd14bad6" class="i method">Abs</a>(<span class="r17 r">anchorY</span> - .5) &gt; <span class="r38 r">epsilon</span>)
+					<span class="r35 r">transform</span> = <span class="r35 r">transform</span>.<span class="i method">Translate</span>(0, (<span class="r17 r">anchorY</span> - .5f) * <span class="r25 r">height</span>, 0);
+ 
+				<b>if</b> (<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#de1d97dd292267d8" class="i method">Abs</a>(<span class="r18 r">translationX</span>) &gt; <span class="r38 r">epsilon</span> || <a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#de1d97dd292267d8" class="i method">Abs</a>(<span class="r19 r">translationY</span>) &gt; <span class="r38 r">epsilon</span>)
+					<span class="r35 r">transform</span> = <span class="r35 r">transform</span>.<span class="i method">Translate</span>(<span class="r18 r">translationX</span>, <span class="r19 r">translationY</span>, 0);
+ 
+				<b>if</b> (<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#de1d97dd292267d8" class="i method">Abs</a>(<span class="r23 r">scale</span> - 1) &gt; <span class="r38 r">epsilon</span>)
+					<span class="r35 r">transform</span> = <span class="r35 r">transform</span>.<span class="i method">Scale</span>(<span class="r23 r">scale</span>);
+ 
+				<span class="c">// not just an optimization, iOS will not &quot;pixel align&quot; a view which has m34 set</span>
+				<b>if</b> (<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#de1d97dd292267d8" class="i method">Abs</a>(<span class="r21 r">rotationY</span> % 180) &gt; <span class="r38 r">epsilon</span> || <a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#de1d97dd292267d8" class="i method">Abs</a>(<span class="r20 r">rotationX</span> % 180) &gt; <span class="r38 r">epsilon</span>)
+					<span class="r35 r">transform</span>.<span class="i field">m34</span> = 1.0f / -400f;
+ 
+				<b>if</b> (<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#de1d97dd292267d8" class="i method">Abs</a>(<span class="r20 r">rotationX</span> % 360) &gt; <span class="r38 r">epsilon</span>)
+					<span class="r35 r">transform</span> = <span class="r35 r">transform</span>.<span class="i method">Rotate</span>(<span class="r20 r">rotationX</span> * (<b>float</b>)<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#fa5fd1f4e5f6f911" class="i field">PI</a> / 180.0f, 1.0f, 0.0f, 0.0f);
+				<b>if</b> (<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#de1d97dd292267d8" class="i method">Abs</a>(<span class="r21 r">rotationY</span> % 360) &gt; <span class="r38 r">epsilon</span>)
+					<span class="r35 r">transform</span> = <span class="r35 r">transform</span>.<span class="i method">Rotate</span>(<span class="r21 r">rotationY</span> * (<b>float</b>)<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#fa5fd1f4e5f6f911" class="i field">PI</a> / 180.0f, 0.0f, 1.0f, 0.0f);
+ 
+				<span class="r35 r">transform</span> = <span class="r35 r">transform</span>.<span class="i method">Rotate</span>(<span class="r22 r">rotation</span> * (<b>float</b>)<a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#fa5fd1f4e5f6f911" class="i field">PI</a> / 180.0f, 0.0f, 0.0f, 1.0f);
+				<span class="r10 r">caLayer</span>.<span class="i property">Transform</span> = <span class="r35 r">transform</span>;
+			};
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+			<b>if</b> (<span class="r15 r">thread</span>)
+				<a href="CADisplayLinkTicker.cs.html#07d7ce47d6d80c3b" class="t t">CADisplayLinkTicker</a>.<a href="CADisplayLinkTicker.cs.html#14409ea94fa304a9" class="i property">Default</a>.<a href="CADisplayLinkTicker.cs.html#3597d77c3fe42b74" class="i method">Invoke</a>(<span class="r31 r">update</span>);
+			<b>else</b>
+				<span class="r31 r">update</span>();
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">			update();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+			<a href="#a6ee78524c408bca" class="i field">_lastBounds</a> = <span class="r11 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#0e284b498897247f" class="i property">Bounds</a>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">__MOBILE__</span>
+<span class="e">			_lastParentBounds = viewParent?.Bounds ?? Rectangle.Zero;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+		<b>void</b> <a id="8dc02e92d51dc358" href="R/8dc02e92d51dc358.html" target="n" data-glyph="76,1" class="i method">SetElement</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r39 rd" class="r39 r">oldElement</span>, <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r40 rd" class="r40 r">newElement</span>)
+		{
+			<b>if</b> (<span class="r39 r">oldElement</span> != <b>null</b>)
+			{
+				<span class="r39 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#3bea64ee1cc684c3" class="i field">_propertyChangedHandler</a>;
+				<span class="r39 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#886c69f36cb23c40" class="i">SizeChanged</a> -= <a href="#67445ddf317ab873" class="i field">_sizeChangedEventHandler</a>;
+				<span class="r39 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#7650aa028977a179" class="i">BatchCommitted</a> -= <a href="#e4bc6443f41bf622" class="i field">_batchCommittedHandler</a>;
+			}
+ 
+			<a href="#df5d0faaa8f249e5" class="i field">_element</a> = <span class="r40 r">newElement</span>;
+ 
+			<b>if</b> (<span class="r40 r">newElement</span> != <b>null</b>)
+			{
+				<span class="r40 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#7650aa028977a179" class="i">BatchCommitted</a> += <a href="#e4bc6443f41bf622" class="i field">_batchCommittedHandler</a>;
+				<span class="r40 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#886c69f36cb23c40" class="i">SizeChanged</a> += <a href="#67445ddf317ab873" class="i field">_sizeChangedEventHandler</a>;
+				<span class="r40 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#3bea64ee1cc684c3" class="i field">_propertyChangedHandler</a>;
+ 
+				<a href="#a57df51bdd21b262" class="i method">UpdateNativeControl</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="a57df51bdd21b262" href="R/a57df51bdd21b262.html" target="n" data-glyph="76,1" class="i method">UpdateNativeControl</a>()
+		{
+			<b>if</b> (<a href="#fcbac480bd712e41" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#d8231d6fbda32c2d" class="i field">_layer</a> == <b>null</b>)
+			{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">__MOBILE__</span>
+<span class="e">				Renderer.NativeView.WantsLayer = true;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+				<a href="#d8231d6fbda32c2d" class="i field">_layer</a> = <a href="#cc6cc5136cb8fb1b" class="i property">Renderer</a>.<a href="IVisualElementRenderer.cs.html#ca22b619528a2096" class="i property">NativeView</a>.<span class="i property">Layer</span>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+				<a href="#7209eae279acbfbe" class="i field">_isInteractive</a> = <a href="#cc6cc5136cb8fb1b" class="i property">Renderer</a>.<a href="IVisualElementRenderer.cs.html#ca22b619528a2096" class="i property">NativeView</a>.<span class="i property">UserInteractionEnabled</span>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+			}
+ 
+			<a href="#25213f5431e78a83" class="i method">OnUpdateNativeControl</a>(<a href="#d8231d6fbda32c2d" class="i field">_layer</a>);
+ 
+			<a href="#78c2fe077d851f29" class="i">NativeControlUpdated</a>?.<a href="@0@mscorlib/A.html#aaedcaa3f05a32f9" class="i method">Invoke</a>(<a href="#dbca6fe3df195482" class="k">this</a>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@0@mscorlib/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

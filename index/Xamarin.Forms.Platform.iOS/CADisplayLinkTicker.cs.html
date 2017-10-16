@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html><head><title>CADisplayLinkTicker.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(67);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/CADisplayLinkTicker.cs" target="_top">CADisplayLinkTicker.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Concurrent</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">CoreAnimation</span>;
+<b>using</b> <span class="i n">Foundation</span>;
+<b>using</b> <span class="i n">UIKit</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+{
+	<b>internal class</b> <a id="07d7ce47d6d80c3b" href="R/07d7ce47d6d80c3b.html" target="n" data-glyph="2,0" class="t t">CADisplayLinkTicker</a> : <a href="/Xamarin.Forms.Core/A.html#9ac4e7c1113aeac4" class="t t">Ticker</a>
+	{
+		<b>readonly</b> <a href="@0@System/A.html#3fc8b6e4e28ee36c" class="t t">BlockingCollection</a>&lt;<a href="@0@mscorlib/A.html#9147ae6f76643aae" class="t t">Action</a>&gt; <a id="0118c3bc7bd66cca" href="R/0118c3bc7bd66cca.html" target="n" data-glyph="46,1" class="i field">_queue</a> = <b>new</b> <a href="@0@System/A.html#ba810d591165b7b6" class="t constructor">BlockingCollection</a>&lt;<a href="@0@mscorlib/A.html#9147ae6f76643aae" class="t t">Action</a>&gt;();
+		<span class="t t">CADisplayLink</span> <a id="cb5e3c906cd9f29a" href="R/cb5e3c906cd9f29a.html" target="n" data-glyph="46,1" class="i field">_link</a>;
+ 
+		<b>public</b> <a id="be44b7915afbf5f4" href="R/be44b7915afbf5f4.html" target="n" data-glyph="72,1" class="i constructor">CADisplayLinkTicker</a>()
+		{
+			<a href="@0@mscorlib/A.html#3980e012bae82e96" class="k">var</a> <span id="r0 rd" class="r0 r">thread</span> = <b>new</b> <a href="@0@mscorlib/A.html#76f340c84df6da8d" class="t constructor">Thread</a>(<a href="#13f1a4ec439b519b" class="i method">StartThread</a>);
+			<span class="r0 r">thread</span>.<a href="@0@mscorlib/A.html#cd2144b8dd6f4373" class="i method">Start</a>();
+		}
+ 
+		<b>internal</b> <b>new</b> <b>static</b> <a href="#07d7ce47d6d80c3b" class="t t">CADisplayLinkTicker</a> <a id="14409ea94fa304a9" href="R/14409ea94fa304a9.html" target="n" data-glyph="104,1" class="i property">Default</a>
+		{
+			<b>get</b> { <b>return</b> <a href="/Xamarin.Forms.Core/A.html#9ac4e7c1113aeac4" class="t t">Ticker</a>.<a href="/Xamarin.Forms.Core/A.html#daa22f70b75e15e1" class="i property">Default</a> <b>as</b> <a href="#07d7ce47d6d80c3b" class="t t">CADisplayLinkTicker</a>; }
+		}
+ 
+		<b>public void</b> <a id="3597d77c3fe42b74" href="R/3597d77c3fe42b74.html" target="n" data-glyph="72,1" class="i method">Invoke</a>(<a href="@0@mscorlib/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r1 rd" class="r1 r">action</span>)
+		{
+			<a href="#0118c3bc7bd66cca" class="i field">_queue</a>.<a href="@0@System/A.html#240b18446b25bb58" class="i method">Add</a>(<span class="r1 r">action</span>);
+		}
+ 
+		<b>protected override void</b> <a id="b4c552a840259a22" href="R/b4c552a840259a22.html" target="n" data-glyph="75,1" class="i method">DisableTimer</a>()
+		{
+			<b>if</b> (<a href="#cb5e3c906cd9f29a" class="i field">_link</a> != <b>null</b>)
+			{
+				<a href="#cb5e3c906cd9f29a" class="i field">_link</a>.<span class="i method">RemoveFromRunLoop</span>(<span class="t t">NSRunLoop</span>.<span class="i property">Current</span>, <span class="t t">NSRunLoop</span>.<span class="i property">NSRunLoopCommonModes</span>);
+				<a href="#cb5e3c906cd9f29a" class="i field">_link</a>.<span class="i method">Dispose</span>();
+			}
+			<a href="#cb5e3c906cd9f29a" class="i field">_link</a> = <b>null</b>;
+		}
+ 
+		<b>protected override void</b> <a id="decd39a31b523581" href="R/decd39a31b523581.html" target="n" data-glyph="75,1" class="i method">EnableTimer</a>()
+		{
+			<a href="#cb5e3c906cd9f29a" class="i field">_link</a> = <span class="t t">CADisplayLink</span>.<span class="i method">Create</span>(() =&gt; <a href="/Xamarin.Forms.Core/A.html#fd7b6a4307c0b904" class="i method">SendSignals</a>());
+			<a href="#cb5e3c906cd9f29a" class="i field">_link</a>.<span class="i method">AddToRunLoop</span>(<span class="t t">NSRunLoop</span>.<span class="i property">Current</span>, <span class="t t">NSRunLoop</span>.<span class="i property">NSRunLoopCommonModes</span>);
+		}
+ 
+		<b>void</b> <a id="13f1a4ec439b519b" href="R/13f1a4ec439b519b.html" target="n" data-glyph="76,1" class="i method">StartThread</a>()
+		{
+			<b>while</b> (<b>true</b>)
+			{
+				<a href="@0@mscorlib/A.html#9147ae6f76643aae" class="k">var</a> <span id="r2 rd" class="r2 r">action</span> = <a href="#0118c3bc7bd66cca" class="i field">_queue</a>.<a href="@0@System/A.html#6b00be0930a56743" class="i method">Take</a>();
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r3 rd" class="r3 r">previous</span> = <span class="t t">UIApplication</span>.<span class="i field">CheckForIllegalCrossThreadCalls</span>;
+				<span class="t t">UIApplication</span>.<span class="i field">CheckForIllegalCrossThreadCalls</span> = <b>false</b>;
+ 
+				<span class="t t">CATransaction</span>.<span class="i method">Begin</span>();
+				<span class="r2 r">action</span>.<a href="@0@mscorlib/A.html#6fbb51427c383a3a" class="i method">Invoke</a>();
+ 
+				<b>while</b> (<a href="#0118c3bc7bd66cca" class="i field">_queue</a>.<a href="@0@System/A.html#f62d1c69fe735f2d" class="i method">TryTake</a>(<b>out</b> <span class="r2 r">action</span>))
+					<span class="r2 r">action</span>.<a href="@0@mscorlib/A.html#6fbb51427c383a3a" class="i method">Invoke</a>();
+				<span class="t t">CATransaction</span>.<span class="i method">Commit</span>();
+ 
+				<span class="t t">UIApplication</span>.<span class="i field">CheckForIllegalCrossThreadCalls</span> = <span class="r3 r">previous</span>;
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

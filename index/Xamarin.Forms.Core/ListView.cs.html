@@ -1,0 +1,610 @@
+﻿<!DOCTYPE html>
+<html><head><title>ListView.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(601);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/ListView.cs" target="_top">ListView.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Windows</span>.<span class="i n">Input</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	[<a href="RenderWithAttribute.cs.html#8ff553ce7d183a1d" class="t constructor">RenderWith</a>(<b>typeof</b>(<a href="/Xamarin.Forms.Platform/A.html#2f7d61c092f7f16d" class="t t">_ListViewRenderer</a>))]
+	<b>public class</b> <a id="bde8d740ed7039c7" href="R/bde8d740ed7039c7.html" target="n" data-glyph="0,0" class="t t">ListView</a> : <a href="ItemsView.cs.html#e6e9068bbee42f54" class="t t">ItemsView</a>&lt;<a href="Cells/Cell.cs.html#7706486019503b22" class="t t">Cell</a>&gt;, <a href="IListViewController.cs.html#1720dc26cd820061" class="t t">IListViewController</a>, <a href="IElementConfiguration.cs.html#b6508bb742556e66" class="t t">IElementConfiguration</a>&lt;<a href="#bde8d740ed7039c7" class="t t">ListView</a>&gt;
+ 
+	{
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="b54e2569acd8ac17" href="R/b54e2569acd8ac17.html" target="n" data-glyph="42,1" class="i field">IsPullToRefreshEnabledProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;IsPullToRefreshEnabled&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <b>false</b>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="537695c2dff1da16" href="R/537695c2dff1da16.html" target="n" data-glyph="42,1" class="i field">IsRefreshingProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;IsRefreshing&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <b>false</b>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5b5de329b5adbce9" class="i field">TwoWay</a>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="0a9c3ab27004abb6" href="R/0a9c3ab27004abb6.html" target="n" data-glyph="42,1" class="i field">RefreshCommandProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;RefreshCommand&quot;</span>, <b>typeof</b>(<span class="t t">ICommand</span>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <b>null</b>, <span class="r0 r">propertyChanged</span>: <a href="#33d905857ea08a64" class="i method">OnRefreshCommandChanged</a>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="926e93cbfca7cdfc" href="R/926e93cbfca7cdfc.html" target="n" data-glyph="42,1" class="i field">HeaderProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;Header&quot;</span>, <b>typeof</b>(<b>object</b>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <b>null</b>, <span class="r0 r">propertyChanged</span>: <a href="#8c86a76b41205e75" class="i method">OnHeaderChanged</a>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="0a0bb09a8f8746e9" href="R/0a0bb09a8f8746e9.html" target="n" data-glyph="42,1" class="i field">HeaderTemplateProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;HeaderTemplate&quot;</span>, <b>typeof</b>(<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <b>null</b>, <span class="r0 r">propertyChanged</span>: <a href="#92a38487824a325a" class="i method">OnHeaderTemplateChanged</a>,
+			<span class="r1 r">validateValue</span>: <a href="#ddfc6849c5da1c26" class="i method">ValidateHeaderFooterTemplate</a>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="b11c3ee784de2a2e" href="R/b11c3ee784de2a2e.html" target="n" data-glyph="42,1" class="i field">FooterProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;Footer&quot;</span>, <b>typeof</b>(<b>object</b>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <b>null</b>, <span class="r0 r">propertyChanged</span>: <a href="#89a784b58a0e7220" class="i method">OnFooterChanged</a>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="5be6e92974d3adc1" href="R/5be6e92974d3adc1.html" target="n" data-glyph="42,1" class="i field">FooterTemplateProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;FooterTemplate&quot;</span>, <b>typeof</b>(<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <b>null</b>, <span class="r0 r">propertyChanged</span>: <a href="#4f8131d2a42a0001" class="i method">OnFooterTemplateChanged</a>,
+			<span class="r1 r">validateValue</span>: <a href="#ddfc6849c5da1c26" class="i method">ValidateHeaderFooterTemplate</a>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="e2fbab739592c40d" href="R/e2fbab739592c40d.html" target="n" data-glyph="42,1" class="i field">SelectedItemProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;SelectedItem&quot;</span>, <b>typeof</b>(<b>object</b>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <b>null</b>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5827e0a716ae341d" class="i field">OneWayToSource</a>,
+			<span class="r0 r">propertyChanged</span>: <a href="#dc829a3a2fc1f109" class="i method">OnSelectedItemChanged</a>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="ba5f9bb59f0aeffc" href="R/ba5f9bb59f0aeffc.html" target="n" data-glyph="42,1" class="i field">HasUnevenRowsProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;HasUnevenRows&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <b>false</b>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="96072a718638095e" href="R/96072a718638095e.html" target="n" data-glyph="42,1" class="i field">RowHeightProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;RowHeight&quot;</span>, <b>typeof</b>(<b>int</b>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), -1);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="35a6fba503139138" href="R/35a6fba503139138.html" target="n" data-glyph="42,1" class="i field">GroupHeaderTemplateProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;GroupHeaderTemplate&quot;</span>, <b>typeof</b>(<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <b>null</b>,
+			<span class="r0 r">propertyChanged</span>: <a href="#27629c103c0a40bb" class="i method">OnGroupHeaderTemplateChanged</a>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="036cd02de28b0419" href="R/036cd02de28b0419.html" target="n" data-glyph="42,1" class="i field">IsGroupingEnabledProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;IsGroupingEnabled&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <b>false</b>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="5e95022dbc52611a" href="R/5e95022dbc52611a.html" target="n" data-glyph="42,1" class="i field">SeparatorVisibilityProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;SeparatorVisibility&quot;</span>, <b>typeof</b>(<a href="SeparatorVisibility.cs.html#a9cb5fa58c2bf8a3" class="t t">SeparatorVisibility</a>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <a href="SeparatorVisibility.cs.html#a9cb5fa58c2bf8a3" class="t t">SeparatorVisibility</a>.<a href="SeparatorVisibility.cs.html#dfd27206bef098f5" class="i field">Default</a>);
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="036a38ee3d0699e3" href="R/036a38ee3d0699e3.html" target="n" data-glyph="42,1" class="i field">SeparatorColorProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;SeparatorColor&quot;</span>, <b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>), <b>typeof</b>(<a href="#bde8d740ed7039c7" class="t t">ListView</a>), <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#78f150ac7d83a2c8" class="i property">Default</a>);
+ 
+		<b>readonly</b> <a href="@1@System.Runtime/A.html#8b99c1f377873554" class="t t">Lazy</a>&lt;<a href="PlatformConfigurationRegistry.cs.html#df79e68c227d9ebc" class="t t">PlatformConfigurationRegistry</a>&lt;<a href="#bde8d740ed7039c7" class="t t">ListView</a>&gt;&gt; <a id="9148c564d14a3604" href="R/9148c564d14a3604.html" target="n" data-glyph="46,1" class="i field">_platformConfigurationRegistry</a>;
+ 
+		<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <a id="04516e81e77b012f" href="R/04516e81e77b012f.html" target="n" data-glyph="46,1" class="i field">_groupDisplayBinding</a>;
+ 
+		<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <a id="dac508ae23dd84d2" href="R/dac508ae23dd84d2.html" target="n" data-glyph="46,1" class="i field">_groupShortNameBinding</a>;
+		<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a> <a id="2eb725f178f35962" href="R/2eb725f178f35962.html" target="n" data-glyph="46,1" class="i field">_headerElement</a>;
+		<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a> <a id="1a9b5146dafb4e33" href="R/1a9b5146dafb4e33.html" target="n" data-glyph="46,1" class="i field">_footerElement</a>;
+ 
+		<a href="ScrollToRequestedEventArgs.cs.html#f03c2a98424144b5" class="t t">ScrollToRequestedEventArgs</a> <a id="c93770fe56c06408" href="R/c93770fe56c06408.html" target="n" data-glyph="46,1" class="i field">_pendingScroll</a>;
+		<b>int</b> <a id="fea168cd69c350ef" href="R/fea168cd69c350ef.html" target="n" data-glyph="46,1" class="i field">_previousGroupSelected</a> = -1;
+		<b>int</b> <a id="1060de4bfa10cad0" href="R/1060de4bfa10cad0.html" target="n" data-glyph="46,1" class="i field">_previousRowSelected</a> = -1;
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c">     Controls whether anything happens in BeginRefresh(), is set based on RefreshCommand.CanExecute</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>bool</b> <a id="475a2375771f64f6" href="R/475a2375771f64f6.html" target="n" data-glyph="46,1" class="i field">_refreshAllowed</a> = <b>true</b>;
+ 
+		<b>public</b> <a id="6f349a8ce3b4362f" href="R/6f349a8ce3b4362f.html" target="n" data-glyph="72,1" class="i constructor">ListView</a>()
+		{
+			<a href="View.cs.html#8e761ec8c2755065" class="i property">VerticalOptions</a> = <a href="View.cs.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="LayoutOptions.cs.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="LayoutOptions.cs.html#c9facb92cdbf2f53" class="i field">FillAndExpand</a>;
+ 
+			<a href="ItemsView.cs.html#93c3512107256101" class="i property">TemplatedItems</a>.<a href="TemplatedItemsList.cs.html#7ba75e6c637df5f3" class="i property">IsGroupingEnabledProperty</a> = <a href="#036cd02de28b0419" class="i field">IsGroupingEnabledProperty</a>;
+			<a href="ItemsView.cs.html#93c3512107256101" class="i property">TemplatedItems</a>.<a href="TemplatedItemsList.cs.html#80fd4872906f6548" class="i property">GroupHeaderTemplateProperty</a> = <a href="#35a6fba503139138" class="i field">GroupHeaderTemplateProperty</a>;
+			<a href="#9148c564d14a3604" class="i field">_platformConfigurationRegistry</a> = <b>new</b> <a href="@1@System.Runtime/A.html#c0f7b98bacad370a" class="t constructor">Lazy</a>&lt;<a href="PlatformConfigurationRegistry.cs.html#df79e68c227d9ebc" class="t t">PlatformConfigurationRegistry</a>&lt;<a href="#bde8d740ed7039c7" class="t t">ListView</a>&gt;&gt;(() =&gt; <b>new</b> <a href="PlatformConfigurationRegistry.cs.html#095e8c13a6ebb3e6" class="t constructor">PlatformConfigurationRegistry</a>&lt;<a href="#bde8d740ed7039c7" class="t t">ListView</a>&gt;(<a href="#bde8d740ed7039c7" class="k">this</a>));
+		}
+ 
+		<b>public</b> <a id="9f8dc55ad45fc097" href="R/9f8dc55ad45fc097.html" target="n" data-glyph="72,1" class="i constructor">ListView</a>([<a href="ParameterAttribute.cs.html#2ec38e89a3591d43" class="t constructor">Parameter</a>(<span class="s">&quot;CachingStrategy&quot;</span>)] <a href="ListViewCachingStrategy.cs.html#7325a6e87ebf132d" class="t t">ListViewCachingStrategy</a> <span id="r2 rd" class="r2 r">cachingStrategy</span>) : <a href="#6f349a8ce3b4362f" class="k">this</a>()
+		{
+			<span class="c">// null =&gt; UnitTest &quot;platform&quot;</span>
+			<b>if</b> (<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#fcdc6f21b1b1d3b3" class="i property">RuntimePlatform</a> == <b>null</b> || 
+				<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#fcdc6f21b1b1d3b3" class="i property">RuntimePlatform</a> == <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#1e21b3d8fe2f3a18" class="i field">Android</a> || 
+				<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#fcdc6f21b1b1d3b3" class="i property">RuntimePlatform</a> == <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#0cbde22b5a22a79f" class="i field">iOS</a> || 
+				<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#fcdc6f21b1b1d3b3" class="i property">RuntimePlatform</a> == <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#1a4673cf9e8caa21" class="i field">macOS</a>)
+				<a href="#853e43c3430ca1d5" class="i property">CachingStrategy</a> = <span class="r2 r">cachingStrategy</span>;
+		}
+ 
+		<b>public object</b> <a id="e20781b3821d219b" href="R/e20781b3821d219b.html" target="n" data-glyph="102,1" class="i property">Footer</a>
+		{
+			<b>get</b> { <b>return</b> <a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#b11c3ee784de2a2e" class="i field">FooterProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#b11c3ee784de2a2e" class="i field">FooterProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="662099ae8239b07c" href="R/662099ae8239b07c.html" target="n" data-glyph="102,1" class="i property">FooterTemplate</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#5be6e92974d3adc1" class="i field">FooterTemplateProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#5be6e92974d3adc1" class="i field">FooterTemplateProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>protected override void</b> <a id="1d62125c16ca9e86" href="R/1d62125c16ca9e86.html" target="n" data-glyph="75,1" class="i method">OnBindingContextChanged</a>()
+		{
+			<a href="ItemsView.cs.html#e6e9068bbee42f54" class="k">base</a>.<a href="View.cs.html#1bf19b91892c31ff" class="i method">OnBindingContextChanged</a>();
+ 
+			<b>object</b> <span id="r3 rd" class="r3 r">bc</span> = <a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>;
+ 
+			<a href="Element.cs.html#76098df8350c0484" class="k">var</a> <span id="r4 rd" class="r4 r">header</span> = <a href="#5aa3c5d732ee1a8c" class="i property">Header</a> <b>as</b> <a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>;
+			<b>if</b> (<span class="r4 r">header</span> != <b>null</b>)
+			{
+				<a href="Element.cs.html#62b8d600ef781b0f" class="i method">SetChildInheritedBindingContext</a>(<span class="r4 r">header</span>, <span class="r3 r">bc</span>);
+			}
+ 
+			<a href="Element.cs.html#76098df8350c0484" class="k">var</a> <span id="r5 rd" class="r5 r">footer</span> = <a href="#e20781b3821d219b" class="i property">Footer</a> <b>as</b> <a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>;
+			<b>if</b> (<span class="r5 r">footer</span> != <b>null</b>)
+			{
+				<a href="Element.cs.html#62b8d600ef781b0f" class="i method">SetChildInheritedBindingContext</a>(<span class="r5 r">footer</span>, <span class="r3 r">bc</span>);
+			}
+		}
+ 
+		<b>public</b> <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <a id="b8b6495a2a9ddd03" href="R/b8b6495a2a9ddd03.html" target="n" data-glyph="102,1" class="i property">GroupDisplayBinding</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#04516e81e77b012f" class="i field">_groupDisplayBinding</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#04516e81e77b012f" class="i field">_groupDisplayBinding</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<a href="BindableObject.cs.html#e5d2d1b731820b1b" class="i method">OnPropertyChanging</a>();
+				<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r6 rd" class="r6 r">oldValue</span> = <b>value</b>;
+				<a href="#04516e81e77b012f" class="i field">_groupDisplayBinding</a> = <b>value</b>;
+				<a href="#bc00fe7865567ded" class="i method">OnGroupDisplayBindingChanged</a>(<a href="#bde8d740ed7039c7" class="k">this</a>, <span class="r6 r">oldValue</span>, <a href="#04516e81e77b012f" class="i field">_groupDisplayBinding</a>);
+				<a href="ItemsView.cs.html#93c3512107256101" class="i property">TemplatedItems</a>.<a href="TemplatedItemsList.cs.html#779692dd57ead3df" class="i property">GroupDisplayBinding</a> = <b>value</b>;
+				<a href="Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>();
+			}
+		}
+ 
+		<b>public</b> <a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="37d541414cc573e1" href="R/37d541414cc573e1.html" target="n" data-glyph="102,1" class="i property">GroupHeaderTemplate</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#35a6fba503139138" class="i field">GroupHeaderTemplateProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#35a6fba503139138" class="i field">GroupHeaderTemplateProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <a id="ea6f5db1f6ae9740" href="R/ea6f5db1f6ae9740.html" target="n" data-glyph="102,1" class="i property">GroupShortNameBinding</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#dac508ae23dd84d2" class="i field">_groupShortNameBinding</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#dac508ae23dd84d2" class="i field">_groupShortNameBinding</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<a href="BindableObject.cs.html#e5d2d1b731820b1b" class="i method">OnPropertyChanging</a>();
+				<a href="#dac508ae23dd84d2" class="i field">_groupShortNameBinding</a> = <b>value</b>;
+				<a href="ItemsView.cs.html#93c3512107256101" class="i property">TemplatedItems</a>.<a href="TemplatedItemsList.cs.html#11ab8ee6f14d1749" class="i property">GroupShortNameBinding</a> = <b>value</b>;
+				<a href="Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>();
+			}
+		}
+ 
+		<b>public bool</b> <a id="7d4655a3bc00be9b" href="R/7d4655a3bc00be9b.html" target="n" data-glyph="102,1" class="i property">HasUnevenRows</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#ba5f9bb59f0aeffc" class="i field">HasUnevenRowsProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#ba5f9bb59f0aeffc" class="i field">HasUnevenRowsProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public object</b> <a id="5aa3c5d732ee1a8c" href="R/5aa3c5d732ee1a8c.html" target="n" data-glyph="102,1" class="i property">Header</a>
+		{
+			<b>get</b> { <b>return</b> <a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#926e93cbfca7cdfc" class="i field">HeaderProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#926e93cbfca7cdfc" class="i field">HeaderProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="6be31888849d4cb5" href="R/6be31888849d4cb5.html" target="n" data-glyph="102,1" class="i property">HeaderTemplate</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#0a0bb09a8f8746e9" class="i field">HeaderTemplateProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#0a0bb09a8f8746e9" class="i field">HeaderTemplateProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public bool</b> <a id="0b780b61bce76534" href="R/0b780b61bce76534.html" target="n" data-glyph="102,1" class="i property">IsGroupingEnabled</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#036cd02de28b0419" class="i field">IsGroupingEnabledProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#036cd02de28b0419" class="i field">IsGroupingEnabledProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public bool</b> <a id="2b34e6ba669638df" href="R/2b34e6ba669638df.html" target="n" data-glyph="102,1" class="i property">IsPullToRefreshEnabled</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#b54e2569acd8ac17" class="i field">IsPullToRefreshEnabledProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#b54e2569acd8ac17" class="i field">IsPullToRefreshEnabledProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public bool</b> <a id="d61e6639459dfdf7" href="R/d61e6639459dfdf7.html" target="n" data-glyph="102,1" class="i property">IsRefreshing</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#537695c2dff1da16" class="i field">IsRefreshingProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#537695c2dff1da16" class="i field">IsRefreshingProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">ICommand</span> <a id="e07ccb02d387037b" href="R/e07ccb02d387037b.html" target="n" data-glyph="102,1" class="i property">RefreshCommand</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">ICommand</span>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#0a9c3ab27004abb6" class="i field">RefreshCommandProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#0a9c3ab27004abb6" class="i field">RefreshCommandProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public int</b> <a id="873f0e107de1f075" href="R/873f0e107de1f075.html" target="n" data-glyph="102,1" class="i property">RowHeight</a>
+		{
+			<b>get</b> { <b>return</b> (<b>int</b>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#96072a718638095e" class="i field">RowHeightProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#96072a718638095e" class="i field">RowHeightProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public object</b> <a id="dfce6372456ec083" href="R/dfce6372456ec083.html" target="n" data-glyph="102,1" class="i property">SelectedItem</a>
+		{
+			<b>get</b> { <b>return</b> <a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#e2fbab739592c40d" class="i field">SelectedItemProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#e2fbab739592c40d" class="i field">SelectedItemProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a> <a id="180e6578be529d41" href="R/180e6578be529d41.html" target="n" data-glyph="102,1" class="i property">SeparatorColor</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#036a38ee3d0699e3" class="i field">SeparatorColorProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#036a38ee3d0699e3" class="i field">SeparatorColorProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <a href="SeparatorVisibility.cs.html#a9cb5fa58c2bf8a3" class="t t">SeparatorVisibility</a> <a id="13ecaa648f4c9b20" href="R/13ecaa648f4c9b20.html" target="n" data-glyph="102,1" class="i property">SeparatorVisibility</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="SeparatorVisibility.cs.html#a9cb5fa58c2bf8a3" class="t t">SeparatorVisibility</a>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#5e95022dbc52611a" class="i field">SeparatorVisibilityProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#5e95022dbc52611a" class="i field">SeparatorVisibilityProperty</a>, <b>value</b>); }
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public</b> <a href="ListViewCachingStrategy.cs.html#7325a6e87ebf132d" class="t t">ListViewCachingStrategy</a> <a id="853e43c3430ca1d5" href="R/853e43c3430ca1d5.html" target="n" data-glyph="102,1" class="i property">CachingStrategy</a> { <b>get</b>; <b>private set</b>; }
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public bool</b> <a id="57334962c699c54b" href="R/57334962c699c54b.html" target="n" data-glyph="102,1" class="i property">RefreshAllowed</a>
+		{
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#475a2375771f64f6" class="i field">_refreshAllowed</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<a href="#475a2375771f64f6" class="i field">_refreshAllowed</a> = <b>value</b>;
+				<a href="Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>();
+			}
+			<b>get</b> { <b>return</b> <a href="#475a2375771f64f6" class="i field">_refreshAllowed</a>; }
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public</b> <a href="Element.cs.html#76098df8350c0484" class="t t">Element</a> <a id="e489121e054c62f7" href="R/e489121e054c62f7.html" target="n" data-glyph="102,1" class="i property">FooterElement</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#1a9b5146dafb4e33" class="i field">_footerElement</a>; }
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public</b> <a href="Element.cs.html#76098df8350c0484" class="t t">Element</a> <a id="7ca6df286ce3f9a6" href="R/7ca6df286ce3f9a6.html" target="n" data-glyph="102,1" class="i property">HeaderElement</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#2eb725f178f35962" class="i field">_headerElement</a>; }
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public void</b> <a id="e9088f68f576d800" href="R/e9088f68f576d800.html" target="n" data-glyph="72,1" class="i method">SendCellAppearing</a>(<a href="Cells/Cell.cs.html#7706486019503b22" class="t t">Cell</a> <span id="r7 rd" class="r7 r">cell</span>)
+		{
+			<a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ItemVisibilityEventArgs.cs.html#c7964e9cc71a42e2" class="t t">ItemVisibilityEventArgs</a>&gt; <span id="r8 rd" class="r8 r">handler</span> = <a href="#4081133d4f6324ce" class="i">ItemAppearing</a>;
+			<b>if</b> (<span class="r8 r">handler</span> != <b>null</b>)
+				<span class="r8 r">handler</span>(<a href="#bde8d740ed7039c7" class="k">this</a>, <b>new</b> <a href="ItemVisibilityEventArgs.cs.html#0be118db034787cf" class="t constructor">ItemVisibilityEventArgs</a>(<span class="r7 r">cell</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>));
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public void</b> <a id="eb73fc0e944267d2" href="R/eb73fc0e944267d2.html" target="n" data-glyph="72,1" class="i method">SendCellDisappearing</a>(<a href="Cells/Cell.cs.html#7706486019503b22" class="t t">Cell</a> <span id="r9 rd" class="r9 r">cell</span>)
+		{
+			<a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ItemVisibilityEventArgs.cs.html#c7964e9cc71a42e2" class="t t">ItemVisibilityEventArgs</a>&gt; <span id="r10 rd" class="r10 r">handler</span> = <a href="#ca357212116a2e3a" class="i">ItemDisappearing</a>;
+			<b>if</b> (<span class="r10 r">handler</span> != <b>null</b>)
+				<span class="r10 r">handler</span>(<a href="#bde8d740ed7039c7" class="k">this</a>, <b>new</b> <a href="ItemVisibilityEventArgs.cs.html#0be118db034787cf" class="t constructor">ItemVisibilityEventArgs</a>(<span class="r9 r">cell</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>));
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public void</b> <a id="e556e5ae10e777cf" href="R/e556e5ae10e777cf.html" target="n" data-glyph="72,1" class="i method">SendRefreshing</a>()
+		{
+			<a href="#7f988277026cb572" class="i method">BeginRefresh</a>();
+		}
+ 
+		<b>public void</b> <a id="7f988277026cb572" href="R/7f988277026cb572.html" target="n" data-glyph="72,1" class="i method">BeginRefresh</a>()
+		{
+			<b>if</b> (!<a href="#57334962c699c54b" class="i property">RefreshAllowed</a>)
+				<b>return</b>;
+ 
+			<a href="BindableObject.cs.html#083b32ea2fad3e6d" class="i method">SetValueCore</a>(<a href="#537695c2dff1da16" class="i field">IsRefreshingProperty</a>, <b>true</b>);
+			<a href="#1c01639acf33d166" class="i method">OnRefreshing</a>(<a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+ 
+			<span class="t t">ICommand</span> <span id="r11 rd" class="r11 r">command</span> = <a href="#e07ccb02d387037b" class="i property">RefreshCommand</a>;
+			<b>if</b> (<span class="r11 r">command</span> != <b>null</b>)
+				<span class="r11 r">command</span>.<span class="i method">Execute</span>(<b>null</b>);
+		}
+ 
+		<b>public void</b> <a id="ccf41651359aae27" href="R/ccf41651359aae27.html" target="n" data-glyph="72,1" class="i method">EndRefresh</a>()
+		{
+			<a href="BindableObject.cs.html#083b32ea2fad3e6d" class="i method">SetValueCore</a>(<a href="#537695c2dff1da16" class="i field">IsRefreshingProperty</a>, <b>false</b>);
+		}
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ItemVisibilityEventArgs.cs.html#c7964e9cc71a42e2" class="t t">ItemVisibilityEventArgs</a>&gt; <a id="4081133d4f6324ce" href="R/4081133d4f6324ce.html" target="n" data-glyph="30,1" class="i">ItemAppearing</a>;
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ItemVisibilityEventArgs.cs.html#c7964e9cc71a42e2" class="t t">ItemVisibilityEventArgs</a>&gt; <a id="ca357212116a2e3a" href="R/ca357212116a2e3a.html" target="n" data-glyph="30,1" class="i">ItemDisappearing</a>;
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="SelectedItemChangedEventArgs.cs.html#8b9f8c714f679914" class="t t">SelectedItemChangedEventArgs</a>&gt; <a id="b7f2960fb90d27ad" href="R/b7f2960fb90d27ad.html" target="n" data-glyph="30,1" class="i">ItemSelected</a>;
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ItemTappedEventArgs.cs.html#f0c61b52b61bccb5" class="t t">ItemTappedEventArgs</a>&gt; <a id="c09f6c15d5698cc9" href="R/c09f6c15d5698cc9.html" target="n" data-glyph="30,1" class="i">ItemTapped</a>;
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="1d2abec14b220e70" href="R/1d2abec14b220e70.html" target="n" data-glyph="30,1" class="i">Refreshing</a>;
+ 
+		<b>public void</b> <a id="3f14ac801b065ad6" href="R/3f14ac801b065ad6.html" target="n" data-glyph="72,1" class="i method">ScrollTo</a>(<b>object</b> <span id="r12 rd" class="r12 r">item</span>, <a href="ScrollToPosition.cs.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a> <span id="r13 rd" class="r13 r">position</span>, <b>bool</b> <span id="r14 rd" class="r14 r">animated</span>)
+		{
+			<b>if</b> (!<a href="@1@System.Runtime/A.html#36729210e317a805" class="t t">Enum</a>.<a href="@1@System.Runtime/A.html#32e813377ac50d28" class="i method">IsDefined</a>(<b>typeof</b>(<a href="ScrollToPosition.cs.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a>), <span class="r13 r">position</span>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;position is not a valid ScrollToPosition&quot;</span>, <span class="s">&quot;position&quot;</span>);
+ 
+			<a href="ScrollToRequestedEventArgs.cs.html#f03c2a98424144b5" class="k">var</a> <span id="r15 rd" class="r15 r">args</span> = <b>new</b> <a href="ScrollToRequestedEventArgs.cs.html#594928cae0d0e917" class="t constructor">ScrollToRequestedEventArgs</a>(<span class="r12 r">item</span>, <span class="r13 r">position</span>, <span class="r14 r">animated</span>);
+			<b>if</b> (<a href="VisualElement.cs.html#08f2f1b9bb6df5c5" class="i property">IsPlatformEnabled</a>)
+				<a href="#47a969f614cbb679" class="i method">OnScrollToRequested</a>(<span class="r15 r">args</span>);
+			<b>else</b>
+				<a href="#c93770fe56c06408" class="i field">_pendingScroll</a> = <span class="r15 r">args</span>;
+		}
+ 
+		<b>public void</b> <a id="80598bc7499b92f4" href="R/80598bc7499b92f4.html" target="n" data-glyph="72,1" class="i method">ScrollTo</a>(<b>object</b> <span id="r16 rd" class="r16 r">item</span>, <b>object</b> <span id="r17 rd" class="r17 r">group</span>, <a href="ScrollToPosition.cs.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a> <span id="r18 rd" class="r18 r">position</span>, <b>bool</b> <span id="r19 rd" class="r19 r">animated</span>)
+		{
+			<b>if</b> (!<a href="#0b780b61bce76534" class="i property">IsGroupingEnabled</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;Grouping is not enabled&quot;</span>);
+			<b>if</b> (!<a href="@1@System.Runtime/A.html#36729210e317a805" class="t t">Enum</a>.<a href="@1@System.Runtime/A.html#32e813377ac50d28" class="i method">IsDefined</a>(<b>typeof</b>(<a href="ScrollToPosition.cs.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a>), <span class="r18 r">position</span>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;position is not a valid ScrollToPosition&quot;</span>, <span class="s">&quot;position&quot;</span>);
+ 
+			<a href="ScrollToRequestedEventArgs.cs.html#f03c2a98424144b5" class="k">var</a> <span id="r20 rd" class="r20 r">args</span> = <b>new</b> <a href="ScrollToRequestedEventArgs.cs.html#79a6a00b420a236d" class="t constructor">ScrollToRequestedEventArgs</a>(<span class="r16 r">item</span>, <span class="r17 r">group</span>, <span class="r18 r">position</span>, <span class="r19 r">animated</span>);
+			<b>if</b> (<a href="VisualElement.cs.html#08f2f1b9bb6df5c5" class="i property">IsPlatformEnabled</a>)
+				<a href="#47a969f614cbb679" class="i method">OnScrollToRequested</a>(<span class="r20 r">args</span>);
+			<b>else</b>
+				<a href="#c93770fe56c06408" class="i field">_pendingScroll</a> = <span class="r20 r">args</span>;
+		}
+ 
+		<b>protected override</b> <a href="Cells/Cell.cs.html#7706486019503b22" class="t t">Cell</a> <a id="405c7efb807410c3" href="R/405c7efb807410c3.html" target="n" data-glyph="75,1" class="i method">CreateDefault</a>(<b>object</b> <span id="r21 rd" class="r21 r">item</span>)
+		{
+			<b>string</b> <span id="r22 rd" class="r22 r">text</span> = <b>null</b>;
+			<b>if</b> (<span class="r21 r">item</span> != <b>null</b>)
+				<span class="r22 r">text</span> = <span class="r21 r">item</span>.<a href="@1@System.Runtime/A.html#ff31a6bf27c58f89" class="i method">ToString</a>();
+ 
+			<b>return</b> <b>new</b> <a href="Cells/TextCell.cs.html#ba9b70b0224a44cd" class="t constructor">TextCell</a> { <a href="Cells/TextCell.cs.html#9a390bb4c00083be" class="i property">Text</a> = <span class="r22 r">text</span> };
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#66ed4e142f4e14e7" class="t constructor">Obsolete</a>(<span class="s">&quot;OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.&quot;</span>)]
+		<b>protected override</b> <a href="SizeRequest.cs.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="e4396236c6e79bb4" href="R/e4396236c6e79bb4.html" target="n" data-glyph="75,1" class="i method">OnSizeRequest</a>(<b>double</b> <span id="r23 rd" class="r23 r">widthConstraint</span>, <b>double</b> <span id="r24 rd" class="r24 r">heightConstraint</span>)
+		{
+			<a href="Size.cs.html#a940b381a4300f8b" class="k">var</a> <span id="r25 rd" class="r25 r">minimumSize</span> = <b>new</b> <a href="Size.cs.html#1727209bca650e71" class="t constructor">Size</a>(40, 40);
+			<a href="Size.cs.html#a940b381a4300f8b" class="t t">Size</a> <span id="r26 rd" class="r26 r">request</span>;
+ 
+			<b>double</b> <span id="r27 rd" class="r27 r">width</span> = <span class="t t">Math</span>.<span class="i method">Min</span>(<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#996ca2ce6b1f29b2" class="i property">Info</a>.<a href="DeviceInfo.cs.html#c50c6c30485ede24" class="i property">ScaledScreenSize</a>.<a href="Size.cs.html#6207d8e3826352f7" class="i property">Width</a>, <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#996ca2ce6b1f29b2" class="i property">Info</a>.<a href="DeviceInfo.cs.html#c50c6c30485ede24" class="i property">ScaledScreenSize</a>.<a href="Size.cs.html#d581c837a1ed6a2e" class="i property">Height</a>);
+ 
+			<a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="k">var</a> <span id="r28 rd" class="r28 r">list</span> = <a href="ItemsView.cs.html#5eab030fbef30e59" class="i property">ItemsSource</a> <b>as</b> <a href="@1@System.Runtime/A.html#5d74f6adfeaf6c7d" class="t t">IList</a>;
+			<b>if</b> (<span class="r28 r">list</span> != <b>null</b> &amp;&amp; <a href="#7d4655a3bc00be9b" class="i property">HasUnevenRows</a> == <b>false</b> &amp;&amp; <a href="#873f0e107de1f075" class="i property">RowHeight</a> &gt; 0 &amp;&amp; !<a href="#0b780b61bce76534" class="i property">IsGroupingEnabled</a>)
+			{
+				<span class="c">// we can calculate this</span>
+				<span class="r26 r">request</span> = <b>new</b> <a href="Size.cs.html#1727209bca650e71" class="t constructor">Size</a>(<span class="r27 r">width</span>, <span class="r28 r">list</span>.<a href="@1@System.Runtime/A.html#e961aba0053db107" class="i property">Count</a> * <a href="#873f0e107de1f075" class="i property">RowHeight</a>);
+			}
+			<b>else</b>
+			{
+				<span class="c">// probably not worth it</span>
+				<span class="r26 r">request</span> = <b>new</b> <a href="Size.cs.html#1727209bca650e71" class="t constructor">Size</a>(<span class="r27 r">width</span>, <span class="t t">Math</span>.<span class="i method">Max</span>(<a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#996ca2ce6b1f29b2" class="i property">Info</a>.<a href="DeviceInfo.cs.html#c50c6c30485ede24" class="i property">ScaledScreenSize</a>.<a href="Size.cs.html#6207d8e3826352f7" class="i property">Width</a>, <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#996ca2ce6b1f29b2" class="i property">Info</a>.<a href="DeviceInfo.cs.html#c50c6c30485ede24" class="i property">ScaledScreenSize</a>.<a href="Size.cs.html#d581c837a1ed6a2e" class="i property">Height</a>));
+			}
+ 
+			<b>return</b> <b>new</b> <a href="SizeRequest.cs.html#e57ae25284fd9c9e" class="t constructor">SizeRequest</a>(<span class="r26 r">request</span>, <span class="r25 r">minimumSize</span>);
+		}
+ 
+		<b>protected override void</b> <a id="a52052abcfec989c" href="R/a52052abcfec989c.html" target="n" data-glyph="75,1" class="i method">SetupContent</a>(<a href="Cells/Cell.cs.html#7706486019503b22" class="t t">Cell</a> <span id="r29 rd" class="r29 r">content</span>, <b>int</b> <span id="r30 rd" class="r30 r">index</span>)
+		{
+			<a href="ItemsView.cs.html#e6e9068bbee42f54" class="k">base</a>.<a href="ItemsView.cs.html#f95e3daa80a6da1f" class="i method">SetupContent</a>(<span class="r29 r">content</span>, <span class="r30 r">index</span>);
+			<a href="Cells/ViewCell.cs.html#080f860d2adf2a57" class="k">var</a> <span id="r31 rd" class="r31 r">viewCell</span> = <span class="r29 r">content</span> <b>as</b> <a href="Cells/ViewCell.cs.html#080f860d2adf2a57" class="t t">ViewCell</a>;
+			<b>if</b> (<span class="r31 r">viewCell</span> != <b>null</b> &amp;&amp; <span class="r31 r">viewCell</span>.<a href="Cells/ViewCell.cs.html#7e0120b037b3522c" class="i property">View</a> != <b>null</b> &amp;&amp; <a href="#7d4655a3bc00be9b" class="i property">HasUnevenRows</a>)
+				<span class="r31 r">viewCell</span>.<a href="Cells/ViewCell.cs.html#7e0120b037b3522c" class="i property">View</a>.<a href="VisualElement.cs.html#39b42863b51d11da" class="i property">ComputedConstraint</a> = <a href="LayoutConstraint.cs.html#cc1ff5e573a0e98d" class="t t">LayoutConstraint</a>.<a href="LayoutConstraint.cs.html#e6abb8afc52e43e2" class="i field">None</a>;
+			<span class="r29 r">content</span>.<a href="Element.cs.html#c4bf3d030cd32fe9" class="i property">Parent</a> = <a href="#bde8d740ed7039c7" class="k">this</a>;
+ 
+		}
+ 
+		<b>protected override void</b> <a id="e7757e6ee01f5424" href="R/e7757e6ee01f5424.html" target="n" data-glyph="75,1" class="i method">UnhookContent</a>(<a href="Cells/Cell.cs.html#7706486019503b22" class="t t">Cell</a> <span id="r32 rd" class="r32 r">content</span>)
+		{
+			<a href="ItemsView.cs.html#e6e9068bbee42f54" class="k">base</a>.<a href="ItemsView.cs.html#e8caeefeba5365bb" class="i method">UnhookContent</a>(<span class="r32 r">content</span>);
+			<span class="r32 r">content</span>.<a href="Element.cs.html#c4bf3d030cd32fe9" class="i property">Parent</a> = <b>null</b>;
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public</b> <a href="Cells/Cell.cs.html#7706486019503b22" class="t t">Cell</a> <a id="2ebdb227296d433f" href="R/2ebdb227296d433f.html" target="n" data-glyph="72,1" class="i method">CreateDefaultCell</a>(<b>object</b> <span id="r33 rd" class="r33 r">item</span>)
+		{
+			<b>return</b> <a href="#405c7efb807410c3" class="i method">CreateDefault</a>(<span class="r33 r">item</span>);
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public string</b> <a id="6f20ad844c5bbc22" href="R/6f20ad844c5bbc22.html" target="n" data-glyph="72,1" class="i method">GetDisplayTextFromGroup</a>(<b>object</b> <span id="r34 rd" class="r34 r">cell</span>)
+		{
+			<b>int</b> <span id="r35 rd" class="r35 r">groupIndex</span> = <a href="ItemsView.cs.html#93c3512107256101" class="i property">TemplatedItems</a>.<a href="TemplatedItemsList.cs.html#51e3a446b904d788" class="i method">GetGlobalIndexOfGroup</a>(<span class="r34 r">cell</span>);
+			<a href="TemplatedItemsList.cs.html#1bbf66e01c80bd54" class="k">var</a> <span id="r36 rd" class="r36 r">group</span> = <a href="ItemsView.cs.html#93c3512107256101" class="i property">TemplatedItems</a>.<a href="TemplatedItemsList.cs.html#47d6e238c357f9c8" class="i method">GetGroup</a>(<span class="r35 r">groupIndex</span>);
+ 
+			<b>string</b> <span id="r37 rd" class="r37 r">displayBinding</span> = <b>null</b>;
+ 
+			<b>if</b> (<a href="#b8b6495a2a9ddd03" class="i property">GroupDisplayBinding</a> != <b>null</b>)
+				<span class="r37 r">displayBinding</span> = <span class="r36 r">group</span>.<a href="TemplatedItemsList.cs.html#8ef70a3aa39b8a90" class="i property">Name</a>;
+ 
+			<b>if</b> (<a href="#ea6f5db1f6ae9740" class="i property">GroupShortNameBinding</a> != <b>null</b>)
+				<span class="r37 r">displayBinding</span> = <span class="r36 r">group</span>.<a href="TemplatedItemsList.cs.html#c7353a358cfca0ff" class="i property">ShortName</a>;
+ 
+			<span class="c">// TODO: what if they set both? should it default to the ShortName, like it will here?</span>
+			<span class="c">// ShortNames binding did not appear to be functional before.</span>
+			<b>return</b> <span class="r37 r">displayBinding</span>;
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public void</b> <a id="73709214c2ae0be8" href="R/73709214c2ae0be8.html" target="n" data-glyph="72,1" class="i method">NotifyRowTapped</a>(<b>int</b> <span id="r38 rd" class="r38 r">groupIndex</span>, <b>int</b> <span id="r39 rd" class="r39 r">inGroupIndex</span>, <a href="Cells/Cell.cs.html#7706486019503b22" class="t t">Cell</a> <span id="r40 rd" class="r40 r">cell</span> = <b>null</b>)
+		{
+			<a href="TemplatedItemsList.cs.html#1bbf66e01c80bd54" class="k">var</a> <span id="r41 rd" class="r41 r">group</span> = <a href="ItemsView.cs.html#93c3512107256101" class="i property">TemplatedItems</a>.<a href="TemplatedItemsList.cs.html#47d6e238c357f9c8" class="i method">GetGroup</a>(<span class="r38 r">groupIndex</span>);
+ 
+			<b>bool</b> <span id="r42 rd" class="r42 r">changed</span> = <a href="#fea168cd69c350ef" class="i field">_previousGroupSelected</a> != <span class="r38 r">groupIndex</span> || <a href="#1060de4bfa10cad0" class="i field">_previousRowSelected</a> != <span class="r39 r">inGroupIndex</span>;
+ 
+			<a href="#1060de4bfa10cad0" class="i field">_previousRowSelected</a> = <span class="r39 r">inGroupIndex</span>;
+			<a href="#fea168cd69c350ef" class="i field">_previousGroupSelected</a> = <span class="r38 r">groupIndex</span>;
+ 
+			<span class="c">// A11y: Keyboards and screen readers can deselect items, allowing -1 to be possible</span>
+			<b>if</b> (<span class="r40 r">cell</span> == <b>null</b> &amp;&amp; <span class="r39 r">inGroupIndex</span> != -1)
+			{
+				<span class="r40 r">cell</span> = <span class="r41 r">group</span><a href="TemplatedItemsList.cs.html#9c6aabc35cfce440">[</a><span class="r39 r">inGroupIndex</span>];
+			}
+ 
+			<span class="c">// Set SelectedItem before any events so we don&#39;t override any changes they may have made.</span>
+			<a href="BindableObject.cs.html#083b32ea2fad3e6d" class="i method">SetValueCore</a>(<a href="#e2fbab739592c40d" class="i field">SelectedItemProperty</a>, <span class="r40 r">cell</span>?.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>, <a href="BindableObject.cs.html#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="BindableObject.cs.html#5d70ae233f0699e2" class="i field">ClearOneWayBindings</a> | <a href="BindableObject.cs.html#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="BindableObject.cs.html#f96104604fccfe26" class="i field">ClearDynamicResource</a> | (<span class="r42 r">changed</span> ? <a href="BindableObject.cs.html#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="BindableObject.cs.html#9cc65e74ac0b0390" class="i field">RaiseOnEqual</a> : 0));
+ 
+			<span class="r40 r">cell</span>?.<a href="Cells/Cell.cs.html#46c544c4c018868a" class="i method">OnTapped</a>();
+ 
+			<a href="#c09f6c15d5698cc9" class="i">ItemTapped</a>?.<a href="@1@System.Runtime/A.html#48225ee7c18a0e20" class="i method">Invoke</a>(<a href="#bde8d740ed7039c7" class="k">this</a>, <b>new</b> <a href="ItemTappedEventArgs.cs.html#859f93f320e91002" class="t constructor">ItemTappedEventArgs</a>(<a href="ItemsView.cs.html#5eab030fbef30e59" class="i property">ItemsSource</a>.<span class="i method">Cast</span>&lt;<b>object</b>&gt;().<span class="i method">ElementAt</span>(<span class="r38 r">groupIndex</span>), <span class="r40 r">cell</span>?.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>));
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public void</b> <a id="ef571d695446a087" href="R/ef571d695446a087.html" target="n" data-glyph="72,1" class="i method">NotifyRowTapped</a>(<b>int</b> <span id="r43 rd" class="r43 r">index</span>, <a href="Cells/Cell.cs.html#7706486019503b22" class="t t">Cell</a> <span id="r44 rd" class="r44 r">cell</span> = <b>null</b>)
+		{
+			<b>if</b> (<a href="#0b780b61bce76534" class="i property">IsGroupingEnabled</a>)
+			{
+				<b>int</b> <span id="r45 rd" class="r45 r">leftOver</span>;
+				<b>int</b> <span id="r46 rd" class="r46 r">groupIndex</span> = <a href="ItemsView.cs.html#93c3512107256101" class="i property">TemplatedItems</a>.<a href="TemplatedItemsList.cs.html#c4ca2a1ed948e259" class="i method">GetGroupIndexFromGlobal</a>(<span class="r43 r">index</span>, <b>out</b> <span class="r45 r">leftOver</span>);
+ 
+				<a href="#73709214c2ae0be8" class="i method">NotifyRowTapped</a>(<span class="r46 r">groupIndex</span>, <span class="r45 r">leftOver</span> - 1, <span class="r44 r">cell</span>);
+			}
+			<b>else</b>
+				<a href="#73709214c2ae0be8" class="i method">NotifyRowTapped</a>(0, <span class="r43 r">index</span>, <span class="r44 r">cell</span>);
+		}
+ 
+		<b>internal override void</b> <a id="5cf53ed662aa4271" href="R/5cf53ed662aa4271.html" target="n" data-glyph="74,1" class="i method">OnIsPlatformEnabledChanged</a>()
+		{
+			<a href="ItemsView.cs.html#e6e9068bbee42f54" class="k">base</a>.<a href="VisualElement.cs.html#59b797b10761b3ff" class="i method">OnIsPlatformEnabledChanged</a>();
+ 
+			<b>if</b> (<a href="VisualElement.cs.html#08f2f1b9bb6df5c5" class="i property">IsPlatformEnabled</a> &amp;&amp; <a href="#c93770fe56c06408" class="i field">_pendingScroll</a> != <b>null</b>)
+			{
+				<a href="#47a969f614cbb679" class="i method">OnScrollToRequested</a>(<a href="#c93770fe56c06408" class="i field">_pendingScroll</a>);
+				<a href="#c93770fe56c06408" class="i field">_pendingScroll</a> = <b>null</b>;
+			}
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ScrollToRequestedEventArgs.cs.html#f03c2a98424144b5" class="t t">ScrollToRequestedEventArgs</a>&gt; <a id="55534a7ecbfa5f31" href="R/55534a7ecbfa5f31.html" target="n" data-glyph="30,1" class="i">ScrollToRequested</a>;
+ 
+		<b>void</b> <a id="2411dab539426d85" href="R/2411dab539426d85.html" target="n" data-glyph="76,1" class="i method">OnCommandCanExecuteChanged</a>(<b>object</b> <span id="r47 rd" class="r47 r">sender</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r48 rd" class="r48 r">eventArgs</span>)
+		{
+			<a href="#57334962c699c54b" class="i property">RefreshAllowed</a> = <a href="#e07ccb02d387037b" class="i property">RefreshCommand</a>.<span class="i method">CanExecute</span>(<b>null</b>);
+		}
+ 
+		<b>static void</b> <a id="89a784b58a0e7220" href="R/89a784b58a0e7220.html" target="n" data-glyph="76,1" class="i method">OnFooterChanged</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r49 rd" class="r49 r">bindable</span>, <b>object</b> <span id="r50 rd" class="r50 r">oldValue</span>, <b>object</b> <span id="r51 rd" class="r51 r">newValue</span>)
+		{
+			<a href="#bde8d740ed7039c7" class="k">var</a> <span id="r52 rd" class="r52 r">lv</span> = (<a href="#bde8d740ed7039c7" class="t t">ListView</a>)<span class="r49 r">bindable</span>;
+			<span class="r52 r">lv</span>.<a href="#842bac7db754b6bc" class="i method">OnHeaderOrFooterChanged</a>(<b>ref</b> <span class="r52 r">lv</span>.<a href="#1a9b5146dafb4e33" class="i field">_footerElement</a>, <span class="s">&quot;FooterElement&quot;</span>, <span class="r51 r">newValue</span>, <span class="r52 r">lv</span>.<a href="#662099ae8239b07c" class="i property">FooterTemplate</a>, <b>false</b>);
+		}
+ 
+		<b>static void</b> <a id="4f8131d2a42a0001" href="R/4f8131d2a42a0001.html" target="n" data-glyph="76,1" class="i method">OnFooterTemplateChanged</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r53 rd" class="r53 r">bindable</span>, <b>object</b> <span id="r54 rd" class="r54 r">oldValue</span>, <b>object</b> <span id="r55 rd" class="r55 r">newValue</span>)
+		{
+			<a href="#bde8d740ed7039c7" class="k">var</a> <span id="r56 rd" class="r56 r">lv</span> = (<a href="#bde8d740ed7039c7" class="t t">ListView</a>)<span class="r53 r">bindable</span>;
+			<span class="r56 r">lv</span>.<a href="#842bac7db754b6bc" class="i method">OnHeaderOrFooterChanged</a>(<b>ref</b> <span class="r56 r">lv</span>.<a href="#1a9b5146dafb4e33" class="i field">_footerElement</a>, <span class="s">&quot;FooterElement&quot;</span>, <span class="r56 r">lv</span>.<a href="#e20781b3821d219b" class="i property">Footer</a>, (<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a>)<span class="r55 r">newValue</span>, <b>true</b>);
+		}
+ 
+		<b>static void</b> <a id="bc00fe7865567ded" href="R/bc00fe7865567ded.html" target="n" data-glyph="76,1" class="i method">OnGroupDisplayBindingChanged</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r57 rd" class="r57 r">bindable</span>, <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r58 rd" class="r58 r">oldValue</span>, <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r59 rd" class="r59 r">newValue</span>)
+		{
+			<a href="#bde8d740ed7039c7" class="k">var</a> <span id="r60 rd" class="r60 r">lv</span> = (<a href="#bde8d740ed7039c7" class="t t">ListView</a>)<span class="r57 r">bindable</span>;
+			<b>if</b> (<span class="r59 r">newValue</span> != <b>null</b> &amp;&amp; <span class="r60 r">lv</span>.<a href="#37d541414cc573e1" class="i property">GroupHeaderTemplate</a> != <b>null</b>)
+			{
+				<span class="r60 r">lv</span>.<a href="#37d541414cc573e1" class="i property">GroupHeaderTemplate</a> = <b>null</b>;
+				<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;ListView&quot;</span>, <span class="s">&quot;GroupHeaderTemplate and GroupDisplayBinding can not be set at the same time, setting GroupHeaderTemplate to null&quot;</span>);
+			}
+		}
+ 
+		<b>static void</b> <a id="27629c103c0a40bb" href="R/27629c103c0a40bb.html" target="n" data-glyph="76,1" class="i method">OnGroupHeaderTemplateChanged</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r61 rd" class="r61 r">bindable</span>, <b>object</b> <span id="r62 rd" class="r62 r">oldvalue</span>, <b>object</b> <span id="r63 rd" class="r63 r">newValue</span>)
+		{
+			<a href="#bde8d740ed7039c7" class="k">var</a> <span id="r64 rd" class="r64 r">lv</span> = (<a href="#bde8d740ed7039c7" class="t t">ListView</a>)<span class="r61 r">bindable</span>;
+			<b>if</b> (<span class="r63 r">newValue</span> != <b>null</b> &amp;&amp; <span class="r64 r">lv</span>.<a href="#b8b6495a2a9ddd03" class="i property">GroupDisplayBinding</a> != <b>null</b>)
+			{
+				<span class="r64 r">lv</span>.<a href="#b8b6495a2a9ddd03" class="i property">GroupDisplayBinding</a> = <b>null</b>;
+				<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">&quot;GroupHeaderTemplate and GroupDisplayBinding can not be set at the same time, setting GroupDisplayBinding to null&quot;</span>);
+			}
+		}
+ 
+		<b>static void</b> <a id="8c86a76b41205e75" href="R/8c86a76b41205e75.html" target="n" data-glyph="76,1" class="i method">OnHeaderChanged</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r65 rd" class="r65 r">bindable</span>, <b>object</b> <span id="r66 rd" class="r66 r">oldValue</span>, <b>object</b> <span id="r67 rd" class="r67 r">newValue</span>)
+		{
+			<a href="#bde8d740ed7039c7" class="k">var</a> <span id="r68 rd" class="r68 r">lv</span> = (<a href="#bde8d740ed7039c7" class="t t">ListView</a>)<span class="r65 r">bindable</span>;
+			<span class="r68 r">lv</span>.<a href="#842bac7db754b6bc" class="i method">OnHeaderOrFooterChanged</a>(<b>ref</b> <span class="r68 r">lv</span>.<a href="#2eb725f178f35962" class="i field">_headerElement</a>, <span class="s">&quot;HeaderElement&quot;</span>, <span class="r67 r">newValue</span>, <span class="r68 r">lv</span>.<a href="#6be31888849d4cb5" class="i property">HeaderTemplate</a>, <b>false</b>);
+		}
+ 
+		<b>void</b> <a id="842bac7db754b6bc" href="R/842bac7db754b6bc.html" target="n" data-glyph="76,1" class="i method">OnHeaderOrFooterChanged</a>(<b>ref</b> <a href="Element.cs.html#76098df8350c0484" class="t t">Element</a> <span id="r69 rd" class="r69 r">storage</span>, <b>string</b> <span id="r70 rd" class="r70 r">property</span>, <b>object</b> <span id="r71 rd" class="r71 r">dataObject</span>, <a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <span id="r72 rd" class="r72 r">template</span>, <b>bool</b> <span id="r73 rd" class="r73 r">templateChanged</span>)
+		{
+			<b>if</b> (<span class="r71 r">dataObject</span> == <b>null</b>)
+			{
+				<b>if</b> (!<span class="r73 r">templateChanged</span>)
+				{
+					<a href="BindableObject.cs.html#e5d2d1b731820b1b" class="i method">OnPropertyChanging</a>(<span class="r70 r">property</span>);
+					<span class="r69 r">storage</span> = <b>null</b>;
+					<a href="Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>(<span class="r70 r">property</span>);
+				}
+ 
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<span class="r72 r">template</span> == <b>null</b>)
+			{
+				<a href="Element.cs.html#76098df8350c0484" class="k">var</a> <span id="r74 rd" class="r74 r">view</span> = <span class="r71 r">dataObject</span> <b>as</b> <a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>;
+				<b>if</b> (<span class="r74 r">view</span> == <b>null</b> || <span class="r74 r">view</span> <b>is</b> <a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>)
+					<span class="r74 r">view</span> = <b>new</b> <a href="Label.cs.html#aa576bf63d926ee6" class="t constructor">Label</a> { <a href="Label.cs.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="r71 r">dataObject</span>.<a href="@1@System.Runtime/A.html#ff31a6bf27c58f89" class="i method">ToString</a>() };
+ 
+				<span class="r74 r">view</span>.<a href="Element.cs.html#c4bf3d030cd32fe9" class="i property">Parent</a> = <a href="#bde8d740ed7039c7" class="k">this</a>;
+				<a href="BindableObject.cs.html#e5d2d1b731820b1b" class="i method">OnPropertyChanging</a>(<span class="r70 r">property</span>);
+				<span class="r69 r">storage</span> = <span class="r74 r">view</span>;
+				<a href="Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>(<span class="r70 r">property</span>);
+			}
+			<b>else if</b> (<span class="r69 r">storage</span> == <b>null</b> || <span class="r73 r">templateChanged</span>)
+			{
+				<a href="BindableObject.cs.html#e5d2d1b731820b1b" class="i method">OnPropertyChanging</a>(<span class="r70 r">property</span>);
+				<span class="r69 r">storage</span> = <span class="r72 r">template</span>.<a href="ElementTemplate.cs.html#cd48b351b7f758f5" class="i method">CreateContent</a>() <b>as</b> <a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>;
+				<b>if</b> (<span class="r69 r">storage</span> != <b>null</b>)
+				{
+					<span class="r69 r">storage</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <span class="r71 r">dataObject</span>;
+					<span class="r69 r">storage</span>.<a href="Element.cs.html#c4bf3d030cd32fe9" class="i property">Parent</a> = <a href="#bde8d740ed7039c7" class="k">this</a>;
+				}
+				<a href="Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>(<span class="r70 r">property</span>);
+			}
+			<b>else</b>
+			{
+				<span class="r69 r">storage</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <span class="r71 r">dataObject</span>;
+			}
+		}
+ 
+		<b>static void</b> <a id="92a38487824a325a" href="R/92a38487824a325a.html" target="n" data-glyph="76,1" class="i method">OnHeaderTemplateChanged</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r75 rd" class="r75 r">bindable</span>, <b>object</b> <span id="r76 rd" class="r76 r">oldValue</span>, <b>object</b> <span id="r77 rd" class="r77 r">newValue</span>)
+		{
+			<a href="#bde8d740ed7039c7" class="k">var</a> <span id="r78 rd" class="r78 r">lv</span> = (<a href="#bde8d740ed7039c7" class="t t">ListView</a>)<span class="r75 r">bindable</span>;
+			<span class="r78 r">lv</span>.<a href="#842bac7db754b6bc" class="i method">OnHeaderOrFooterChanged</a>(<b>ref</b> <span class="r78 r">lv</span>.<a href="#2eb725f178f35962" class="i field">_headerElement</a>, <span class="s">&quot;HeaderElement&quot;</span>, <span class="r78 r">lv</span>.<a href="#5aa3c5d732ee1a8c" class="i property">Header</a>, (<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a>)<span class="r77 r">newValue</span>, <b>true</b>);
+		}
+ 
+		<b>static void</b> <a id="33d905857ea08a64" href="R/33d905857ea08a64.html" target="n" data-glyph="76,1" class="i method">OnRefreshCommandChanged</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r79 rd" class="r79 r">bindable</span>, <b>object</b> <span id="r80 rd" class="r80 r">oldValue</span>, <b>object</b> <span id="r81 rd" class="r81 r">newValue</span>)
+		{
+			<a href="#bde8d740ed7039c7" class="k">var</a> <span id="r82 rd" class="r82 r">lv</span> = (<a href="#bde8d740ed7039c7" class="t t">ListView</a>)<span class="r79 r">bindable</span>;
+			<b>var</b> <span id="r83 rd" class="r83 r">oldCommand</span> = (<span class="t t">ICommand</span>)<span class="r80 r">oldValue</span>;
+			<b>var</b> <span id="r84 rd" class="r84 r">command</span> = (<span class="t t">ICommand</span>)<span class="r81 r">newValue</span>;
+ 
+			<span class="r82 r">lv</span>.<a href="#4887d17bcf4e0a56" class="i method">OnRefreshCommandChanged</a>(<span class="r83 r">oldCommand</span>, <span class="r84 r">command</span>);
+		}
+ 
+		<b>void</b> <a id="4887d17bcf4e0a56" href="R/4887d17bcf4e0a56.html" target="n" data-glyph="76,1" class="i method">OnRefreshCommandChanged</a>(<span class="t t">ICommand</span> <span id="r85 rd" class="r85 r">oldCommand</span>, <span class="t t">ICommand</span> <span id="r86 rd" class="r86 r">newCommand</span>)
+		{
+			<b>if</b> (<span class="r85 r">oldCommand</span> != <b>null</b>)
+			{
+				<span class="r85 r">oldCommand</span>.<span class="i">CanExecuteChanged</span> -= <a href="#2411dab539426d85" class="i method">OnCommandCanExecuteChanged</a>;
+			}
+ 
+			<b>if</b> (<span class="r86 r">newCommand</span> != <b>null</b>)
+			{
+				<span class="r86 r">newCommand</span>.<span class="i">CanExecuteChanged</span> += <a href="#2411dab539426d85" class="i method">OnCommandCanExecuteChanged</a>;
+				<a href="#57334962c699c54b" class="i property">RefreshAllowed</a> = <span class="r86 r">newCommand</span>.<span class="i method">CanExecute</span>(<b>null</b>);
+			}
+			<b>else</b>
+			{
+				<a href="#57334962c699c54b" class="i property">RefreshAllowed</a> = <b>true</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="1c01639acf33d166" href="R/1c01639acf33d166.html" target="n" data-glyph="76,1" class="i method">OnRefreshing</a>(<a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r87 rd" class="r87 r">e</span>)
+		{
+			<a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <span id="r88 rd" class="r88 r">handler</span> = <a href="#1d2abec14b220e70" class="i">Refreshing</a>;
+			<b>if</b> (<span class="r88 r">handler</span> != <b>null</b>)
+				<span class="r88 r">handler</span>(<a href="#bde8d740ed7039c7" class="k">this</a>, <span class="r87 r">e</span>);
+		}
+ 
+		<b>void</b> <a id="47a969f614cbb679" href="R/47a969f614cbb679.html" target="n" data-glyph="76,1" class="i method">OnScrollToRequested</a>(<a href="ScrollToRequestedEventArgs.cs.html#f03c2a98424144b5" class="t t">ScrollToRequestedEventArgs</a> <span id="r89 rd" class="r89 r">e</span>)
+		{
+			<a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ScrollToRequestedEventArgs.cs.html#f03c2a98424144b5" class="t t">ScrollToRequestedEventArgs</a>&gt; <span id="r90 rd" class="r90 r">handler</span> = <a href="#55534a7ecbfa5f31" class="i">ScrollToRequested</a>;
+			<b>if</b> (<span class="r90 r">handler</span> != <b>null</b>)
+				<span class="r90 r">handler</span>(<a href="#bde8d740ed7039c7" class="k">this</a>, <span class="r89 r">e</span>);
+		}
+ 
+		<b>static void</b> <a id="dc829a3a2fc1f109" href="R/dc829a3a2fc1f109.html" target="n" data-glyph="76,1" class="i method">OnSelectedItemChanged</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r91 rd" class="r91 r">bindable</span>, <b>object</b> <span id="r92 rd" class="r92 r">oldValue</span>, <b>object</b> <span id="r93 rd" class="r93 r">newValue</span>)
+		{
+			<a href="#bde8d740ed7039c7" class="k">var</a> <span id="r94 rd" class="r94 r">list</span> = (<a href="#bde8d740ed7039c7" class="t t">ListView</a>)<span class="r91 r">bindable</span>;
+			<b>if</b> (<span class="r94 r">list</span>.<a href="#b7f2960fb90d27ad" class="i">ItemSelected</a> != <b>null</b>)
+				<span class="r94 r">list</span>.<a href="#b7f2960fb90d27ad" class="i">ItemSelected</a>(<span class="r94 r">list</span>, <b>new</b> <a href="SelectedItemChangedEventArgs.cs.html#f75588b084f6aa45" class="t constructor">SelectedItemChangedEventArgs</a>(<span class="r93 r">newValue</span>));
+		}
+ 
+		<b>static bool</b> <a id="ddfc6849c5da1c26" href="R/ddfc6849c5da1c26.html" target="n" data-glyph="76,1" class="i method">ValidateHeaderFooterTemplate</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r95 rd" class="r95 r">bindable</span>, <b>object</b> <span id="r96 rd" class="r96 r">value</span>)
+		{
+			<b>if</b> (<span class="r96 r">value</span> == <b>null</b>)
+				<b>return true</b>;
+			<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="k">var</a> <span id="r97 rd" class="r97 r">template</span> = (<a href="DataTemplate.cs.html#8bb08c0913bdfc63" class="t t">DataTemplate</a>)<span class="r96 r">value</span>;
+			<b>return</b> <span class="r97 r">template</span>.<a href="ElementTemplate.cs.html#cd48b351b7f758f5" class="i method">CreateContent</a>() <b>is</b> <a href="View.cs.html#60f54d5b73cefedd" class="t t">View</a>;
+		}
+ 
+		<b>public</b> <a href="IPlatformElementConfiguration.cs.html#5af49100a0dfae3b" class="t t">IPlatformElementConfiguration</a>&lt;<span class="r98 r t">T</span>, <a href="#bde8d740ed7039c7" class="t t">ListView</a>&gt; <a id="198ff23fa428d987" href="R/198ff23fa428d987.html" target="n" data-glyph="72,1" class="i method">On</a>&lt;<span id="r98 rd t" class="r98 r t">T</span>&gt;() <b>where</b> <span class="r98 r t">T</span> : <a href="IConfigPlatform.cs.html#aac422aa0d58ffc2" class="t t">IConfigPlatform</a>
+		{
+			<b>return</b> <a href="#9148c564d14a3604" class="i field">_platformConfigurationRegistry</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>.<a href="PlatformConfigurationRegistry.cs.html#20b776526edc7ead" class="i method">On</a>&lt;<span class="r98 r t">T</span>&gt;();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

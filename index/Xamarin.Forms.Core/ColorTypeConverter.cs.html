@@ -1,0 +1,269 @@
+﻿<!DOCTYPE html>
+<html><head><title>ColorTypeConverter.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(260);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/ColorTypeConverter.cs" target="_top">ColorTypeConverter.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Globalization</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	[<span class="i n">Xaml</span>.<a href="ProvideCompiledAttribute.cs.html#3e16327cfcc56276" class="t constructor">ProvideCompiled</a>(<span class="s">&quot;Xamarin.Forms.Core.XamlC.ColorTypeConverter&quot;</span>)]
+	<b>public class</b> <a id="0cda1a82f890aa86" href="R/0cda1a82f890aa86.html" target="n" data-glyph="0,0" class="t t"><span id="fa581cb24b9c5c18">ColorTypeConverter</span></a> : <a href="TypeConverter.cs.html#07b618880a109e92" class="t t">TypeConverter</a>
+	{
+		<span class="c">// Supported inputs</span>
+		<span class="c">// HEX		#rgb, #argb, #rrggbb, #aarrggbb</span>
+		<span class="c">// RGB		rgb(255,0,0), rgb(100%,0%,0%)					values in range 0-255 or 0%-100%</span>
+		<span class="c">// RGBA		rgba(255, 0, 0, 0.8), rgba(100%, 0%, 0%, 0.8)	opacity is 0.0-1.0</span>
+		<span class="c">// HSL		hsl(120, 100%, 50%)								h is 0-360, s and l are 0%-100%</span>
+		<span class="c">// HSLA		hsla(120, 100%, 50%, .8)						opacity is 0.0-1.0</span>
+		<span class="c">// Predefined color											case insensitive</span>
+		<b>public override object</b> <a id="e7f2365cbd2b2407" href="R/e7f2365cbd2b2407.html" target="n" data-glyph="72,1" class="i method">ConvertFromInvariantString</a>(<b>string</b> <span id="r0 rd" class="r0 r">value</span>)
+		{
+			<b>if</b> (<span class="r0 r">value</span> != <b>null</b>)
+			{
+				<span class="r0 r">value</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+				<b>if</b> (<span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;#&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+					<b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#d0e7c08969926ff6" class="i method">FromHex</a>(<span class="r0 r">value</span>);
+ 
+				<b>if</b> (<span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;rgba&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#6c3139b940557bf9" class="i field">OrdinalIgnoreCase</a>)) {
+					<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r1 rd" class="r1 r">op</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#eb06d6d166f6a3d9" class="i method">IndexOf</a>(<span class="s">&#39;(&#39;</span>);
+					<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r2 rd" class="r2 r">cp</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;)&#39;</span>);
+					<b>if</b> (<span class="r1 r">op</span> &lt; 0 || <span class="r2 r">cp</span> &lt; 0 || <span class="r2 r">cp</span> &lt; <span class="r1 r">op</span>)
+						<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r0 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)}<span class="s">&quot;</span>);
+					<b>var</b> <span id="r3 rd" class="r3 r">quad</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(<span class="r1 r">op</span> + 1, <span class="r2 r">cp</span> - <span class="r1 r">op</span> - 1).<a href="@1@System.Runtime/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;,&#39;</span>);
+					<b>if</b> (<span class="r3 r">quad</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> != 4)
+						<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r0 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)}<span class="s">&quot;</span>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r4 rd" class="r4 r">r</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r3 r">quad</span>[0], 255, <span class="r5 r">acceptPercent</span>: <b>true</b>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r6 rd" class="r6 r">g</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r3 r">quad</span>[1], 255, <span class="r5 r">acceptPercent</span>: <b>true</b>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r7 rd" class="r7 r">b</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r3 r">quad</span>[2], 255, <span class="r5 r">acceptPercent</span>: <b>true</b>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r8 rd" class="r8 r">a</span> = <a href="#fc5b910c160872a7" class="i method">ParseOpacity</a>(<span class="r3 r">quad</span>[3]);
+					<b>return</b> <b>new</b> <a href="Color.cs.html#40388ae7354e905d" class="t constructor">Color</a>(<span class="r4 r">r</span>, <span class="r6 r">g</span>, <span class="r7 r">b</span>, <span class="r8 r">a</span>);
+				}
+ 
+				<b>if</b> (<span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;rgb&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#6c3139b940557bf9" class="i field">OrdinalIgnoreCase</a>)) {
+					<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r9 rd" class="r9 r">op</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#eb06d6d166f6a3d9" class="i method">IndexOf</a>(<span class="s">&#39;(&#39;</span>);
+					<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r10 rd" class="r10 r">cp</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;)&#39;</span>);
+					<b>if</b> (<span class="r9 r">op</span> &lt; 0 || <span class="r10 r">cp</span> &lt; 0 || <span class="r10 r">cp</span> &lt; <span class="r9 r">op</span>)
+						<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r0 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)}<span class="s">&quot;</span>);
+					<b>var</b> <span id="r11 rd" class="r11 r">triplet</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(<span class="r9 r">op</span> + 1, <span class="r10 r">cp</span> - <span class="r9 r">op</span> - 1).<a href="@1@System.Runtime/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;,&#39;</span>);
+					<b>if</b> (<span class="r11 r">triplet</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> != 3)
+						<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r0 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)}<span class="s">&quot;</span>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r12 rd" class="r12 r">r</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r11 r">triplet</span>[0], 255, <span class="r5 r">acceptPercent</span>: <b>true</b>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r13 rd" class="r13 r">g</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r11 r">triplet</span>[1], 255, <span class="r5 r">acceptPercent</span>: <b>true</b>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r14 rd" class="r14 r">b</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r11 r">triplet</span>[2], 255, <span class="r5 r">acceptPercent</span>: <b>true</b>);
+					<b>return</b> <b>new</b> <a href="Color.cs.html#f66bb5b8ffc07636" class="t constructor">Color</a>(<span class="r12 r">r</span>, <span class="r13 r">g</span>, <span class="r14 r">b</span>);
+				}
+ 
+				<b>if</b> (<span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;hsla&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#6c3139b940557bf9" class="i field">OrdinalIgnoreCase</a>)) {
+					<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r15 rd" class="r15 r">op</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#eb06d6d166f6a3d9" class="i method">IndexOf</a>(<span class="s">&#39;(&#39;</span>);
+					<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r16 rd" class="r16 r">cp</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;)&#39;</span>);
+					<b>if</b> (<span class="r15 r">op</span> &lt; 0 || <span class="r16 r">cp</span> &lt; 0 || <span class="r16 r">cp</span> &lt; <span class="r15 r">op</span>)
+						<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r0 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)}<span class="s">&quot;</span>);
+					<b>var</b> <span id="r17 rd" class="r17 r">quad</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(<span class="r15 r">op</span> + 1, <span class="r16 r">cp</span> - <span class="r15 r">op</span> - 1).<a href="@1@System.Runtime/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;,&#39;</span>);
+					<b>if</b> (<span class="r17 r">quad</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> != 4)
+						<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r0 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)}<span class="s">&quot;</span>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r18 rd" class="r18 r">h</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r17 r">quad</span>[0], 360, <span class="r5 r">acceptPercent</span>: <b>false</b>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r19 rd" class="r19 r">s</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r17 r">quad</span>[1], 100, <span class="r5 r">acceptPercent</span>: <b>true</b>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r20 rd" class="r20 r">l</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r17 r">quad</span>[2], 100, <span class="r5 r">acceptPercent</span>: <b>true</b>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r21 rd" class="r21 r">a</span> = <a href="#fc5b910c160872a7" class="i method">ParseOpacity</a>(<span class="r17 r">quad</span>[3]);
+					<b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#666d3c6ddee15c48" class="i method">FromHsla</a>(<span class="r18 r">h</span>, <span class="r19 r">s</span>, <span class="r20 r">l</span>, <span class="r21 r">a</span>);
+				}
+ 
+				<b>if</b> (<span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;hsl&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#6c3139b940557bf9" class="i field">OrdinalIgnoreCase</a>)) {
+					<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r22 rd" class="r22 r">op</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#eb06d6d166f6a3d9" class="i method">IndexOf</a>(<span class="s">&#39;(&#39;</span>);
+					<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r23 rd" class="r23 r">cp</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;)&#39;</span>);
+					<b>if</b> (<span class="r22 r">op</span> &lt; 0 || <span class="r23 r">cp</span> &lt; 0 || <span class="r23 r">cp</span> &lt; <span class="r22 r">op</span>)
+						<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r0 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)}<span class="s">&quot;</span>);
+					<b>var</b> <span id="r24 rd" class="r24 r">triplet</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(<span class="r22 r">op</span> + 1, <span class="r23 r">cp</span> - <span class="r22 r">op</span> - 1).<a href="@1@System.Runtime/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;,&#39;</span>);
+					<b>if</b> (<span class="r24 r">triplet</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> != 3)
+						<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r0 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)}<span class="s">&quot;</span>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r25 rd" class="r25 r">h</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r24 r">triplet</span>[0], 360, <span class="r5 r">acceptPercent</span>: <b>false</b>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r26 rd" class="r26 r">s</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r24 r">triplet</span>[1], 100, <span class="r5 r">acceptPercent</span>: <b>true</b>);
+					<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r27 rd" class="r27 r">l</span> = <a href="#bbd12c4d17d9ca04" class="i method">ParseColorValue</a>(<span class="r24 r">triplet</span>[2], 100, <span class="r5 r">acceptPercent</span>: <b>true</b>);
+					<b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#666d3c6ddee15c48" class="i method">FromHsla</a>(<span class="r25 r">h</span>, <span class="r26 r">s</span>, <span class="r27 r">l</span>);
+				}
+ 
+				<b>string</b>[] <span id="r28 rd" class="r28 r">parts</span> = <span class="r0 r">value</span>.<a href="@1@System.Runtime/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;.&#39;</span>);
+				<b>if</b> (<span class="r28 r">parts</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 1 || (<span class="r28 r">parts</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 2 &amp;&amp; <span class="r28 r">parts</span>[0] == <span class="s">&quot;Color&quot;</span>))
+				{
+					<b>string</b> <span id="r29 rd" class="r29 r">color</span> = <span class="r28 r">parts</span>[<span class="r28 r">parts</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> - 1];
+					<b>switch</b> (<span class="r29 r">color</span>.<a href="@1@System.Runtime/A.html#2d51c212cb09178e" class="i method">ToLowerInvariant</a>()) {
+					<b>case</b> <span class="s">&quot;default&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#78f150ac7d83a2c8" class="i property">Default</a>;
+					<b>case</b> <span class="s">&quot;accent&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#20ed50b13a0f4f97" class="i property">Accent</a>;
+					<b>case</b> <span class="s">&quot;aliceblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#7f7d697505aac6cf" class="i field">AliceBlue</a>;
+					<b>case</b> <span class="s">&quot;antiquewhite&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#09795b21a4679ee1" class="i field">AntiqueWhite</a>;
+					<b>case</b> <span class="s">&quot;aqua&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#e88035798937accc" class="i field">Aqua</a>;
+					<b>case</b> <span class="s">&quot;aquamarine&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#08f7db625dd2b58c" class="i field">Aquamarine</a>;
+					<b>case</b> <span class="s">&quot;azure&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#9fedc67852cd2309" class="i field">Azure</a>;
+					<b>case</b> <span class="s">&quot;beige&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#dad93de046f7745f" class="i field">Beige</a>;
+					<b>case</b> <span class="s">&quot;bisque&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#7801167e745aee40" class="i field">Bisque</a>;
+					<b>case</b> <span class="s">&quot;black&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#b01bc48c41fb87c1" class="i field">Black</a>;
+					<b>case</b> <span class="s">&quot;blanchedalmond&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#a041d8edb64fed60" class="i field">BlanchedAlmond</a>;
+					<b>case</b> <span class="s">&quot;blue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#0b58e2031b66a065" class="i field">Blue</a>;
+					<b>case</b> <span class="s">&quot;blueViolet&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#cd08d04c88760aa1" class="i field">BlueViolet</a>;
+					<b>case</b> <span class="s">&quot;brown&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#92705da97c0b2499" class="i field">Brown</a>;
+					<b>case</b> <span class="s">&quot;burlywood&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#362201e635a70939" class="i field">BurlyWood</a>;
+					<b>case</b> <span class="s">&quot;cadetblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#a4d97c96a8f199a0" class="i field">CadetBlue</a>;
+					<b>case</b> <span class="s">&quot;chartreuse&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#020c6785a34e7c4c" class="i field">Chartreuse</a>;
+					<b>case</b> <span class="s">&quot;chocolate&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#ccb968ed214ed1b9" class="i field">Chocolate</a>;
+					<b>case</b> <span class="s">&quot;coral&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#ee33bd9b21c60957" class="i field">Coral</a>;
+					<b>case</b> <span class="s">&quot;cornflowerblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#2a0df2da61b5e7ad" class="i field">CornflowerBlue</a>;
+					<b>case</b> <span class="s">&quot;cornsilk&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#4ec1851bac78d6ee" class="i field">Cornsilk</a>;
+					<b>case</b> <span class="s">&quot;crimson&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#6c4e3a36b83d77bc" class="i field">Crimson</a>;
+					<b>case</b> <span class="s">&quot;cyan&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#bc21b0cadf74d10b" class="i field">Cyan</a>;
+					<b>case</b> <span class="s">&quot;darkblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#39ece2e86ce2d219" class="i field">DarkBlue</a>;
+					<b>case</b> <span class="s">&quot;darkcyan&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#3fb502d6a0ce6a6e" class="i field">DarkCyan</a>;
+					<b>case</b> <span class="s">&quot;darkgoldenrod&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#51a7588e0c1f5ea4" class="i field">DarkGoldenrod</a>;
+					<b>case</b> <span class="s">&quot;darkgray&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#afec17fe701dce2e" class="i field">DarkGray</a>;
+					<b>case</b> <span class="s">&quot;darkgreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#81d1974ad15ab0c5" class="i field">DarkGreen</a>;
+					<b>case</b> <span class="s">&quot;darkkhaki&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#bfeb3b56d9c3e5af" class="i field">DarkKhaki</a>;
+					<b>case</b> <span class="s">&quot;darkmagenta&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#28c6a5431d2498d2" class="i field">DarkMagenta</a>;
+					<b>case</b> <span class="s">&quot;darkolivegreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#bccd0659d0e0c6d8" class="i field">DarkOliveGreen</a>;
+					<b>case</b> <span class="s">&quot;darkorange&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#a52113da21707337" class="i field">DarkOrange</a>;
+					<b>case</b> <span class="s">&quot;darkorchid&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#fab10bd2660268b9" class="i field">DarkOrchid</a>;
+					<b>case</b> <span class="s">&quot;darkred&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#44e7acd54d4be600" class="i field">DarkRed</a>;
+					<b>case</b> <span class="s">&quot;darksalmon&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#67c8ea8b8661ebdd" class="i field">DarkSalmon</a>;
+					<b>case</b> <span class="s">&quot;darkseagreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#df01ad2fd4fa59d6" class="i field">DarkSeaGreen</a>;
+					<b>case</b> <span class="s">&quot;darkslateblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#1f93da48ce5548d8" class="i field">DarkSlateBlue</a>;
+					<b>case</b> <span class="s">&quot;darkslategray&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#6dca6e5dacec1b7e" class="i field">DarkSlateGray</a>;
+					<b>case</b> <span class="s">&quot;darkturquoise&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#503acb824334d494" class="i field">DarkTurquoise</a>;
+					<b>case</b> <span class="s">&quot;darkviolet&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#d19a2009c5520d13" class="i field">DarkViolet</a>;
+					<b>case</b> <span class="s">&quot;deeppink&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#1d41d0e4dc9633d0" class="i field">DeepPink</a>;
+					<b>case</b> <span class="s">&quot;deepskyblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#c6139db9c81cdad6" class="i field">DeepSkyBlue</a>;
+					<b>case</b> <span class="s">&quot;dimgray&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#70d5a337c9a26212" class="i field">DimGray</a>;
+					<b>case</b> <span class="s">&quot;dodgerblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#44871cb75669d5fc" class="i field">DodgerBlue</a>;
+					<b>case</b> <span class="s">&quot;firebrick&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#ca83f18a3c2c2bf0" class="i field">Firebrick</a>;
+					<b>case</b> <span class="s">&quot;floralwhite&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#bc558789db8f34cd" class="i field">FloralWhite</a>;
+					<b>case</b> <span class="s">&quot;forestgreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#f4cbaf85111fc751" class="i field">ForestGreen</a>;
+					<b>case</b> <span class="s">&quot;fuchsia&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#1ed342d58f792a5d" class="i field">Fuchsia</a>;
+					<b>case</b> <span class="s">&quot;gainsboro&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#1ac719fe43124058" class="i field">Gainsboro</a>;
+					<b>case</b> <span class="s">&quot;ghostwhite&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#8626bf4e7beace0c" class="i field">GhostWhite</a>;
+					<b>case</b> <span class="s">&quot;gold&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#2ee92208452a0c3d" class="i field">Gold</a>;
+					<b>case</b> <span class="s">&quot;goldenrod&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#897579d5fc4cf1f3" class="i field">Goldenrod</a>;
+					<b>case</b> <span class="s">&quot;gray&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#27c9eed3f4d62467" class="i field">Gray</a>;
+					<b>case</b> <span class="s">&quot;green&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#28d4f9781f70b641" class="i field">Green</a>;
+					<b>case</b> <span class="s">&quot;greenyellow&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#a1583c5e07fe090b" class="i field">GreenYellow</a>;
+					<b>case</b> <span class="s">&quot;honeydew&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#859b9f0a66786093" class="i field">Honeydew</a>;
+					<b>case</b> <span class="s">&quot;hotpink&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#871abad56cc54ef2" class="i field">HotPink</a>;
+					<b>case</b> <span class="s">&quot;indianred&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#21699582174d5ea8" class="i field">IndianRed</a>;
+					<b>case</b> <span class="s">&quot;indigo&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#15bf769f2dee2fee" class="i field">Indigo</a>;
+					<b>case</b> <span class="s">&quot;ivory&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#37fe05034a8b3670" class="i field">Ivory</a>;
+					<b>case</b> <span class="s">&quot;khaki&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#3d5811b2914956fb" class="i field">Khaki</a>;
+					<b>case</b> <span class="s">&quot;lavender&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#e522df61b5ee8483" class="i field">Lavender</a>;
+					<b>case</b> <span class="s">&quot;lavenderblush&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#f9fbae58138c1da4" class="i field">LavenderBlush</a>;
+					<b>case</b> <span class="s">&quot;lawngreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#4020d109d8eeda95" class="i field">LawnGreen</a>;
+					<b>case</b> <span class="s">&quot;lemonchiffon&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#f9f1e0193b38b485" class="i field">LemonChiffon</a>;
+					<b>case</b> <span class="s">&quot;lightblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#4b8b137472d5deee" class="i field">LightBlue</a>;
+					<b>case</b> <span class="s">&quot;lightcoral&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#e89f66360b9c3c16" class="i field">LightCoral</a>;
+					<b>case</b> <span class="s">&quot;lightcyan&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#ed6196c2130893af" class="i field">LightCyan</a>;
+					<b>case</b> <span class="s">&quot;lightgoldenrodyellow&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#6a41687f8146721c" class="i field">LightGoldenrodYellow</a>;
+					<b>case</b> <span class="s">&quot;lightgray&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#65ac1d63f302cbf7" class="i field">LightGray</a>;
+					<b>case</b> <span class="s">&quot;lightgreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#f10f4cb58e85ef8a" class="i field">LightGreen</a>;
+					<b>case</b> <span class="s">&quot;lightpink&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#2f6faa52fe9e6162" class="i field">LightPink</a>;
+					<b>case</b> <span class="s">&quot;lightsalmon&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#54006a3b1bbdf692" class="i field">LightSalmon</a>;
+					<b>case</b> <span class="s">&quot;lightseagreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#469d6b668f0825ad" class="i field">LightSeaGreen</a>;
+					<b>case</b> <span class="s">&quot;lightskyblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#d00edb660b891316" class="i field">LightSkyBlue</a>;
+					<b>case</b> <span class="s">&quot;lightslategray&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#b4306ef03fd75a0c" class="i field">LightSlateGray</a>;
+					<b>case</b> <span class="s">&quot;lightsteelblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#cfeb562e6f04be4f" class="i field">LightSteelBlue</a>;
+					<b>case</b> <span class="s">&quot;lightyellow&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#115c978480638b47" class="i field">LightYellow</a>;
+					<b>case</b> <span class="s">&quot;lime&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#5f20a07e5d8f8361" class="i field">Lime</a>;
+					<b>case</b> <span class="s">&quot;limegreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#55cc33f5403a7119" class="i field">LimeGreen</a>;
+					<b>case</b> <span class="s">&quot;linen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#fcf1ae4e7fd59381" class="i field">Linen</a>;
+					<b>case</b> <span class="s">&quot;magenta&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#27bf0d35f3f47cbd" class="i field">Magenta</a>;
+					<b>case</b> <span class="s">&quot;maroon&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#6160e87fb4a1a530" class="i field">Maroon</a>;
+					<b>case</b> <span class="s">&quot;mediumaquamarine&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#4ef6298d06cd5d40" class="i field">MediumAquamarine</a>;
+					<b>case</b> <span class="s">&quot;mediumblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#b51508a904dd47ad" class="i field">MediumBlue</a>;
+					<b>case</b> <span class="s">&quot;mediumorchid&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#a3e45e68b9113aaa" class="i field">MediumOrchid</a>;
+					<b>case</b> <span class="s">&quot;mediumpurple&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#20cb87a13d33688c" class="i field">MediumPurple</a>;
+					<b>case</b> <span class="s">&quot;mediumseagreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#13d8b59f5830ba67" class="i field">MediumSeaGreen</a>;
+					<b>case</b> <span class="s">&quot;mediumslateblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#8ed4215acfca2c1b" class="i field">MediumSlateBlue</a>;
+					<b>case</b> <span class="s">&quot;mediumspringgreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#eae8085669a26079" class="i field">MediumSpringGreen</a>;
+					<b>case</b> <span class="s">&quot;mediumturquoise&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#1462bf96dd25a06c" class="i field">MediumTurquoise</a>;
+					<b>case</b> <span class="s">&quot;mediumvioletred&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#a99f4841775dd028" class="i field">MediumVioletRed</a>;
+					<b>case</b> <span class="s">&quot;midnightblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#8835099eb3c62ab6" class="i field">MidnightBlue</a>;
+					<b>case</b> <span class="s">&quot;mintcream&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#d29140c61cc91c6e" class="i field">MintCream</a>;
+					<b>case</b> <span class="s">&quot;mistyrose&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#898060c270dd222f" class="i field">MistyRose</a>;
+					<b>case</b> <span class="s">&quot;moccasin&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#d9bca6726f367d3d" class="i field">Moccasin</a>;
+					<b>case</b> <span class="s">&quot;navajowhite&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#bc863c27b2799e75" class="i field">NavajoWhite</a>;
+					<b>case</b> <span class="s">&quot;navy&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#7016026d838c077a" class="i field">Navy</a>;
+					<b>case</b> <span class="s">&quot;oldlace&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#1b69369852cfd89c" class="i field">OldLace</a>;
+					<b>case</b> <span class="s">&quot;olive&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#d7d29371698ba2ae" class="i field">Olive</a>;
+					<b>case</b> <span class="s">&quot;olivedrab&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#6d27abc6818bd815" class="i field">OliveDrab</a>;
+					<b>case</b> <span class="s">&quot;orange&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#167039f152dca775" class="i field">Orange</a>;
+					<b>case</b> <span class="s">&quot;orangered&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#da414112a5bfd3d4" class="i field">OrangeRed</a>;
+					<b>case</b> <span class="s">&quot;orchid&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#3ae80a6a8a461be4" class="i field">Orchid</a>;
+					<b>case</b> <span class="s">&quot;palegoldenrod&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#53a153c7b1ef10df" class="i field">PaleGoldenrod</a>;
+					<b>case</b> <span class="s">&quot;palegreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#a21fb60f3ae09d1f" class="i field">PaleGreen</a>;
+					<b>case</b> <span class="s">&quot;paleturquoise&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#ae2247fc2b9e1449" class="i field">PaleTurquoise</a>;
+					<b>case</b> <span class="s">&quot;palevioletred&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#345236f30ad1dd7d" class="i field">PaleVioletRed</a>;
+					<b>case</b> <span class="s">&quot;papayawhip&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#dc85a19b72c51e8a" class="i field">PapayaWhip</a>;
+					<b>case</b> <span class="s">&quot;peachpuff&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#30fd0776145f1155" class="i field">PeachPuff</a>;
+					<b>case</b> <span class="s">&quot;peru&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#70115c7bab2a1a4f" class="i field">Peru</a>;
+					<b>case</b> <span class="s">&quot;pink&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#0e52a090353ec621" class="i field">Pink</a>;
+					<b>case</b> <span class="s">&quot;plum&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#a8bfed120060c0fe" class="i field">Plum</a>;
+					<b>case</b> <span class="s">&quot;powderblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#3ce6a5316c98e800" class="i field">PowderBlue</a>;
+					<b>case</b> <span class="s">&quot;purple&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#73e6d3c86107ad1b" class="i field">Purple</a>;
+					<b>case</b> <span class="s">&quot;red&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#db2576a51c6c9daa" class="i field">Red</a>;
+					<b>case</b> <span class="s">&quot;rosybrown&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#8ec85745f9baa826" class="i field">RosyBrown</a>;
+					<b>case</b> <span class="s">&quot;royalblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#65282d37cda8e892" class="i field">RoyalBlue</a>;
+					<b>case</b> <span class="s">&quot;saddlebrown&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#62f78c069950c20d" class="i field">SaddleBrown</a>;
+					<b>case</b> <span class="s">&quot;salmon&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#78ed1e9fe79ae948" class="i field">Salmon</a>;
+					<b>case</b> <span class="s">&quot;sandybrown&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#431ec7ba89c156e3" class="i field">SandyBrown</a>;
+					<b>case</b> <span class="s">&quot;seagreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#ace8d93fb2ce81e4" class="i field">SeaGreen</a>;
+					<b>case</b> <span class="s">&quot;seashell&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#e39a6a9806970ccb" class="i field">SeaShell</a>;
+					<b>case</b> <span class="s">&quot;sienna&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#8a3083fa93d734f4" class="i field">Sienna</a>;
+					<b>case</b> <span class="s">&quot;silver&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#b112e5e4fc132166" class="i field">Silver</a>;
+					<b>case</b> <span class="s">&quot;skyblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#951d2a30a95e3ddb" class="i field">SkyBlue</a>;
+					<b>case</b> <span class="s">&quot;slateblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#33c8faad496d51f2" class="i field">SlateBlue</a>;
+					<b>case</b> <span class="s">&quot;slategray&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#b6b6c7ad0cbd680f" class="i field">SlateGray</a>;
+					<b>case</b> <span class="s">&quot;snow&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#d9e98052c1077143" class="i field">Snow</a>;
+					<b>case</b> <span class="s">&quot;springgreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#f81a95f3a9112a33" class="i field">SpringGreen</a>;
+					<b>case</b> <span class="s">&quot;steelblue&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#bc93e2129818c9f3" class="i field">SteelBlue</a>;
+					<b>case</b> <span class="s">&quot;tan&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#335afe7073ce1d2e" class="i field">Tan</a>;
+					<b>case</b> <span class="s">&quot;teal&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#3bd217d04469e15e" class="i field">Teal</a>;
+					<b>case</b> <span class="s">&quot;thistle&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#c9ad8891865dbf0a" class="i field">Thistle</a>;
+					<b>case</b> <span class="s">&quot;tomato&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#e1a91942a5e786f6" class="i field">Tomato</a>;
+					<b>case</b> <span class="s">&quot;transparent&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#c3b341023bda5948" class="i field">Transparent</a>;
+					<b>case</b> <span class="s">&quot;turquoise&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#42e605d43e9be380" class="i field">Turquoise</a>;
+					<b>case</b> <span class="s">&quot;violet&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#bae1980de0751756" class="i field">Violet</a>;
+					<b>case</b> <span class="s">&quot;wheat&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#5c9a8990f84958a0" class="i field">Wheat</a>;
+					<b>case</b> <span class="s">&quot;white&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#a6c01880a405bde1" class="i field">White</a>;
+					<b>case</b> <span class="s">&quot;whitesmoke&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#6e8716eedc571c96" class="i field">WhiteSmoke</a>;
+					<b>case</b> <span class="s">&quot;yellow&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#f261df92c822dd87" class="i field">Yellow</a>;
+					<b>case</b> <span class="s">&quot;yellowgreen&quot;</span>: <b>return</b> <a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>.<a href="Color.cs.html#bc8a225f057c6419" class="i field">YellowGreen</a>;
+					}
+					<b>var</b> <span id="r30 rd" class="r30 r">field</span> = <b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>).<a href="ReflectionExtensions.cs.html#968d2e09e0e40e6a" class="i method">GetFields</a>().<span class="i method">FirstOrDefault</span>(<span id="r31 rd" class="r31 r">fi</span> =&gt; <span class="r31 r">fi</span>.<span class="i property">IsStatic</span> &amp;&amp; <b>string</b>.<a href="@1@System.Runtime/A.html#d47c1f57ad1e1e6e" class="i method">Equals</a>(<span class="r31 r">fi</span>.<span class="i property">Name</span>, <span class="r29 r">color</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#6c3139b940557bf9" class="i field">OrdinalIgnoreCase</a>));
+					<b>if</b> (<span class="r30 r">field</span> != <b>null</b>)
+						<b>return</b> (<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)<span class="r30 r">field</span>.<span class="i method">GetValue</span>(<b>null</b>);
+					<b>var</b> <span id="r32 rd" class="r32 r">property</span> = <b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>).<a href="ReflectionExtensions.cs.html#216c52aeec2d34f1" class="i method">GetProperties</a>().<span class="i method">FirstOrDefault</span>(<span id="r33 rd" class="r33 r">pi</span> =&gt; <b>string</b>.<a href="@1@System.Runtime/A.html#d47c1f57ad1e1e6e" class="i method">Equals</a>(<span class="r33 r">pi</span>.<span class="i property">Name</span>, <span class="r29 r">color</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#6c3139b940557bf9" class="i field">OrdinalIgnoreCase</a>) &amp;&amp; <span class="r33 r">pi</span>.<span class="i property">CanRead</span> &amp;&amp; <span class="r33 r">pi</span>.<span class="i property">GetMethod</span>.<span class="i property">IsStatic</span>);
+					<b>if</b> (<span class="r32 r">property</span> != <b>null</b>)
+						<b>return</b> (<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)<span class="r32 r">property</span>.<span class="i method">GetValue</span>(<b>null</b>, <b>null</b>);
+				}
+			}
+ 
+			<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r0 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="Color.cs.html#8a6a061540451ec4" class="t t">Color</a>)}<span class="s">&quot;</span>);
+		}
+ 
+		<b>static double</b> <a id="bbd12c4d17d9ca04" href="R/bbd12c4d17d9ca04.html" target="n" data-glyph="76,1" class="i method">ParseColorValue</a>(<b>string</b> <span id="r34 rd" class="r34 r">elem</span>, <b>int</b> <span id="r35 rd" class="r35 r">maxValue</span>, <b>bool</b> <span id="r5 rd" class="r5 r">acceptPercent</span>)
+		{
+			<span class="r34 r">elem</span> = <span class="r34 r">elem</span>.<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+			<b>if</b> (<span class="r34 r">elem</span>.<a href="@1@System.Runtime/A.html#41a31e4feec3ef41" class="i method">EndsWith</a>(<span class="s">&quot;%&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>) &amp;&amp; <span class="r5 r">acceptPercent</span>) {
+				<span class="r35 r">maxValue</span> = 100;
+				<span class="r34 r">elem</span> = <span class="r34 r">elem</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(0, <span class="r34 r">elem</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> - 1);
+			}
+			<b>return</b> (<b>double</b>)(<b>int</b>.<a href="@1@System.Runtime/A.html#ec114e5f519a1dac" class="i method">Parse</a>(<span class="r34 r">elem</span>, <a href="@1@System.Runtime/A.html#4523c5163ff35e41" class="t t">NumberStyles</a>.<a href="@1@System.Runtime/A.html#cf3733616e2bd9e9" class="i field">Number</a>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>).<a href="NumericExtensions.cs.html#8b644180c2d8b3bc" class="i method">Clamp</a>(0, <span class="r35 r">maxValue</span>)) / <span class="r35 r">maxValue</span>;
+		}
+ 
+		<b>static double</b> <a id="fc5b910c160872a7" href="R/fc5b910c160872a7.html" target="n" data-glyph="76,1" class="i method">ParseOpacity</a>(<b>string</b> <span id="r36 rd" class="r36 r">elem</span>)
+		{
+			<b>return double</b>.<a href="@1@System.Runtime/A.html#ca4d01da27e6c335" class="i method">Parse</a>(<span class="r36 r">elem</span>, <a href="@1@System.Runtime/A.html#4523c5163ff35e41" class="t t">NumberStyles</a>.<a href="@1@System.Runtime/A.html#cf3733616e2bd9e9" class="i field">Number</a>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>).<a href="NumericExtensions.cs.html#9bb1791a3757ded7" class="i method">Clamp</a>(0, 1);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html><head><title>StaticExtension.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(105);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/CompiledMarkupExtensions/StaticExtension.cs" target="_top">CompiledMarkupExtensions\StaticExtension.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Cil</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+ 
+<b>using static</b> <span class="i n">System</span>.<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="t t">String</a>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>
+{
+	<b>class</b> <a id="75ed74715fc25b43" href="../R/../../0000000000.html" target="n" data-glyph="2,0" class="t t"><span id="2b9d81d411a843fb">StaticExtension</span></a> : <a href="ICompiledMarkupExtension.cs.html#22b09c59043f0dc6" class="t t">ICompiledMarkupExtension</a>
+	{
+		<b>public</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <a id="e06b0570f5a463ec" href="../R/e06b0570f5a463ec.html" target="n" data-glyph="72,1" class="i method">ProvideValue</a>(<a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a> <span id="r0 rd" class="r0 r">node</span>, <span class="i">ModuleDefinition</span> <span id="r1 rd" class="r1 r">module</span>, <a href="../ILContext.cs.html#cfeae44d09d495a0" class="t t">ILContext</a> <span id="r2 rd" class="r2 r">context</span>, <b>out</b> <span class="i">TypeReference</span> <span id="r3 rd" class="r3 r">memberRef</span>)
+		{
+			<a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="t t">INode</a> <span id="r4 rd" class="r4 r">ntype</span>;
+			<b>if</b> (!<span class="r0 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#ca11b3b288ccdec1" class="i property">Properties</a>.<a href="@0@mscorlib/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<b>new</b> <a href="/Xamarin.Forms.Xaml/A.html#655d78af446a108a" class="t constructor">XmlName</a>(<span class="s">&quot;&quot;</span>, <span class="s">&quot;Member&quot;</span>), <b>out</b> <span class="r4 r">ntype</span>))
+				<span class="r4 r">ntype</span> = <span class="r0 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#fb3a9fc1d07f233b" class="i property">CollectionItems</a>[0];
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r5 rd" class="r5 r">member</span> = ((<a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a>)<span class="r4 r">ntype</span>).<a href="/Xamarin.Forms.Xaml/A.html#5fa72a93b49782e1" class="i property">Value</a> <b>as string</b>;
+ 
+			<b>if</b> (<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r5 r">member</span>) || !<span class="r5 r">member</span>.<a href="@0@mscorlib/A.html#428c5c9954dea844" class="i method">Contains</a>(<span class="s">&quot;.&quot;</span>)) {
+				<a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="k">var</a> <span id="r6 rd" class="r6 r">lineInfo</span> = <span class="r0 r">node</span> <b>as</b> <a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a>;
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">&quot;Syntax for x:Static is [Member=][prefix:]typeName.staticMemberName&quot;</span>, <span class="r6 r">lineInfo</span>);
+			}
+ 
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r7 rd" class="r7 r">dotIdx</span> = <span class="r5 r">member</span>.<a href="@0@mscorlib/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;.&#39;</span>);
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r8 rd" class="r8 r">typename</span> = <span class="r5 r">member</span>.<a href="@0@mscorlib/A.html#8124961f027d9ac9" class="i method">Substring</a>(0, <span class="r7 r">dotIdx</span>);
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r9 rd" class="r9 r">membername</span> = <span class="r5 r">member</span>.<a href="@0@mscorlib/A.html#882fa7998d6ca35a" class="i method">Substring</a>(<span class="r7 r">dotIdx</span> + 1);
+ 
+			<b>var</b> <span id="r10 rd" class="r10 r">typeRef</span> = <span class="r1 r">module</span>.<span class="i">ImportReference</span>(<a href="../XmlTypeExtensions.cs.html#d50d0b1c4b47975e" class="t t">XmlTypeExtensions</a>.<a href="../XmlTypeExtensions.cs.html#10ff340c0cc405a1" class="i method">GetTypeReference</a>(<span class="r8 r">typename</span>, <span class="r1 r">module</span>, <span class="r0 r">node</span> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#aee785270197d5f3" class="t t">BaseNode</a>));
+			<b>var</b> <span id="r11 rd" class="r11 r">fieldRef</span> = <span class="i">GetFieldReference</span>(<span class="r10 r">typeRef</span>, <span class="r9 r">membername</span>, <span class="r1 r">module</span>);
+			<b>var</b> <span id="r12 rd" class="r12 r">propertyDef</span> = <span class="i">GetPropertyDefinition</span>(<span class="r10 r">typeRef</span>, <span class="r9 r">membername</span>, <span class="r1 r">module</span>);
+ 
+			<b>if</b> (<span class="r11 r">fieldRef</span> == <b>null</b> &amp;&amp; <span class="r12 r">propertyDef</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">x:Static: unable to find a public static field, static property, const or enum value named </span>{<span class="r9 r">membername</span>}<span class="s"> in </span>{<span class="r8 r">typename</span>}<span class="s">&quot;</span>, <span class="r0 r">node</span> <b>as</b> <a href="@0@System.Xml/A.html#9acfbdd9c868e54d" class="t t">IXmlLineInfo</a>);
+ 
+			<b>var</b> <span id="r13 rd" class="r13 r">fieldDef</span> = <span class="r11 r">fieldRef</span>?.<span class="i">Resolve</span>();
+			<b>if</b> (<span class="r11 r">fieldRef</span> != <b>null</b>) {
+				<span class="r3 r">memberRef</span> = <span class="r11 r">fieldRef</span>.<span class="i">FieldType</span>;
+				<b>if</b> (!<span class="r13 r">fieldDef</span>.<span class="i">HasConstant</span>)
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldsfld</span>, <span class="r11 r">fieldRef</span>) };
+ 
+				<span class="c">//Constants can be numbers, Boolean values, strings, or a null reference. (https://msdn.microsoft.com/en-us/library/e6w8fe1b.aspx)</span>
+				<b>if</b> (<a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Boolean</span>))
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(((<b>bool</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) ? <span class="i">OpCodes</span>.<span class="i">Ldc_I4_1</span> : <span class="i">OpCodes</span>.<span class="i">Ldc_I4_0</span>) };
+				<b>if</b> (<a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">String</span>))
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldstr</span>, (<b>string</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+				<b>if</b> (<span class="r13 r">fieldDef</span>.<span class="i">Constant</span> == <b>null</b>)
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldnull</span>) };
+				<b>if</b> (<a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Char</span>))
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>char</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+				<b>if</b> (<a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Single</span>))
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_R4</span>, (<b>float</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+				<b>if</b> (<a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Double</span>))
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_R8</span>, (<b>double</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+				<b>if</b> (<a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Byte</span>) || <a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Int16</span>) || <a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Int32</span>))
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>int</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+				<b>if</b> (<a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">SByte</span>) || <a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">UInt16</span>) || <a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">UInt32</span>))
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>uint</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+				<b>if</b> (<a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Int64</span>))
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I8</span>, (<b>long</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+				<b>if</b> (<a href="../TypeReferenceExtensions.cs.html#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="../TypeReferenceExtensions.cs.html#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r3 r">memberRef</span>, <span class="r1 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">UInt64</span>))
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I8</span>, (<b>ulong</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+ 
+				<span class="c">//enum values</span>
+				<b>if</b> (<span class="r3 r">memberRef</span>.<span class="i">Resolve</span>().<span class="i">IsEnum</span>) {
+					<b>if</b> (<span class="r13 r">fieldDef</span>.<span class="i">Constant</span> <b>is long</b>)
+						<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I8</span>, (<b>long</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+					<b>if</b> (<span class="r13 r">fieldDef</span>.<span class="i">Constant</span> <b>is ulong</b>)
+						<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I8</span>, (<b>ulong</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+					<b>if</b> (<span class="r13 r">fieldDef</span>.<span class="i">Constant</span> <b>is uint</b>)
+						<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>uint</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+					<span class="c">//everything else will cast just fine to an int</span>
+					<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, (<b>int</b>)<span class="r13 r">fieldDef</span>.<span class="i">Constant</span>) };
+				}
+			}
+ 
+			<span class="r3 r">memberRef</span> = <span class="r12 r">propertyDef</span>.<span class="i">PropertyType</span>;
+			<b>var</b> <span id="r14 rd" class="r14 r">getterDef</span> = <span class="r1 r">module</span>.<span class="i">ImportReference</span>(<span class="r12 r">propertyDef</span>.<span class="i">GetMethod</span>);
+			<b>return</b> <b>new</b> [] { <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Call</span>, <span class="r14 r">getterDef</span>) };
+		}
+ 
+		<b>public static</b> <span class="i">FieldReference</span> <a id="f20c0f159e9e7660" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetFieldReference</a>(<span class="i">TypeReference</span> <span id="r15 rd" class="r15 r">typeRef</span>, <b>string</b> <span id="r16 rd" class="r16 r">fieldName</span>, <span class="i">ModuleDefinition</span> <span id="r17 rd" class="r17 r">module</span>)
+		{
+			<span class="i">TypeReference</span> <span id="r18 rd" class="r18 r">declaringTypeReference</span>;
+			<span class="i">FieldReference</span> <span id="r19 rd" class="r19 r">fRef</span> = <span class="r15 r">typeRef</span>.<a href="../TypeReferenceExtensions.cs.html#518b7c963b5f049d" class="i method">GetField</a>(<span id="r20 rd" class="r20 r">fd</span> =&gt; <span class="r20 r">fd</span>.<span class="i">Name</span> == <span class="r16 r">fieldName</span> &amp;&amp;
+			                                       <span class="r20 r">fd</span>.<span class="i">IsStatic</span> &amp;&amp;
+			                                       <span class="r20 r">fd</span>.<span class="i">IsPublic</span>, <b>out</b> <span class="r18 r">declaringTypeReference</span>);
+			<b>if</b> (<span class="r19 r">fRef</span> != <b>null</b>) {
+				<span class="r19 r">fRef</span> = <span class="r17 r">module</span>.<span class="i">ImportReference</span>(<span class="r19 r">fRef</span>.<a href="../FieldReferenceExtensions.cs.html#0fc6dac808991c5c" class="i method">ResolveGenericParameters</a>(<span class="r18 r">declaringTypeReference</span>));
+				<span class="r19 r">fRef</span>.<span class="i">FieldType</span> = <span class="r17 r">module</span>.<span class="i">ImportReference</span>(<span class="r19 r">fRef</span>.<span class="i">FieldType</span>);
+			}
+			<b>return</b> <span class="r19 r">fRef</span>;
+		}
+ 
+		<b>public static</b> <span class="i">PropertyDefinition</span> <a id="551673e337bade1c" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetPropertyDefinition</a>(<span class="i">TypeReference</span> <span id="r21 rd" class="r21 r">typeRef</span>, <b>string</b> <span id="r22 rd" class="r22 r">propertyName</span>, <span class="i">ModuleDefinition</span> <span id="r23 rd" class="r23 r">module</span>)
+		{
+			<span class="i">TypeReference</span> <span id="r24 rd" class="r24 r">declaringTypeReference</span>;
+			<span class="i">PropertyDefinition</span> <span id="r25 rd" class="r25 r">pDef</span> = <span class="r21 r">typeRef</span>.<span class="i">GetProperty</span>(<span id="r26 rd" class="r26 r">pd</span> =&gt; <span class="r26 r">pd</span>.<span class="i">Name</span> == <span class="r22 r">propertyName</span> &amp;&amp;
+			                                              <span class="r26 r">pd</span>.<span class="i">GetMethod</span>.<span class="i">IsPublic</span> &amp;&amp;
+			                                              <span class="r26 r">pd</span>.<span class="i">GetMethod</span>.<span class="i">IsStatic</span>, <b>out</b> <span class="r24 r">declaringTypeReference</span>);
+			<b>return</b> <span class="r25 r">pDef</span>;
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

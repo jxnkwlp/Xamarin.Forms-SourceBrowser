@@ -1,0 +1,551 @@
+﻿<!DOCTYPE html>
+<html><head><title>Forms.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(542);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Forms.cs" target="_top">Forms.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">IO</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">IO</span>.<span class="i">IsolatedStorage</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>.<span class="i">Expressions</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Net</span>.<span class="i">Http</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Reflection</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Security</span>.<span class="i">Cryptography</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Text</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">App</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>.<span class="i">Res</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">OS</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Util</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>;
+<b>using</b> <span class="i">Resource</span> = <span class="i">Android</span>.<span class="i">Resource</span>;
+<b>using</b> <span class="i">Trace</span> = <span class="i">System</span>.<span class="i">Diagnostics</span>.<span class="i">Trace</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>public static class</b> <a id="eb8800bb7e650425" href="R/eb8800bb7e650425.html" target="n" data-glyph="0,0" class="t t">Forms</a>
+	{
+		<b>const int</b> <a id="45d34b5e9b35cc68" href="R/45d34b5e9b35cc68.html" target="n" data-glyph="10,1" class="i field">TabletCrossover</a> = 600;
+ 
+		<b>static bool</b>? <a id="8ded52e6b3b0ca27" href="R/8ded52e6b3b0ca27.html" target="n" data-glyph="46,1" class="i field">s_supportsProgress</a>;
+ 
+		<b>static bool</b>? <a id="5e0d0e54d1e4e9d0" href="R/5e0d0e54d1e4e9d0.html" target="n" data-glyph="46,1" class="i field">s_isLollipopOrNewer</a>;
+ 
+		<b>public static</b> <span class="i">Context</span> <a id="51008592798f3c52" href="R/51008592798f3c52.html" target="n" data-glyph="102,1" class="i property">Context</a> { <b>get</b>; <b>internal set</b>; }
+ 
+		<b>public static bool</b> <a id="e95a77dd210e7a30" href="R/e95a77dd210e7a30.html" target="n" data-glyph="102,1" class="i property">IsInitialized</a> { <b>get</b>; <b>private set</b>; }
+		<b>static bool</b> <a id="6a8355ad2e24b253" href="R/6a8355ad2e24b253.html" target="n" data-glyph="106,1" class="i property">FlagsSet</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>internal static bool</b> <a id="75ec82fe3a2493eb" href="R/75ec82fe3a2493eb.html" target="n" data-glyph="104,1" class="i property">IsLollipopOrNewer</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (!<a href="#5e0d0e54d1e4e9d0" class="i field">s_isLollipopOrNewer</a>.<span class="i">HasValue</span>)
+					<a href="#5e0d0e54d1e4e9d0" class="i field">s_isLollipopOrNewer</a> = (<b>int</b>)<span class="i">Build</span>.<span class="i">VERSION</span>.<span class="i">SdkInt</span> &gt;= 21;
+				<b>return</b> <a href="#5e0d0e54d1e4e9d0" class="i field">s_isLollipopOrNewer</a>.<span class="i">Value</span>;
+			}
+		}
+ 
+		<b>internal static bool</b> <a id="5397e9428227378f" href="R/5397e9428227378f.html" target="n" data-glyph="104,1" class="i property">SupportsProgress</a>
+		{
+			<b>get</b>
+			{
+				<b>var</b> <span id="r0 rd" class="r0 r">activity</span> = <a href="#51008592798f3c52" class="i property">Context</a> <b>as</b> <span class="i">Activity</span>;
+				<b>if</b> (!<a href="#8ded52e6b3b0ca27" class="i field">s_supportsProgress</a>.<span class="i">HasValue</span>)
+				{
+					<b>int</b> <span id="r1 rd" class="r1 r">progressCircularId</span> = <a href="#51008592798f3c52" class="i property">Context</a>.<span class="i">Resources</span>.<span class="i">GetIdentifier</span>(<span class="s">&quot;progress_circular&quot;</span>, <span class="s">&quot;id&quot;</span>, <span class="s">&quot;android&quot;</span>);
+					<b>if</b> (<span class="r1 r">progressCircularId</span> &gt; 0 &amp;&amp; <span class="r0 r">activity</span> != <b>null</b>)
+						<a href="#8ded52e6b3b0ca27" class="i field">s_supportsProgress</a> = <span class="r0 r">activity</span>.<span class="i">FindViewById</span>(<span class="r1 r">progressCircularId</span>) != <b>null</b>;
+					<b>else</b>
+						<a href="#8ded52e6b3b0ca27" class="i field">s_supportsProgress</a> = <b>true</b>;
+				}
+				<b>return</b> <a href="#8ded52e6b3b0ca27" class="i field">s_supportsProgress</a>.<span class="i">Value</span>;
+			}
+		}
+ 
+		<b>internal static</b> <a href="AndroidTitleBarVisibility.cs.html#57129330958b0de0" class="t t">AndroidTitleBarVisibility</a> <a id="3dc54c10cd234fee" href="R/3dc54c10cd234fee.html" target="n" data-glyph="104,1" class="i property">TitleBarVisibility</a> { <b>get</b>; <b>set</b>; }
+ 
+		<span class="c">// Provide backwards compat for Forms.Init and AndroidActivity</span>
+		<span class="c">// Why is bundle a param if never used?</span>
+		<b>public static void</b> <a id="476baaabca16699b" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Init</a>(<span class="i">Context</span> <span id="r2 rd" class="r2 r">activity</span>, <span class="i">Bundle</span> <span id="r3 rd" class="r3 r">bundle</span>)
+		{
+			<span class="i">Assembly</span> <span id="r4 rd" class="r4 r">resourceAssembly</span> = <span class="i">Assembly</span>.<span class="i">GetCallingAssembly</span>();
+			<a href="#495ebcde1dbd87be" class="i method">SetupInit</a>(<span class="r2 r">activity</span>, <span class="r4 r">resourceAssembly</span>);
+		}
+ 
+		<b>public static void</b> <a id="c00c497e81e84c99" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Init</a>(<span class="i">Context</span> <span id="r5 rd" class="r5 r">activity</span>, <span class="i">Bundle</span> <span id="r6 rd" class="r6 r">bundle</span>, <span class="i">Assembly</span> <span id="r7 rd" class="r7 r">resourceAssembly</span>)
+		{
+			<a href="#495ebcde1dbd87be" class="i method">SetupInit</a>(<span class="r5 r">activity</span>, <span class="r7 r">resourceAssembly</span>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> Sets title bar visibility programmatically. Must be called after Xamarin.Forms.Forms.Init() method</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">param</span><span class="c"> </span><span class="c">name</span><span class="c">=</span><span class="c">&quot;</span><span class="r8 r">visibility</span><span class="c">&quot;</span><span class="c">&gt;</span><span class="c">Title bar visibility enum</span><span class="c">&lt;/</span><span class="c">param</span><span class="c">&gt;</span>
+		<b>public static void</b> <a id="7e16f1b1893bdead" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SetTitleBarVisibility</a>(<a href="AndroidTitleBarVisibility.cs.html#57129330958b0de0" class="t t">AndroidTitleBarVisibility</a> <span id="r8 rd" class="r8 r">visibility</span>)
+		{
+			<b>if</b>((<span class="i">Activity</span>)<a href="#51008592798f3c52" class="i property">Context</a> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">NullReferenceException</span>(<span class="s">&quot;Must be called after Xamarin.Forms.Forms.Init() method&quot;</span>);
+ 
+			<a href="#3dc54c10cd234fee" class="i property">TitleBarVisibility</a> = <span class="r8 r">visibility</span>;
+ 
+			<b>if</b> (<a href="#3dc54c10cd234fee" class="i property">TitleBarVisibility</a> == <a href="AndroidTitleBarVisibility.cs.html#57129330958b0de0" class="t t">AndroidTitleBarVisibility</a>.<a href="AndroidTitleBarVisibility.cs.html#b69536161b3158fa" class="i field">Never</a>)
+			{
+				<b>if</b> (!((<span class="i">Activity</span>)<a href="#51008592798f3c52" class="i property">Context</a>).<span class="i">Window</span>.<span class="i">Attributes</span>.<span class="i">Flags</span>.<span class="i">HasFlag</span>(<span class="i">WindowManagerFlags</span>.<span class="i">Fullscreen</span>))
+					((<span class="i">Activity</span>)<a href="#51008592798f3c52" class="i property">Context</a>).<span class="i">Window</span>.<span class="i">AddFlags</span>(<span class="i">WindowManagerFlags</span>.<span class="i">Fullscreen</span>);
+			}
+			<b>else</b>
+			{
+				<b>if</b> (((<span class="i">Activity</span>)<a href="#51008592798f3c52" class="i property">Context</a>).<span class="i">Window</span>.<span class="i">Attributes</span>.<span class="i">Flags</span>.<span class="i">HasFlag</span>(<span class="i">WindowManagerFlags</span>.<span class="i">Fullscreen</span>))
+					((<span class="i">Activity</span>)<a href="#51008592798f3c52" class="i property">Context</a>).<span class="i">Window</span>.<span class="i">ClearFlags</span>(<span class="i">WindowManagerFlags</span>.<span class="i">Fullscreen</span>);
+			}
+		}
+ 
+		<b>public static event</b> <span class="i">EventHandler</span>&lt;<a href="ViewInitializedEventArgs.cs.html#582171dc0c08ea72" class="t t">ViewInitializedEventArgs</a>&gt; <a id="6d9728c6e11153db" href="R/6d9728c6e11153db.html" target="n" data-glyph="30,1" class="i">ViewInitialized</a>;
+ 
+		<b>internal static void</b> <a id="5608298d94a87223" href="R/../../0000000000.html" target="n" data-glyph="221,1" class="i method">SendViewInitialized</a>(<b>this</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r9 rd" class="r9 r">self</span>, <b>global</b>::<span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span> <span id="r10 rd" class="r10 r">nativeView</span>)
+		{
+			<span class="i">EventHandler</span>&lt;<a href="ViewInitializedEventArgs.cs.html#582171dc0c08ea72" class="t t">ViewInitializedEventArgs</a>&gt; <span id="r11 rd" class="r11 r">viewInitialized</span> = <a href="#6d9728c6e11153db" class="i">ViewInitialized</a>;
+			<b>if</b> (<span class="r11 r">viewInitialized</span> != <b>null</b>)
+				<span class="r11 r">viewInitialized</span>(<span class="r9 r">self</span>, <b>new</b> <a href="ViewInitializedEventArgs.cs.html#582171dc0c08ea72" class="t constructor">ViewInitializedEventArgs</a> { <a href="ViewInitializedEventArgs.cs.html#a3fe62752ec0778d" class="i property">View</a> = <span class="r9 r">self</span>, <a href="ViewInitializedEventArgs.cs.html#7c383db20e5baf8d" class="i property">NativeView</a> = <span class="r10 r">nativeView</span> });
+		}
+ 
+		<b>static void</b> <a id="495ebcde1dbd87be" href="R/495ebcde1dbd87be.html" target="n" data-glyph="76,1" class="i method">SetupInit</a>(<span class="i">Context</span> <span id="r12 rd" class="r12 r">activity</span>, <span class="i">Assembly</span> <span id="r13 rd" class="r13 r">resourceAssembly</span>)
+		{
+			<a href="#51008592798f3c52" class="i property">Context</a> = <span class="r12 r">activity</span>;
+ 
+			<a href="ResourceManager.cs.html#1c4bd056b700c13c" class="t t">ResourceManager</a>.<a href="ResourceManager.cs.html#97c30ff6fad8f7d6" class="i method">Init</a>(<span class="r13 r">resourceAssembly</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<span class="i">SetAccent</span>(<a href="#5e65779c66736147" class="i method">GetAccentColor</a>());
+ 
+			<b>if</b> (!<a href="#e95a77dd210e7a30" class="i property">IsInitialized</a>)
+				<span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#0d63cf44198128a5" class="i property">Listeners</a>.<span class="i">Add</span>(<b>new</b> <span class="t">DelegateLogListener</span>((<span id="r14 rd" class="r14 r">c</span>, <span id="r15 rd" class="r15 r">m</span>) =&gt; <span class="i">Trace</span>.<span class="i">WriteLine</span>(<span class="r15 r">m</span>, <span class="r14 r">c</span>)));
+ 
+			<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<span class="i">PlatformServices</span> = <b>new</b> <a href="#5b597618a2829628" class="t constructor">AndroidPlatformServices</a>();
+ 
+			<span class="c">// use field and not property to avoid exception in getter</span>
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#c2f173ccc6f4012b" class="i field">info</a> != <b>null</b>)
+			{
+				((<a href="#5f8a710301682f91" class="t t">AndroidDeviceInfo</a>)<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#c2f173ccc6f4012b" class="i field">info</a>).<span class="i">Dispose</span>();
+				<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#c2f173ccc6f4012b" class="i field">info</a> = <b>null</b>;
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<span class="i">Info</span> = <b>new</b> <a href="#d4b864e03d14b98d" class="t constructor">AndroidDeviceInfo</a>(<span class="r12 r">activity</span>);
+ 
+			<a href="AndroidTicker.cs.html#f30575c8ef61ec2c" class="k">var</a> <span id="r16 rd" class="r16 r">ticker</span> = <a href="/Xamarin.Forms.Core/A.html#9ac4e7c1113aeac4" class="t t">Ticker</a>.<a href="/Xamarin.Forms.Core/A.html#daa22f70b75e15e1" class="i property">Default</a> <b>as</b> <a href="AndroidTicker.cs.html#f30575c8ef61ec2c" class="t t">AndroidTicker</a>;
+			<b>if</b> (<span class="r16 r">ticker</span> != <b>null</b>)
+				<span class="r16 r">ticker</span>.<a href="AndroidTicker.cs.html#33da45abdff371f9" class="i method">Dispose</a>();
+			<a href="/Xamarin.Forms.Core/A.html#9ac4e7c1113aeac4" class="t t">Ticker</a>.<span class="i">SetDefault</span>(<b>new</b> <a href="AndroidTicker.cs.html#fe0bfa5d47dafc64" class="t constructor">AndroidTicker</a>());
+ 
+			<b>if</b> (!<a href="#e95a77dd210e7a30" class="i property">IsInitialized</a>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#44c60787abb7ad29" class="t t">Registrar</a>.<span class="i">RegisterAll</span>(<b>new</b>[] { <b>typeof</b>(<a href="ExportRendererAttribute.cs.html#b9d338ece55f8e50" class="t t">ExportRendererAttribute</a>), <b>typeof</b>(<a href="ExportCellAttribute.cs.html#ca41e1d76c8a1b3d" class="t t">ExportCellAttribute</a>), <b>typeof</b>(<a href="ExportImageSourceHandlerAttribute.cs.html#84b79b11d68a6c87" class="t t">ExportImageSourceHandlerAttribute</a>) });
+			}
+ 
+			<b>int</b> <span id="r17 rd" class="r17 r">minWidthDp</span> = <a href="#51008592798f3c52" class="i property">Context</a>.<span class="i">Resources</span>.<span class="i">Configuration</span>.<span class="i">SmallestScreenWidthDp</span>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<span class="i">SetIdiom</span>(<span class="r17 r">minWidthDp</span> &gt;= <a href="#45d34b5e9b35cc68" class="i field">TabletCrossover</a> ? <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#0f247fdcb2e64049" class="i field">Tablet</a> : <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a>);
+ 
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#5c23111d1c34e810" class="t t">ExpressionSearch</a>.<a href="/Xamarin.Forms.Core/A.html#f4e23cbbe03e2071" class="i property">Default</a> == <b>null</b>)
+				<a href="/Xamarin.Forms.Core/A.html#5c23111d1c34e810" class="t t">ExpressionSearch</a>.<span class="i">Default</span> = <b>new</b> <a href="#d942a1233bb6463f" class="t constructor">AndroidExpressionSearch</a>();
+ 
+			<a href="#e95a77dd210e7a30" class="i property">IsInitialized</a> = <b>true</b>;
+		}
+ 
+		<b>static</b> <span class="i">IReadOnlyList</span>&lt;<b>string</b>&gt; <a id="ce8013f9001e9016" href="R/ce8013f9001e9016.html" target="n" data-glyph="46,1" class="i field">s_flags</a>;
+		<b>public static</b> <span class="i">IReadOnlyList</span>&lt;<b>string</b>&gt; <a id="7aa52dc6b3d218a9" href="R/7aa52dc6b3d218a9.html" target="n" data-glyph="102,1" class="i property">Flags</a> =&gt; <a href="#ce8013f9001e9016" class="i field">s_flags</a> ?? (<a href="#ce8013f9001e9016" class="i field">s_flags</a> = <b>new</b> <span class="i">List</span>&lt;<b>string</b>&gt;().<span class="i">AsReadOnly</span>());
+ 
+		<b>public static void</b> <a id="b879c4a5e444d606" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SetFlags</a>(<b>params string</b>[] <span id="r18 rd" class="r18 r">flags</span>)
+		{
+			<b>if</b> (<a href="#6a8355ad2e24b253" class="i property">FlagsSet</a>)
+			{
+				<span class="c">// Don&#39;t try to set the flags again if they&#39;ve already been set</span>
+				<span class="c">// (e.g., during a configuration change where OnCreate runs again)</span>
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<a href="#e95a77dd210e7a30" class="i property">IsInitialized</a>)
+			{
+				<b>throw</b> <b>new</b> <span class="i">InvalidOperationException</span>(<span class="s">$&quot;</span>{<b>nameof</b>(<span class="i">SetFlags</span>)}<span class="s"> must be called before </span>{<b>nameof</b>(<span class="i">Init</span>)}<span class="s">&quot;</span>);
+			}
+ 
+			<a href="#ce8013f9001e9016" class="i field">s_flags</a> = <span class="r18 r">flags</span>.<span class="i">ToList</span>().<span class="i">AsReadOnly</span>();
+			<a href="#6a8355ad2e24b253" class="i property">FlagsSet</a> = <b>true</b>;
+		}
+ 
+		<b>static</b> <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <a id="5e65779c66736147" href="R/5e65779c66736147.html" target="n" data-glyph="76,1" class="i method">GetAccentColor</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r19 rd" class="r19 r">rc</span>;
+			<b>using</b> (<b>var</b> <span id="r20 rd" class="r20 r">value</span> = <b>new</b> <span class="i">TypedValue</span>())
+			{
+				<b>if</b> (<a href="#51008592798f3c52" class="i property">Context</a>.<span class="i">Theme</span>.<span class="i">ResolveAttribute</span>(<b>global</b>::<span class="i">Android</span>.<span class="i">Resource</span>.<span class="i">Attribute</span>.<span class="i">ColorAccent</span>, <span class="r20 r">value</span>, <b>true</b>) &amp;&amp; <a href="#eb8800bb7e650425" class="t t">Forms</a>.<a href="#75ec82fe3a2493eb" class="i property">IsLollipopOrNewer</a>)	<span class="c">// Android 5.0+</span>
+				{
+					<span class="r19 r">rc</span> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<span class="i">FromUint</span>((<b>uint</b>)<span class="r20 r">value</span>.<span class="i">Data</span>);
+				}
+				<b>else if</b>(<a href="#51008592798f3c52" class="i property">Context</a>.<span class="i">Theme</span>.<span class="i">ResolveAttribute</span>(<a href="#51008592798f3c52" class="i property">Context</a>.<span class="i">Resources</span>.<span class="i">GetIdentifier</span>(<span class="s">&quot;colorAccent&quot;</span>, <span class="s">&quot;attr&quot;</span>, <a href="#51008592798f3c52" class="i property">Context</a>.<span class="i">PackageName</span>), <span class="r20 r">value</span>, <b>true</b>))	<span class="c">// &lt; Android 5.0</span>
+				{
+					<span class="r19 r">rc</span> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<span class="i">FromUint</span>((<b>uint</b>)<span class="r20 r">value</span>.<span class="i">Data</span>);
+				}
+				<b>else</b>                    <span class="c">// fallback to old code if nothing works (don&#39;t know if that ever happens)</span>
+				{
+					<span class="c">// Detect if legacy device and use appropriate accent color</span>
+					<span class="c">// Hardcoded because could not get color from the theme drawable</span>
+					<b>var</b> <span id="r21 rd" class="r21 r">sdkVersion</span> = (<b>int</b>)<span class="i">Build</span>.<span class="i">VERSION</span>.<span class="i">SdkInt</span>;
+					<b>if</b> (<span class="r21 r">sdkVersion</span> &lt;= 10)
+					{
+						<span class="c">// legacy theme button pressed color</span>
+						<span class="r19 r">rc</span> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<span class="i">FromHex</span>(<span class="s">&quot;#fffeaa0c&quot;</span>);
+					}
+					<b>else</b>
+					{
+						<span class="c">// Holo dark light blue</span>
+						<span class="r19 r">rc</span> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<span class="i">FromHex</span>(<span class="s">&quot;#ff33b5e5&quot;</span>);
+					}
+				}
+			}
+			<b>return</b> <span class="r19 r">rc</span>;
+		}
+ 
+		<b>class</b> <a id="5f8a710301682f91" href="R/5f8a710301682f91.html" target="n" data-glyph="4,1" class="t t">AndroidDeviceInfo</a> : <a href="/Xamarin.Forms.Core/A.html#7a78723b79e3a0d3" class="t t">DeviceInfo</a>
+		{
+			<b>bool</b> <a id="edd2031b27cf3cbc" href="R/edd2031b27cf3cbc.html" target="n" data-glyph="46,2" class="i field">disposed</a>;
+			<b>readonly</b> <span class="i">Context</span> <a id="84d96e608dc1e611" href="R/84d96e608dc1e611.html" target="n" data-glyph="46,2" class="i field">_formsActivity</a>;
+			<b>readonly</b> <a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <a id="de1c322c8ab882cb" href="R/de1c322c8ab882cb.html" target="n" data-glyph="46,2" class="i field">_pixelScreenSize</a>;
+			<b>readonly double</b> <a id="8b318e73b9387355" href="R/8b318e73b9387355.html" target="n" data-glyph="46,2" class="i field">_scalingFactor</a>;
+ 
+			<span class="i">Orientation</span> <a id="5809b43ccf4f3976" href="R/5809b43ccf4f3976.html" target="n" data-glyph="46,2" class="i field">_previousOrientation</a> = <span class="i">Orientation</span>.<span class="i">Undefined</span>;
+ 
+			<b>public</b> <a id="d4b864e03d14b98d" href="R/d4b864e03d14b98d.html" target="n" data-glyph="72,2" class="i constructor">AndroidDeviceInfo</a>(<span class="i">Context</span> <span id="r22 rd" class="r22 r">formsActivity</span>)
+			{
+				<a href="#84d96e608dc1e611" class="i field">_formsActivity</a> = <span class="r22 r">formsActivity</span>;
+				<span class="i">CheckOrientationChanged</span>(<a href="#84d96e608dc1e611" class="i field">_formsActivity</a>.<span class="i">Resources</span>.<span class="i">Configuration</span>.<span class="i">Orientation</span>);
+				<span class="c">// This will not be an implementation of IDeviceInfoProvider when running inside the context</span>
+				<span class="c">// of layoutlib, which is what the Android Designer does.</span>
+				<b>if</b> (<a href="#84d96e608dc1e611" class="i field">_formsActivity</a> <b>is</b> <a href="IDeviceInfoProvider.cs.html#d72a34959b97f7b1" class="t t">IDeviceInfoProvider</a>)
+					((<a href="IDeviceInfoProvider.cs.html#d72a34959b97f7b1" class="t t">IDeviceInfoProvider</a>) <a href="#84d96e608dc1e611" class="i field">_formsActivity</a>).<a href="IDeviceInfoProvider.cs.html#5d4575eabf20866e" class="i">ConfigurationChanged</a> += <span class="i">ConfigurationChanged</span>;
+ 
+				<b>using</b> (<span class="i">DisplayMetrics</span> <span id="r23 rd" class="r23 r">display</span> = <span class="r22 r">formsActivity</span>.<span class="i">Resources</span>.<span class="i">DisplayMetrics</span>)
+				{
+					<a href="#8b318e73b9387355" class="i field">_scalingFactor</a> = <span class="r23 r">display</span>.<span class="i">Density</span>;
+					<a href="#de1c322c8ab882cb" class="i field">_pixelScreenSize</a> = <b>new</b> <span class="t">Size</span>(<span class="r23 r">display</span>.<span class="i">WidthPixels</span>, <span class="r23 r">display</span>.<span class="i">HeightPixels</span>);
+					<a href="#b34dde1834c95df9" class="i property">ScaledScreenSize</a> = <b>new</b> <span class="t">Size</span>(<a href="#de1c322c8ab882cb" class="i field">_pixelScreenSize</a>.<a href="/Xamarin.Forms.Core/A.html#6207d8e3826352f7" class="i property">Width</a> / <a href="#8b318e73b9387355" class="i field">_scalingFactor</a>, <a href="#de1c322c8ab882cb" class="i field">_pixelScreenSize</a>.<a href="/Xamarin.Forms.Core/A.html#6207d8e3826352f7" class="i property">Width</a> / <a href="#8b318e73b9387355" class="i field">_scalingFactor</a>);
+				}
+			}
+ 
+			<b>public override</b> <a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <a id="487269d26bcb7f5c" href="R/487269d26bcb7f5c.html" target="n" data-glyph="102,2" class="i property">PixelScreenSize</a>
+			{
+				<b>get</b> { <b>return</b> <a href="#de1c322c8ab882cb" class="i field">_pixelScreenSize</a>; }
+			}
+ 
+			<b>public override</b> <a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <a id="b34dde1834c95df9" href="R/b34dde1834c95df9.html" target="n" data-glyph="102,2" class="i property">ScaledScreenSize</a> { <b>get</b>; }
+ 
+			<b>public override double</b> <a id="eef3f49cf3969ab8" href="R/eef3f49cf3969ab8.html" target="n" data-glyph="102,2" class="i property">ScalingFactor</a>
+			{
+				<b>get</b> { <b>return</b> <a href="#8b318e73b9387355" class="i field">_scalingFactor</a>; }
+			}
+ 
+			<b>protected override void</b> <a id="162a2df97dd2c64c" href="R/162a2df97dd2c64c.html" target="n" data-glyph="75,2" class="i method">Dispose</a>(<b>bool</b> <span id="r24 rd" class="r24 r">disposing</span>)
+			{
+				<b>if</b> (<span class="r24 r">disposing</span> &amp;&amp; !<a href="#edd2031b27cf3cbc" class="i field">disposed</a>) {
+					<a href="#edd2031b27cf3cbc" class="i field">disposed</a> = <b>true</b>;
+					<b>if</b> (<a href="#84d96e608dc1e611" class="i field">_formsActivity</a> <b>is</b> <a href="IDeviceInfoProvider.cs.html#d72a34959b97f7b1" class="t t">IDeviceInfoProvider</a>)
+						((<a href="IDeviceInfoProvider.cs.html#d72a34959b97f7b1" class="t t">IDeviceInfoProvider</a>) <a href="#84d96e608dc1e611" class="i field">_formsActivity</a>).<a href="IDeviceInfoProvider.cs.html#5d4575eabf20866e" class="i">ConfigurationChanged</a> -= <span class="i">ConfigurationChanged</span>;
+				}
+				<a href="/Xamarin.Forms.Core/A.html#7a78723b79e3a0d3" class="k">base</a>.<span class="i">Dispose</span>(<span class="r24 r">disposing</span>);
+			}
+ 
+			<b>void</b> <a id="c678b1cd9fa6afb6" href="R/../../0000000000.html" target="n" data-glyph="76,2" class="i method">CheckOrientationChanged</a>(<span class="i">Orientation</span> <span id="r25 rd" class="r25 r">orientation</span>)
+			{
+				<b>if</b> (!<a href="#5809b43ccf4f3976" class="i field">_previousOrientation</a>.<span class="i">Equals</span>(<span class="r25 r">orientation</span>))
+					<span class="i">CurrentOrientation</span> = <span class="r25 r">orientation</span>.<a href="Extensions.cs.html#8a616ecf11ad7528" class="i method">ToDeviceOrientation</a>();
+ 
+				<a href="#5809b43ccf4f3976" class="i field">_previousOrientation</a> = <span class="r25 r">orientation</span>;
+			}
+ 
+			<b>void</b> <a id="615ffd613187234d" href="R/../../0000000000.html" target="n" data-glyph="76,2" class="i method">ConfigurationChanged</a>(<b>object</b> <span id="r26 rd" class="r26 r">sender</span>, <span class="i">EventArgs</span> <span id="r27 rd" class="r27 r">e</span>)
+			{
+				<span class="i">CheckOrientationChanged</span>(<a href="#84d96e608dc1e611" class="i field">_formsActivity</a>.<span class="i">Resources</span>.<span class="i">Configuration</span>.<span class="i">Orientation</span>);
+			}
+		}
+ 
+		<b>class</b> <a id="d942a1233bb6463f" href="R/d942a1233bb6463f.html" target="n" data-glyph="4,1" class="t t"><span id="ff9f001369f93cb8">AndroidExpressionSearch</span></a> : <span class="i">ExpressionVisitor</span>, <a href="/Xamarin.Forms.Core/A.html#1aabf9c27618ae28" class="t t">IExpressionSearch</a>
+		{
+			<span class="i">List</span>&lt;<b>object</b>&gt; <a id="64ca99e22eefef0c" href="R/64ca99e22eefef0c.html" target="n" data-glyph="46,2" class="i field">_results</a>;
+			<span class="i">Type</span> <a id="73e9e15472018e26" href="R/73e9e15472018e26.html" target="n" data-glyph="46,2" class="i field">_targetType</a>;
+ 
+			<b>public</b> <span class="i">List</span>&lt;<span class="r28 r t">T</span>&gt; <a id="5e1095bcc2ed0680" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i method">FindObjects</a>&lt;<span id="r28 rd t" class="r28 r t">T</span>&gt;(<span class="i">Expression</span> <span id="r29 rd" class="r29 r">expression</span>) <b>where</b> <span class="r28 r t">T</span> : <b>class</b>
+			{
+				<a href="#64ca99e22eefef0c" class="i field">_results</a> = <b>new</b> <span class="i">List</span>&lt;<b>object</b>&gt;();
+				<a href="#73e9e15472018e26" class="i field">_targetType</a> = <b>typeof</b>(<span class="r28 r t">T</span>);
+				<span class="i">Visit</span>(<span class="r29 r">expression</span>);
+				<b>return</b> <a href="#64ca99e22eefef0c" class="i field">_results</a>.<span class="i">Select</span>(<span id="r30 rd" class="r30 r">o</span> =&gt; <span class="r30 r">o</span> <b>as</b> <span class="r28 r t">T</span>).<span class="i">ToList</span>();
+			}
+ 
+			<b>protected override</b> <span class="i">Expression</span> <a id="3159d9ef603483b2" href="R/../../0000000000.html" target="n" data-glyph="75,2" class="i method">VisitMember</a>(<span class="i">MemberExpression</span> <span id="r31 rd" class="r31 r">node</span>)
+			{
+				<b>if</b> (<span class="r31 r">node</span>.<span class="i">Expression</span> <b>is</b> <span class="i">ConstantExpression</span> &amp;&amp; <span class="r31 r">node</span>.<span class="i">Member</span> <b>is</b> <span class="i">FieldInfo</span>)
+				{
+					<b>object</b> <span id="r32 rd" class="r32 r">container</span> = ((<span class="i">ConstantExpression</span>)<span class="r31 r">node</span>.<span class="i">Expression</span>).<span class="i">Value</span>;
+					<b>object</b> <span id="r33 rd" class="r33 r">value</span> = ((<span class="i">FieldInfo</span>)<span class="r31 r">node</span>.<span class="i">Member</span>).<span class="i">GetValue</span>(<span class="r32 r">container</span>);
+ 
+					<b>if</b> (<a href="#73e9e15472018e26" class="i field">_targetType</a>.<span class="i">IsInstanceOfType</span>(<span class="r33 r">value</span>))
+						<a href="#64ca99e22eefef0c" class="i field">_results</a>.<span class="i">Add</span>(<span class="r33 r">value</span>);
+				}
+				<b>return</b> <b>base</b>.<span class="i">VisitMember</span>(<span class="r31 r">node</span>);
+			}
+		}
+ 
+		<b>class</b> <a id="5b597618a2829628" href="R/5b597618a2829628.html" target="n" data-glyph="4,1" class="t t"><span id="18952700c7043fb2">AndroidPlatformServices</span></a> : <a href="/Xamarin.Forms.Core/A.html#864b71d4c5bc97ef" class="t t">IPlatformServices</a>
+		{
+			<b>static readonly</b> <span class="i">MD5CryptoServiceProvider</span> <a id="6db2410189798001" href="R/6db2410189798001.html" target="n" data-glyph="46,2" class="i field">Checksum</a> = <b>new</b> <span class="i">MD5CryptoServiceProvider</span>();
+			<b>double</b> <a id="7a467ca28caf281d" href="R/7a467ca28caf281d.html" target="n" data-glyph="46,2" class="i field">_buttonDefaultSize</a>;
+			<b>double</b> <a id="bb19515d6d817649" href="R/bb19515d6d817649.html" target="n" data-glyph="46,2" class="i field">_editTextDefaultSize</a>;
+			<b>double</b> <a id="9310cf3f4bde30bd" href="R/9310cf3f4bde30bd.html" target="n" data-glyph="46,2" class="i field">_labelDefaultSize</a>;
+			<b>double</b> <a id="df7fcc0ff9e1bd55" href="R/df7fcc0ff9e1bd55.html" target="n" data-glyph="46,2" class="i field">_largeSize</a>;
+			<b>double</b> <a id="6568d91fb53c4f53" href="R/6568d91fb53c4f53.html" target="n" data-glyph="46,2" class="i field">_mediumSize</a>;
+ 
+			<b>double</b> <a id="e5e0689793359117" href="R/e5e0689793359117.html" target="n" data-glyph="46,2" class="i field">_microSize</a>;
+			<b>double</b> <a id="7ecf074e736e29dd" href="R/7ecf074e736e29dd.html" target="n" data-glyph="46,2" class="i field">_smallSize</a>;
+ 
+			<b>static</b> <span class="i">Handler</span> <a id="cc973b96025db2a5" href="R/cc973b96025db2a5.html" target="n" data-glyph="46,2" class="i field">s_handler</a>;
+ 
+			<b>public void</b> <a id="b0ffbe01094abf61" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i method">BeginInvokeOnMainThread</a>(<span class="i">Action</span> <span id="r34 rd" class="r34 r">action</span>)
+			{
+				<b>if</b> (<a href="#cc973b96025db2a5" class="i field">s_handler</a> == <b>null</b> || <a href="#cc973b96025db2a5" class="i field">s_handler</a>.<span class="i">Looper</span> != <span class="i">Looper</span>.<span class="i">MainLooper</span>)
+				{
+					<a href="#cc973b96025db2a5" class="i field">s_handler</a> = <b>new</b> <span class="i">Handler</span>(<span class="i">Looper</span>.<span class="i">MainLooper</span>);
+				}
+ 
+				<a href="#cc973b96025db2a5" class="i field">s_handler</a>.<span class="i">Post</span>(<span class="r34 r">action</span>);
+			}
+ 
+			<b>public</b> <a href="/Xamarin.Forms.Core/A.html#9ac4e7c1113aeac4" class="t t">Ticker</a> <a id="47edf3c2ef3e5466" href="R/47edf3c2ef3e5466.html" target="n" data-glyph="72,2" class="i method">CreateTicker</a>()
+			{
+				<b>return</b> <b>new</b> <a href="AndroidTicker.cs.html#fe0bfa5d47dafc64" class="t constructor">AndroidTicker</a>();
+			}
+ 
+			<b>public</b> <span class="i">Assembly</span>[] <a id="ea8d0e2f4bdfd893" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i method">GetAssemblies</a>()
+			{
+				<b>return</b> <span class="i">AppDomain</span>.<span class="i">CurrentDomain</span>.<span class="i">GetAssemblies</span>();
+			}
+ 
+			<b>public string</b> <a id="bc48cba0f5d091a0" href="R/bc48cba0f5d091a0.html" target="n" data-glyph="72,2" class="i method">GetMD5Hash</a>(<b>string</b> <span id="r35 rd" class="r35 r">input</span>)
+			{
+				<b>byte</b>[] <span id="r36 rd" class="r36 r">bytes</span> = <a href="#6db2410189798001" class="i field">Checksum</a>.<span class="i">ComputeHash</span>(<span class="i">Encoding</span>.<span class="i">UTF8</span>.<span class="i">GetBytes</span>(<span class="r35 r">input</span>));
+				<b>var</b> <span id="r37 rd" class="r37 r">ret</span> = <b>new</b> <b>char</b>[32];
+				<b>for</b> (<b>var</b> <span id="r38 rd" class="r38 r">i</span> = 0; <span class="r38 r">i</span> &lt; 16; <span class="r38 r">i</span>++)
+				{
+					<span class="r37 r">ret</span>[<span class="r38 r">i</span> * 2] = (<b>char</b>)<span class="i">Hex</span>(<span class="r36 r">bytes</span>[<span class="r38 r">i</span>] &gt;&gt; 4);
+					<span class="r37 r">ret</span>[<span class="r38 r">i</span> * 2 + 1] = (<b>char</b>)<span class="i">Hex</span>(<span class="r36 r">bytes</span>[<span class="r38 r">i</span>] &amp; 0xf);
+				}
+				<b>return</b> <b>new</b> <b>string</b>(<span class="r37 r">ret</span>);
+			}
+ 
+			<b>public double</b> <a id="d7226957ae4dfffb" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i method">GetNamedSize</a>(<a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a> <span id="r39 rd" class="r39 r">size</span>, <span class="i">Type</span> <span id="r40 rd" class="r40 r">targetElementType</span>, <b>bool</b> <span id="r41 rd" class="r41 r">useOldSizes</span>)
+			{
+				<b>if</b> (<a href="#7ecf074e736e29dd" class="i field">_smallSize</a> == 0)
+				{
+					<a href="#7ecf074e736e29dd" class="i field">_smallSize</a> = <span class="i">ConvertTextAppearanceToSize</span>(<span class="i">Resource</span>.<span class="i">Attribute</span>.<span class="i">TextAppearanceSmall</span>, <span class="i">Resource</span>.<span class="i">Style</span>.<span class="i">TextAppearanceDeviceDefaultSmall</span>, 12);
+					<a href="#6568d91fb53c4f53" class="i field">_mediumSize</a> = <span class="i">ConvertTextAppearanceToSize</span>(<span class="i">Resource</span>.<span class="i">Attribute</span>.<span class="i">TextAppearanceMedium</span>, <span class="i">Resource</span>.<span class="i">Style</span>.<span class="i">TextAppearanceDeviceDefaultMedium</span>, 14);
+					<a href="#df7fcc0ff9e1bd55" class="i field">_largeSize</a> = <span class="i">ConvertTextAppearanceToSize</span>(<span class="i">Resource</span>.<span class="i">Attribute</span>.<span class="i">TextAppearanceLarge</span>, <span class="i">Resource</span>.<span class="i">Style</span>.<span class="i">TextAppearanceDeviceDefaultLarge</span>, 18);
+					<a href="#7a467ca28caf281d" class="i field">_buttonDefaultSize</a> = <span class="i">ConvertTextAppearanceToSize</span>(<span class="i">Resource</span>.<span class="i">Attribute</span>.<span class="i">TextAppearanceButton</span>, <span class="i">Resource</span>.<span class="i">Style</span>.<span class="i">TextAppearanceDeviceDefaultWidgetButton</span>, 14);
+					<a href="#bb19515d6d817649" class="i field">_editTextDefaultSize</a> = <span class="i">ConvertTextAppearanceToSize</span>(<span class="i">Resource</span>.<span class="i">Style</span>.<span class="i">TextAppearanceWidgetEditText</span>, <span class="i">Resource</span>.<span class="i">Style</span>.<span class="i">TextAppearanceDeviceDefaultWidgetEditText</span>, 18);
+					<a href="#9310cf3f4bde30bd" class="i field">_labelDefaultSize</a> = <a href="#7ecf074e736e29dd" class="i field">_smallSize</a>;
+					<span class="c">// as decreed by the android docs, ALL HAIL THE ANDROID DOCS, ALL GLORY TO THE DOCS, PRAISE HYPNOTOAD</span>
+					<a href="#e5e0689793359117" class="i field">_microSize</a> = <span class="i">Math</span>.<span class="i">Max</span>(1, <a href="#7ecf074e736e29dd" class="i field">_smallSize</a> - (<a href="#6568d91fb53c4f53" class="i field">_mediumSize</a> - <a href="#7ecf074e736e29dd" class="i field">_smallSize</a>));
+				}
+ 
+				<b>if</b> (<span class="r41 r">useOldSizes</span>)
+				{
+					<b>switch</b> (<span class="r39 r">size</span>)
+					{
+						<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#b6d39447146e6ceb" class="i field">Default</a>:
+							<b>if</b> (<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>).<span class="i">IsAssignableFrom</span>(<span class="r40 r">targetElementType</span>))
+								<b>return</b> <a href="#7a467ca28caf281d" class="i field">_buttonDefaultSize</a>;
+							<b>if</b> (<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>).<span class="i">IsAssignableFrom</span>(<span class="r40 r">targetElementType</span>))
+								<b>return</b> <a href="#9310cf3f4bde30bd" class="i field">_labelDefaultSize</a>;
+							<b>if</b> (<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#a9c5fa9b87be0395" class="t t">Editor</a>).<span class="i">IsAssignableFrom</span>(<span class="r40 r">targetElementType</span>) || <b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>).<span class="i">IsAssignableFrom</span>(<span class="r40 r">targetElementType</span>) || <b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#c6da57600ae3fbae" class="t t">SearchBar</a>).<span class="i">IsAssignableFrom</span>(<span class="r40 r">targetElementType</span>))
+								<b>return</b> <a href="#bb19515d6d817649" class="i field">_editTextDefaultSize</a>;
+							<b>return</b> 14;
+						<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#d2bce0c32f6d2703" class="i field">Micro</a>:
+							<b>return</b> 10;
+						<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#6e9f79ba23a0d2bf" class="i field">Small</a>:
+							<b>return</b> 12;
+						<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#39e23d062cfa35c6" class="i field">Medium</a>:
+							<b>return</b> 14;
+						<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#a5aafb9ea6f22531" class="i field">Large</a>:
+							<b>return</b> 18;
+						<b>default</b>:
+							<b>throw</b> <b>new</b> <span class="i">ArgumentOutOfRangeException</span>(<span class="s">&quot;size&quot;</span>);
+					}
+				}
+				<b>switch</b> (<span class="r39 r">size</span>)
+				{
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#b6d39447146e6ceb" class="i field">Default</a>:
+						<b>if</b> (<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>).<span class="i">IsAssignableFrom</span>(<span class="r40 r">targetElementType</span>))
+							<b>return</b> <a href="#7a467ca28caf281d" class="i field">_buttonDefaultSize</a>;
+						<b>if</b> (<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>).<span class="i">IsAssignableFrom</span>(<span class="r40 r">targetElementType</span>))
+							<b>return</b> <a href="#9310cf3f4bde30bd" class="i field">_labelDefaultSize</a>;
+						<b>if</b> (<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#a9c5fa9b87be0395" class="t t">Editor</a>).<span class="i">IsAssignableFrom</span>(<span class="r40 r">targetElementType</span>) || <b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#975b374e98e01bc9" class="t t">Entry</a>).<span class="i">IsAssignableFrom</span>(<span class="r40 r">targetElementType</span>))
+							<b>return</b> <a href="#bb19515d6d817649" class="i field">_editTextDefaultSize</a>;
+						<b>return</b> <a href="#6568d91fb53c4f53" class="i field">_mediumSize</a>;
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#d2bce0c32f6d2703" class="i field">Micro</a>:
+						<b>return</b> <a href="#e5e0689793359117" class="i field">_microSize</a>;
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#6e9f79ba23a0d2bf" class="i field">Small</a>:
+						<b>return</b> <a href="#7ecf074e736e29dd" class="i field">_smallSize</a>;
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#39e23d062cfa35c6" class="i field">Medium</a>:
+						<b>return</b> <a href="#6568d91fb53c4f53" class="i field">_mediumSize</a>;
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#a5aafb9ea6f22531" class="i field">Large</a>:
+						<b>return</b> <a href="#df7fcc0ff9e1bd55" class="i field">_largeSize</a>;
+					<b>default</b>:
+						<b>throw</b> <b>new</b> <span class="i">ArgumentOutOfRangeException</span>(<span class="s">&quot;size&quot;</span>);
+				}
+			}
+ 
+			<b>public async</b> <span class="i">Task</span>&lt;<span class="i">Stream</span>&gt; <a id="2e65f2342fc98f42" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i method">GetStreamAsync</a>(<span class="i">Uri</span> <span id="r42 rd" class="r42 r">uri</span>, <span class="i">CancellationToken</span> <span id="r43 rd" class="r43 r">cancellationToken</span>)
+			{
+				<b>using</b> (<b>var</b> <span id="r44 rd" class="r44 r">client</span> = <b>new</b> <span class="i">HttpClient</span>())
+				<b>using</b> (<span class="i">HttpResponseMessage</span> <span id="r45 rd" class="r45 r">response</span> = <b>await</b> <span class="r44 r">client</span>.<span class="i">GetAsync</span>(<span class="r42 r">uri</span>, <span class="r43 r">cancellationToken</span>))
+				{
+					<b>if</b> (!<span class="r45 r">response</span>.<span class="i">IsSuccessStatusCode</span>)
+					{
+						<span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<span class="i">Warning</span>(<span class="s">&quot;HTTP Request&quot;</span>, <span class="s">$&quot;</span><span class="s">Could not retrieve </span>{<span class="r42 r">uri</span>}<span class="s">, status code </span>{<span class="r45 r">response</span>.<span class="i">StatusCode</span>}<span class="s">&quot;</span>);
+						<b>return null</b>;
+					}
+					<b>return await</b> <span class="r45 r">response</span>.<span class="i">Content</span>.<span class="i">ReadAsStreamAsync</span>();
+				}
+			}
+ 
+			<b>public</b> <a href="/Xamarin.Forms.Core/A.html#04ea35780c7f35ff" class="t t">IIsolatedStorageFile</a> <a id="85f51715e92df7f3" href="R/85f51715e92df7f3.html" target="n" data-glyph="72,2" class="i method">GetUserStoreForApplication</a>()
+			{
+				<b>return</b> <b>new</b> <span class="t">_IsolatedStorageFile</span>(<span class="i">IsolatedStorageFile</span>.<span class="i">GetUserStoreForApplication</span>());
+			}
+ 
+			<b>public bool</b> <a id="9831d4ae4a1d2188" href="R/9831d4ae4a1d2188.html" target="n" data-glyph="102,2" class="i property">IsInvokeRequired</a>
+			{
+				<b>get</b>
+				{
+					<b>return</b> <span class="i">Looper</span>.<span class="i">MainLooper</span> != <span class="i">Looper</span>.<span class="i">MyLooper</span>();
+				}
+			}
+ 
+			<b>public string</b> <a id="3ef2c1d19167264d" href="R/3ef2c1d19167264d.html" target="n" data-glyph="102,2" class="i property">RuntimePlatform</a> =&gt; <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#1e21b3d8fe2f3a18" class="i field">Android</a>;
+ 
+			<b>public void</b> <a id="252cb64177a4fece" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i method">OpenUriAction</a>(<span class="i">Uri</span> <span id="r46 rd" class="r46 r">uri</span>)
+			{
+				<b>global</b>::<span class="i">Android</span>.<span class="i">Net</span>.<span class="i">Uri</span> <span id="r47 rd" class="r47 r">aUri</span> = <b>global</b>::<span class="i">Android</span>.<span class="i">Net</span>.<span class="i">Uri</span>.<span class="i">Parse</span>(<span class="r46 r">uri</span>.<span class="i">ToString</span>());
+				<b>var</b> <span id="r48 rd" class="r48 r">intent</span> = <b>new</b> <span class="i">Intent</span>(<span class="i">Intent</span>.<span class="i">ActionView</span>, <span class="r47 r">aUri</span>);
+				<a href="#51008592798f3c52" class="i property">Context</a>.<span class="i">StartActivity</span>(<span class="r48 r">intent</span>);
+			}
+ 
+			<b>public void</b> <a id="54fc6a53a27a336e" href="R/54fc6a53a27a336e.html" target="n" data-glyph="72,2" class="i method">StartTimer</a>(<span class="i">TimeSpan</span> <span id="r49 rd" class="r49 r">interval</span>, <span class="i">Func</span>&lt;<b>bool</b>&gt; <span id="r50 rd" class="r50 r">callback</span>)
+			{
+				<b>var</b> <span id="r51 rd" class="r51 r">handler</span> = <b>new</b> <span class="i">Handler</span>(<span class="i">Looper</span>.<span class="i">MainLooper</span>);
+				<span class="r51 r">handler</span>.<span class="i">PostDelayed</span>(() =&gt;
+				{
+					<b>if</b> (<span class="r50 r">callback</span>())
+						<a href="#54fc6a53a27a336e" class="i method">StartTimer</a>(<span class="r49 r">interval</span>, <span class="r50 r">callback</span>);
+ 
+					<span class="r51 r">handler</span>.<span class="i">Dispose</span>();
+					<span class="r51 r">handler</span> = <b>null</b>;
+				}, (<b>long</b>)<span class="r49 r">interval</span>.<span class="i">TotalMilliseconds</span>);
+			}
+ 
+			<b>double</b> <a id="75af770de27ea59d" href="R/../../0000000000.html" target="n" data-glyph="76,2" class="i method">ConvertTextAppearanceToSize</a>(<b>int</b> <span id="r52 rd" class="r52 r">themeDefault</span>, <b>int</b> <span id="r53 rd" class="r53 r">deviceDefault</span>, <b>double</b> <span id="r54 rd" class="r54 r">defaultValue</span>)
+			{
+				<b>double</b> <span id="r55 rd" class="r55 r">myValue</span>;
+ 
+				<b>if</b> (<a href="#96286516eaa1086c" class="i method">TryGetTextAppearance</a>(<span class="r52 r">themeDefault</span>, <b>out</b> <span class="r55 r">myValue</span>))
+					<b>return</b> <span class="r55 r">myValue</span>;
+				<b>if</b> (<a href="#96286516eaa1086c" class="i method">TryGetTextAppearance</a>(<span class="r53 r">deviceDefault</span>, <b>out</b> <span class="r55 r">myValue</span>))
+					<b>return</b> <span class="r55 r">myValue</span>;
+				<b>return</b> <span class="r54 r">defaultValue</span>;
+			}
+ 
+			<b>static int</b> <a id="7d74bc6d7ffd8f97" href="R/../../0000000000.html" target="n" data-glyph="76,2" class="i method">Hex</a>(<b>int</b> <span id="r56 rd" class="r56 r">v</span>)
+			{
+				<b>if</b> (<span class="r56 r">v</span> &lt; 10)
+					<b>return</b> <span class="s">&#39;0&#39;</span> + <span class="r56 r">v</span>;
+				<b>return</b> <span class="s">&#39;a&#39;</span> + <span class="r56 r">v</span> - 10;
+			}
+ 
+			<b>static bool</b> <a id="96286516eaa1086c" href="R/96286516eaa1086c.html" target="n" data-glyph="76,2" class="i method">TryGetTextAppearance</a>(<b>int</b> <span id="r57 rd" class="r57 r">appearance</span>, <b>out double</b> <span id="r58 rd" class="r58 r">val</span>)
+			{
+				<span class="r58 r">val</span> = 0;
+				<b>try</b>
+				{
+					<b>using</b> (<b>var</b> <span id="r59 rd" class="r59 r">value</span> = <b>new</b> <span class="i">TypedValue</span>())
+					{
+						<b>if</b> (<a href="#51008592798f3c52" class="i property">Context</a>.<span class="i">Theme</span>.<span class="i">ResolveAttribute</span>(<span class="r57 r">appearance</span>, <span class="r59 r">value</span>, <b>true</b>))
+						{
+							<b>var</b> <span id="r60 rd" class="r60 r">textSizeAttr</span> = <b>new</b>[] { <span class="i">Resource</span>.<span class="i">Attribute</span>.<span class="i">TextSize</span> };
+							<b>const int</b> <span id="r61 rd" class="r61 r">indexOfAttrTextSize</span> = 0;
+							<b>using</b> (<span class="i">TypedArray</span> <span id="r62 rd" class="r62 r">array</span> = <a href="#51008592798f3c52" class="i property">Context</a>.<span class="i">ObtainStyledAttributes</span>(<span class="r59 r">value</span>.<span class="i">Data</span>, <span class="r60 r">textSizeAttr</span>))
+							{
+								<span class="r58 r">val</span> = <a href="#51008592798f3c52" class="i property">Context</a>.<span class="i">FromPixels</span>(<span class="r62 r">array</span>.<span class="i">GetDimensionPixelSize</span>(<span class="r61 r">indexOfAttrTextSize</span>, -1));
+								<b>return true</b>;
+							}
+						}
+					}
+				}
+				<b>catch</b> (<span class="i">Exception</span> <span id="r63 rd" class="r63 r">ex</span>)
+				{
+					<span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<span class="i">Warning</span>(<span class="s">&quot;Xamarin.Forms.Platform.Android.AndroidPlatformServices&quot;</span>, <span class="s">&quot;Error retrieving text appearance: {0}&quot;</span>, <span class="r63 r">ex</span>);
+				}
+				<b>return false</b>;
+			}
+ 
+			<b>public class</b> <a id="3c6b398a7a372a7b" href="R/../../0000000000.html" target="n" data-glyph="0,2" class="t t">_IsolatedStorageFile</a> : <a href="/Xamarin.Forms.Core/A.html#04ea35780c7f35ff" class="t t">IIsolatedStorageFile</a>
+			{
+				<b>readonly</b> <span class="i">IsolatedStorageFile</span> <a id="b27267ddb2db6f3c" href="R/b27267ddb2db6f3c.html" target="n" data-glyph="46,3" class="i field">_isolatedStorageFile</a>;
+ 
+				<b>public</b> <a id="ef772ac2532f3e44" href="R/../../0000000000.html" target="n" data-glyph="72,3" class="i constructor">_IsolatedStorageFile</a>(<span class="i">IsolatedStorageFile</span> <span id="r64 rd" class="r64 r">isolatedStorageFile</span>)
+				{
+					<a href="#b27267ddb2db6f3c" class="i field">_isolatedStorageFile</a> = <span class="r64 r">isolatedStorageFile</span>;
+				}
+ 
+				<b>public</b> <span class="i">Task</span> <a id="44b4ac2ddf10b201" href="R/../../0000000000.html" target="n" data-glyph="72,3" class="i method">CreateDirectoryAsync</a>(<b>string</b> <span id="r65 rd" class="r65 r">path</span>)
+				{
+					<a href="#b27267ddb2db6f3c" class="i field">_isolatedStorageFile</a>.<span class="i">CreateDirectory</span>(<span class="r65 r">path</span>);
+					<b>return</b> <span class="i">Task</span>.<span class="i">FromResult</span>(<b>true</b>);
+				}
+ 
+				<b>public</b> <span class="i">Task</span>&lt;<b>bool</b>&gt; <a id="732a84a1304398ee" href="R/../../0000000000.html" target="n" data-glyph="72,3" class="i method">GetDirectoryExistsAsync</a>(<b>string</b> <span id="r66 rd" class="r66 r">path</span>)
+				{
+					<b>return</b> <span class="i">Task</span>.<span class="i">FromResult</span>(<a href="#b27267ddb2db6f3c" class="i field">_isolatedStorageFile</a>.<span class="i">DirectoryExists</span>(<span class="r66 r">path</span>));
+				}
+ 
+				<b>public</b> <span class="i">Task</span>&lt;<b>bool</b>&gt; <a id="0fbfb67b02db7701" href="R/../../0000000000.html" target="n" data-glyph="72,3" class="i method">GetFileExistsAsync</a>(<b>string</b> <span id="r67 rd" class="r67 r">path</span>)
+				{
+					<b>return</b> <span class="i">Task</span>.<span class="i">FromResult</span>(<a href="#b27267ddb2db6f3c" class="i field">_isolatedStorageFile</a>.<span class="i">FileExists</span>(<span class="r67 r">path</span>));
+				}
+ 
+				<b>public</b> <span class="i">Task</span>&lt;<span class="i">DateTimeOffset</span>&gt; <a id="28145fcf72e3b8b5" href="R/../../0000000000.html" target="n" data-glyph="72,3" class="i method">GetLastWriteTimeAsync</a>(<b>string</b> <span id="r68 rd" class="r68 r">path</span>)
+				{
+					<b>return</b> <span class="i">Task</span>.<span class="i">FromResult</span>(<a href="#b27267ddb2db6f3c" class="i field">_isolatedStorageFile</a>.<span class="i">GetLastWriteTime</span>(<span class="r68 r">path</span>));
+				}
+ 
+				<b>public</b> <span class="i">Task</span>&lt;<span class="i">Stream</span>&gt; <a id="9021003c125c54b5" href="R/../../0000000000.html" target="n" data-glyph="72,3" class="i method">OpenFileAsync</a>(<b>string</b> <span id="r69 rd" class="r69 r">path</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a> <span id="r70 rd" class="r70 r">mode</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#254bf02e30755ba7" class="t t">FileAccess</a> <span id="r71 rd" class="r71 r">access</span>)
+				{
+					<span class="i">Stream</span> <span id="r72 rd" class="r72 r">stream</span> = <a href="#b27267ddb2db6f3c" class="i field">_isolatedStorageFile</a>.<span class="i">OpenFile</span>(<span class="r69 r">path</span>, (<span class="i">System</span>.<span class="i">IO</span>.<span class="i">FileMode</span>)<span class="r70 r">mode</span>, (<span class="i">System</span>.<span class="i">IO</span>.<span class="i">FileAccess</span>)<span class="r71 r">access</span>);
+					<b>return</b> <span class="i">Task</span>.<span class="i">FromResult</span>(<span class="r72 r">stream</span>);
+				}
+ 
+				<b>public</b> <span class="i">Task</span>&lt;<span class="i">Stream</span>&gt; <a id="2b9152953c1df36a" href="R/../../0000000000.html" target="n" data-glyph="72,3" class="i method">OpenFileAsync</a>(<b>string</b> <span id="r73 rd" class="r73 r">path</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a> <span id="r74 rd" class="r74 r">mode</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#254bf02e30755ba7" class="t t">FileAccess</a> <span id="r75 rd" class="r75 r">access</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#d462b5f07b93898b" class="t t">FileShare</a> <span id="r76 rd" class="r76 r">share</span>)
+				{
+					<span class="i">Stream</span> <span id="r77 rd" class="r77 r">stream</span> = <a href="#b27267ddb2db6f3c" class="i field">_isolatedStorageFile</a>.<span class="i">OpenFile</span>(<span class="r73 r">path</span>, (<span class="i">System</span>.<span class="i">IO</span>.<span class="i">FileMode</span>)<span class="r74 r">mode</span>, (<span class="i">System</span>.<span class="i">IO</span>.<span class="i">FileAccess</span>)<span class="r75 r">access</span>, (<span class="i">System</span>.<span class="i">IO</span>.<span class="i">FileShare</span>)<span class="r76 r">share</span>);
+					<b>return</b> <span class="i">Task</span>.<span class="i">FromResult</span>(<span class="r77 r">stream</span>);
+				}
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

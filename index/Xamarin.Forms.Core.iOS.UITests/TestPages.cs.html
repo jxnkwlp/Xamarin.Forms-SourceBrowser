@@ -1,0 +1,588 @@
+﻿<!DOCTYPE html>
+<html><head><title>TestPages.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(579);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core.iOS.UITests/TestPages.cs" target="_top">TestPages.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core.iOS.UITests" target="_top">Xamarin.Forms.Core.iOS.UITests\Xamarin.Forms.Core.iOS.UITests.csproj</a> (Xamarin.Forms.Core.iOS.UITests)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">CustomAttributes</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Core</span>.<span class="i n">UITests</span>;
+<b>using</b> <span class="i">NUnit</span>.<span class="i">Framework</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i">UITest</span>;
+ 
+<span class="c">// Apply the default category of &quot;Issues&quot; to all of the tests in this assembly</span>
+<span class="c">// We use this as a catch-all for tests which haven&#39;t been individually categorized</span>
+[<b>assembly</b>: <span class="i">Category</span>(<span class="s">&quot;Issues&quot;</span>)]
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>
+{
+	<b>internal static class</b> <a id="1df4ea8aee692563" href="R/1df4ea8aee692563.html" target="n" data-glyph="2,0" class="t t">AppPaths</a>
+	{
+		<b>public static string</b> <a id="8f5c7af8835c01c8" href="R/../../0000000000.html" target="n" data-glyph="42,1" class="i field">ApkPath</a> = <span class="s">&quot;../../../Xamarin.Forms.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk&quot;</span>;
+ 
+		<b>public static string</b> <a id="03a101b39f0d1a00" href="R/../../0000000000.html" target="n" data-glyph="42,1" class="i field">MacOSPath</a> = <span class="s">&quot;../../../Xamarin.Forms.ControlGallery.MacOS/bin/Debug/Xamarin.Forms.ControlGallery.MacOS.app&quot;</span>;
+ 
+		<span class="c">// Have to continue using the old BundleId for now; Test Cloud doesn&#39;t like</span>
+		<span class="c">// when you change the BundleId</span>
+		<b>public static string</b> <a id="fc6a2630d8af6d62" href="R/fc6a2630d8af6d62.html" target="n" data-glyph="42,1" class="i field">BundleId</a> = <span class="s">&quot;com.xamarin.quickui.controlgallery&quot;</span>;
+ 
+		<span class="c">// Have to continue using the old BundleId for now; Test Cloud doesn&#39;t like</span>
+		<span class="c">// when you change the BundleId</span>
+		<b>public static string</b> <a id="fc3bcfbb71031d53" href="R/../../0000000000.html" target="n" data-glyph="42,1" class="i field">MacOSBundleId</a> = <span class="s">&quot;com.xamarin.xamarin-forms-controlgallery-macos&quot;</span>;
+	}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+	<b>internal static class</b> <a id="9d433bffcf8838f9" href="R/9d433bffcf8838f9.html" target="n" data-glyph="2,0" class="t t">AppSetup</a>
+	{
+		<b>static</b> <span class="i">IApp</span> <a id="ba5c56e364c510dd" href="R/ba5c56e364c510dd.html" target="n" data-glyph="76,1" class="i method">InitializeApp</a>()
+		{
+			<span class="i">IApp</span> <span id="r0 rd" class="r0 r">app</span> = <b>null</b>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__ANDROID__</span>
+<span class="e">
+			app = InitializeAndroidApp();
+ 
+</span><span class="k preprocess">#</span><span class="k preprocess">elif</span> <span class="i">__IOS__</span>
+ 
+			<span class="r0 r">app</span> = <a href="#3c46ed5b0f6ef477" class="i method">InitializeiOSApp</a>();
+			
+<span class="k preprocess">#</span><span class="k preprocess">elif</span> <span class="i">__MACOS__</span>
+<span class="e">			Xamarin.UITest.Desktop.TestAgent.Start();
+			app = InitializeMacOSApp();
+ 
+</span><span class="k preprocess">#</span><span class="k preprocess">elif</span> <span class="i">__WINDOWS__</span>
+<span class="e">			app = InitializeUWPApp();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+			<b>if</b> (<span class="r0 r">app</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#9f48ddc15bcc3f0f" class="t constructor">NullReferenceException</a>(<span class="s">&quot;App was not initialized.&quot;</span>);
+ 
+			<span class="c">// Wrap the app in ScreenshotConditional so it only takes screenshots if the SCREENSHOTS symbol is specified</span>
+			<b>return</b> <b>new</b> <a href="ScreenshotConditionalApp.cs.html#a6586c348762d916" class="t constructor">ScreenshotConditionalApp</a>(<span class="r0 r">app</span>);
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__ANDROID__</span>
+<span class="e">		static IApp InitializeAndroidApp()
+		{
+			var app = ConfigureApp.Android.ApkFile(AppPaths.ApkPath).Debug().StartApp();
+ 
+			if (bool.Parse((string)app.Invoke(&quot;IsPreAppCompat&quot;)))
+			{
+				IsFormsApplicationActivity = true;
+			}
+ 
+			return app;
+		}
+ 
+		public static bool IsFormsApplicationActivity { get; private set; }
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__IOS__</span>
+		<b>static</b> <span class="i">IApp</span> <a id="3c46ed5b0f6ef477" href="R/3c46ed5b0f6ef477.html" target="n" data-glyph="76,1" class="i method">InitializeiOSApp</a>() 
+		{ 
+			<span class="c">// Running on a device</span>
+			<b>var</b> <span id="r1 rd" class="r1 r">app</span> = <span class="i">ConfigureApp</span>.<span class="i">iOS</span>.<span class="i">InstalledApp</span>(<a href="#1df4ea8aee692563" class="t t">AppPaths</a>.<a href="#fc6a2630d8af6d62" class="i field">BundleId</a>).<span class="i">Debug</span>()
+				<span class="c">//Uncomment to run from a specific iOS SIM, get the ID from XCode -&gt; Devices</span>
+				.<span class="i">StartApp</span>();
+ 
+			<span class="c">// Running on the simulator</span>
+			<span class="c">//var app = ConfigureApp.iOS</span>
+			<span class="c">//				  .PreferIdeSettings()</span>
+			<span class="c">//		  		  .AppBundle(&quot;../../../Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/Debug/XamarinFormsControlGalleryiOS.app&quot;)</span>
+			<span class="c">//				  .Debug()</span>
+			<span class="c">//				  .StartApp();</span>
+ 
+			<b>return</b> <span class="r1 r">app</span>;
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MACOS__</span>
+<span class="e">		static IApp InitializeMacOSApp()
+		{
+			// Running on a device
+			var configurator = new Xamarin.UITest.Desktop.CocoaAppConfigurator();
+			var app = configurator
+							//.AppBundle(&quot;/Users/rmarinho/Xamarin/Xamarin.Forms/Xamarin.Forms.ControlGallery.MacOS/bin/Debug/Xamarin.Forms.ControlGallery.MacOS.app&quot;)
+							.AppBundle(AppPaths.MacOSPath)
+							.BundleId(AppPaths.MacOSBundleId)
+							.StartApp();
+			return new Xamarin.Forms.Core.macOS.UITests.MacOSApp(app);
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__WINDOWS__</span>
+<span class="e">		static IApp InitializeUWPApp()
+		{
+			return WindowsTestBase.ConfigureApp();
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>public static void</b> <a id="667b5224dd07cafb" href="R/667b5224dd07cafb.html" target="n" data-glyph="72,1" class="i method">NavigateToIssue</a>(<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r2 rd" class="r2 r">type</span>, <span class="i">IApp</span> <span id="r3 rd" class="r3 r">app</span>)
+		{
+			<a href="/Xamarin.Forms.CustomAttributes/A.html#a70127c08f9c1da7" class="k">var</a> <span id="r4 rd" class="r4 r">typeIssueAttribute</span> = <span class="r2 r">type</span>.<a href="@0@mscorlib/A.html#e4a35c1ec2b91f27" class="i method">GetTypeInfo</a>().<a href="@0@mscorlib/A.html#0497c27b6539bfd9" class="i method">GetCustomAttribute</a>&lt;<a href="/Xamarin.Forms.CustomAttributes/A.html#a70127c08f9c1da7" class="t t">IssueAttribute</a>&gt;();
+ 
+			<b>string</b> <span id="r5 rd" class="r5 r">cellName</span> = <span class="s">&quot;&quot;</span>;
+			<b>if</b> (<span class="r4 r">typeIssueAttribute</span>.<a href="/Xamarin.Forms.CustomAttributes/A.html#af8191aa18da5f41" class="i property">IssueTracker</a>.<a href="@0@mscorlib/A.html#1365cfeffd45409d" class="i method">ToString</a>() != <span class="s">&quot;None&quot;</span> &amp;&amp;
+				<span class="r4 r">typeIssueAttribute</span>.<a href="/Xamarin.Forms.CustomAttributes/A.html#011fec94e390a53f" class="i property">IssueNumber</a> != 1461 &amp;&amp;
+				<span class="r4 r">typeIssueAttribute</span>.<a href="/Xamarin.Forms.CustomAttributes/A.html#011fec94e390a53f" class="i property">IssueNumber</a> != 342)
+			{
+				<span class="r5 r">cellName</span> = <span class="r4 r">typeIssueAttribute</span>.<a href="/Xamarin.Forms.CustomAttributes/A.html#3aa6ce0698328e23" class="i property">DisplayName</a>;
+			}
+			<b>else</b> {
+				<span class="r5 r">cellName</span> = <span class="r4 r">typeIssueAttribute</span>.<a href="/Xamarin.Forms.CustomAttributes/A.html#107452ba78fbc6f1" class="i property">Description</a>;
+			}
+ 
+			<b>int</b> <span id="r6 rd" class="r6 r">maxAttempts</span> = 2;
+			<b>int</b> <span id="r7 rd" class="r7 r">attempts</span> = 0;
+ 
+			<b>while</b> (<span class="r7 r">attempts</span> &lt; <span class="r6 r">maxAttempts</span>)
+			{
+				<span class="r7 r">attempts</span> += 1;
+ 
+				<b>try</b>
+				{
+					<span class="c">// Attempt the direct way of navigating to the test page</span>
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__ANDROID__</span>
+<span class="e">
+					if (bool.Parse((string)app.Invoke(&quot;NavigateToTest&quot;, cellName)))
+					{
+						return;
+					}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__IOS__</span>
+				<b>if</b> (<b>bool</b>.<span class="i">Parse</span>(<span class="r3 r">app</span>.<span class="i">Invoke</span>(<span class="s">&quot;navigateToTest:&quot;</span>, <span class="r5 r">cellName</span>).<span class="i">ToString</span>()))
+				{
+					<b>return</b>;
+				}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__WINDOWS__</span>
+<span class="e">					// Windows doens&#39;t have an &#39;invoke&#39; option right now for us to do the more direct navigation
+					// we&#39;re using for Android/iOS
+					// So we&#39;re just going to use the &#39;Reset&#39; method to bounce the app to the opening screen
+					// and then fall back to the old manual navigation
+					WindowsTestBase.Reset();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+				}
+				<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r8 rd" class="r8 r">ex</span>)
+				{
+					<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r9 rd" class="r9 r">debugMessage</span> = <span class="s">$&quot;</span><span class="s">Could not directly invoke test; using UI navigation instead. </span>{<span class="r8 r">ex</span>}<span class="s">&quot;</span>;
+ 
+					<span class="i n">System</span>.<span class="i n">Diagnostics</span>.<a href="@0@System/A.html#632c6da37ce825df" class="t t">Debug</a>.<a href="@0@System/A.html#73de7bb60da320d3" class="i method">WriteLine</a>(<span class="r9 r">debugMessage</span>);
+					<a href="@0@mscorlib/A.html#f907d79481da6ba4" class="t t">Console</a>.<a href="@0@mscorlib/A.html#5ac7c4fda643413b" class="i method">WriteLine</a>(<span class="r9 r">debugMessage</span>);
+				}
+ 
+				<b>try</b>
+				{
+					<span class="c">// Fall back to the &quot;manual&quot; navigation method</span>
+					<span class="r3 r">app</span>.<span class="i">Tap</span>(<span id="r10 rd" class="r10 r">q</span> =&gt; <span class="r10 r">q</span>.<span class="i">Button</span>(<span class="s">&quot;Go to Test Cases&quot;</span>));
+					<span class="r3 r">app</span>.<span class="i">WaitForElement</span>(<span id="r11 rd" class="r11 r">q</span> =&gt; <span class="r11 r">q</span>.<span class="i">Raw</span>(<span class="s">&quot;* marked:&#39;TestCasesIssueList&#39;&quot;</span>));
+ 
+					<span class="r3 r">app</span>.<span class="i">EnterText</span>(<span id="r12 rd" class="r12 r">q</span> =&gt; <span class="r12 r">q</span>.<span class="i">Raw</span>(<span class="s">&quot;* marked:&#39;SearchBarGo&#39;&quot;</span>), <span class="r5 r">cellName</span>);
+ 
+					<span class="r3 r">app</span>.<span class="i">WaitForElement</span>(<span id="r13 rd" class="r13 r">q</span> =&gt; <span class="r13 r">q</span>.<span class="i">Raw</span>(<span class="s">&quot;* marked:&#39;SearchButton&#39;&quot;</span>));
+					<span class="r3 r">app</span>.<span class="i">Tap</span>(<span id="r14 rd" class="r14 r">q</span> =&gt; <span class="r14 r">q</span>.<span class="i">Raw</span>(<span class="s">&quot;* marked:&#39;SearchButton&#39;&quot;</span>));
+ 
+					<b>return</b>;
+				}
+				<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r15 rd" class="r15 r">ex</span>)
+				{
+					<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r16 rd" class="r16 r">debugMessage</span> = <span class="s">$&quot;</span><span class="s">Both navigation methods failed. </span>{<span class="r15 r">ex</span>}<span class="s">&quot;</span>;
+ 
+					<span class="i n">System</span>.<span class="i n">Diagnostics</span>.<a href="@0@System/A.html#632c6da37ce825df" class="t t">Debug</a>.<a href="@0@System/A.html#73de7bb60da320d3" class="i method">WriteLine</a>(<span class="r16 r">debugMessage</span>);
+					<a href="@0@mscorlib/A.html#f907d79481da6ba4" class="t t">Console</a>.<a href="@0@mscorlib/A.html#5ac7c4fda643413b" class="i method">WriteLine</a>(<span class="r16 r">debugMessage</span>);
+ 
+					<b>if</b> (<span class="r7 r">attempts</span> &lt; <span class="r6 r">maxAttempts</span>)
+					{
+						<span class="c">// Something has failed and we&#39;re stuck in a place where we can&#39;t navigate</span>
+						<span class="c">// to the test. Usually this is because we&#39;re getting network/HTTP errors </span>
+						<span class="c">// communicating with the server on the device. So we&#39;ll try restarting the app.</span>
+						<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a> = <a href="#ba5c56e364c510dd" class="i method">InitializeApp</a>();
+					}
+					<b>else</b>
+					{
+						<span class="c">// But if it&#39;s still not working after [maxAttempts], we&#39;ve got assume this is a legit</span>
+						<span class="c">// problem that restarting won&#39;t fix</span>
+						<b>throw</b>;
+					}
+				}
+			}
+		}
+ 
+		<b>public static</b> <span class="i">IApp</span> <a id="55b2bf016aab5f05" href="R/55b2bf016aab5f05.html" target="n" data-glyph="72,1" class="i method">Setup</a>(<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r17 rd" class="r17 r">pageType</span> = <b>null</b>)
+		{
+			<span class="i">IApp</span> <span id="r18 rd" class="r18 r">runningApp</span> = <b>null</b>;
+			<b>try</b>
+			{
+				<span class="r18 r">runningApp</span> = <a href="#ba5c56e364c510dd" class="i method">InitializeApp</a>();
+			}
+			<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r19 rd" class="r19 r">e</span>)
+			{
+				<span class="i">Assert</span>.<span class="i">Inconclusive</span>(<span class="s">$&quot;</span><span class="s">App did not start for some reason: </span>{<span class="r19 r">e</span>}<span class="s">&quot;</span>);
+			}
+ 
+			<b>if</b> (<span class="r17 r">pageType</span> != <b>null</b>)
+				<a href="#667b5224dd07cafb" class="i method">NavigateToIssue</a>(<span class="r17 r">pageType</span>, <span class="r18 r">runningApp</span>);
+ 
+			<b>return</b> <span class="r18 r">runningApp</span>;
+		}
+ 
+		<span class="c">// Make sure the server on the device is still up and running;</span>
+		<span class="c">// if not, restart the app</span>
+		<b>public static void</b> <a id="664aac73a55ee8eb" href="R/664aac73a55ee8eb.html" target="n" data-glyph="72,1" class="i method">EnsureConnection</a>()
+		{
+			<b>if</b> (<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a> != <b>null</b>)
+			{
+				<b>try</b>
+				{
+					<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a>.<span class="i">TestServer</span>.<span class="i">Get</span>(<span class="s">&quot;version&quot;</span>);
+					<b>return</b>;
+				}
+				<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r20 rd" class="r20 r">ex</span>)
+				{
+				}
+ 
+				<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a> = <a href="#ba5c56e364c510dd" class="i method">InitializeApp</a>();
+			}
+		}
+ 
+		<b>static int</b> <a id="ddadcd9b61d4e97c" href="R/ddadcd9b61d4e97c.html" target="n" data-glyph="46,1" class="i field">s_testsrun</a>;
+		<b>const int</b> <a id="b3f68e199b9482ba" href="R/b3f68e199b9482ba.html" target="n" data-glyph="10,1" class="i field">ConsecutiveTestLimit</a> = 10;
+ 
+		<span class="c">// Until we get more of our memory leak issues worked out, restart the app </span>
+		<span class="c">// after a specified number of tests so we don&#39;t get bogged down in GC</span>
+		<span class="c">// (or booted by jetsam)</span>
+		<b>public static void</b> <a id="a8fcd9ef965c8eed" href="R/a8fcd9ef965c8eed.html" target="n" data-glyph="72,1" class="i method">EnsureMemory</a>()
+		{
+			<b>if</b> (<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a> != <b>null</b>)
+			{
+				<a href="#ddadcd9b61d4e97c" class="i field">s_testsrun</a> += 1;
+ 
+				<b>if</b> (<a href="#ddadcd9b61d4e97c" class="i field">s_testsrun</a> &gt;= <a href="#b3f68e199b9482ba" class="i field">ConsecutiveTestLimit</a>)
+				{
+					<a href="#ddadcd9b61d4e97c" class="i field">s_testsrun</a> = 0;
+					<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a> = <a href="#ba5c56e364c510dd" class="i method">InitializeApp</a>();
+				}
+			}
+		}
+ 
+		<span class="c">// For tests which just don&#39;t play well with others, we can ensure</span>
+		<span class="c">// that they run in their own instance of the application</span>
+		<b>public static void</b> <a id="3db20022abef222b" href="R/3db20022abef222b.html" target="n" data-glyph="72,1" class="i method">BeginIsolate</a>()
+		{
+			<b>if</b> (<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a> != <b>null</b> &amp;&amp; <a href="#ddadcd9b61d4e97c" class="i field">s_testsrun</a> &gt; 0)
+			{
+				<a href="#ddadcd9b61d4e97c" class="i field">s_testsrun</a> = 0;
+				<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a> = <a href="#ba5c56e364c510dd" class="i method">InitializeApp</a>();
+			}
+		}
+ 
+		<b>public static void</b> <a id="f75b0ae960fa2c04" href="R/f75b0ae960fa2c04.html" target="n" data-glyph="72,1" class="i method">EndIsolate</a>()
+		{
+			<a href="#ddadcd9b61d4e97c" class="i field">s_testsrun</a> = <a href="#b3f68e199b9482ba" class="i field">ConsecutiveTestLimit</a>;
+		}
+ 
+		<b>public static</b> <span class="i">IApp</span> <a id="1884a4fc70b65ec5" href="R/1884a4fc70b65ec5.html" target="n" data-glyph="102,1" class="i property">RunningApp</a> { <b>get</b>; <b>set</b>; }
+	}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+	<b>public abstract class</b> <a id="2b4948e1f869d03f" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t">TestPage</a> : <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		<b>public</b> <span class="i">IApp</span> <a id="813aa232d97cd622" href="R/813aa232d97cd622.html" target="n" data-glyph="102,1" class="i property">RunningApp</a> =&gt; <a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a>;
+ 
+		<b>protected virtual bool</b> <a id="92017dc711ca5922" href="R/92017dc711ca5922.html" target="n" data-glyph="105,1" class="i property">Isolate</a> =&gt; <b>false</b>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="61cf52403d6ffddd" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+<span class="e">			Init();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		[<span class="i">SetUp</span>]
+		<b>public void</b> <a id="c16db2186723f172" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Setup</a>()
+		{
+			<b>if</b> (<a href="#92017dc711ca5922" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#3db20022abef222b" class="i method">BeginIsolate</a>();
+			}
+			<b>else</b>
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#a8fcd9ef965c8eed" class="i method">EnsureMemory</a>();
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#664aac73a55ee8eb" class="i method">EnsureConnection</a>();
+			}
+ 
+			<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#667b5224dd07cafb" class="i method">NavigateToIssue</a>(<a href="@0@mscorlib/A.html#4d73eb225aef8a61" class="i method">GetType</a>(), <a href="#813aa232d97cd622" class="i property">RunningApp</a>);
+		}
+ 
+		[<span class="i">TearDown</span>]
+		<b>public void</b> <a id="f6ffe410db100522" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">TearDown</a>()
+		{
+			<b>if</b> (<a href="#92017dc711ca5922" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#f75b0ae960fa2c04" class="i method">EndIsolate</a>();
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="5afa3c64cc251eb0" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+ 
+ 
+	<b>public abstract class</b> <a id="68092d82b8b3d7b5" href="R/68092d82b8b3d7b5.html" target="n" data-glyph="0,0" class="t t">TestContentPage</a> : <a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t t">ContentPage</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		<b>public</b> <span class="i">IApp</span> <a id="4c064e8d618de9de" href="R/4c064e8d618de9de.html" target="n" data-glyph="102,1" class="i property">RunningApp</a> =&gt; <a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a>;
+ 
+		<b>protected virtual bool</b> <a id="8c2c74224d3b8de8" href="R/8c2c74224d3b8de8.html" target="n" data-glyph="105,1" class="i property">Isolate</a> =&gt; <b>false</b>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="7588f9af5bc6b0b6" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestContentPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+<span class="e">			Init();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		[<span class="i">SetUp</span>]
+		<b>public void</b> <a id="998dd11f9e283e5e" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Setup</a>()
+		{
+			<b>if</b> (<a href="#8c2c74224d3b8de8" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#3db20022abef222b" class="i method">BeginIsolate</a>();
+			}
+			<b>else</b>
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#a8fcd9ef965c8eed" class="i method">EnsureMemory</a>();
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#664aac73a55ee8eb" class="i method">EnsureConnection</a>();
+			}
+ 
+			<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#667b5224dd07cafb" class="i method">NavigateToIssue</a>(<a href="@0@mscorlib/A.html#4d73eb225aef8a61" class="i method">GetType</a>(), <a href="#4c064e8d618de9de" class="i property">RunningApp</a>);
+		}
+ 
+		[<span class="i">TearDown</span>]
+		<b>public void</b> <a id="4a82e34ecfcad1e8" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">TearDown</a>()
+		{
+			<b>if</b> (<a href="#8c2c74224d3b8de8" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#f75b0ae960fa2c04" class="i method">EndIsolate</a>();
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="b5f0685256ccc869" href="R/b5f0685256ccc869.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+ 
+	<b>public abstract class</b> <a id="ab060f42eef0c6eb" href="R/ab060f42eef0c6eb.html" target="n" data-glyph="0,0" class="t t">TestCarouselPage</a> : <a href="/Xamarin.Forms.Core/A.html#efe3ef8da06691e9" class="t t">CarouselPage</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		<b>public</b> <span class="i">IApp</span> <a id="9b172ee8dcce1594" href="R/9b172ee8dcce1594.html" target="n" data-glyph="102,1" class="i property">RunningApp</a> =&gt; <a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a>;
+ 
+		<b>protected virtual bool</b> <a id="0bbaaea58d7b60ed" href="R/0bbaaea58d7b60ed.html" target="n" data-glyph="105,1" class="i property">Isolate</a> =&gt; <b>false</b>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="f56bcf39a9fb0895" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestCarouselPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+<span class="e">			Init();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		[<span class="i">SetUp</span>]
+		<b>public void</b> <a id="d5277e7e60af2b65" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Setup</a>()
+		{
+			<b>if</b> (<a href="#0bbaaea58d7b60ed" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#3db20022abef222b" class="i method">BeginIsolate</a>();
+			}
+			<b>else</b>
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#a8fcd9ef965c8eed" class="i method">EnsureMemory</a>();
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#664aac73a55ee8eb" class="i method">EnsureConnection</a>();
+			}
+ 
+			<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#667b5224dd07cafb" class="i method">NavigateToIssue</a>(<a href="@0@mscorlib/A.html#4d73eb225aef8a61" class="i method">GetType</a>(), <a href="#9b172ee8dcce1594" class="i property">RunningApp</a>);
+		}
+ 
+		[<span class="i">TearDown</span>]
+		<b>public void</b> <a id="6ac131e136f40d71" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">TearDown</a>()
+		{
+			<b>if</b> (<a href="#0bbaaea58d7b60ed" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#f75b0ae960fa2c04" class="i method">EndIsolate</a>();
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="7d541196404d6cae" href="R/7d541196404d6cae.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+	[<span class="i">Category</span>(<span class="i n">Core</span>.<span class="i n">UITests</span>.<a href="UITestCategories.cs.html#af5bbebc1eb6d7df" class="t t">UITestCategories</a>.<a href="UITestCategories.cs.html#68f02504dc23da30" class="i field">MasterDetailPage</a>)]
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+	<b>public abstract class</b> <a id="4ae41f4f74b7c9a6" href="R/4ae41f4f74b7c9a6.html" target="n" data-glyph="0,0" class="t t">TestMasterDetailPage</a> : <a href="/Xamarin.Forms.Core/A.html#187368fc14858e81" class="t t">MasterDetailPage</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		<b>public</b> <span class="i">IApp</span> <a id="38f5d5dbbc10925c" href="R/38f5d5dbbc10925c.html" target="n" data-glyph="102,1" class="i property">RunningApp</a> =&gt; <a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a>;
+ 
+		<b>protected virtual bool</b> <a id="2eb60ec188b7c41b" href="R/2eb60ec188b7c41b.html" target="n" data-glyph="105,1" class="i property">Isolate</a> =&gt; <b>false</b>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="297af5371fa712c1" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestMasterDetailPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+<span class="e">			Init();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		[<span class="i">SetUp</span>]
+		<b>public void</b> <a id="6ef41d4bfcf5c54c" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Setup</a>()
+		{
+			<b>if</b> (<a href="#2eb60ec188b7c41b" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#3db20022abef222b" class="i method">BeginIsolate</a>();
+			}
+			<b>else</b>
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#a8fcd9ef965c8eed" class="i method">EnsureMemory</a>();
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#664aac73a55ee8eb" class="i method">EnsureConnection</a>();
+			}
+ 
+			<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#667b5224dd07cafb" class="i method">NavigateToIssue</a>(<a href="@0@mscorlib/A.html#4d73eb225aef8a61" class="i method">GetType</a>(), <a href="#38f5d5dbbc10925c" class="i property">RunningApp</a>);
+		}
+ 
+		[<span class="i">TearDown</span>]
+		<b>public void</b> <a id="2f45abfd3fcc52ce" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">TearDown</a>()
+		{
+			<b>if</b> (<a href="#2eb60ec188b7c41b" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#f75b0ae960fa2c04" class="i method">EndIsolate</a>();
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="86f88674c3dab045" href="R/86f88674c3dab045.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+ 
+	<b>public abstract class</b> <a id="33c495d7fb850a48" href="R/33c495d7fb850a48.html" target="n" data-glyph="0,0" class="t t">TestNavigationPage</a> : <a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		<b>public</b> <span class="i">IApp</span> <a id="f1ce145a66391948" href="R/f1ce145a66391948.html" target="n" data-glyph="102,1" class="i property">RunningApp</a> =&gt; <a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a>;
+ 
+		<b>protected virtual bool</b> <a id="a3c7db707bbd29bd" href="R/a3c7db707bbd29bd.html" target="n" data-glyph="105,1" class="i property">Isolate</a> =&gt; <b>false</b>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="b60eca159932fe4c" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestNavigationPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+<span class="e">			Init();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		[<span class="i">SetUp</span>]
+		<b>public void</b> <a id="70f83a92a2b41d60" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Setup</a>()
+		{
+			<b>if</b> (<a href="#a3c7db707bbd29bd" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#3db20022abef222b" class="i method">BeginIsolate</a>();
+			}
+			<b>else</b>
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#a8fcd9ef965c8eed" class="i method">EnsureMemory</a>();
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#664aac73a55ee8eb" class="i method">EnsureConnection</a>();
+			}
+ 
+			<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#667b5224dd07cafb" class="i method">NavigateToIssue</a>(<a href="@0@mscorlib/A.html#4d73eb225aef8a61" class="i method">GetType</a>(), <a href="#f1ce145a66391948" class="i property">RunningApp</a>);
+		}
+ 
+		[<span class="i">TearDown</span>]
+		<b>public void</b> <a id="e1d9c25bafa642e9" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">TearDown</a>()
+		{
+			<b>if</b> (<a href="#a3c7db707bbd29bd" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#f75b0ae960fa2c04" class="i method">EndIsolate</a>();
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="014f0f360aa2aa45" href="R/014f0f360aa2aa45.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+ 
+	<b>public abstract class</b> <a id="4fdca0933a12f6d9" href="R/4fdca0933a12f6d9.html" target="n" data-glyph="0,0" class="t t">TestTabbedPage</a> : <a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>
+	{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		<b>public</b> <span class="i">IApp</span> <a id="9c2c6b3606430732" href="R/9c2c6b3606430732.html" target="n" data-glyph="102,1" class="i property">RunningApp</a> =&gt; <a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a>;
+ 
+		<b>protected virtual bool</b> <a id="f0b3a7d9ccc273c8" href="R/f0b3a7d9ccc273c8.html" target="n" data-glyph="105,1" class="i property">Isolate</a> =&gt; <b>false</b>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="81621b123b8d7fa9" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">TestTabbedPage</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+<span class="e">			Init();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		[<span class="i">SetUp</span>]
+		<b>public void</b> <a id="f212563aedc242ad" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Setup</a>()
+		{
+			<b>if</b> (<a href="#f0b3a7d9ccc273c8" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#3db20022abef222b" class="i method">BeginIsolate</a>();
+			}
+			<b>else</b>
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#a8fcd9ef965c8eed" class="i method">EnsureMemory</a>();
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#664aac73a55ee8eb" class="i method">EnsureConnection</a>();
+			}
+ 
+			<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#667b5224dd07cafb" class="i method">NavigateToIssue</a>(<a href="@0@mscorlib/A.html#4d73eb225aef8a61" class="i method">GetType</a>(), <a href="#9c2c6b3606430732" class="i property">RunningApp</a>);
+		}
+ 
+		[<span class="i">TearDown</span>]
+		<b>public void</b> <a id="c91db84bc70a8714" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">TearDown</a>()
+		{
+			<b>if</b> (<a href="#f0b3a7d9ccc273c8" class="i property">Isolate</a>)
+			{
+				<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#f75b0ae960fa2c04" class="i method">EndIsolate</a>();
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected abstract void</b> <a id="64189057f6920bde" href="R/64189057f6920bde.html" target="n" data-glyph="75,1" class="i method">Init</a>();
+	}
+}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>.<span class="i n">Issues</span>
+{
+	<b>using</b> <span class="i n">System</span>;
+	<b>using</b> <span class="i">NUnit</span>.<span class="i">Framework</span>;
+ 
+	<span class="c">// Run setup once for all tests in the Xamarin.Forms.Controls.Issues namespace</span>
+	<span class="c">// (instead of once for each test)</span>
+	[<span class="i">SetUpFixture</span>]
+	<b>public class</b> <a id="71f427a0bdebc311" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t"><span id="84df26b823719e30">IssuesSetup</span></a>
+	{
+		[<span class="i">SetUp</span>]
+		<b>public void</b> <a id="61b997a09a15f83d" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">RunBeforeAnyTests</a>()
+		{
+			<a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#1884a4fc70b65ec5" class="i property">RunningApp</a> = <a href="#9d433bffcf8838f9" class="t t">AppSetup</a>.<a href="#55b2bf016aab5f05" class="i method">Setup</a>(<b>null</b>);
+		}
+	}
+}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+</pre></td></tr></table></div></body></html>

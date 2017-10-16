@@ -1,0 +1,387 @@
+﻿<!DOCTYPE html>
+<html><head><title>FormsTextBox.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(378);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/FormsTextBox.cs" target="_top">FormsTextBox.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">System</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Core</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Input</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.WinRT
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+	<span class="c">///</span><span class="c">     An intermediate class for injecting bindings for things the default</span>
+	<span class="c">///</span><span class="c">     textbox doesn&#39;t allow us to bind/modify</span>
+	<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+	<b>public class</b> <a id="967435040f7f245e" href="R/967435040f7f245e.html" target="n" data-glyph="0,0" class="t t">FormsTextBox</a> : <span class="t t">TextBox</span>
+	{
+		<b>const char</b> <a id="f0b343a75b44f49f" href="R/f0b343a75b44f49f.html" target="n" data-glyph="10,1" class="i field">ObfuscationCharacter</a> = <span class="s">&#39;●&#39;</span>;
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="aaa3b466c13ff9b1" href="R/aaa3b466c13ff9b1.html" target="n" data-glyph="42,1" class="i field">PlaceholderForegroundBrushProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#1b131279e4c70e1a" class="i property">PlaceholderForegroundBrush</a>), <b>typeof</b>(<span class="t t">Brush</span>), <b>typeof</b>(<a href="#967435040f7f245e" class="t t">FormsTextBox</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">Brush</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="a9b0e68a6da45a48" href="R/a9b0e68a6da45a48.html" target="n" data-glyph="42,1" class="i field">PlaceholderForegroundFocusBrushProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#2ebc9f36d9888677" class="i property">PlaceholderForegroundFocusBrush</a>), <b>typeof</b>(<span class="t t">Brush</span>), <b>typeof</b>(<a href="#967435040f7f245e" class="t t">FormsTextBox</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">Brush</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="8aa806fc61d2de55" href="R/8aa806fc61d2de55.html" target="n" data-glyph="42,1" class="i field">ForegroundFocusBrushProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#649030062c0ccd11" class="i property">ForegroundFocusBrush</a>), <b>typeof</b>(<span class="t t">Brush</span>), <b>typeof</b>(<a href="#967435040f7f245e" class="t t">FormsTextBox</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">Brush</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="8357d7ed2222a971" href="R/8357d7ed2222a971.html" target="n" data-glyph="42,1" class="i field">BackgroundFocusBrushProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#ec25f1334d1ec0c9" class="i property">BackgroundFocusBrush</a>), <b>typeof</b>(<span class="t t">Brush</span>), <b>typeof</b>(<a href="#967435040f7f245e" class="t t">FormsTextBox</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">Brush</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="4cf82cd7575acfb2" href="R/4cf82cd7575acfb2.html" target="n" data-glyph="42,1" class="i field">IsPasswordProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#e58ab9303787ddcb" class="i property">IsPassword</a>), <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#967435040f7f245e" class="t t">FormsTextBox</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<b>bool</b>), <span class="i">OnIsPasswordChanged</span>));
+ 
+		<b>public</b> <b>new</b> <b>static readonly</b> <span class="t t">DependencyProperty</span> <a id="eb88c4290780a919" href="R/eb88c4290780a919.html" target="n" data-glyph="42,1" class="i field">TextProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#71e78d4effd3f612" class="i property">Text</a>), <b>typeof</b>(<b>string</b>), <b>typeof</b>(<a href="#967435040f7f245e" class="t t">FormsTextBox</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<span class="s">&quot;&quot;</span>, <span class="i">TextPropertyChanged</span>));
+ 
+		<span class="t t">InputScope</span> <a id="502985401560f873" href="R/502985401560f873.html" target="n" data-glyph="46,1" class="i field">passwordInputScope</a>;
+		<span class="t t">Border</span> <a id="986736ff9c9cb563" href="R/986736ff9c9cb563.html" target="n" data-glyph="46,1" class="i field">_borderElement</a>;
+		<span class="t t">InputScope</span> <a id="387849d43f41d9b2" href="R/387849d43f41d9b2.html" target="n" data-glyph="46,1" class="i field">_cachedInputScope</a>;
+		<b>bool</b> <a id="fa4a01a23b05d86d" href="R/fa4a01a23b05d86d.html" target="n" data-glyph="46,1" class="i field">_cachedPredictionsSetting</a>;
+		<b>bool</b> <a id="39b2a50daab17b72" href="R/39b2a50daab17b72.html" target="n" data-glyph="46,1" class="i field">_cachedSpellCheckSetting</a>;
+		<span class="i">CancellationTokenSource</span> <a id="949adf52b0472174" href="R/949adf52b0472174.html" target="n" data-glyph="46,1" class="i field">_cts</a>;
+		<b>bool</b> <a id="9594abfb0e3fcdcd" href="R/9594abfb0e3fcdcd.html" target="n" data-glyph="46,1" class="i field">_internalChangeFlag</a>;
+		<b>int</b> <a id="969850ec6e9af9c9" href="R/969850ec6e9af9c9.html" target="n" data-glyph="46,1" class="i field">_cachedSelectionLength</a>;
+ 
+		<b>public</b> <a id="9595d0702732c251" href="R/9595d0702732c251.html" target="n" data-glyph="72,1" class="i constructor">FormsTextBox</a>()
+		{
+			<span class="i">TextChanged</span> += <span class="i">OnTextChanged</span>;
+			<span class="i">SelectionChanged</span> += <span class="i">OnSelectionChanged</span>;
+		}
+ 
+		<b>public</b> <span class="t t">Brush</span> <a id="ec25f1334d1ec0c9" href="R/ec25f1334d1ec0c9.html" target="n" data-glyph="102,1" class="i property">BackgroundFocusBrush</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Brush</span>)<span class="i">GetValue</span>(<a href="#8357d7ed2222a971" class="i field">BackgroundFocusBrushProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#8357d7ed2222a971" class="i field">BackgroundFocusBrushProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">Brush</span> <a id="649030062c0ccd11" href="R/649030062c0ccd11.html" target="n" data-glyph="102,1" class="i property">ForegroundFocusBrush</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Brush</span>)<span class="i">GetValue</span>(<a href="#8aa806fc61d2de55" class="i field">ForegroundFocusBrushProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#8aa806fc61d2de55" class="i field">ForegroundFocusBrushProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public bool</b> <a id="e58ab9303787ddcb" href="R/e58ab9303787ddcb.html" target="n" data-glyph="102,1" class="i property">IsPassword</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<span class="i">GetValue</span>(<a href="#4cf82cd7575acfb2" class="i field">IsPasswordProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#4cf82cd7575acfb2" class="i field">IsPasswordProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">Brush</span> <a id="1b131279e4c70e1a" href="R/1b131279e4c70e1a.html" target="n" data-glyph="102,1" class="i property">PlaceholderForegroundBrush</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Brush</span>)<span class="i">GetValue</span>(<a href="#aaa3b466c13ff9b1" class="i field">PlaceholderForegroundBrushProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#aaa3b466c13ff9b1" class="i field">PlaceholderForegroundBrushProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">Brush</span> <a id="2ebc9f36d9888677" href="R/2ebc9f36d9888677.html" target="n" data-glyph="102,1" class="i property">PlaceholderForegroundFocusBrush</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Brush</span>)<span class="i">GetValue</span>(<a href="#a9b0e68a6da45a48" class="i field">PlaceholderForegroundFocusBrushProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#a9b0e68a6da45a48" class="i field">PlaceholderForegroundFocusBrushProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <b>new</b> <b>string</b> <a id="71e78d4effd3f612" href="R/71e78d4effd3f612.html" target="n" data-glyph="102,1" class="i property">Text</a>
+		{
+			<b>get</b> { <b>return</b> (<b>string</b>)<span class="i">GetValue</span>(<a href="#eb88c4290780a919" class="i field">TextProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#eb88c4290780a919" class="i field">TextProperty</a>, <b>value</b>); }
+		}
+ 
+		<span class="t t">InputScope</span> <a id="9ef863d7df3d6de4" href="R/9ef863d7df3d6de4.html" target="n" data-glyph="106,1" class="i property">PasswordInputScope</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<a href="#502985401560f873" class="i field">passwordInputScope</a> != <b>null</b>)
+				{
+					<b>return</b> <a href="#502985401560f873" class="i field">passwordInputScope</a>;
+				}
+ 
+				<a href="#502985401560f873" class="i field">passwordInputScope</a> = <b>new</b> <span class="t">InputScope</span>();
+				<b>var</b> <span id="r0 rd" class="r0 r">name</span> = <b>new</b> <span class="t">InputScopeName</span> { <span class="i property">NameValue</span> = <span class="t t">InputScopeNameValue</span>.<span class="i field">Default</span> };
+				<a href="#502985401560f873" class="i field">passwordInputScope</a>.<span class="i property">Names</span>.<span class="i">Add</span>(<span class="r0 r">name</span>);
+ 
+				<b>return</b> <a href="#502985401560f873" class="i field">passwordInputScope</a>;
+			}
+		}
+ 
+		<b>protected override void</b> <a id="d0a551d700b33c05" href="R/d0a551d700b33c05.html" target="n" data-glyph="75,1" class="i method">OnApplyTemplate</a>()
+		{
+			<b>base</b>.<span class="i">OnApplyTemplate</span>();
+ 
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> == <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a>)
+			{
+				<span class="c">// If we&#39;re on the phone, we need to grab this from the template</span>
+				<span class="c">// so we can manually handle its background when focused</span>
+				<a href="#986736ff9c9cb563" class="i field">_borderElement</a> = (<span class="t t">Border</span>)<span class="i">GetTemplateChild</span>(<span class="s">&quot;BorderElement&quot;</span>);
+			}
+		}
+ 
+		<b>protected override void</b> <a id="ca8ee185a93bc366" href="R/ca8ee185a93bc366.html" target="n" data-glyph="75,1" class="i method">OnGotFocus</a>(<span class="t t">RoutedEventArgs</span> <span id="r1 rd" class="r1 r">e</span>)
+		{
+			<b>base</b>.<span class="i">OnGotFocus</span>(<span class="r1 r">e</span>);
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">WINDOWS_UWP</span>
+<span class="e">			// If we&#39;re on Windows 8.1 phone, the Visual State Manager crashes if we try to 
+			// handle alternate background colors in the focus state; we have to do
+			// it manually here
+			if (Device.Idiom == TargetIdiom.Phone &amp;&amp; _borderElement != null)
+			{
+				_borderElement.Background = BackgroundFocusBrush;
+			}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+		<b>void</b> <a id="45826dd4451d29ad" href="R/45826dd4451d29ad.html" target="n" data-glyph="76,1" class="i method">DelayObfuscation</a>()
+		{
+			<b>int</b> <span id="r2 rd" class="r2 r">lengthDifference</span> = <b>base</b>.<span class="i property">Text</span>.<span class="i">Length</span> - <a href="#71e78d4effd3f612" class="i property">Text</a>.<span class="i">Length</span>;
+ 
+			<b>string</b> <span id="r3 rd" class="r3 r">updatedRealText</span> = <a href="#d16939fa1d91921e" class="i method">DetermineTextFromPassword</a>(<a href="#71e78d4effd3f612" class="i property">Text</a>, <b>base</b>.<span class="i property">Text</span>);
+ 
+			<b>if</b> (<a href="#71e78d4effd3f612" class="i property">Text</a> == <span class="r3 r">updatedRealText</span>)
+			{
+				<span class="c">// Nothing to do</span>
+				<b>return</b>;
+			}
+ 
+			<a href="#71e78d4effd3f612" class="i property">Text</a> = <span class="r3 r">updatedRealText</span>;
+ 
+			<span class="c">// Cancel any pending delayed obfuscation</span>
+			<a href="#949adf52b0472174" class="i field">_cts</a>?.<span class="i">Cancel</span>();
+			<a href="#949adf52b0472174" class="i field">_cts</a> = <b>null</b>;
+ 
+			<b>string</b> <span id="r4 rd" class="r4 r">newText</span>;
+ 
+			<b>if</b> (<span class="r2 r">lengthDifference</span> != 1)
+			{
+				<span class="c">// Either More than one character got added in this text change (e.g., a paste operation)</span>
+				<span class="c">// Or characters were removed. Either way, we don&#39;t need to do the delayed obfuscation dance</span>
+				<span class="r4 r">newText</span> = <a href="#c8e2a845861f2481" class="i method">Obfuscate</a>();
+			}
+			<b>else</b>
+			{
+				<span class="c">// Only one character was added; we need to leave it visible for a brief time period</span>
+				<span class="c">// Obfuscate all but the last character for now</span>
+				<span class="r4 r">newText</span> = <a href="#c8e2a845861f2481" class="i method">Obfuscate</a>(<b>true</b>);
+ 
+				<span class="c">// Leave the last character visible until a new character is added</span>
+				<span class="c">// or sufficient time has passed</span>
+				<b>if</b> (<a href="#949adf52b0472174" class="i field">_cts</a> == <b>null</b>)
+				{
+					<a href="#949adf52b0472174" class="i field">_cts</a> = <b>new</b> <span class="i">CancellationTokenSource</span>();
+				}
+ 
+				<span class="i">Task</span>.<span class="i">Run</span>(<b>async</b> () =&gt;
+				{
+					<b>await</b> <span class="i">Task</span>.<span class="i">Delay</span>(<span class="i">TimeSpan</span>.<span class="i">FromSeconds</span>(0.5), <a href="#949adf52b0472174" class="i field">_cts</a>.<span class="i">Token</span>);
+					<a href="#949adf52b0472174" class="i field">_cts</a>.<span class="i">Token</span>.<span class="i">ThrowIfCancellationRequested</span>();
+					<b>await</b> <span class="i property">Dispatcher</span>.<span class="i">RunAsync</span>(<span class="t t">CoreDispatcherPriority</span>.<span class="i field">Normal</span>, () =&gt;
+					{
+						<b>base</b>.<span class="i property">Text</span> = <a href="#c8e2a845861f2481" class="i method">Obfuscate</a>();
+						<span class="i property">SelectionStart</span> = <b>base</b>.<span class="i property">Text</span>.<span class="i">Length</span>;
+					});
+				}, <a href="#949adf52b0472174" class="i field">_cts</a>.<span class="i">Token</span>);
+			}
+ 
+			<b>if</b> (<b>base</b>.<span class="i property">Text</span> == <span class="r4 r">newText</span>)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>base</b>.<span class="i property">Text</span> = <span class="r4 r">newText</span>;
+			<span class="i property">SelectionStart</span> = <b>base</b>.<span class="i property">Text</span>.<span class="i">Length</span>;
+		}
+ 
+		<b>static string</b> <a id="d16939fa1d91921e" href="R/d16939fa1d91921e.html" target="n" data-glyph="76,1" class="i method">DetermineTextFromPassword</a>(<b>string</b> <span id="r5 rd" class="r5 r">realText</span>, <b>string</b> <span id="r6 rd" class="r6 r">passwordText</span>)
+		{
+			<b>if</b> (<span class="r5 r">realText</span>.<span class="i">Length</span> == <span class="r6 r">passwordText</span>.<span class="i">Length</span>)
+			{
+				<b>return</b> <span class="r5 r">realText</span>;
+			}
+ 
+			<b>if</b> (<span class="r6 r">passwordText</span>.<span class="i">Length</span> == 0)
+			{
+				<b>return</b> <span class="s">&quot;&quot;</span>;
+			}
+ 
+			<b>if</b> (<span class="r6 r">passwordText</span>.<span class="i">Length</span> &lt; <span class="r5 r">realText</span>.<span class="i">Length</span>)
+			{
+				<b>return</b> <span class="r5 r">realText</span>.<span class="i">Substring</span>(0, <span class="r6 r">passwordText</span>.<span class="i">Length</span>);
+			}
+ 
+			<b>int</b> <span id="r7 rd" class="r7 r">lengthDifference</span> = <span class="r6 r">passwordText</span>.<span class="i">Length</span> - <span class="r5 r">realText</span>.<span class="i">Length</span>;
+ 
+			<b>return</b> <span class="r5 r">realText</span> + <span class="r6 r">passwordText</span>.<span class="i">Substring</span>(<span class="r6 r">passwordText</span>.<span class="i">Length</span> - <span class="r7 r">lengthDifference</span>, <span class="r7 r">lengthDifference</span>);
+		}
+ 
+		<b>string</b> <a id="c8e2a845861f2481" href="R/c8e2a845861f2481.html" target="n" data-glyph="76,1" class="i method">Obfuscate</a>(<b>bool</b> <span id="r8 rd" class="r8 r">leaveLastVisible</span> = <b>false</b>)
+		{
+			<b>if</b> (<span class="r8 r">leaveLastVisible</span> &amp;&amp; <a href="#71e78d4effd3f612" class="i property">Text</a>.<span class="i">Length</span> == 1)
+			{
+				<b>return</b> <a href="#71e78d4effd3f612" class="i property">Text</a>;
+			}
+ 
+			<b>if</b> (<span class="r8 r">leaveLastVisible</span> &amp;&amp; <a href="#71e78d4effd3f612" class="i property">Text</a>.<span class="i">Length</span> &gt; 1)
+			{
+				<b>return</b> <b>new</b> <b>string</b>(<a href="#f0b343a75b44f49f" class="i field">ObfuscationCharacter</a>, <a href="#71e78d4effd3f612" class="i property">Text</a>.<span class="i">Length</span> - 1) + <a href="#71e78d4effd3f612" class="i property">Text</a>.<span class="i">Substring</span>(<a href="#71e78d4effd3f612" class="i property">Text</a>.<span class="i">Length</span> - 1, 1);
+			}
+ 
+			<b>return</b> <b>new</b> <b>string</b>(<a href="#f0b343a75b44f49f" class="i field">ObfuscationCharacter</a>, <a href="#71e78d4effd3f612" class="i property">Text</a>.<span class="i">Length</span>);
+		}
+ 
+		<b>static void</b> <a id="c5f6293a7f540d75" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnIsPasswordChanged</a>(<span class="t t">DependencyObject</span> <span id="r9 rd" class="r9 r">dependencyObject</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<a href="#967435040f7f245e" class="k">var</a> <span id="r11 rd" class="r11 r">textBox</span> = (<a href="#967435040f7f245e" class="t t">FormsTextBox</a>)<span class="r9 r">dependencyObject</span>;
+			<span class="r11 r">textBox</span>.<a href="#7807dbd4cadf286e" class="i method">UpdateInputScope</a>();
+			<span class="r11 r">textBox</span>.<a href="#6c5d52518f0cfe91" class="i method">SyncBaseText</a>();
+		}
+ 
+		<b>void</b> <a id="45d7afa76a9337fd" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnSelectionChanged</a>(<b>object</b> <span id="r12 rd" class="r12 r">sender</span>, <span class="t t">RoutedEventArgs</span> <span id="r13 rd" class="r13 r">routedEventArgs</span>)
+		{
+			<span class="c">// Cache this value for later use as explained in OnKeyDown below</span>
+			<a href="#969850ec6e9af9c9" class="i field">_cachedSelectionLength</a> = <span class="i property">SelectionLength</span>;
+		}
+ 
+		<span class="c">// Because the implementation of a password entry is based around inheriting from TextBox (via FormsTextBox), there</span>
+		<span class="c">// are some inaccuracies in the behavior. OnKeyDown is what needs to be used for a workaround in this case because </span>
+		<span class="c">// there&#39;s no easy way to disable specific keyboard shortcuts in a TextBox, so key presses are being intercepted and </span>
+		<span class="c">// handled accordingly.</span>
+		<b>protected override void</b> <a id="5375dd312d2c223c" href="R/5375dd312d2c223c.html" target="n" data-glyph="75,1" class="i method">OnKeyDown</a>(<span class="t t">KeyRoutedEventArgs</span> <span id="r14 rd" class="r14 r">e</span>)
+		{
+			<b>if</b> (<a href="#e58ab9303787ddcb" class="i property">IsPassword</a>)
+			{
+				<span class="c">// The ctrlDown flag is used to track if the Ctrl key is pressed; if it&#39;s actively being used and the most recent</span>
+				<span class="c">// key to trigger OnKeyDown, then treat it as handled.</span>
+				<b>var</b> <span id="r15 rd" class="r15 r">ctrlDown</span> = <span class="t t">Window</span>.<span class="i property">Current</span>.<span class="i property">CoreWindow</span>.<span class="i">GetKeyState</span>(<span class="t t">VirtualKey</span>.<span class="i field">Control</span>).<span class="i">HasFlag</span>(<span class="t t">CoreVirtualKeyStates</span>.<span class="i field">Down</span>);
+ 
+				<span class="c">// The shift, tab, and directional (Home/End/PgUp/PgDown included) keys can be used to select text and should otherwise</span>
+				<span class="c">// be ignored.</span>
+				<b>if</b> (
+					<span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">Shift</span> ||
+					<span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">Tab</span> ||
+					<span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">Left</span> ||
+					<span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">Right</span> ||
+					<span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">Up</span> ||
+					<span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">Down</span> ||
+					<span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">Home</span> ||
+					<span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">End</span> ||
+					<span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">PageUp</span> ||
+					<span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">PageDown</span>)
+				{
+					<b>base</b>.<span class="i">OnKeyDown</span>(<span class="r14 r">e</span>);
+					<b>return</b>;
+				}
+				<span class="c">// For anything else, continue on (calling base.OnKeyDown) and then if Ctrl is still being pressed, do nothing about it.</span>
+				<span class="c">// The tricky part here is that the SelectionLength value needs to be cached because in an example where the user entered</span>
+				<span class="c">// &#39;123&#39; into the field and selects all of it, the moment that any character key is pressed to replace the entire string,</span>
+				<span class="c">// the SelectionLength is equal to zero, which is not what&#39;s desired. Entering a key will thus remove the selected number</span>
+				<span class="c">// of characters from the Text value. OnKeyDown is fortunately called before OnSelectionChanged which enables this.</span>
+				<b>else</b>
+				{
+					<span class="c">// If the C or X keys (copy/cut) are pressed while Ctrl is active, ignore handing them at all. Undo and Redo (Z/Y) should </span>
+					<span class="c">// be ignored as well as this emulates the regular behavior of a PasswordBox.</span>
+					<b>if</b> ((<span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">C</span> || <span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">X</span> || <span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">Z</span> || <span class="r14 r">e</span>.<span class="i property">Key</span> == <span class="t t">VirtualKey</span>.<span class="i field">Y</span>) &amp;&amp; <span class="r15 r">ctrlDown</span>)
+					{
+						<span class="r14 r">e</span>.<span class="i property">Handled</span> = <b>false</b>;
+						<b>return</b>;
+					}
+ 
+					<b>base</b>.<span class="i">OnKeyDown</span>(<span class="r14 r">e</span>);
+					<b>if</b> (<a href="#969850ec6e9af9c9" class="i field">_cachedSelectionLength</a> &gt; 0 &amp;&amp; !<span class="r15 r">ctrlDown</span>)
+						<a href="#71e78d4effd3f612" class="i property">Text</a> = <a href="#71e78d4effd3f612" class="i property">Text</a>.<span class="i">Remove</span>(<span class="i property">SelectionStart</span>, <a href="#969850ec6e9af9c9" class="i field">_cachedSelectionLength</a>);
+				}
+			}
+			<b>else</b>
+				<b>base</b>.<span class="i">OnKeyDown</span>(<span class="r14 r">e</span>);
+		}
+ 
+		<b>void</b> <a id="870b16d7716a9252" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnTextChanged</a>(<b>object</b> <span id="r16 rd" class="r16 r">sender</span>, <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">TextChangedEventArgs</span> <span id="r17 rd" class="r17 r">textChangedEventArgs</span>)
+		{
+			<b>if</b> (<a href="#e58ab9303787ddcb" class="i property">IsPassword</a>)
+			{
+				<span class="c">// If we&#39;re not on a phone, we can just obfuscate any input</span>
+				<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> != <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a>)
+				{
+					<b>string</b> <span id="r18 rd" class="r18 r">updatedRealText</span> = <a href="#d16939fa1d91921e" class="i method">DetermineTextFromPassword</a>(<a href="#71e78d4effd3f612" class="i property">Text</a>, <b>base</b>.<span class="i property">Text</span>);
+ 
+					<b>if</b> (<a href="#71e78d4effd3f612" class="i property">Text</a> == <span class="r18 r">updatedRealText</span>)
+					{
+						<span class="c">// Nothing to do</span>
+						<b>return</b>;
+					}
+ 
+					<a href="#71e78d4effd3f612" class="i property">Text</a> = <span class="r18 r">updatedRealText</span>;
+ 
+					<b>string</b> <span id="r19 rd" class="r19 r">updatedText</span> = <a href="#c8e2a845861f2481" class="i method">Obfuscate</a>();
+ 
+					<b>if</b> (<b>base</b>.<span class="i property">Text</span> != <span class="r19 r">updatedText</span>)
+					{
+						<b>base</b>.<span class="i property">Text</span> = <span class="r19 r">updatedText</span>;
+						<span class="i property">SelectionStart</span> = <b>base</b>.<span class="i property">Text</span>.<span class="i">Length</span>;
+					}
+ 
+					<b>return</b>;
+				}
+ 
+				<span class="c">// If we are on the phone, we might need to delay obfuscating the last character</span>
+				<a href="#45826dd4451d29ad" class="i method">DelayObfuscation</a>();
+			}
+			<b>else if</b> (<b>base</b>.<span class="i property">Text</span> != <a href="#71e78d4effd3f612" class="i property">Text</a>)
+			{
+				<span class="c">// Not in password mode, so we just need to make the &quot;real&quot; text match</span>
+				<span class="c">// what&#39;s in the textbox; the internalChange flag keeps the TextProperty</span>
+				<span class="c">// synchronization from happening </span>
+				<a href="#9594abfb0e3fcdcd" class="i field">_internalChangeFlag</a> = <b>true</b>;
+				<a href="#71e78d4effd3f612" class="i property">Text</a> = <b>base</b>.<span class="i property">Text</span>;
+				<a href="#9594abfb0e3fcdcd" class="i field">_internalChangeFlag</a> = <b>false</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="6c5d52518f0cfe91" href="R/6c5d52518f0cfe91.html" target="n" data-glyph="76,1" class="i method">SyncBaseText</a>()
+		{
+			<b>if</b> (<a href="#9594abfb0e3fcdcd" class="i field">_internalChangeFlag</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>base</b>.<span class="i property">Text</span> = <a href="#e58ab9303787ddcb" class="i property">IsPassword</a> ? <a href="#c8e2a845861f2481" class="i method">Obfuscate</a>() : <a href="#71e78d4effd3f612" class="i property">Text</a>;
+ 
+			<span class="i property">SelectionStart</span> = <b>base</b>.<span class="i property">Text</span>.<span class="i">Length</span>;
+		}
+ 
+		<b>static void</b> <a id="534433770e9fceff" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">TextPropertyChanged</a>(<span class="t t">DependencyObject</span> <span id="r20 rd" class="r20 r">dependencyObject</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r21 rd" class="r21 r">dependencyPropertyChangedEventArgs</span>)
+		{
+			<a href="#967435040f7f245e" class="k">var</a> <span id="r22 rd" class="r22 r">textBox</span> = (<a href="#967435040f7f245e" class="t t">FormsTextBox</a>)<span class="r20 r">dependencyObject</span>;
+			<span class="r22 r">textBox</span>.<a href="#6c5d52518f0cfe91" class="i method">SyncBaseText</a>();
+		}
+ 
+		<b>void</b> <a id="7807dbd4cadf286e" href="R/7807dbd4cadf286e.html" target="n" data-glyph="76,1" class="i method">UpdateInputScope</a>()
+		{
+			<b>if</b> (<a href="#e58ab9303787ddcb" class="i property">IsPassword</a>)
+			{
+				<a href="#387849d43f41d9b2" class="i field">_cachedInputScope</a> = <span class="i property">InputScope</span>;
+				<a href="#39b2a50daab17b72" class="i field">_cachedSpellCheckSetting</a> = <span class="i property">IsSpellCheckEnabled</span>;
+				<a href="#fa4a01a23b05d86d" class="i field">_cachedPredictionsSetting</a> = <span class="i property">IsTextPredictionEnabled</span>;
+				<span class="i">InputScope</span> = <a href="#9ef863d7df3d6de4" class="i property">PasswordInputScope</a>; <span class="c">// Change to default input scope so we don&#39;t have suggestions, etc.</span>
+				<span class="i property">IsTextPredictionEnabled</span> = <b>false</b>; <span class="c">// Force the other text modification options off</span>
+				<span class="i property">IsSpellCheckEnabled</span> = <b>false</b>;
+			}
+			<b>else</b>
+			{
+				<span class="i">InputScope</span> = <a href="#387849d43f41d9b2" class="i field">_cachedInputScope</a>;
+				<span class="i property">IsSpellCheckEnabled</span> = <a href="#39b2a50daab17b72" class="i field">_cachedSpellCheckSetting</a>;
+				<span class="i property">IsTextPredictionEnabled</span> = <a href="#fa4a01a23b05d86d" class="i field">_cachedPredictionsSetting</a>;
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

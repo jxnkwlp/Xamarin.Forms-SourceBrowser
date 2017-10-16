@@ -1,0 +1,434 @@
+﻿<!DOCTYPE html>
+<html><head><title>VisualElementRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(425);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/VisualElementRenderer.cs" target="_top">VisualElementRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="t">RectangleF</span> = <span class="i n">CoreGraphics</span>.<span class="t t">CGRect</span>;
+<b>using</b> <span class="t">SizeF</span> = <span class="i n">CoreGraphics</span>.<span class="t t">CGSize</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">iOSSpecific</span>;
+<b>using</b> <span class="i n">UIKit</span>;
+<b>using</b> <span class="t">NativeView</span> = <span class="i n">UIKit</span>.<span class="t t">UIView</span>;
+<b>using</b> <span class="t">NativeViewController</span> = <span class="i n">UIKit</span>.<span class="t t">UIViewController</span>;
+<b>using</b> <span class="t">NativeColor</span> = <span class="i n">UIKit</span>.<span class="t t">UIColor</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">using AppKit;
+using NativeView = AppKit.NSView;
+using NativeViewController = AppKit.NSViewController;
+using NativeColor = AppKit.NSColor;
+ 
+namespace Xamarin.Forms.Platform.MacOS
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	[<a href="@0@mscorlib/A.html#5bbb5168ad9d1021" class="t constructor">Flags</a>]
+	<b>public enum</b> <a id="f5f117e3444f27bb" href="R/f5f117e3444f27bb.html" target="n" data-glyph="18,0" class="t t"><span id="ede29ac1c51e109c">VisualElementRendererFlags</span></a>
+	{
+		<a id="b20542506d7ac7f5" href="R/b20542506d7ac7f5.html" target="n" data-glyph="24,1" class="i field">Disposed</a> = 1 &lt;&lt; 0,
+		<a id="fe3ee29a3c5df25e" href="R/fe3ee29a3c5df25e.html" target="n" data-glyph="24,1" class="i field">AutoTrack</a> = 1 &lt;&lt; 1,
+		<a id="b023bc9fb92d43ac" href="R/b023bc9fb92d43ac.html" target="n" data-glyph="24,1" class="i field">AutoPackage</a> = 1 &lt;&lt; 2
+	}
+ 
+	<b>public class</b> <a id="8292e3f36f0ff9ad" href="R/8292e3f36f0ff9ad.html" target="n" data-glyph="0,0" class="t t">VisualElementRenderer</a>&lt;<span id="r0 rd t" class="r0 r t">TElement</span>&gt; : <span class="t t">NativeView</span>, <a href="IVisualElementRenderer.cs.html#222fbc88c8a624f8" class="t t">IVisualElementRenderer</a>, <a href="/Xamarin.Forms.Core/A.html#1ec8f97ecf2bfedd" class="t t">IEffectControlProvider</a> <b>where</b> <span class="r0 r t">TElement</span> : <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>
+	{
+		<b>readonly</b> <span class="t t">NativeColor</span> <a id="96bda3e49725dd52" href="R/96bda3e49725dd52.html" target="n" data-glyph="46,1" class="i field">_defaultColor</a> = <span class="t t">NativeColor</span>.<span class="i property">Clear</span>;
+ 
+		<b>readonly</b> <a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="@0@mscorlib/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ElementChangedEventArgs.cs.html#370d799bbbdee8b8" class="t t">VisualElementChangedEventArgs</a>&gt;&gt; <a id="57ff34a46de8a835" href="R/57ff34a46de8a835.html" target="n" data-glyph="46,1" class="i field">_elementChangedHandlers</a> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="@0@mscorlib/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ElementChangedEventArgs.cs.html#370d799bbbdee8b8" class="t t">VisualElementChangedEventArgs</a>&gt;&gt;();
+ 
+		<b>readonly</b> <a href="@0@System/A.html#670754815f6804ff" class="t t">PropertyChangedEventHandler</a> <a id="b1ef9c1c724d37a0" href="R/b1ef9c1c724d37a0.html" target="n" data-glyph="46,1" class="i field">_propertyChangedHandler</a>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<b>string</b> <a id="fbaf41122dd02ded" href="R/fbaf41122dd02ded.html" target="n" data-glyph="46,1" class="i field">_defaultAccessibilityLabel</a>;
+		<b>string</b> <a id="29648b20f51661f7" href="R/29648b20f51661f7.html" target="n" data-glyph="46,1" class="i field">_defaultAccessibilityHint</a>;
+		<b>bool</b>? <a id="54f9c23e29f537ba" href="R/54f9c23e29f537ba.html" target="n" data-glyph="46,1" class="i field">_defaultIsAccessibilityElement</a>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		<a href="EventTracker.cs.html#35e9372672b946fe" class="t t">EventTracker</a> <a id="8fb7b3459db0c066" href="R/8fb7b3459db0c066.html" target="n" data-glyph="46,1" class="i field">_events</a>;
+ 
+		<a href="#f5f117e3444f27bb" class="t t">VisualElementRendererFlags</a> <a id="77a270cd5ad0a46d" href="R/77a270cd5ad0a46d.html" target="n" data-glyph="46,1" class="i field">_flags</a> = <a href="#f5f117e3444f27bb" class="t t">VisualElementRendererFlags</a>.<a href="#b023bc9fb92d43ac" class="i field">AutoPackage</a> | <a href="#f5f117e3444f27bb" class="t t">VisualElementRendererFlags</a>.<a href="#fe3ee29a3c5df25e" class="i field">AutoTrack</a>;
+ 
+		<a href="VisualElementPackager.cs.html#48d30cac335436f5" class="t t">VisualElementPackager</a> <a id="780745067fb2821a" href="R/780745067fb2821a.html" target="n" data-glyph="46,1" class="i field">_packager</a>;
+		<a href="VisualElementTracker.cs.html#dbca6fe3df195482" class="t t">VisualElementTracker</a> <a id="6f320289b26b3705" href="R/6f320289b26b3705.html" target="n" data-glyph="46,1" class="i field">_tracker</a>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<span class="t t">UIVisualEffectView</span> <a id="ccaf91808508794b" href="R/ccaf91808508794b.html" target="n" data-glyph="46,1" class="i field">_blur</a>;
+		<a href="/Xamarin.Forms.Core/A.html#2ad742b3be9b3a18" class="t t">BlurEffectStyle</a> <a id="7e89379d3d769952" href="R/7e89379d3d769952.html" target="n" data-glyph="46,1" class="i field">_previousBlur</a>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <a id="4192a3f38943aac2" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">VisualElementRenderer</a>() : <b>base</b>(<span class="t t">RectangleF</span>.<span class="i field">Empty</span>)
+		{
+			<a href="#b1ef9c1c724d37a0" class="i field">_propertyChangedHandler</a> = <a href="#911e90a7ef0e7fc2" class="i method">OnElementPropertyChanged</a>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+			<a href="#b66e62064e502562" class="i property">BackgroundColor</a> = <a href="#96bda3e49725dd52" class="i field">_defaultColor</a>;
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">			WantsLayer = true;
+			Layer.BackgroundColor = _defaultColor.CGColor;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<span class="c">// prevent possible crashes in overrides</span>
+		<b>public sealed override</b> <span class="t t">NativeColor</span> <a id="b66e62064e502562" href="R/b66e62064e502562.html" target="n" data-glyph="102,1" class="i property">BackgroundColor</a>
+		{
+			<b>get</b> { <b>return</b> <b>base</b>.<span class="i property">BackgroundColor</span>; }
+			<b>set</b> { <b>base</b>.<span class="i property">BackgroundColor</span> = <b>value</b>; }
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>public</b> <span class="r0 r t">TElement</span> <a id="31c34a1126d7ec15" href="R/31c34a1126d7ec15.html" target="n" data-glyph="102,1" class="i property">Element</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>protected bool</b> <a id="9acf9eca5a7574f3" href="R/9acf9eca5a7574f3.html" target="n" data-glyph="105,1" class="i property">AutoPackage</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="#77a270cd5ad0a46d" class="i field">_flags</a> &amp; <a href="#f5f117e3444f27bb" class="t t">VisualElementRendererFlags</a>.<a href="#b023bc9fb92d43ac" class="i field">AutoPackage</a>) != 0; }
+			<b>set</b>
+			{
+				<b>if</b> (<b>value</b>)
+					<a href="#77a270cd5ad0a46d" class="i field">_flags</a> |= <a href="#f5f117e3444f27bb" class="t t">VisualElementRendererFlags</a>.<a href="#b023bc9fb92d43ac" class="i field">AutoPackage</a>;
+				<b>else</b>
+					<a href="#77a270cd5ad0a46d" class="i field">_flags</a> &amp;= ~<a href="#f5f117e3444f27bb" class="t t">VisualElementRendererFlags</a>.<a href="#b023bc9fb92d43ac" class="i field">AutoPackage</a>;
+			}
+		}
+ 
+		<b>protected bool</b> <a id="75fc6d6db2b15efd" href="R/75fc6d6db2b15efd.html" target="n" data-glyph="105,1" class="i property">AutoTrack</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="#77a270cd5ad0a46d" class="i field">_flags</a> &amp; <a href="#f5f117e3444f27bb" class="t t">VisualElementRendererFlags</a>.<a href="#fe3ee29a3c5df25e" class="i field">AutoTrack</a>) != 0; }
+			<b>set</b>
+			{
+				<b>if</b> (<b>value</b>)
+					<a href="#77a270cd5ad0a46d" class="i field">_flags</a> |= <a href="#f5f117e3444f27bb" class="t t">VisualElementRendererFlags</a>.<a href="#fe3ee29a3c5df25e" class="i field">AutoTrack</a>;
+				<b>else</b>
+					<a href="#77a270cd5ad0a46d" class="i field">_flags</a> &amp;= ~<a href="#f5f117e3444f27bb" class="t t">VisualElementRendererFlags</a>.<a href="#fe3ee29a3c5df25e" class="i field">AutoTrack</a>;
+			}
+		}
+ 
+		<b>public static void</b> <a id="d8fac4a1af79ff5b" href="R/d8fac4a1af79ff5b.html" target="n" data-glyph="72,1" class="i method">RegisterEffect</a>(<a href="/Xamarin.Forms.Core/A.html#e864ca63b39ef663" class="t t">Effect</a> <span id="r1 rd" class="r1 r">effect</span>, <span class="t t">NativeView</span> <span id="r2 rd" class="r2 r">container</span>, <span class="t t">NativeView</span> <span id="r3 rd" class="r3 r">control</span> = <b>null</b>)
+		{
+			<a href="PlatformEffect.cs.html#fb9c1013699d47ec" class="k">var</a> <span id="r4 rd" class="r4 r">platformEffect</span> = <span class="r1 r">effect</span> <b>as</b> <a href="PlatformEffect.cs.html#fb9c1013699d47ec" class="t t">PlatformEffect</a>;
+			<b>if</b> (<span class="r4 r">platformEffect</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<span class="r4 r">platformEffect</span>.<a href="/Xamarin.Forms.Core/A.html#c7b63607822cc8b6" class="i method">SetContainer</a>(<span class="r2 r">container</span>);
+			<span class="r4 r">platformEffect</span>.<a href="/Xamarin.Forms.Core/A.html#96c39427ca7a7489" class="i method">SetControl</a>(<span class="r3 r">control</span>);
+		}
+ 
+		<b>void</b> <a href="/Xamarin.Forms.Core/A.html#1ec8f97ecf2bfedd" class="t t">IEffectControlProvider</a>.<a href="/Xamarin.Forms.Core/A.html#b783dcc5e3ec781f" class="i method">RegisterEffect</a>(<a href="/Xamarin.Forms.Core/A.html#e864ca63b39ef663" class="t t">Effect</a> <span id="r5 rd" class="r5 r">effect</span>)
+		{
+			<a href="PlatformEffect.cs.html#fb9c1013699d47ec" class="k">var</a> <span id="r6 rd" class="r6 r">platformEffect</span> = <span class="r5 r">effect</span> <b>as</b> <a href="PlatformEffect.cs.html#fb9c1013699d47ec" class="t t">PlatformEffect</a>;
+			<b>if</b> (<span class="r6 r">platformEffect</span> != <b>null</b>)
+				<a href="#c813997166906302" class="i method">OnRegisterEffect</a>(<span class="r6 r">platformEffect</span>);
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a href="IVisualElementRenderer.cs.html#222fbc88c8a624f8" class="t t">IVisualElementRenderer</a>.<a href="IVisualElementRenderer.cs.html#7bd415bdbb6a8c7d" class="i property">Element</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#31c34a1126d7ec15" class="i property">Element</a>; }
+		}
+ 
+		<b>event</b> <a href="@0@mscorlib/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ElementChangedEventArgs.cs.html#370d799bbbdee8b8" class="t t">VisualElementChangedEventArgs</a>&gt; <a href="IVisualElementRenderer.cs.html#222fbc88c8a624f8" class="t t">IVisualElementRenderer</a>.<a href="IVisualElementRenderer.cs.html#0a81f1f5f25f84a4" class="i">ElementChanged</a>
+		{
+			<b>add</b> { <a href="#57ff34a46de8a835" class="i field">_elementChangedHandlers</a>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<b>value</b>); }
+			<b>remove</b> { <a href="#57ff34a46de8a835" class="i field">_elementChangedHandlers</a>.<a href="@0@mscorlib/A.html#db8cdd552a0bb10c" class="i method">Remove</a>(<b>value</b>); }
+		}
+ 
+		<b>public virtual</b> <a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="ad8a04117f7aaf2e" href="R/ad8a04117f7aaf2e.html" target="n" data-glyph="72,1" class="i method">GetDesiredSize</a>(<b>double</b> <span id="r7 rd" class="r7 r">widthConstraint</span>, <b>double</b> <span id="r8 rd" class="r8 r">heightConstraint</span>)
+		{
+			<b>return</b> <a href="#596004f41b2a7f1f" class="i property">NativeView</a>.<a href="Extensions/UIViewExtensions.cs.html#c981fc7314706e11" class="i method">GetSizeRequest</a>(<span class="r7 r">widthConstraint</span>, <span class="r8 r">heightConstraint</span>);
+		}
+ 
+		<b>public</b> <span class="t t">NativeView</span> <a id="596004f41b2a7f1f" href="R/596004f41b2a7f1f.html" target="n" data-glyph="102,1" class="i property">NativeView</a> =&gt; <a href="#8292e3f36f0ff9ad" class="k">this</a>;
+ 
+		<b>void</b> <a href="IVisualElementRenderer.cs.html#222fbc88c8a624f8" class="t t">IVisualElementRenderer</a>.<a href="IVisualElementRenderer.cs.html#a0e76ca620152f94" class="i method">SetElement</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r9 rd" class="r9 r">element</span>)
+		{
+			<a href="#46507de7e445d5b3" class="i method">SetElement</a>((<span class="r0 r t">TElement</span>)<span class="r9 r">element</span>);
+		}
+ 
+		<b>public void</b> <a id="679c7b4e83f3cecb" href="R/679c7b4e83f3cecb.html" target="n" data-glyph="72,1" class="i method">SetElementSize</a>(<a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <span id="r10 rd" class="r10 r">size</span>)
+		{
+			<span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="t t">Layout</a>.<a href="/Xamarin.Forms.Core/A.html#7ef8e1dd509efc78" class="i method">LayoutChildIntoBoundingRegion</a>(<a href="#31c34a1126d7ec15" class="i property">Element</a>, <b>new</b> <a href="/Xamarin.Forms.Core/A.html#884b8ad2719b18bf" class="t constructor">Rectangle</a>(<a href="#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#e18ecb86f0d3566d" class="i property">X</a>, <a href="#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d889d87a84b3b903" class="i property">Y</a>, <span class="r10 r">size</span>.<a href="/Xamarin.Forms.Core/A.html#6207d8e3826352f7" class="i property">Width</a>, <span class="r10 r">size</span>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a>));
+		}
+ 
+		<b>public virtual</b> <span class="t t">NativeViewController</span> <a id="e45f34d86db458fa" href="R/e45f34d86db458fa.html" target="n" data-glyph="102,1" class="i property">ViewController</a> =&gt; <b>null</b>;
+ 
+		<b>public event</b> <a href="@0@mscorlib/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ElementChangedEventArgs.cs.html#8cd59c48d876c811" class="t t">ElementChangedEventArgs</a>&lt;<span class="r0 r t">TElement</span>&gt;&gt; <a id="0a3b076148102e87" href="R/0a3b076148102e87.html" target="n" data-glyph="30,1" class="i">ElementChanged</a>;
+ 
+		<b>public void</b> <a id="46507de7e445d5b3" href="R/46507de7e445d5b3.html" target="n" data-glyph="72,1" class="i method">SetElement</a>(<span class="r0 r t">TElement</span> <span id="r11 rd" class="r11 r">element</span>)
+		{
+			<span class="r0 r t">var</span> <span id="r12 rd" class="r12 r">oldElement</span> = <a href="#31c34a1126d7ec15" class="i property">Element</a>;
+			<a href="#31c34a1126d7ec15" class="i property">Element</a> = <span class="r11 r">element</span>;
+ 
+			<b>if</b> (<span class="r12 r">oldElement</span> != <b>null</b>)
+				<span class="r12 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#b1ef9c1c724d37a0" class="i field">_propertyChangedHandler</a>;
+ 
+			<b>if</b> (<span class="r11 r">element</span> != <b>null</b>)
+			{
+				<b>if</b> (<span class="r11 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a> != <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#78f150ac7d83a2c8" class="i property">Default</a> || (<span class="r12 r">oldElement</span> != <b>null</b> &amp;&amp; <span class="r11 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a> != <span class="r12 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a>))
+					<a href="#6a65e77290a66ac9" class="i method">SetBackgroundColor</a>(<span class="r11 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a>);
+ 
+				<a href="#82683d7dd89f01ad" class="i method">UpdateClipToBounds</a>();
+ 
+				<b>if</b> (<a href="#6f320289b26b3705" class="i field">_tracker</a> == <b>null</b>)
+				{
+					<a href="#6f320289b26b3705" class="i field">_tracker</a> = <b>new</b> <a href="VisualElementTracker.cs.html#95474517432863cb" class="t constructor">VisualElementTracker</a>(<a href="#8292e3f36f0ff9ad" class="k">this</a>);
+					<a href="#6f320289b26b3705" class="i field">_tracker</a>.<a href="VisualElementTracker.cs.html#78c2fe077d851f29" class="i">NativeControlUpdated</a> += (<span id="r13 rd" class="r13 r">sender</span>, <span id="r14 rd" class="r14 r">e</span>) =&gt; <a href="#57dfc718f671dec3" class="i method">UpdateNativeWidget</a>();
+				}
+ 
+				<b>if</b> (<a href="#9acf9eca5a7574f3" class="i property">AutoPackage</a> &amp;&amp; <a href="#780745067fb2821a" class="i field">_packager</a> == <b>null</b>)
+				{
+					<a href="#780745067fb2821a" class="i field">_packager</a> = <b>new</b> <a href="VisualElementPackager.cs.html#db5a28f4f2776927" class="t constructor">VisualElementPackager</a>(<a href="#8292e3f36f0ff9ad" class="k">this</a>);
+					<a href="#780745067fb2821a" class="i field">_packager</a>.<a href="VisualElementPackager.cs.html#455a4105e2037b36" class="i method">Load</a>();
+				}
+ 
+				<b>if</b> (<a href="#75fc6d6db2b15efd" class="i property">AutoTrack</a> &amp;&amp; <a href="#8fb7b3459db0c066" class="i field">_events</a> == <b>null</b>)
+				{
+					<a href="#8fb7b3459db0c066" class="i field">_events</a> = <b>new</b> <a href="EventTracker.cs.html#9265f807f7ca4e68" class="t constructor">EventTracker</a>(<a href="#8292e3f36f0ff9ad" class="k">this</a>);
+					<a href="#8fb7b3459db0c066" class="i field">_events</a>.<a href="EventTracker.cs.html#dfeb88366096a6ef" class="i method">LoadEvents</a>(<a href="#8292e3f36f0ff9ad" class="k">this</a>);
+				}
+ 
+				<span class="r11 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#b1ef9c1c724d37a0" class="i field">_propertyChangedHandler</a>;
+ 
+			}
+ 
+			<a href="#07f9785f07aaf1c0" class="i method">OnElementChanged</a>(<b>new</b> <a href="ElementChangedEventArgs.cs.html#cf8a541467f5e0be" class="t constructor">ElementChangedEventArgs</a>&lt;<span class="r0 r t">TElement</span>&gt;(<span class="r12 r">oldElement</span>, <span class="r11 r">element</span>));
+ 
+			<b>if</b> (<span class="r11 r">element</span> != <b>null</b>)
+				<a href="#8a86bac35c0fcd43" class="i method">SendVisualElementInitialized</a>(<span class="r11 r">element</span>, <a href="#8292e3f36f0ff9ad" class="k">this</a>);
+ 
+			<a href="EffectUtilities.cs.html#310ffe3387821fed" class="t t">EffectUtilities</a>.<a href="EffectUtilities.cs.html#8404d59da38201ca" class="i method">RegisterEffectControlProvider</a>(<a href="#8292e3f36f0ff9ad" class="k">this</a>, <span class="r12 r">oldElement</span>, <span class="r11 r">element</span>);
+ 
+			<b>if</b> (<a href="#31c34a1126d7ec15" class="i property">Element</a> != <b>null</b> &amp;&amp; !<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>))
+				<a href="#13246211aa07c35d" class="i method">SetAutomationId</a>(<a href="#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>);
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+			<a href="#d89232dd93e55fb8" class="i method">SetAccessibilityLabel</a>();
+			<a href="#208b4976e96328c4" class="i method">SetAccessibilityHint</a>();
+			<a href="#571cc34cf86be399" class="i method">SetIsAccessibilityElement</a>();
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<b>public override</b> <span class="t t">SizeF</span> <a id="1a0586323d92acaf" href="R/1a0586323d92acaf.html" target="n" data-glyph="72,1" class="i method">SizeThatFits</a>(<span class="t t">SizeF</span> <span id="r15 rd" class="r15 r">size</span>)
+		{
+			<b>return</b> <b>new</b> <span class="t constructor">SizeF</span>(0, 0);
+		}
+ 
+		<b>public override void</b> <a id="de518bc130e84ded" href="R/de518bc130e84ded.html" target="n" data-glyph="72,1" class="i method">LayoutSubviews</a>()
+		{
+			<b>base</b>.<span class="i method">LayoutSubviews</span>();
+			<b>if</b> (<a href="#ccaf91808508794b" class="i field">_blur</a> != <b>null</b> &amp;&amp; <span class="i property">Superview</span> != <b>null</b>)
+			{
+				<a href="#ccaf91808508794b" class="i field">_blur</a>.<span class="i property">Frame</span> = <span class="i property">Bounds</span>;
+				<b>if</b> (<a href="#ccaf91808508794b" class="i field">_blur</a>.<span class="i property">Superview</span> == <b>null</b>)
+					<span class="i property">Superview</span>.<span class="i method">Add</span>(<a href="#ccaf91808508794b" class="i field">_blur</a>);
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">		public override void MouseDown(NSEvent theEvent)
+		{
+			bool inViewCell = IsOnViewCell(Element);
+ 
+			if (Element.InputTransparent || inViewCell)
+				base.MouseDown(theEvent);
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected override void</b> <a id="c324545d1dc9b8ae" href="R/c324545d1dc9b8ae.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r16 rd" class="r16 r">disposing</span>)
+		{
+			<b>if</b> ((<a href="#77a270cd5ad0a46d" class="i field">_flags</a> &amp; <a href="#f5f117e3444f27bb" class="t t">VisualElementRendererFlags</a>.<a href="#b20542506d7ac7f5" class="i field">Disposed</a>) != 0)
+				<b>return</b>;
+			<a href="#77a270cd5ad0a46d" class="i field">_flags</a> |= <a href="#f5f117e3444f27bb" class="t t">VisualElementRendererFlags</a>.<a href="#b20542506d7ac7f5" class="i field">Disposed</a>;
+ 
+			<b>if</b> (<span class="r16 r">disposing</span>)
+			{
+				<b>if</b> (<a href="#8fb7b3459db0c066" class="i field">_events</a> != <b>null</b>)
+				{
+					<a href="#8fb7b3459db0c066" class="i field">_events</a>.<a href="EventTracker.cs.html#2ef7b08510e67e45" class="i method">Dispose</a>();
+					<a href="#8fb7b3459db0c066" class="i field">_events</a> = <b>null</b>;
+				}
+				<b>if</b> (<a href="#6f320289b26b3705" class="i field">_tracker</a> != <b>null</b>)
+				{
+					<a href="#6f320289b26b3705" class="i field">_tracker</a>.<a href="VisualElementTracker.cs.html#91c828ef2e9d27ee" class="i method">Dispose</a>();
+					<a href="#6f320289b26b3705" class="i field">_tracker</a> = <b>null</b>;
+				}
+				<b>if</b> (<a href="#780745067fb2821a" class="i field">_packager</a> != <b>null</b>)
+				{
+					<a href="#780745067fb2821a" class="i field">_packager</a>.<a href="VisualElementPackager.cs.html#1b2bbf8671aa1f8b" class="i method">Dispose</a>();
+					<a href="#780745067fb2821a" class="i field">_packager</a> = <b>null</b>;
+				}
+ 
+				<span class="c">// The ListView can create renderers and unhook them from the Element before Dispose is called in CalculateHeightForCell.</span>
+				<span class="c">// Thus, it is possible that this work is already completed.</span>
+				<b>if</b> (<a href="#31c34a1126d7ec15" class="i property">Element</a> != <b>null</b>)
+				{
+					<a href="#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#4b4f85fcc1a48118" class="i method">ClearValue</a>(<a href="Platform.cs.html#348bf1c3abb233c7" class="t t">Platform</a>.<a href="Platform.cs.html#49ad4b1b968705a9" class="i field">RendererProperty</a>);
+					<a href="#46507de7e445d5b3" class="i method">SetElement</a>(<b>null</b>);
+				}
+			}
+			<b>base</b>.<span class="i method">Dispose</span>(<span class="r16 r">disposing</span>);
+		}
+ 
+		<b>protected virtual void</b> <a id="07f9785f07aaf1c0" href="R/07f9785f07aaf1c0.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="ElementChangedEventArgs.cs.html#8cd59c48d876c811" class="t t">ElementChangedEventArgs</a>&lt;<span class="r0 r t">TElement</span>&gt; <span id="r17 rd" class="r17 r">e</span>)
+		{
+			<a href="ElementChangedEventArgs.cs.html#370d799bbbdee8b8" class="k">var</a> <span id="r18 rd" class="r18 r">args</span> = <b>new</b> <a href="ElementChangedEventArgs.cs.html#5a70aa8e83c29289" class="t constructor">VisualElementChangedEventArgs</a>(<span class="r17 r">e</span>.<a href="ElementChangedEventArgs.cs.html#4f3197519f522690" class="i property">OldElement</a>, <span class="r17 r">e</span>.<a href="ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a>);
+			<b>for</b> (<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r19 rd" class="r19 r">i</span> = 0; <span class="r19 r">i</span> &lt; <a href="#57ff34a46de8a835" class="i field">_elementChangedHandlers</a>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r19 r">i</span>++)
+				<a href="#57ff34a46de8a835" class="i field">_elementChangedHandlers</a><a href="@0@mscorlib/A.html#0c65bec4d3fac21e">[</a><span class="r19 r">i</span>](<a href="#8292e3f36f0ff9ad" class="k">this</a>, <span class="r18 r">args</span>);
+ 
+			<a href="#0a3b076148102e87" class="i">ElementChanged</a>?.<a href="@0@mscorlib/A.html#48225ee7c18a0e20" class="i method">Invoke</a>(<a href="#8292e3f36f0ff9ad" class="k">this</a>, <span class="r17 r">e</span>);
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+			<b>if</b> (<span class="r17 r">e</span>.<a href="ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a> != <b>null</b>)
+				<a href="#249dcbd436823da5" class="i method">SetBlur</a>((<a href="/Xamarin.Forms.Core/A.html#2ad742b3be9b3a18" class="t t">BlurEffectStyle</a>)<span class="r17 r">e</span>.<a href="ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#00e81fee0b400c43" class="i method">GetValue</a>(<span class="i n">PlatformConfiguration</span>.<span class="i n">iOSSpecific</span>.<a href="/Xamarin.Forms.Core/A.html#320e44f1a6ded73d" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#dad648d3a83fd223" class="i field">BlurEffectProperty</a>));
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+		<b>protected virtual void</b> <a id="911e90a7ef0e7fc2" href="R/911e90a7ef0e7fc2.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r20 rd" class="r20 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r21 rd" class="r21 r">e</span>)
+		{
+			<b>if</b> (<span class="r21 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#4d5a7481d6e7289d" class="i field">BackgroundColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#6a65e77290a66ac9" class="i method">SetBackgroundColor</a>(<a href="#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a>);
+			<b>else if</b> (<span class="r21 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="t t">Layout</a>.<a href="/Xamarin.Forms.Core/A.html#04754be94fee3ad3" class="i field">IsClippedToBoundsProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#82683d7dd89f01ad" class="i method">UpdateClipToBounds</a>();
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+			<b>else if</b> (<span class="r21 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <span class="i n">PlatformConfiguration</span>.<span class="i n">iOSSpecific</span>.<a href="/Xamarin.Forms.Core/A.html#320e44f1a6ded73d" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#dad648d3a83fd223" class="i field">BlurEffectProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#249dcbd436823da5" class="i method">SetBlur</a>((<a href="/Xamarin.Forms.Core/A.html#2ad742b3be9b3a18" class="t t">BlurEffectStyle</a>)<a href="#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#00e81fee0b400c43" class="i method">GetValue</a>(<span class="i n">PlatformConfiguration</span>.<span class="i n">iOSSpecific</span>.<a href="/Xamarin.Forms.Core/A.html#320e44f1a6ded73d" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#dad648d3a83fd223" class="i field">BlurEffectProperty</a>));
+			<b>else if</b> (<span class="r21 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#76486fa8faf111f4" class="t t">AutomationProperties</a>.<a href="/Xamarin.Forms.Core/A.html#175b0dfd545f9dd8" class="i field">HelpTextProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#208b4976e96328c4" class="i method">SetAccessibilityHint</a>();
+			<b>else if</b> (<span class="r21 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#76486fa8faf111f4" class="t t">AutomationProperties</a>.<a href="/Xamarin.Forms.Core/A.html#8996262b62046ac0" class="i field">NameProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#d89232dd93e55fb8" class="i method">SetAccessibilityLabel</a>();
+			<b>else if</b> (<span class="r21 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#76486fa8faf111f4" class="t t">AutomationProperties</a>.<a href="/Xamarin.Forms.Core/A.html#88eabd44d0a98595" class="i field">IsInAccessibleTreeProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#571cc34cf86be399" class="i method">SetIsAccessibilityElement</a>();
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+		<b>protected virtual void</b> <a id="c813997166906302" href="R/c813997166906302.html" target="n" data-glyph="75,1" class="i method">OnRegisterEffect</a>(<a href="PlatformEffect.cs.html#fb9c1013699d47ec" class="t t">PlatformEffect</a> <span id="r22 rd" class="r22 r">effect</span>)
+		{
+			<span class="r22 r">effect</span>.<a href="/Xamarin.Forms.Core/A.html#c7b63607822cc8b6" class="i method">SetContainer</a>(<a href="#8292e3f36f0ff9ad" class="k">this</a>);
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<b>protected virtual void</b> <a id="208b4976e96328c4" href="R/208b4976e96328c4.html" target="n" data-glyph="75,1" class="i method">SetAccessibilityHint</a>()
+		{
+			<b>if</b> (<a href="#31c34a1126d7ec15" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#29648b20f51661f7" class="i field">_defaultAccessibilityHint</a> == <b>null</b>)
+				<a href="#29648b20f51661f7" class="i field">_defaultAccessibilityHint</a> = <span class="i property">AccessibilityHint</span>;
+ 
+			<span class="i property">AccessibilityHint</span> = (<b>string</b>)<a href="#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="/Xamarin.Forms.Core/A.html#76486fa8faf111f4" class="t t">AutomationProperties</a>.<a href="/Xamarin.Forms.Core/A.html#175b0dfd545f9dd8" class="i field">HelpTextProperty</a>) ?? <a href="#29648b20f51661f7" class="i field">_defaultAccessibilityHint</a>;
+		}
+ 
+		<b>protected virtual void</b> <a id="d89232dd93e55fb8" href="R/d89232dd93e55fb8.html" target="n" data-glyph="75,1" class="i method">SetAccessibilityLabel</a>()
+		{
+			<b>if</b> (<a href="#31c34a1126d7ec15" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#fbaf41122dd02ded" class="i field">_defaultAccessibilityLabel</a> == <b>null</b>)
+				<a href="#fbaf41122dd02ded" class="i field">_defaultAccessibilityLabel</a> = <span class="i property">AccessibilityLabel</span>;
+ 
+			<span class="i property">AccessibilityLabel</span> = (<b>string</b>)<a href="#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="/Xamarin.Forms.Core/A.html#76486fa8faf111f4" class="t t">AutomationProperties</a>.<a href="/Xamarin.Forms.Core/A.html#8996262b62046ac0" class="i field">NameProperty</a>) ?? <a href="#fbaf41122dd02ded" class="i field">_defaultAccessibilityLabel</a>;
+		}
+ 
+		<b>protected virtual void</b> <a id="571cc34cf86be399" href="R/571cc34cf86be399.html" target="n" data-glyph="75,1" class="i method">SetIsAccessibilityElement</a>()
+		{
+			<b>if</b> (<a href="#31c34a1126d7ec15" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (!<a href="#54f9c23e29f537ba" class="i field">_defaultIsAccessibilityElement</a>.<a href="@0@mscorlib/A.html#7bbe60e33e857298" class="i property">HasValue</a>)
+				<a href="#54f9c23e29f537ba" class="i field">_defaultIsAccessibilityElement</a> = <span class="i property">IsAccessibilityElement</span>;
+ 
+			<span class="i property">IsAccessibilityElement</span> = (<b>bool</b>)((<b>bool</b>?)<a href="#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="/Xamarin.Forms.Core/A.html#76486fa8faf111f4" class="t t">AutomationProperties</a>.<a href="/Xamarin.Forms.Core/A.html#88eabd44d0a98595" class="i field">IsInAccessibleTreeProperty</a>) ?? <a href="#54f9c23e29f537ba" class="i field">_defaultIsAccessibilityElement</a>);
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		<b>protected virtual void</b> <a id="13246211aa07c35d" href="R/13246211aa07c35d.html" target="n" data-glyph="75,1" class="i method">SetAutomationId</a>(<b>string</b> <span id="r23 rd" class="r23 r">id</span>)
+		{
+			<span class="i property">AccessibilityIdentifier</span> = <span class="r23 r">id</span>;
+		}
+ 
+		<b>protected virtual void</b> <a id="6a65e77290a66ac9" href="R/6a65e77290a66ac9.html" target="n" data-glyph="75,1" class="i method">SetBackgroundColor</a>(<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r24 rd" class="r24 r">color</span>)
+		{
+			<b>if</b> (<span class="r24 r">color</span> == <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#78f150ac7d83a2c8" class="i property">Default</a>)
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+ 
+				<a href="#b66e62064e502562" class="i property">BackgroundColor</a> = <a href="#96bda3e49725dd52" class="i field">_defaultColor</a>;
+			<b>else</b>
+				<a href="#b66e62064e502562" class="i property">BackgroundColor</a> = <span class="r24 r">color</span>.<a href="Extensions/ColorExtensions.cs.html#76dd85b8fcdc3ec0" class="i method">ToUIColor</a>();
+ 
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">				Layer.BackgroundColor = _defaultColor.CGColor;
+			else
+				Layer.BackgroundColor = color.ToCGColor();
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<b>protected virtual void</b> <a id="249dcbd436823da5" href="R/249dcbd436823da5.html" target="n" data-glyph="75,1" class="i method">SetBlur</a>(<a href="/Xamarin.Forms.Core/A.html#2ad742b3be9b3a18" class="t t">BlurEffectStyle</a> <span id="r25 rd" class="r25 r">blur</span>)
+		{
+			<b>if</b> (<a href="#7e89379d3d769952" class="i field">_previousBlur</a> == <span class="r25 r">blur</span>)
+				<b>return</b>;
+ 
+			<a href="#7e89379d3d769952" class="i field">_previousBlur</a> = <span class="r25 r">blur</span>;
+ 
+			<b>if</b> (<a href="#ccaf91808508794b" class="i field">_blur</a> != <b>null</b>)
+			{
+				<a href="#ccaf91808508794b" class="i field">_blur</a>.<span class="i method">RemoveFromSuperview</span>();
+				<a href="#ccaf91808508794b" class="i field">_blur</a> = <b>null</b>;
+			}
+ 
+			<b>if</b> (<span class="r25 r">blur</span> == <a href="/Xamarin.Forms.Core/A.html#2ad742b3be9b3a18" class="t t">BlurEffectStyle</a>.<a href="/Xamarin.Forms.Core/A.html#8fa3d480353974e3" class="i field">None</a>)
+			{
+				<span class="i method">SetNeedsDisplay</span>();
+				<b>return</b>;
+			}
+ 
+			<span class="t t">UIBlurEffect</span> <span id="r26 rd" class="r26 r">blurEffect</span>;
+			<b>switch</b> (<span class="r25 r">blur</span>)
+			{
+				<b>default</b>:
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#2ad742b3be9b3a18" class="t t">BlurEffectStyle</a>.<a href="/Xamarin.Forms.Core/A.html#3f4c14e920a61a72" class="i field">ExtraLight</a>:
+					<span class="r26 r">blurEffect</span> = <span class="t t">UIBlurEffect</span>.<span class="i method">FromStyle</span>(<span class="t t">UIBlurEffectStyle</span>.<span class="i field">ExtraLight</span>);
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#2ad742b3be9b3a18" class="t t">BlurEffectStyle</a>.<a href="/Xamarin.Forms.Core/A.html#545f20c9e0a08f65" class="i field">Light</a>:
+					<span class="r26 r">blurEffect</span> = <span class="t t">UIBlurEffect</span>.<span class="i method">FromStyle</span>(<span class="t t">UIBlurEffectStyle</span>.<span class="i field">Light</span>);
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#2ad742b3be9b3a18" class="t t">BlurEffectStyle</a>.<a href="/Xamarin.Forms.Core/A.html#0e73f233142761da" class="i field">Dark</a>:
+					<span class="r26 r">blurEffect</span> = <span class="t t">UIBlurEffect</span>.<span class="i method">FromStyle</span>(<span class="t t">UIBlurEffectStyle</span>.<span class="i field">Dark</span>);
+					<b>break</b>;
+			}
+ 
+			<a href="#ccaf91808508794b" class="i field">_blur</a> = <b>new</b> <span class="t constructor">UIVisualEffectView</span>(<span class="r26 r">blurEffect</span>);
+			<a href="#de518bc130e84ded" class="i method">LayoutSubviews</a>();
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected virtual void</b> <a id="57dfc718f671dec3" href="R/57dfc718f671dec3.html" target="n" data-glyph="75,1" class="i method">UpdateNativeWidget</a>()
+		{
+		}
+ 
+		<b>internal virtual void</b> <a id="8a86bac35c0fcd43" href="R/8a86bac35c0fcd43.html" target="n" data-glyph="74,1" class="i method">SendVisualElementInitialized</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r27 rd" class="r27 r">element</span>, <span class="t t">NativeView</span> <span id="r28 rd" class="r28 r">nativeView</span>)
+		{
+			<span class="r27 r">element</span>.<a href="Forms.cs.html#79cbf197d8eb982a" class="i method">SendViewInitialized</a>(<span class="r28 r">nativeView</span>);
+		}
+ 
+		<b>void</b> <a id="82683d7dd89f01ad" href="R/82683d7dd89f01ad.html" target="n" data-glyph="76,1" class="i method">UpdateClipToBounds</a>()
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+			<a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="k">var</a> <span id="r29 rd" class="r29 r">clippableLayout</span> = <a href="#31c34a1126d7ec15" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="t t">Layout</a>;
+			<b>if</b> (<span class="r29 r">clippableLayout</span> != <b>null</b>)
+				<span class="i property">ClipsToBounds</span> = <span class="r29 r">clippableLayout</span>.<a href="/Xamarin.Forms.Core/A.html#caa4a685520ee9de" class="i property">IsClippedToBounds</a>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+		<b>static bool</b> <a id="b40cc54b488172b6" href="R/b40cc54b488172b6.html" target="n" data-glyph="76,1" class="i method">IsOnViewCell</a>(<a href="/Xamarin.Forms.Core/A.html#76098df8350c0484" class="t t">Element</a> <span id="r30 rd" class="r30 r">element</span>)
+		{
+ 
+			<b>if</b> (<span class="r30 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#c4bf3d030cd32fe9" class="i property">Parent</a> == <b>null</b>)
+				<b>return false</b>;
+			<b>else if</b> (<span class="r30 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#c4bf3d030cd32fe9" class="i property">Parent</a> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#080f860d2adf2a57" class="t t">ViewCell</a>)
+				<b>return true</b>;
+			<b>else
+				return</b> <a href="#b40cc54b488172b6" class="i method">IsOnViewCell</a>(<span class="r30 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#c4bf3d030cd32fe9" class="i property">Parent</a>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

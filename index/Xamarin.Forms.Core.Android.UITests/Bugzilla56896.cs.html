@@ -1,0 +1,233 @@
+﻿<!DOCTYPE html>
+<html><head><title>Bugzilla56896.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(224);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core.Android.UITests/Bugzilla56896.cs" target="_top">Bugzilla56896.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core.Android.UITests" target="_top">Xamarin.Forms.Core.Android.UITests\Xamarin.Forms.Core.Android.UITests.csproj</a> (Xamarin.Forms.Core.Android.UITests)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">CustomAttributes</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Runtime</span>.<span class="i n">CompilerServices</span>;
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i">UITest</span>;
+<b>using</b> <span class="i">NUnit</span>.<span class="i">Framework</span>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>.<span class="i n">Issues</span>
+{
+	[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a>(<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+	[<a href="/Xamarin.Forms.CustomAttributes/A.html#7e3803f42297329b" class="t constructor">Issue</a>(<a href="/Xamarin.Forms.CustomAttributes/A.html#71fbc272a65cfefa" class="t t">IssueTracker</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#4c33f6b873a9476c" class="i field">Bugzilla</a>, 56896, <span class="s">&quot;ListViews for lists with many elements regressed in performance on iOS&quot;</span>, <a href="/Xamarin.Forms.CustomAttributes/A.html#e0966d88fdc6123d" class="t t">PlatformAffected</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#f84b70a5245316d6" class="i field">iOS</a>)]
+	<b>public class</b> <a id="9ff7e361737446da" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t"><span id="b7835426908df7c0">Bugzilla56896</span></a> : <a href="TestPages.cs.html#68092d82b8b3d7b5" class="t t">TestContentPage</a>
+	{
+		<b>const string</b> <a id="4506e8e9eba82604" href="R/4506e8e9eba82604.html" target="n" data-glyph="10,1" class="i field">Instructions</a> = <span class="s">&quot;The number in blue is the number of constructor calls. The number in red is the initial load time in milliseconds.&quot;</span>;
+		<b>const string</b> <a id="af3f707524eac03c" href="R/af3f707524eac03c.html" target="n" data-glyph="10,1" class="i field">ConstructorCountId</a> = <span class="s">&quot;constructorCount&quot;</span>;
+		<b>const string</b> <a id="24c1c000383069f7" href="R/24c1c000383069f7.html" target="n" data-glyph="10,1" class="i field">TimeId</a> = <span class="s">&quot;time&quot;</span>;
+ 
+		[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a>(<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+		<b>class</b> <a id="777b9cb2899b1e32" href="R/777b9cb2899b1e32.html" target="n" data-glyph="4,1" class="t t"><span id="0bcd0b3dcc78cafa">MyViewModel</span></a> : <a href="@0@System/A.html#fd4b42d7e29d53e5" class="t t">INotifyPropertyChanged</a>
+		{
+			<b>int</b> <a id="cb1ec63c39828a43" href="R/cb1ec63c39828a43.html" target="n" data-glyph="46,2" class="i field">_constructorCallCount</a>;
+ 
+			<b>public int</b> <a id="d0a49cf0cea08a5e" href="R/d0a49cf0cea08a5e.html" target="n" data-glyph="102,2" class="i property">ConstructorCallCount</a>
+			{
+				<b>get</b> { <b>return</b> <a href="#cb1ec63c39828a43" class="i field">_constructorCallCount</a>; }
+				<b>set</b>
+				{
+					<a href="#cb1ec63c39828a43" class="i field">_constructorCallCount</a> = <b>value</b>;
+					<a href="#50e1237e821c89e2" class="i method">OnPropertyChanged</a>();
+				}
+			}
+ 
+			<b>public event</b> <a href="@0@System/A.html#670754815f6804ff" class="t t">PropertyChangedEventHandler</a> <a id="8af41dcb7231b227" href="R/8af41dcb7231b227.html" target="n" data-glyph="30,2" class="i">PropertyChanged</a>;
+ 
+			<b>protected virtual void</b> <a id="50e1237e821c89e2" href="R/50e1237e821c89e2.html" target="n" data-glyph="75,2" class="i method">OnPropertyChanged</a>([<a href="@0@mscorlib/A.html#3b59f8cb5102fd8b" class="t constructor">CallerMemberName</a>] <b>string</b> <span id="r0 rd" class="r0 r">propertyName</span> = <b>null</b>)
+			{
+				<a href="#8af41dcb7231b227" class="i">PropertyChanged</a>?.<a href="@0@System/A.html#c66222f7abfe2e28" class="i method">Invoke</a>(<a href="#777b9cb2899b1e32" class="k">this</a>, <b>new</b> <a href="@0@System/A.html#76958b0a96ed2a2e" class="t constructor">PropertyChangedEventArgs</a>(<span class="r0 r">propertyName</span>));
+			}
+		}
+ 
+		[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a>(<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+		<b>class</b> <a id="298f3f7471a281bc" href="R/298f3f7471a281bc.html" target="n" data-glyph="4,1" class="t t">Fizz</a> : <a href="/Xamarin.Forms.Core/A.html#080f860d2adf2a57" class="t t">ViewCell</a>
+		{
+			<b>readonly</b> <a href="#777b9cb2899b1e32" class="t t">MyViewModel</a> <a id="a8cfba3c47493a59" href="R/a8cfba3c47493a59.html" target="n" data-glyph="46,2" class="i field">_vm</a>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <a id="d25f5848535f6a6d" href="R/d25f5848535f6a6d.html" target="n" data-glyph="46,2" class="i field">myLabel</a>;
+			<b>public</b> <a id="a9d84c8bb4ff03fd" href="R/a9d84c8bb4ff03fd.html" target="n" data-glyph="72,2" class="i constructor">Fizz</a>(<a href="#777b9cb2899b1e32" class="t t">MyViewModel</a> <span id="r1 rd" class="r1 r">vm</span>)
+			{
+				<a href="#a8cfba3c47493a59" class="i field">_vm</a> = <span class="r1 r">vm</span>;
+ 
+				<span class="r1 r">vm</span>.<a href="#d0a49cf0cea08a5e" class="i property">ConstructorCallCount</a>++;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#0eedd908bf3c7b03" class="i property">Height</a> = 30;
+ 
+				<a href="#d25f5848535f6a6d" class="i field">myLabel</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a> { <a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">&quot;fizz&quot;</span> };
+				<a href="/Xamarin.Forms.Core/A.html#7e0120b037b3522c" class="i property">View</a> = <a href="#d25f5848535f6a6d" class="i field">myLabel</a>;
+			}
+			~<a id="0ceba3fe53cece97" href="R/../../0000000000.html" target="n" data-glyph="75,2" class="i method">Fizz</a>()
+			{
+				<a href="#a8cfba3c47493a59" class="i field">_vm</a>.<a href="#d0a49cf0cea08a5e" class="i property">ConstructorCallCount</a>--;
+			}
+		}
+ 
+		[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a>(<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+		<b>class</b> <a id="cfbfca39c4af0c0c" href="R/cfbfca39c4af0c0c.html" target="n" data-glyph="4,1" class="t t">Buzz</a> : <a href="/Xamarin.Forms.Core/A.html#080f860d2adf2a57" class="t t">ViewCell</a>
+		{
+			<b>readonly</b> <a href="#777b9cb2899b1e32" class="t t">MyViewModel</a> <a id="d4871c3d617c40b3" href="R/d4871c3d617c40b3.html" target="n" data-glyph="46,2" class="i field">_vm</a>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <a id="948eb73e78999a15" href="R/948eb73e78999a15.html" target="n" data-glyph="46,2" class="i field">myLabel</a>;
+			<b>public</b> <a id="9682242bebe972c9" href="R/9682242bebe972c9.html" target="n" data-glyph="72,2" class="i constructor">Buzz</a>(<a href="#777b9cb2899b1e32" class="t t">MyViewModel</a> <span id="r2 rd" class="r2 r">vm</span>)
+			{
+				<a href="#d4871c3d617c40b3" class="i field">_vm</a> = <span class="r2 r">vm</span>;
+ 
+				<span class="r2 r">vm</span>.<a href="#d0a49cf0cea08a5e" class="i property">ConstructorCallCount</a>++;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#0eedd908bf3c7b03" class="i property">Height</a> = 50;
+ 
+				<a href="#948eb73e78999a15" class="i field">myLabel</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a> { <a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">&quot;buzz&quot;</span> };
+				<a href="/Xamarin.Forms.Core/A.html#7e0120b037b3522c" class="i property">View</a> = <a href="#948eb73e78999a15" class="i field">myLabel</a>;
+			}
+			~<a id="755062b81bebcc01" href="R/../../0000000000.html" target="n" data-glyph="75,2" class="i method">Buzz</a>()
+			{
+				<a href="#d4871c3d617c40b3" class="i field">_vm</a>.<a href="#d0a49cf0cea08a5e" class="i property">ConstructorCallCount</a>--;
+			}
+		}
+ 
+		[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a>(<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+		<b>class</b> <a id="542c49819b7e86f6" href="R/542c49819b7e86f6.html" target="n" data-glyph="4,1" class="t t">Fizzbuzz</a> : <a href="/Xamarin.Forms.Core/A.html#080f860d2adf2a57" class="t t">ViewCell</a>
+		{
+			<b>readonly</b> <a href="#777b9cb2899b1e32" class="t t">MyViewModel</a> <a id="4386506155b3a1e1" href="R/4386506155b3a1e1.html" target="n" data-glyph="46,2" class="i field">_vm</a>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <a id="b1841ba725d528c4" href="R/b1841ba725d528c4.html" target="n" data-glyph="46,2" class="i field">myLabel</a>;
+			<b>public</b> <a id="33243ca0eeca9291" href="R/33243ca0eeca9291.html" target="n" data-glyph="72,2" class="i constructor">Fizzbuzz</a>(<a href="#777b9cb2899b1e32" class="t t">MyViewModel</a> <span id="r3 rd" class="r3 r">vm</span>)
+			{
+				<a href="#4386506155b3a1e1" class="i field">_vm</a> = <span class="r3 r">vm</span>;
+ 
+				<span class="r3 r">vm</span>.<a href="#d0a49cf0cea08a5e" class="i property">ConstructorCallCount</a>++;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#0eedd908bf3c7b03" class="i property">Height</a> = 150;
+ 
+				<a href="#b1841ba725d528c4" class="i field">myLabel</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a> { <a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">&quot;fizzbuzz&quot;</span> };
+				<a href="/Xamarin.Forms.Core/A.html#7e0120b037b3522c" class="i property">View</a> = <a href="#b1841ba725d528c4" class="i field">myLabel</a>;
+			}
+			~<a id="76ccadbdd402a056" href="R/../../0000000000.html" target="n" data-glyph="75,2" class="i method">Fizzbuzz</a>()
+			{
+				<a href="#4386506155b3a1e1" class="i field">_vm</a>.<a href="#d0a49cf0cea08a5e" class="i property">ConstructorCallCount</a>--;
+			}
+		}
+ 
+		[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a>(<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+		<b>class</b> <a id="d5272cd01454d42b" href="R/d5272cd01454d42b.html" target="n" data-glyph="4,1" class="t t">Number</a> : <a href="/Xamarin.Forms.Core/A.html#080f860d2adf2a57" class="t t">ViewCell</a>
+		{
+			<b>readonly</b> <a href="#777b9cb2899b1e32" class="t t">MyViewModel</a> <a id="f3a5e07ffce3541c" href="R/f3a5e07ffce3541c.html" target="n" data-glyph="46,2" class="i field">_vm</a>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <a id="3de75f518d114df2" href="R/3de75f518d114df2.html" target="n" data-glyph="46,2" class="i field">myLabel</a>;
+			<b>public</b> <a id="2642ea3bd5a0a328" href="R/2642ea3bd5a0a328.html" target="n" data-glyph="72,2" class="i constructor">Number</a>(<a href="#777b9cb2899b1e32" class="t t">MyViewModel</a> <span id="r4 rd" class="r4 r">vm</span>)
+			{
+				<a href="#f3a5e07ffce3541c" class="i field">_vm</a> = <span class="r4 r">vm</span>;
+ 
+				<span class="r4 r">vm</span>.<a href="#d0a49cf0cea08a5e" class="i property">ConstructorCallCount</a>++;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#0eedd908bf3c7b03" class="i property">Height</a> = 44;
+ 
+				<a href="#3de75f518d114df2" class="i field">myLabel</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a>();
+				<a href="#3de75f518d114df2" class="i field">myLabel</a>.<a href="/Xamarin.Forms.Core/A.html#6da00f516fa898d7" class="i method">SetBinding</a>(<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#208bde7cd8e27200" class="i field">TextProperty</a>, <span class="s">&quot;.&quot;</span>);
+				<a href="/Xamarin.Forms.Core/A.html#7e0120b037b3522c" class="i property">View</a> = <a href="#3de75f518d114df2" class="i field">myLabel</a>;
+			}
+			~<a id="b6a3bfb6eb59d1ed" href="R/../../0000000000.html" target="n" data-glyph="75,2" class="i method">Number</a>()
+			{
+				<a href="#f3a5e07ffce3541c" class="i field">_vm</a>.<a href="#d0a49cf0cea08a5e" class="i property">ConstructorCallCount</a>--;
+			}
+		}
+ 
+		<b>class</b> <a id="82810a5794606a80" href="R/82810a5794606a80.html" target="n" data-glyph="4,1" class="t t">MyDataTemplateSelector</a> : <a href="/Xamarin.Forms.Core/A.html#7935887479ca6f68" class="t t">DataTemplateSelector</a>
+		{
+			<a href="/Xamarin.Forms.Core/A.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="43f65d0934467df8" href="R/43f65d0934467df8.html" target="n" data-glyph="46,2" class="i field">_fizzbuzz</a>;
+			<a href="/Xamarin.Forms.Core/A.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="be206565105923dc" href="R/be206565105923dc.html" target="n" data-glyph="46,2" class="i field">_fizz</a>;
+			<a href="/Xamarin.Forms.Core/A.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="e622b5c95d4f341d" href="R/e622b5c95d4f341d.html" target="n" data-glyph="46,2" class="i field">_buzz</a>;
+			<a href="/Xamarin.Forms.Core/A.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="9f987cbfe1886ecd" href="R/9f987cbfe1886ecd.html" target="n" data-glyph="46,2" class="i field">_number</a>;
+ 
+			<b>public</b> <a id="3bc7977c69404cc2" href="R/3bc7977c69404cc2.html" target="n" data-glyph="72,2" class="i constructor">MyDataTemplateSelector</a>(<a href="#777b9cb2899b1e32" class="t t">MyViewModel</a> <span id="r5 rd" class="r5 r">vm</span>)
+			{
+				<a href="#43f65d0934467df8" class="i field">_fizzbuzz</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#5d29a04f9d12654c" class="t constructor">DataTemplate</a>(() =&gt; <b>new</b> <a href="#33243ca0eeca9291" class="t constructor">Fizzbuzz</a>(<span class="r5 r">vm</span>));
+				<a href="#be206565105923dc" class="i field">_fizz</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#5d29a04f9d12654c" class="t constructor">DataTemplate</a>(() =&gt; <b>new</b> <a href="#a9d84c8bb4ff03fd" class="t constructor">Fizz</a>(<span class="r5 r">vm</span>));
+				<a href="#e622b5c95d4f341d" class="i field">_buzz</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#5d29a04f9d12654c" class="t constructor">DataTemplate</a>(() =&gt; <b>new</b> <a href="#9682242bebe972c9" class="t constructor">Buzz</a>(<span class="r5 r">vm</span>));
+				<a href="#9f987cbfe1886ecd" class="i field">_number</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#5d29a04f9d12654c" class="t constructor">DataTemplate</a>(() =&gt; <b>new</b> <a href="#2642ea3bd5a0a328" class="t constructor">Number</a>(<span class="r5 r">vm</span>));
+			}
+ 
+			<b>protected override</b> <a href="/Xamarin.Forms.Core/A.html#8bb08c0913bdfc63" class="t t">DataTemplate</a> <a id="81f24876af226287" href="R/81f24876af226287.html" target="n" data-glyph="75,2" class="i method">OnSelectTemplate</a>(<b>object</b> <span id="r6 rd" class="r6 r">item</span>, <a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r7 rd" class="r7 r">container</span>)
+			{
+				<b>int</b> <span id="r8 rd" class="r8 r">number</span> = (<b>int</b>)<span class="r6 r">item</span>;
+ 
+				<b>if</b> (<span class="r8 r">number</span> % 15 == 0)
+					<b>return</b> <a href="#43f65d0934467df8" class="i field">_fizzbuzz</a>;
+				<b>else if</b> (<span class="r8 r">number</span> % 5 == 0)
+					<b>return</b> <a href="#e622b5c95d4f341d" class="i field">_buzz</a>;
+				<b>else if</b> (<span class="r8 r">number</span> % 3 == 0)
+					<b>return</b> <a href="#be206565105923dc" class="i field">_fizz</a>;
+				<b>else
+					return</b> <a href="#9f987cbfe1886ecd" class="i field">_number</a>;
+			}
+		}
+ 
+ 
+		<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <a id="855b07f20c2fc4e7" href="R/855b07f20c2fc4e7.html" target="n" data-glyph="46,1" class="i field">_timeLabel</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a> { <a href="/Xamarin.Forms.Core/A.html#aaad449f55c3186b" class="i property">TextColor</a> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#73e6d3c86107ad1b" class="i field">Purple</a>, <a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a> = <a href="#24c1c000383069f7" class="i field">TimeId</a> };
+		<a href="@0@System/A.html#ceb0ba9cc88de82e" class="t t">Stopwatch</a> <a id="35d28b2c3ede28c8" href="R/35d28b2c3ede28c8.html" target="n" data-glyph="46,1" class="i field">_timer</a> = <b>new</b> <a href="@0@System/A.html#e0a8bcc83e66a717" class="t constructor">Stopwatch</a>();
+		<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a> <a id="a6e6b9d5b576ef45" href="R/a6e6b9d5b576ef45.html" target="n" data-glyph="46,1" class="i field">_listView</a>;
+		<b>protected override void</b> <a id="56b42cc12844427a" href="R/56b42cc12844427a.html" target="n" data-glyph="75,1" class="i method">Init</a>()
+		{
+			<a href="#35d28b2c3ede28c8" class="i field">_timer</a>.<a href="@0@System/A.html#f56fda03f3c59486" class="i method">Start</a>();
+			<a href="#777b9cb2899b1e32" class="k">var</a> <span id="r9 rd" class="r9 r">vm</span> = <b>new</b> <a href="#777b9cb2899b1e32" class="t constructor">MyViewModel</a>();
+ 
+			<a href="/Xamarin.Forms.Core/A.html#ec31b23be1ce91d4" class="i property">BindingContext</a> = <span class="r9 r">vm</span>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="k">var</a> <span id="r10 rd" class="r10 r">label</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a> { <a href="/Xamarin.Forms.Core/A.html#aaad449f55c3186b" class="i property">TextColor</a> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#0b58e2031b66a065" class="i field">Blue</a>, <a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a> = <a href="#af3f707524eac03c" class="i field">ConstructorCountId</a> };
+			<span class="r10 r">label</span>.<a href="/Xamarin.Forms.Core/A.html#6da00f516fa898d7" class="i method">SetBinding</a>(<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#208bde7cd8e27200" class="i field">TextProperty</a>, <b>nameof</b>(<span class="r9 r">vm</span>.<a href="#d0a49cf0cea08a5e" class="i property">ConstructorCallCount</a>));
+ 
+			<a href="#a6e6b9d5b576ef45" class="i field">_listView</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9f8dc55ad45fc097" class="t constructor">ListView</a>(<a href="/Xamarin.Forms.Core/A.html#7325a6e87ebf132d" class="t t">ListViewCachingStrategy</a>.<a href="/Xamarin.Forms.Core/A.html#791a8ea6a96061a0" class="i field">RecycleElement</a>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#7d4655a3bc00be9b" class="i property">HasUnevenRows</a> = <b>true</b>,
+				<span class="c">// Set the RowHeight to enable optimal performance and minimal constructor calls.</span>
+				<span class="c">// It will still use the specified Cell heights on final measure.</span>
+				<span class="c">// Note, however, that doing this negates the fix for Bugzilla 43313, so if user expects</span>
+				<span class="c">// to add items to the bottom of this list and scroll smoothly, user should omit the RowHeight</span>
+				<span class="c">// and rely solely on the Cell heights. This will cause each row to be constructed at least once,</span>
+				<span class="c">// but it will allow the ListView to estimate the height properly for smooth scrolling.</span>
+				<span class="c">// Also note that performance will degrade if the first cell does not have a specified height or</span>
+				<span class="c">// if most of the cells do not have a specified height. It is recommended to specify a height on all</span>
+				<span class="c">// or none of the cells when possible.</span>
+				<a href="/Xamarin.Forms.Core/A.html#873f0e107de1f075" class="i property">RowHeight</a> = 50, 
+				<a href="/Xamarin.Forms.Core/A.html#5eab030fbef30e59" class="i property">ItemsSource</a> = <a href="@0@System.Core/A.html#577032c8811e20d3" class="t t">Enumerable</a>.<a href="@0@System.Core/A.html#fda9d378095a6464" class="i method">Range</a>(1, 5001),
+				<a href="/Xamarin.Forms.Core/A.html#e714497888d14198" class="i property">ItemTemplate</a> = <b>new</b> <a href="#3bc7977c69404cc2" class="t constructor">MyDataTemplateSelector</a>(<span class="r9 r">vm</span>)
+			};
+			<a href="/Xamarin.Forms.Core/A.html#3929eda3f5d3e80d" class="i property">Content</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a> { <a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a> = { <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a> { <a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <a href="#4506e8e9eba82604" class="i field">Instructions</a> }, <span class="r10 r">label</span>, <a href="#855b07f20c2fc4e7" class="i field">_timeLabel</a>, <a href="#a6e6b9d5b576ef45" class="i field">_listView</a> } };
+		}
+ 
+		<b>protected override void</b> <a id="ad5a76a3688f4e28" href="R/ad5a76a3688f4e28.html" target="n" data-glyph="75,1" class="i method">OnAppearing</a>()
+		{
+			<a href="TestPages.cs.html#68092d82b8b3d7b5" class="k">base</a>.<a href="/Xamarin.Forms.Core/A.html#6159d4d059ac7175" class="i method">OnAppearing</a>();
+ 
+			<a href="#35d28b2c3ede28c8" class="i field">_timer</a>.<a href="@0@System/A.html#9dd6cac7fc1e2117" class="i method">Stop</a>();
+			<a href="#855b07f20c2fc4e7" class="i field">_timeLabel</a>.<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <a href="#35d28b2c3ede28c8" class="i field">_timer</a>.<a href="@0@System/A.html#1cd9247e94fd0142" class="i property">ElapsedMilliseconds</a>.<a href="@0@mscorlib/A.html#76873dfc1b95c712" class="i method">ToString</a>();
+			<a href="#35d28b2c3ede28c8" class="i field">_timer</a>.<a href="@0@System/A.html#e0ffb49b2a24b579" class="i method">Reset</a>();
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+		[<span class="i">Test</span>]
+		<b>public void</b> <a id="955d3a0c1f961f64" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Bugzilla56896Test</a>()
+		{
+			<a href="TestPages.cs.html#4c064e8d618de9de" class="i property">RunningApp</a>.<span class="i">WaitForElement</span>(<span id="r11 rd" class="r11 r">q</span> =&gt; <span class="r11 r">q</span>.<span class="i">Marked</span>(<a href="#4506e8e9eba82604" class="i field">Instructions</a>));
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r12 rd" class="r12 r">count</span> = <b>int</b>.<span class="i">Parse</span>(<a href="TestPages.cs.html#4c064e8d618de9de" class="i property">RunningApp</a>.<span class="i">Query</span>(<span id="r13 rd" class="r13 r">q</span> =&gt; <span class="r13 r">q</span>.<span class="i">Marked</span>(<a href="#af3f707524eac03c" class="i field">ConstructorCountId</a>))[0].<span class="i">Text</span>);
+			<span class="i">Assert</span>.<span class="i">IsTrue</span>(<span class="r12 r">count</span> &lt; 100); <span class="c">// Failing test makes ~15000 constructor calls</span>
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r14 rd" class="r14 r">time</span> = <b>int</b>.<span class="i">Parse</span>(<a href="TestPages.cs.html#4c064e8d618de9de" class="i property">RunningApp</a>.<span class="i">Query</span>(<span id="r15 rd" class="r15 r">q</span> =&gt; <span class="r15 r">q</span>.<span class="i">Marked</span>(<a href="#24c1c000383069f7" class="i field">TimeId</a>))[0].<span class="i">Text</span>);
+			<span class="i">Assert</span>.<span class="i">IsTrue</span>(<span class="r12 r">count</span> &lt; 2000); <span class="c">// Failing test takes ~4000ms</span>
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+	}
+}</pre></td></tr></table></div></body></html>

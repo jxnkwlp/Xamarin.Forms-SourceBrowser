@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html>
+<html><head><title>PageControl.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(195);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/PageControl.cs" target="_top">PageControl.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Runtime</span>.<span class="i">CompilerServices</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">WindowsSpecific</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.WinRT
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public sealed class</b> <a id="bef0a23cfa8db7df" href="R/bef0a23cfa8db7df.html" target="n" data-glyph="0,0" class="t t">PageControl</a> : <span class="t t">ContentControl</span>, <a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a>
+	{
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="c853c60e9334bb39" href="R/c853c60e9334bb39.html" target="n" data-glyph="42,1" class="i field">InvisibleBackButtonCollapsedProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;InvisibleBackButtonCollapsed&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#bef0a23cfa8db7df" class="t t">PageControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>true</b>, <span class="i">OnInvisibleBackButtonCollapsedChanged</span>));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="b41b9569c61daa87" href="R/b41b9569c61daa87.html" target="n" data-glyph="42,1" class="i field">ShowBackButtonProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;ShowBackButton&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#bef0a23cfa8db7df" class="t t">PageControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>false</b>, <span class="i">OnShowBackButtonChanged</span>));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="87e07dfdceb9bcb4" href="R/87e07dfdceb9bcb4.html" target="n" data-glyph="42,1" class="i field">TitleVisibilityProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#e3bb126191ef4cd9" class="i property">TitleVisibility</a>), <b>typeof</b>(<span class="t t">Visibility</span>), <b>typeof</b>(<a href="#bef0a23cfa8db7df" class="t t">PageControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<span class="t t">Visibility</span>.<span class="i field">Visible</span>));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="b62d69eabea5c3ac" href="R/b62d69eabea5c3ac.html" target="n" data-glyph="42,1" class="i field">ToolbarBackgroundProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#dcc81b25efe42013" class="i property">ToolbarBackground</a>), <b>typeof</b>(<span class="t t">Brush</span>), <b>typeof</b>(<a href="#bef0a23cfa8db7df" class="t t">PageControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">Brush</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="5ee0772a0446d25f" href="R/5ee0772a0446d25f.html" target="n" data-glyph="42,1" class="i field">BackButtonTitleProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;BackButtonTitle&quot;</span>, <b>typeof</b>(<b>string</b>), <b>typeof</b>(<a href="#bef0a23cfa8db7df" class="t t">PageControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>false</b>));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="4b7b6c30de466838" href="R/4b7b6c30de466838.html" target="n" data-glyph="42,1" class="i field">ContentMarginProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;ContentMargin&quot;</span>, <b>typeof</b>(<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i">Thickness</span>), <b>typeof</b>(<a href="#bef0a23cfa8db7df" class="t t">PageControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i">Thickness</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="68ab2c5e2c6cd675" href="R/68ab2c5e2c6cd675.html" target="n" data-glyph="42,1" class="i field">TitleInsetProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;TitleInset&quot;</span>, <b>typeof</b>(<b>double</b>), <b>typeof</b>(<a href="#bef0a23cfa8db7df" class="t t">PageControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<b>double</b>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="2cde549012ab15fe" href="R/2cde549012ab15fe.html" target="n" data-glyph="42,1" class="i field">TitleBrushProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;TitleBrush&quot;</span>, <b>typeof</b>(<span class="t t">Brush</span>), <b>typeof</b>(<a href="#bef0a23cfa8db7df" class="t t">PageControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>null</b>));
+ 
+		<span class="t t">AppBarButton</span> <a id="b9a9a74260bbfb7b" href="R/b9a9a74260bbfb7b.html" target="n" data-glyph="46,1" class="i field">_backButton</a>;
+		<span class="t t">CommandBar</span> <a id="8e1c473b6caa9812" href="R/8e1c473b6caa9812.html" target="n" data-glyph="46,1" class="i field">_commandBar</a>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+        <a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a> <a id="c79cf4c758eaaba8" href="R/c79cf4c758eaaba8.html" target="n" data-glyph="46,1" class="i field">_toolbarPlacement</a>;
+	    <b>readonly</b> <a href="ToolbarPlacementHelper.cs.html#5ae729382c28bbea" class="t t">ToolbarPlacementHelper</a> <a id="7cb1a791a7c3891d" href="R/7cb1a791a7c3891d.html" target="n" data-glyph="46,1" class="i field">_toolbarPlacementHelper</a> = <b>new</b> <a href="ToolbarPlacementHelper.cs.html#5ae729382c28bbea" class="t constructor">ToolbarPlacementHelper</a>();
+ 
+		<b>public bool</b> <a id="34cfd68afee77f13" href="R/34cfd68afee77f13.html" target="n" data-glyph="102,1" class="i property">ShouldShowToolbar</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#7cb1a791a7c3891d" class="i field">_toolbarPlacementHelper</a>.<a href="ToolbarPlacementHelper.cs.html#e5c9cfbdad518001" class="i property">ShouldShowToolBar</a>; }
+			<b>set</b> { <a href="#7cb1a791a7c3891d" class="i field">_toolbarPlacementHelper</a>.<a href="ToolbarPlacementHelper.cs.html#e5c9cfbdad518001" class="i property">ShouldShowToolBar</a> = <b>value</b>; }
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<span class="i">TaskCompletionSource</span>&lt;<span class="t t">CommandBar</span>&gt; <a id="f2e84d52e2426609" href="R/f2e84d52e2426609.html" target="n" data-glyph="46,1" class="i field">_commandBarTcs</a>;
+		<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">ContentPresenter</span> <a id="a2ccdc41356d3e38" href="R/a2ccdc41356d3e38.html" target="n" data-glyph="46,1" class="i field">_presenter</a>;
+	    
+ 
+	    <b>public</b> <a id="b39a38ad8f5a29b4" href="R/b39a38ad8f5a29b4.html" target="n" data-glyph="72,1" class="i constructor">PageControl</a>()
+		{
+ 
+		}
+ 
+		<b>public string</b> <a id="63f316e9d5f806d9" href="R/63f316e9d5f806d9.html" target="n" data-glyph="102,1" class="i property">BackButtonTitle</a>
+		{
+			<b>get</b> { <b>return</b> (<b>string</b>)<span class="i">GetValue</span>(<a href="#5ee0772a0446d25f" class="i field">BackButtonTitleProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#5ee0772a0446d25f" class="i field">BackButtonTitleProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public double</b> <a id="7450eb89f374ef89" href="R/7450eb89f374ef89.html" target="n" data-glyph="102,1" class="i property">ContentHeight</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#a2ccdc41356d3e38" class="i field">_presenter</a> != <b>null</b> ? <a href="#a2ccdc41356d3e38" class="i field">_presenter</a>.<span class="i property">ActualHeight</span> : 0; }
+		}
+ 
+		<b>public</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i">Thickness</span> <a id="bf1d999e6e51242a" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">ContentMargin</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i">Thickness</span>)<span class="i">GetValue</span>(<a href="#4b7b6c30de466838" class="i field">ContentMarginProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#4b7b6c30de466838" class="i field">ContentMarginProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public double</b> <a id="18e78184ff8b498e" href="R/18e78184ff8b498e.html" target="n" data-glyph="102,1" class="i property">ContentWidth</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#a2ccdc41356d3e38" class="i field">_presenter</a> != <b>null</b> ? <a href="#a2ccdc41356d3e38" class="i field">_presenter</a>.<span class="i property">ActualWidth</span> : 0; }
+		}
+ 
+		<b>public bool</b> <a id="c1a7414e10383da2" href="R/c1a7414e10383da2.html" target="n" data-glyph="102,1" class="i property">InvisibleBackButtonCollapsed</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<span class="i">GetValue</span>(<a href="#c853c60e9334bb39" class="i field">InvisibleBackButtonCollapsedProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#c853c60e9334bb39" class="i field">InvisibleBackButtonCollapsedProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">Brush</span> <a id="dcc81b25efe42013" href="R/dcc81b25efe42013.html" target="n" data-glyph="102,1" class="i property">ToolbarBackground</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Brush</span>)<span class="i">GetValue</span>(<a href="#b62d69eabea5c3ac" class="i field">ToolbarBackgroundProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#b62d69eabea5c3ac" class="i field">ToolbarBackgroundProperty</a>, <b>value</b>); }
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+        <b>public</b> <a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a> <a id="3df955de90402b2e" href="R/3df955de90402b2e.html" target="n" data-glyph="102,1" class="i property">ToolbarPlacement</a>
+        {
+            <b>get</b> { <b>return</b> <a href="#c79cf4c758eaaba8" class="i field">_toolbarPlacement</a>; }
+            <b>set</b>
+            {
+                <a href="#c79cf4c758eaaba8" class="i field">_toolbarPlacement</a> = <b>value</b>; 
+                <a href="#7cb1a791a7c3891d" class="i field">_toolbarPlacementHelper</a>.<a href="ToolbarPlacementHelper.cs.html#fa4725114b7907c2" class="i method">UpdateToolbarPlacement</a>();
+            }
+        }
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>public bool</b> <a id="59e3cd199a3a4000" href="R/59e3cd199a3a4000.html" target="n" data-glyph="102,1" class="i property">ShowBackButton</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<span class="i">GetValue</span>(<a href="#b41b9569c61daa87" class="i field">ShowBackButtonProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#b41b9569c61daa87" class="i field">ShowBackButtonProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">Visibility</span> <a id="e3bb126191ef4cd9" href="R/e3bb126191ef4cd9.html" target="n" data-glyph="102,1" class="i property">TitleVisibility</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Visibility</span>)<span class="i">GetValue</span>(<a href="#87e07dfdceb9bcb4" class="i field">TitleVisibilityProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#87e07dfdceb9bcb4" class="i field">TitleVisibilityProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">Brush</span> <a id="72007b7178171d95" href="R/72007b7178171d95.html" target="n" data-glyph="102,1" class="i property">TitleBrush</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Brush</span>)<span class="i">GetValue</span>(<a href="#2cde549012ab15fe" class="i field">TitleBrushProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#2cde549012ab15fe" class="i field">TitleBrushProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public double</b> <a id="0b5f38b2d46ea394" href="R/0b5f38b2d46ea394.html" target="n" data-glyph="102,1" class="i property">TitleInset</a>
+		{
+			<b>get</b> { <b>return</b> (<b>double</b>)<span class="i">GetValue</span>(<a href="#68ab2c5e2c6cd675" class="i field">TitleInsetProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#68ab2c5e2c6cd675" class="i field">TitleInsetProperty</a>, <b>value</b>); }
+		}
+ 
+		<span class="i">Task</span>&lt;<span class="t t">CommandBar</span>&gt; <a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a>.<a href="IToolbarProvider.cs.html#0902b0e2d73c7339" class="i method">GetCommandBarAsync</a>()
+		{
+			<b>if</b> (<a href="#8e1c473b6caa9812" class="i field">_commandBar</a> != <b>null</b>)
+				<b>return</b> <span class="i">Task</span>.<span class="i">FromResult</span>(<a href="#8e1c473b6caa9812" class="i field">_commandBar</a>);
+ 
+			<a href="#f2e84d52e2426609" class="i field">_commandBarTcs</a> = <b>new</b> <span class="i">TaskCompletionSource</span>&lt;<span class="t t">CommandBar</span>&gt;();
+			<span class="i">ApplyTemplate</span>();
+			<b>return</b> <a href="#f2e84d52e2426609" class="i field">_commandBarTcs</a>.<span class="i">Task</span>;
+		}
+ 
+		<b>public event</b> <span class="t t">RoutedEventHandler</span> <a id="b0e95cdab3ab318c" href="R/b0e95cdab3ab318c.html" target="n" data-glyph="30,1" class="i">BackClicked</a>;
+ 
+		<b>protected override void</b> <a id="bcc73c9e924c29a7" href="R/bcc73c9e924c29a7.html" target="n" data-glyph="75,1" class="i method">OnApplyTemplate</a>()
+		{
+			<b>base</b>.<span class="i">OnApplyTemplate</span>();
+ 
+			<a href="#b9a9a74260bbfb7b" class="i field">_backButton</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;backButton&quot;</span>) <b>as</b> <span class="t t">AppBarButton</span>;
+			<b>if</b> (<a href="#b9a9a74260bbfb7b" class="i field">_backButton</a> != <b>null</b>)
+				<a href="#b9a9a74260bbfb7b" class="i field">_backButton</a>.<span class="i">Click</span> += <span class="i">OnBackClicked</span>;
+ 
+			<a href="#a2ccdc41356d3e38" class="i field">_presenter</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;presenter&quot;</span>) <b>as</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">ContentPresenter</span>;
+ 
+			<a href="#8e1c473b6caa9812" class="i field">_commandBar</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;CommandBar&quot;</span>) <b>as</b> <span class="t t">CommandBar</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+			<a href="#7cb1a791a7c3891d" class="i field">_toolbarPlacementHelper</a>.<span class="i">Initialize</span>(<a href="#8e1c473b6caa9812" class="i field">_commandBar</a>, () =&gt; <a href="#3df955de90402b2e" class="i property">ToolbarPlacement</a>, <span class="i">GetTemplateChild</span>);
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+			<span class="i">TaskCompletionSource</span>&lt;<span class="t t">CommandBar</span>&gt; <span id="r0 rd" class="r0 r">tcs</span> = <a href="#f2e84d52e2426609" class="i field">_commandBarTcs</a>;
+		    <span class="r0 r">tcs</span>?.<span class="i">SetResult</span>(<a href="#8e1c473b6caa9812" class="i field">_commandBar</a>);
+		}
+ 
+		<b>void</b> <a id="454626d05ec789d3" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnBackClicked</a>(<b>object</b> <span id="r1 rd" class="r1 r">sender</span>, <span class="t t">RoutedEventArgs</span> <span id="r2 rd" class="r2 r">e</span>)
+		{
+			<span class="t t">RoutedEventHandler</span> <span id="r3 rd" class="r3 r">clicked</span> = <a href="#b0e95cdab3ab318c" class="i">BackClicked</a>;
+			<b>if</b> (<span class="r3 r">clicked</span> != <b>null</b>)
+				<span class="r3 r">clicked</span>(<a href="#bef0a23cfa8db7df" class="k">this</a>, <span class="r2 r">e</span>);
+		}
+ 
+		<b>static void</b> <a id="fc502e83382e6378" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnInvisibleBackButtonCollapsedChanged</a>(<span class="t t">DependencyObject</span> <span id="r4 rd" class="r4 r">dependencyObject</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r5 rd" class="r5 r">e</span>)
+		{
+			((<a href="#bef0a23cfa8db7df" class="t t">PageControl</a>)<span class="r4 r">dependencyObject</span>).<a href="#28bf9c9b5f1faabb" class="i method">UpdateBackButton</a>();
+		}
+ 
+		<b>static void</b> <a id="55449d0c4848387f" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnShowBackButtonChanged</a>(<span class="t t">DependencyObject</span> <span id="r6 rd" class="r6 r">dependencyObject</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r7 rd" class="r7 r">e</span>)
+		{
+			((<a href="#bef0a23cfa8db7df" class="t t">PageControl</a>)<span class="r6 r">dependencyObject</span>).<a href="#28bf9c9b5f1faabb" class="i method">UpdateBackButton</a>();
+		}
+ 
+		<b>void</b> <a id="28bf9c9b5f1faabb" href="R/28bf9c9b5f1faabb.html" target="n" data-glyph="76,1" class="i method">UpdateBackButton</a>()
+		{
+			<b>if</b> (<a href="#b9a9a74260bbfb7b" class="i field">_backButton</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#59e3cd199a3a4000" class="i property">ShowBackButton</a>)
+				<a href="#b9a9a74260bbfb7b" class="i field">_backButton</a>.<span class="i property">Visibility</span> = <span class="t t">Visibility</span>.<span class="i field">Visible</span>;
+			<b>else</b>
+				<a href="#b9a9a74260bbfb7b" class="i field">_backButton</a>.<span class="i property">Visibility</span> = <a href="#c1a7414e10383da2" class="i property">InvisibleBackButtonCollapsed</a> ? <span class="t t">Visibility</span>.<span class="i field">Collapsed</span> : <span class="t t">Visibility</span>.<span class="i field">Visible</span>;
+ 
+			<a href="#b9a9a74260bbfb7b" class="i field">_backButton</a>.<span class="i property">Opacity</span> = <a href="#59e3cd199a3a4000" class="i property">ShowBackButton</a> ? 1 : 0;
+		}
+    }
+}
+</pre></td></tr></table></div></body></html>

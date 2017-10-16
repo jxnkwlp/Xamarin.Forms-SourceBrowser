@@ -1,0 +1,550 @@
+﻿<!DOCTYPE html>
+<html><head><title>ApplyPropertiesVisitor.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(541);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Xaml/ApplyPropertiesVisitor.cs" target="_top">ApplyPropertiesVisitor.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Xaml" target="_top">Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj</a> (Xamarin.Forms.Xaml)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>.<span class="i n">Internals</span>;
+ 
+<b>using static</b> <span class="i n">System</span>.<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="t t">String</a>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>
+{
+	<b>class</b> <a id="515768b28c4a51c5" href="R/515768b28c4a51c5.html" target="n" data-glyph="2,0" class="t t">ApplyPropertiesVisitor</a> : <a href="XamlNodeVisitor.cs.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a>
+	{
+		<b>public static readonly</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>&gt; <a id="85f2014b2c322a58" href="R/85f2014b2c322a58.html" target="n" data-glyph="42,1" class="i field">Skips</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>&gt; {
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#ce88fd5516a3db5c" class="i field">xKey</a>,
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#2d7fbef61f459440" class="i field">xTypeArguments</a>,
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#ba25f468d9c4f81b" class="i field">xArguments</a>,
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#2c33b8fa36839efb" class="i field">xFactoryMethod</a>,
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#4dd36ca233878b27" class="i field">xName</a>,
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#02206a874bd4f9a9" class="i field">xDataType</a>
+		};
+ 
+		<b>public</b> <a id="7dd9e338884703ef" href="R/7dd9e338884703ef.html" target="n" data-glyph="72,1" class="i constructor">ApplyPropertiesVisitor</a>(<a href="HydrationContext.cs.html#30eb9f712f99d66c" class="t t">HydrationContext</a> <span id="r0 rd" class="r0 r">context</span>, <b>bool</b> <span id="r1 rd" class="r1 r">stopOnResourceDictionary</span> = <b>false</b>)
+		{
+			<a href="#f05aee9536574e18" class="i property">Context</a> = <span class="r0 r">context</span>;
+			<a href="#4eae5d236279eee8" class="i property">StopOnResourceDictionary</a> = <span class="r1 r">stopOnResourceDictionary</span>;
+		}
+ 
+		<a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a>, <b>object</b>&gt; <a id="1f9d49bbf6369c5c" href="R/1f9d49bbf6369c5c.html" target="n" data-glyph="106,1" class="i property">Values</a> =&gt; <a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#f7f6ecfaaac2a343" class="i property">Values</a>;
+		<a href="HydrationContext.cs.html#30eb9f712f99d66c" class="t t">HydrationContext</a> <a id="f05aee9536574e18" href="R/f05aee9536574e18.html" target="n" data-glyph="106,1" class="i property">Context</a> { <b>get</b>; }
+ 
+		<b>public</b> <a href="XamlNodeVisitor.cs.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a> <a id="166a2e69c657382a" href="R/166a2e69c657382a.html" target="n" data-glyph="102,1" class="i property">VisitingMode</a> =&gt; <a href="XamlNodeVisitor.cs.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a>.<a href="XamlNodeVisitor.cs.html#0b6fe56bad8bf80b" class="i field">BottomUp</a>;
+		<b>public bool</b> <a id="1f577bff16997dab" href="R/1f577bff16997dab.html" target="n" data-glyph="102,1" class="i property">StopOnDataTemplate</a> =&gt; <b>true</b>;
+		<b>public bool</b> <a id="4eae5d236279eee8" href="R/4eae5d236279eee8.html" target="n" data-glyph="102,1" class="i property">StopOnResourceDictionary</a> { <b>get</b>; }
+		<b>public bool</b> <a id="23c07a9de860423d" href="R/23c07a9de860423d.html" target="n" data-glyph="102,1" class="i property">VisitNodeOnDataTemplate</a> =&gt; <b>true</b>;
+ 
+		<b>public void</b> <a id="010af51dc5019715" href="R/010af51dc5019715.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="XamlNode.cs.html#8154936e25abda05" class="t t">ValueNode</a> <span id="r2 rd" class="r2 r">node</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r3 rd" class="r3 r">parentNode</span>)
+		{
+			<a href="XamlNode.cs.html#0395ca46ae80839a" class="k">var</a> <span id="r4 rd" class="r4 r">parentElement</span> = <span class="r3 r">parentNode</span> <b>as</b> <a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>;
+			<a href="@1@System.Runtime/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r5 rd" class="r5 r">value</span> = <a href="#1f9d49bbf6369c5c" class="i property">Values</a> [<span class="r2 r">node</span>];
+			<a href="@1@System.Runtime/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r6 rd" class="r6 r">source</span> = <a href="#1f9d49bbf6369c5c" class="i property">Values</a> [<span class="r3 r">parentNode</span>];
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a> <span id="r7 rd" class="r7 r">propertyName</span>;
+			<b>if</b> (<a href="#3615d7bd660c2085" class="i method">TryGetPropertyName</a>(<span class="r2 r">node</span>, <span class="r3 r">parentNode</span>, <b>out</b> <span class="r7 r">propertyName</span>)) {
+				<b>if</b> (<a href="#85f2014b2c322a58" class="i field">Skips</a>.<a href="@1@System.Runtime/A.html#8f74065d140cfe04" class="i method">Contains</a>(<span class="r7 r">propertyName</span>))
+					<b>return</b>;
+				<b>if</b> (<span class="r4 r">parentElement</span>.<a href="XamlNode.cs.html#153777a0650db791" class="i property">SkipProperties</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r7 r">propertyName</span>))
+					<b>return</b>;
+				<b>if</b> (<span class="r7 r">propertyName</span>.<a href="XmlName.cs.html#b47e66b52de5400f" class="i method">Equals</a>(<a href="XamlParser.cs.html#761f9f93317ccb07" class="t t">XamlParser</a>.<a href="XamlParser.cs.html#402158a1608ea3cb" class="i field">McUri</a>, <span class="s">&quot;Ignorable&quot;</span>))
+					<b>return</b>;
+				<a href="#a6a7b280bdbd423b" class="i method">SetPropertyValue</a>(<span class="r6 r">source</span>, <span class="r7 r">propertyName</span>, <span class="r5 r">value</span>, <a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#85e0c98e31a53ea0" class="i property">RootElement</a>, <span class="r2 r">node</span>, <a href="#f05aee9536574e18" class="i property">Context</a>, <span class="r2 r">node</span>);
+			} <b>else if</b> (<a href="#0cb06894795a3db5" class="i method">IsCollectionItem</a>(<span class="r2 r">node</span>, <span class="r3 r">parentNode</span>) &amp;&amp; <span class="r3 r">parentNode</span> <b>is</b> <a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>) {
+				<span class="c">// Collection element, implicit content, or implicit collection element.</span>
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r8 rd" class="r8 r">contentProperty</span> = <a href="#7179ea07c970ea61" class="i method">GetContentPropertyName</a>(<a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#8088dfe15231d08f" class="i property">Types</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r4 r">parentElement</span>].<span class="i method">GetTypeInfo</span>());
+				<b>if</b> (<span class="r8 r">contentProperty</span> != <b>null</b>) {
+					<a href="XmlName.cs.html#78eee6e8b684a76e" class="k">var</a> <span id="r9 rd" class="r9 r">name</span> = <b>new</b> <a href="XmlName.cs.html#655d78af446a108a" class="t constructor">XmlName</a>(((<a href="XamlNode.cs.html#6162566191bf011a" class="t t">ElementNode</a>)<span class="r3 r">parentNode</span>).<a href="XamlNode.cs.html#ee4bcdea4b617de9" class="i property">NamespaceURI</a>, <span class="r8 r">contentProperty</span>);
+					<b>if</b> (<a href="#85f2014b2c322a58" class="i field">Skips</a>.<a href="@1@System.Runtime/A.html#8f74065d140cfe04" class="i method">Contains</a>(<span class="r9 r">name</span>))
+						<b>return</b>;
+					<b>if</b> (<span class="r4 r">parentElement</span>.<a href="XamlNode.cs.html#153777a0650db791" class="i property">SkipProperties</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r7 r">propertyName</span>))
+						<b>return</b>;
+					<a href="#a6a7b280bdbd423b" class="i method">SetPropertyValue</a>(<span class="r6 r">source</span>, <span class="r9 r">name</span>, <span class="r5 r">value</span>, <a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#85e0c98e31a53ea0" class="i property">RootElement</a>, <span class="r2 r">node</span>, <a href="#f05aee9536574e18" class="i property">Context</a>, <span class="r2 r">node</span>);
+				}
+			}
+		}
+ 
+		<b>public void</b> <a id="558707770fa3c075" href="R/558707770fa3c075.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="XamlNode.cs.html#429a1b2e0cd22849" class="t t">MarkupNode</a> <span id="r10 rd" class="r10 r">node</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r11 rd" class="r11 r">parentNode</span>)
+		{
+		}
+ 
+		<b>public void</b> <a id="217143b783e4d89a" href="R/217143b783e4d89a.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="XamlNode.cs.html#6162566191bf011a" class="t t">ElementNode</a> <span id="r12 rd" class="r12 r">node</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r13 rd" class="r13 r">parentNode</span>)
+		{
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a> <span id="r14 rd" class="r14 r">propertyName</span>;
+			<b>if</b> (<a href="#3615d7bd660c2085" class="i method">TryGetPropertyName</a>(<span class="r12 r">node</span>, <span class="r13 r">parentNode</span>, <b>out</b> <span class="r14 r">propertyName</span>) &amp;&amp; <span class="r14 r">propertyName</span> == <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#f9fb8fcdb5a2a4db" class="i field">_CreateContent</a>) {
+				<a href="@1@System.Runtime/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r15 rd" class="r15 r">s0</span> = <a href="#1f9d49bbf6369c5c" class="i property">Values</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r13 r">parentNode</span>];
+				<b>if</b> (<span class="r15 r">s0</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#fd62151249ceec37" class="t t">ElementTemplate</a>) {
+					<a href="#6598a85b221fa281" class="i method">SetTemplate</a>(<span class="r15 r">s0</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#fd62151249ceec37" class="t t">ElementTemplate</a>, <span class="r12 r">node</span>);
+					<b>return</b>;
+				}
+			}
+ 
+			<a href="XamlNode.cs.html#0395ca46ae80839a" class="k">var</a> <span id="r16 rd" class="r16 r">parentElement</span> = <span class="r13 r">parentNode</span> <b>as</b> <a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>;
+			<span class="r14 r">propertyName</span> = <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#fc384953974e3abe" class="i field">Empty</a>;
+ 
+			<span class="c">//Simplify ListNodes with single elements</span>
+			<a href="XamlNode.cs.html#0a483d0bd41cadb6" class="k">var</a> <span id="r17 rd" class="r17 r">pList</span> = <span class="r13 r">parentNode</span> <b>as</b> <a href="XamlNode.cs.html#0a483d0bd41cadb6" class="t t">ListNode</a>;
+			<b>if</b> (<span class="r17 r">pList</span> != <b>null</b> &amp;&amp; <span class="r17 r">pList</span>.<a href="XamlNode.cs.html#15655416e007c334" class="i property">CollectionItems</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> == 1) {
+				<span class="r14 r">propertyName</span> = <span class="r17 r">pList</span>.<a href="XamlNode.cs.html#a635d7a84b783b78" class="i property">XmlName</a>;
+				<span class="r13 r">parentNode</span> = <span class="r13 r">parentNode</span>.<a href="XamlNode.cs.html#aaa082f00606354b" class="i property">Parent</a>;
+				<span class="r16 r">parentElement</span> = <span class="r13 r">parentNode</span> <b>as</b> <a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>;
+			}
+ 
+			<a href="@1@System.Runtime/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r18 rd" class="r18 r">value</span> = <a href="#1f9d49bbf6369c5c" class="i property">Values</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r12 r">node</span>];
+ 
+			<b>if</b> (<span class="r14 r">propertyName</span> != <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#fc384953974e3abe" class="i field">Empty</a> || <a href="#3615d7bd660c2085" class="i method">TryGetPropertyName</a>(<span class="r12 r">node</span>, <span class="r13 r">parentNode</span>, <b>out</b> <span class="r14 r">propertyName</span>)) {
+				<b>if</b> (<a href="#85f2014b2c322a58" class="i field">Skips</a>.<a href="@1@System.Runtime/A.html#8f74065d140cfe04" class="i method">Contains</a>(<span class="r14 r">propertyName</span>))
+					<b>return</b>;
+				<b>if</b> (<span class="r16 r">parentElement</span>.<a href="XamlNode.cs.html#153777a0650db791" class="i property">SkipProperties</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r14 r">propertyName</span>))
+					<b>return</b>;
+ 
+				<a href="@1@System.Runtime/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r19 rd" class="r19 r">source</span> = <a href="#1f9d49bbf6369c5c" class="i property">Values</a> [<span class="r13 r">parentNode</span>];
+				<a href="#5706ae9e0a975500" class="i method">ProvideValue</a>(<b>ref</b> <span class="r18 r">value</span>, <span class="r12 r">node</span>, <span class="r19 r">source</span>, <span class="r14 r">propertyName</span>);
+				<a href="#a6a7b280bdbd423b" class="i method">SetPropertyValue</a>(<span class="r19 r">source</span>, <span class="r14 r">propertyName</span>, <span class="r18 r">value</span>, <a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#85e0c98e31a53ea0" class="i property">RootElement</a>, <span class="r12 r">node</span>, <a href="#f05aee9536574e18" class="i property">Context</a>, <span class="r12 r">node</span>);
+			} <b>else if</b> (<a href="#0cb06894795a3db5" class="i method">IsCollectionItem</a>(<span class="r12 r">node</span>, <span class="r13 r">parentNode</span>) &amp;&amp; <span class="r13 r">parentNode</span> <b>is</b> <a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>) {
+				<a href="@1@System.Runtime/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r20 rd" class="r20 r">source</span> = <a href="#1f9d49bbf6369c5c" class="i property">Values</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r13 r">parentNode</span>];
+				<a href="#5706ae9e0a975500" class="i method">ProvideValue</a>(<b>ref</b> <span class="r18 r">value</span>, <span class="r12 r">node</span>, <span class="r20 r">source</span>, <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#fc384953974e3abe" class="i field">Empty</a>);
+				<b>string</b> <span id="r21 rd" class="r21 r">contentProperty</span>;
+ 
+				<span class="c">// Implicit Style Resource in a ResourceDictionary</span>
+				<b>if</b> (<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#d98cc303a5785b29" class="t t">ResourceDictionary</a>).<a href="/Xamarin.Forms.Core/A.html#4aeb7fed02b54bd2" class="i method">IsAssignableFrom</a>(<a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#8088dfe15231d08f" class="i property">Types</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r16 r">parentElement</span>]) &amp;&amp; <span class="r18 r">value</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#18d854577c3c5901" class="t t">Style</a> &amp;&amp;
+						!<span class="r12 r">node</span>.<a href="XamlNode.cs.html#5ee5fe5a808d6839" class="i property">Properties</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#ce88fd5516a3db5c" class="i field">xKey</a>)) {
+					((<a href="/Xamarin.Forms.Core/A.html#d98cc303a5785b29" class="t t">ResourceDictionary</a>)<span class="r20 r">source</span>).<a href="/Xamarin.Forms.Core/A.html#669cd4c4071c969f" class="i method">Add</a>(<span class="r18 r">value</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#18d854577c3c5901" class="t t">Style</a>);
+				}
+				<span class="c">// Resource without a x:Key in a ResourceDictionary</span>
+				<b>else if</b> (<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#d98cc303a5785b29" class="t t">ResourceDictionary</a>).<a href="/Xamarin.Forms.Core/A.html#4aeb7fed02b54bd2" class="i method">IsAssignableFrom</a>(<a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#8088dfe15231d08f" class="i property">Types</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r16 r">parentElement</span>]) &amp;&amp; !<span class="r12 r">node</span>.<a href="XamlNode.cs.html#5ee5fe5a808d6839" class="i property">Properties</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#ce88fd5516a3db5c" class="i field">xKey</a>))
+					<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">&quot;resources in ResourceDictionary require a x:Key attribute&quot;</span>, <span class="r12 r">node</span>);
+				<span class="c">// Resource in a ResourceDictionary</span>
+				<b>else if</b> (<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#d98cc303a5785b29" class="t t">ResourceDictionary</a>).<a href="/Xamarin.Forms.Core/A.html#4aeb7fed02b54bd2" class="i method">IsAssignableFrom</a>(<a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#8088dfe15231d08f" class="i property">Types</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r16 r">parentElement</span>]) &amp;&amp; <span class="r12 r">node</span>.<a href="XamlNode.cs.html#5ee5fe5a808d6839" class="i property">Properties</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#ce88fd5516a3db5c" class="i field">xKey</a>))
+					((<a href="/Xamarin.Forms.Core/A.html#d98cc303a5785b29" class="t t">ResourceDictionary</a>)<span class="r20 r">source</span>).<a href="/Xamarin.Forms.Core/A.html#85a5c815e5da0edc" class="i method">Add</a>((<b>string</b>)(((<a href="XamlNode.cs.html#8154936e25abda05" class="t t">ValueNode</a>)<span class="r12 r">node</span>.<a href="XamlNode.cs.html#5ee5fe5a808d6839" class="i property">Properties</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#ce88fd5516a3db5c" class="i field">xKey</a>]).<a href="XamlNode.cs.html#5fa72a93b49782e1" class="i property">Value</a>), <span class="r18 r">value</span>);
+				<span class="c">// Collection element, implicit content, or implicit collection element.</span>
+				<b>else if</b> (<b>typeof</b>(<a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>).<a href="/Xamarin.Forms.Core/A.html#4aeb7fed02b54bd2" class="i method">IsAssignableFrom</a>(<a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#8088dfe15231d08f" class="i property">Types</a> [<span class="r16 r">parentElement</span>]) &amp;&amp; <a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#8088dfe15231d08f" class="i property">Types</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r16 r">parentElement</span>].<span class="i method">GetRuntimeMethods</span>().<span class="i method">Any</span>(<span id="r22 rd" class="r22 r">mi</span> =&gt; <span class="r22 r">mi</span>.<span class="i property">Name</span> == <span class="s">&quot;Add&quot;</span> &amp;&amp; <span class="r22 r">mi</span>.<span class="i method">GetParameters</span>().<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 1)) {
+					<b>if</b> (!(<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#d98cc303a5785b29" class="t t">ResourceDictionary</a>).<a href="/Xamarin.Forms.Core/A.html#4aeb7fed02b54bd2" class="i method">IsAssignableFrom</a>(<a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#8088dfe15231d08f" class="i property">Types</a> [<span class="r16 r">parentElement</span>]))) {
+						<b>var</b> <span id="r23 rd" class="r23 r">addMethod</span> =
+							<a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#8088dfe15231d08f" class="i property">Types</a> [<span class="r16 r">parentElement</span>].<span class="i method">GetRuntimeMethods</span>().<span class="i method">First</span>(<span id="r24 rd" class="r24 r">mi</span> =&gt; <span class="r24 r">mi</span>.<span class="i property">Name</span> == <span class="s">&quot;Add&quot;</span> &amp;&amp; <span class="r24 r">mi</span>.<span class="i method">GetParameters</span>().<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 1);
+						<span class="r23 r">addMethod</span>.<span class="i method">Invoke</span>(<span class="r20 r">source</span>, <b>new</b> [] { <span class="r18 r">value</span> });
+					}
+				} <b>else if</b> ((<span class="r21 r">contentProperty</span> = <a href="#7179ea07c970ea61" class="i method">GetContentPropertyName</a>(<a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#8088dfe15231d08f" class="i property">Types</a> [<span class="r16 r">parentElement</span>].<span class="i method">GetTypeInfo</span>())) != <b>null</b>) {
+					<a href="XmlName.cs.html#78eee6e8b684a76e" class="k">var</a> <span id="r25 rd" class="r25 r">name</span> = <b>new</b> <a href="XmlName.cs.html#655d78af446a108a" class="t constructor">XmlName</a>(<span class="r12 r">node</span>.<a href="XamlNode.cs.html#ee4bcdea4b617de9" class="i property">NamespaceURI</a>, <span class="r21 r">contentProperty</span>);
+					<b>if</b> (<a href="#85f2014b2c322a58" class="i field">Skips</a>.<a href="@1@System.Runtime/A.html#8f74065d140cfe04" class="i method">Contains</a>(<span class="r25 r">name</span>))
+						<b>return</b>;
+					<b>if</b> (<span class="r16 r">parentElement</span>.<a href="XamlNode.cs.html#153777a0650db791" class="i property">SkipProperties</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r14 r">propertyName</span>))
+						<b>return</b>;
+ 
+					<a href="#a6a7b280bdbd423b" class="i method">SetPropertyValue</a>(<span class="r20 r">source</span>, <span class="r25 r">name</span>, <span class="r18 r">value</span>, <a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#85e0c98e31a53ea0" class="i property">RootElement</a>, <span class="r12 r">node</span>, <a href="#f05aee9536574e18" class="i property">Context</a>, <span class="r12 r">node</span>);
+				} <b>else
+					throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Can not set the content of </span>{((<a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>)<span class="r13 r">parentNode</span>).<a href="XamlNode.cs.html#5b65f02b1f79eeaf" class="i property">XmlType</a>.<a href="XamlNode.cs.html#1561698d7b8a155c" class="i property">Name</a>}<span class="s"> as it doesn&#39;t have a ContentPropertyAttribute</span><span class="s">&quot;</span>, <span class="r12 r">node</span>);
+			} <b>else if</b> (<a href="#0cb06894795a3db5" class="i method">IsCollectionItem</a>(<span class="r12 r">node</span>, <span class="r13 r">parentNode</span>) &amp;&amp; <span class="r13 r">parentNode</span> <b>is</b> <a href="XamlNode.cs.html#0a483d0bd41cadb6" class="t t">ListNode</a>) {
+				<a href="@1@System.Runtime/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r26 rd" class="r26 r">source</span> = <a href="#1f9d49bbf6369c5c" class="i property">Values</a> [<span class="r13 r">parentNode</span>.<a href="XamlNode.cs.html#aaa082f00606354b" class="i property">Parent</a>];
+				<a href="#5706ae9e0a975500" class="i method">ProvideValue</a>(<b>ref</b> <span class="r18 r">value</span>, <span class="r12 r">node</span>, <span class="r26 r">source</span>, <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#fc384953974e3abe" class="i field">Empty</a>);
+ 
+				<a href="XamlNode.cs.html#0a483d0bd41cadb6" class="k">var</a> <span id="r27 rd" class="r27 r">parentList</span> = (<a href="XamlNode.cs.html#0a483d0bd41cadb6" class="t t">ListNode</a>)<span class="r13 r">parentNode</span>;
+ 
+				<b>if</b> (<a href="#85f2014b2c322a58" class="i field">Skips</a>.<a href="@1@System.Runtime/A.html#8f74065d140cfe04" class="i method">Contains</a>(<span class="r27 r">parentList</span>.<a href="XamlNode.cs.html#a635d7a84b783b78" class="i property">XmlName</a>))
+					<b>return</b>;
+ 
+				<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r28 rd" class="r28 r">elementType</span> = <span class="r26 r">source</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r29 rd" class="r29 r">localname</span> = <span class="r27 r">parentList</span>.<a href="XamlNode.cs.html#a635d7a84b783b78" class="i property">XmlName</a>.<a href="XmlName.cs.html#cc8572c325a516bb" class="i property">LocalName</a>;
+ 
+				<a href="#b24e38a3990a453f" class="i method">GetRealNameAndType</a>(<b>ref</b> <span class="r28 r">elementType</span>, <span class="r27 r">parentList</span>.<a href="XamlNode.cs.html#a635d7a84b783b78" class="i property">XmlName</a>.<a href="XmlName.cs.html#93aca3a09ec7299d" class="i property">NamespaceURI</a>, <b>ref</b> <span class="r29 r">localname</span>, <a href="#f05aee9536574e18" class="i property">Context</a>, <span class="r12 r">node</span>);
+ 
+				<span class="t t">PropertyInfo</span> <span id="r30 rd" class="r30 r">propertyInfo</span> = <b>null</b>;
+				<b>try</b> {
+					<span class="r30 r">propertyInfo</span> = <span class="r28 r">elementType</span>.<span class="i method">GetRuntimeProperty</span>(<span class="r29 r">localname</span>);
+				} <b>catch</b> (<span class="t t">AmbiguousMatchException</span>) {
+					<span class="c">// Get most derived instance of property</span>
+					<b>foreach</b> (<b>var</b> <span id="r31 rd" class="r31 r">property</span> <b>in</b> <span class="r28 r">elementType</span>.<span class="i method">GetRuntimeProperties</span>().<span class="i method">Where</span>(<span id="r32 rd" class="r32 r">prop</span> =&gt; <span class="r32 r">prop</span>.<span class="i property">Name</span> == <span class="r29 r">localname</span>)) {
+						<b>if</b> (<span class="r30 r">propertyInfo</span> == <b>null</b> || <span class="r30 r">propertyInfo</span>.<span class="i property">DeclaringType</span>.<a href="/Xamarin.Forms.Core/A.html#4aeb7fed02b54bd2" class="i method">IsAssignableFrom</a>(<span class="r31 r">property</span>.<span class="i property">DeclaringType</span>))
+							<span class="r30 r">propertyInfo</span> = <span class="r31 r">property</span>;
+					}
+				}
+				<b>if</b> (<span class="r30 r">propertyInfo</span> == <b>null</b>)
+					<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;Property {0} not found&quot;</span>, <span class="r29 r">localname</span>), <span class="r12 r">node</span>);
+				<span class="t t">MethodInfo</span> <span id="r33 rd" class="r33 r">getter</span>;
+				<b>if</b> (!<span class="r30 r">propertyInfo</span>.<span class="i property">CanRead</span> || (<span class="r33 r">getter</span> = <span class="r30 r">propertyInfo</span>.<span class="i property">GetMethod</span>) == <b>null</b>)
+					<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;Property {0} does not have an accessible getter&quot;</span>, <span class="r29 r">localname</span>), <span class="r12 r">node</span>);
+				<a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a> <span id="r34 rd" class="r34 r">collection</span>;
+				<b>if</b> ((<span class="r34 r">collection</span> = <span class="r33 r">getter</span>.<span class="i method">Invoke</span>(<span class="r26 r">source</span>, <b>new</b> <b>object</b> [] { }) <b>as</b> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>) == <b>null</b>)
+					<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;Property {0} is null or is not IEnumerable&quot;</span>, <span class="r29 r">localname</span>), <span class="r12 r">node</span>);
+				<span class="t t">MethodInfo</span> <span id="r35 rd" class="r35 r">addMethod</span>;
+				<b>if</b> (
+					(<span class="r35 r">addMethod</span> =
+						<span class="r34 r">collection</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetRuntimeMethods</span>().<span class="i method">First</span>(<span id="r36 rd" class="r36 r">mi</span> =&gt; <span class="r36 r">mi</span>.<span class="i property">Name</span> == <span class="s">&quot;Add&quot;</span> &amp;&amp; <span class="r36 r">mi</span>.<span class="i method">GetParameters</span>().<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 1)) == <b>null</b>)
+					<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;Value of {0} does not have a Add() method&quot;</span>, <span class="r29 r">localname</span>), <span class="r12 r">node</span>);
+ 
+				<span class="r35 r">addMethod</span>.<span class="i method">Invoke</span>(<span class="r34 r">collection</span>, <b>new</b> [] { <a href="#1f9d49bbf6369c5c" class="i property">Values</a> [<span class="r12 r">node</span>] });
+			}
+		}
+ 
+		<b>public void</b> <a id="ef8b47f09786d104" href="R/ef8b47f09786d104.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="XamlNode.cs.html#539c4bdaedfa22a3" class="t t">RootNode</a> <span id="r37 rd" class="r37 r">node</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r38 rd" class="r38 r">parentNode</span>)
+		{
+		}
+ 
+		<b>public void</b> <a id="80cb5364b3492232" href="R/80cb5364b3492232.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="XamlNode.cs.html#0a483d0bd41cadb6" class="t t">ListNode</a> <span id="r39 rd" class="r39 r">node</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r40 rd" class="r40 r">parentNode</span>)
+		{
+		}
+ 
+		<b>public static bool</b> <a id="3615d7bd660c2085" href="R/3615d7bd660c2085.html" target="n" data-glyph="72,1" class="i method">TryGetPropertyName</a>(<a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r41 rd" class="r41 r">node</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r42 rd" class="r42 r">parentNode</span>, <b>out</b> <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a> <span id="r43 rd" class="r43 r">name</span>)
+		{
+			<span class="r43 r">name</span> = <b>default</b>(<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>);
+			<a href="XamlNode.cs.html#0395ca46ae80839a" class="k">var</a> <span id="r44 rd" class="r44 r">parentElement</span> = <span class="r42 r">parentNode</span> <b>as</b> <a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>;
+			<b>if</b> (<span class="r44 r">parentElement</span> == <b>null</b>)
+				<b>return false</b>;
+			<b>foreach</b> (<a href="@1@System.Runtime/A.html#8585965bb176a426" class="k">var</a> <span id="r45 rd" class="r45 r">kvp</span> <b>in</b> <span class="r44 r">parentElement</span>.<a href="XamlNode.cs.html#ca11b3b288ccdec1" class="i property">Properties</a>) {
+				<b>if</b> (<span class="r45 r">kvp</span>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a> != <span class="r41 r">node</span>)
+					<b>continue</b>;
+				<span class="r43 r">name</span> = <span class="r45 r">kvp</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>;
+				<b>return true</b>;
+			}
+			<b>return false</b>;
+		}
+ 
+		<b>internal static bool</b> <a id="0cb06894795a3db5" href="R/0cb06894795a3db5.html" target="n" data-glyph="74,1" class="i method">IsCollectionItem</a>(<a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r46 rd" class="r46 r">node</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r47 rd" class="r47 r">parentNode</span>)
+		{
+			<a href="XamlNode.cs.html#98eae0828150b597" class="k">var</a> <span id="r48 rd" class="r48 r">parentList</span> = <span class="r47 r">parentNode</span> <b>as</b> <a href="XamlNode.cs.html#98eae0828150b597" class="t t">IListNode</a>;
+			<b>if</b> (<span class="r48 r">parentList</span> == <b>null</b>)
+				<b>return false</b>;
+			<b>return</b> <span class="r48 r">parentList</span>.<a href="XamlNode.cs.html#fb3a9fc1d07f233b" class="i property">CollectionItems</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r46 r">node</span>);
+		}
+ 
+		<b>internal static string</b> <a id="7179ea07c970ea61" href="R/7179ea07c970ea61.html" target="n" data-glyph="74,1" class="i method">GetContentPropertyName</a>(<span class="t t">TypeInfo</span> <span id="r49 rd" class="r49 r">typeInfo</span>)
+		{
+			<b>while</b> (<span class="r49 r">typeInfo</span> != <b>null</b>) {
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r50 rd" class="r50 r">propName</span> = <a href="#2a396c9644b8ae87" class="i method">GetContentPropertyName</a>(<span class="r49 r">typeInfo</span>.<span class="i property">CustomAttributes</span>);
+				<b>if</b> (<span class="r50 r">propName</span> != <b>null</b>)
+					<b>return</b> <span class="r50 r">propName</span>;
+				<span class="r49 r">typeInfo</span> = <span class="r49 r">typeInfo</span>?.<span class="i property">BaseType</span>?.<span class="i method">GetTypeInfo</span>();
+			}
+			<b>return null</b>;
+		}
+ 
+		<b>void</b> <a id="5706ae9e0a975500" href="R/5706ae9e0a975500.html" target="n" data-glyph="76,1" class="i method">ProvideValue</a>(<b>ref object</b> <span id="r51 rd" class="r51 r">value</span>, <a href="XamlNode.cs.html#6162566191bf011a" class="t t">ElementNode</a> <span id="r52 rd" class="r52 r">node</span>, <b>object</b> <span id="r53 rd" class="r53 r">source</span>, <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a> <span id="r54 rd" class="r54 r">propertyName</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#dc3b63a88853ac8b" class="k">var</a> <span id="r55 rd" class="r55 r">markupExtension</span> = <span class="r51 r">value</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#dc3b63a88853ac8b" class="t t">IMarkupExtension</a>;
+			<a href="/Xamarin.Forms.Core/A.html#e42955e05b2a950d" class="k">var</a> <span id="r56 rd" class="r56 r">valueProvider</span> = <span class="r51 r">value</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#e42955e05b2a950d" class="t t">IValueProvider</a>;
+ 
+			<b>if</b> (<span class="r55 r">markupExtension</span> == <b>null</b> &amp;&amp; <span class="r56 r">valueProvider</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="XamlServiceProvider.cs.html#820a1bf30a03f150" class="t t">XamlServiceProvider</a> <span id="r57 rd" class="r57 r">serviceProvider</span> = <b>null</b>;
+			<b>if</b> (<span class="r51 r">value</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetTypeInfo</span>().<span class="i method">GetCustomAttribute</span>&lt;<a href="/Xamarin.Forms.Core/A.html#ce2a85ae7c9444c4" class="t t">AcceptEmptyServiceProviderAttribute</a>&gt;() == <b>null</b>)
+				<span class="r57 r">serviceProvider</span> = <b>new</b> <a href="XamlServiceProvider.cs.html#c50940b0b669a5c2" class="t constructor">XamlServiceProvider</a>(<span class="r52 r">node</span>, <a href="#f05aee9536574e18" class="i property">Context</a>);
+ 
+			<b>if</b> (<span class="r57 r">serviceProvider</span> != <b>null</b> &amp;&amp; <span class="r54 r">propertyName</span> != <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#fc384953974e3abe" class="i field">Empty</a>)
+				((<a href="XamlServiceProvider.cs.html#f9f814646ad0b326" class="t t">XamlValueTargetProvider</a>)<span class="r57 r">serviceProvider</span>.<a href="XamlServiceProvider.cs.html#f1dbe573b48a017d" class="i property">IProvideValueTarget</a>).<a href="XamlServiceProvider.cs.html#d3a97d8972ed0a3e" class="i property">TargetProperty</a> = <a href="#6efa0f083c9c4ee7" class="i method">GetTargetProperty</a>(<span class="r53 r">source</span>, <span class="r54 r">propertyName</span>, <a href="#f05aee9536574e18" class="i property">Context</a>, <span class="r52 r">node</span>);
+ 
+			<b>if</b> (<span class="r55 r">markupExtension</span> != <b>null</b>)
+				<span class="r51 r">value</span> = <span class="r55 r">markupExtension</span>.<a href="/Xamarin.Forms.Core/A.html#8111528a12164a21" class="i method">ProvideValue</a>(<span class="r57 r">serviceProvider</span>);
+			<b>else if</b> (<span class="r56 r">valueProvider</span> != <b>null</b>)
+				<span class="r51 r">value</span> = <span class="r56 r">valueProvider</span>.<a href="/Xamarin.Forms.Core/A.html#f88eed7114b436af" class="i method">ProvideValue</a>(<span class="r57 r">serviceProvider</span>);
+		}
+ 
+		<b>static string</b> <a id="2a396c9644b8ae87" href="R/2a396c9644b8ae87.html" target="n" data-glyph="76,1" class="i method">GetContentPropertyName</a>(<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="t t">CustomAttributeData</span>&gt; <span id="r58 rd" class="r58 r">attributes</span>)
+		{
+			<b>var</b> <span id="r59 rd" class="r59 r">contentAttribute</span> =
+				<span class="r58 r">attributes</span>.<span class="i method">FirstOrDefault</span>(<span id="r60 rd" class="r60 r">cad</span> =&gt; <a href="/Xamarin.Forms.Core/A.html#9a0c6af7142c3b71" class="t t">ContentPropertyAttribute</a>.<a href="/Xamarin.Forms.Core/A.html#4cd34accd6ed923f" class="i field">ContentPropertyTypes</a>.<span class="i method">Contains</span>(<span class="r60 r">cad</span>.<span class="i property">AttributeType</span>.<a href="@1@System.Runtime/A.html#976443bb39dc37cd" class="i property">FullName</a>));
+			<b>if</b> (<span class="r59 r">contentAttribute</span> == <b>null</b> || <span class="r59 r">contentAttribute</span>.<span class="i property">ConstructorArguments</span>.<a href="@1@System.Runtime/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> != 1)
+				<b>return null</b>;
+			<b>if</b> (<span class="r59 r">contentAttribute</span>.<span class="i property">ConstructorArguments</span> [0].<span class="i property">ArgumentType</span> == <b>typeof</b>(<b>string</b>))
+				<b>return</b> (<b>string</b>)<span class="r59 r">contentAttribute</span>.<span class="i property">ConstructorArguments</span> [0].<span class="i property">Value</span>;
+			<b>return null</b>;
+		}
+ 
+		<b>static bool</b> <a id="b24e38a3990a453f" href="R/b24e38a3990a453f.html" target="n" data-glyph="76,1" class="i method">GetRealNameAndType</a>(<b>ref</b> <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r61 rd" class="r61 r">elementType</span>, <b>string</b> <span id="r62 rd" class="r62 r">namespaceURI</span>, <b>ref string</b> <span id="r63 rd" class="r63 r">localname</span>,
+			<a href="HydrationContext.cs.html#30eb9f712f99d66c" class="t t">HydrationContext</a> <span id="r64 rd" class="r64 r">context</span>, <span class="t t">IXmlLineInfo</span> <span id="r65 rd" class="r65 r">lineInfo</span>)
+		{
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r66 rd" class="r66 r">dotIdx</span> = <span class="r63 r">localname</span>.<a href="@1@System.Runtime/A.html#eb06d6d166f6a3d9" class="i method">IndexOf</a>(<span class="s">&#39;.&#39;</span>);
+			<b>if</b> (<span class="r66 r">dotIdx</span> &gt; 0) {
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r67 rd" class="r67 r">typename</span> = <span class="r63 r">localname</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(0, <span class="r66 r">dotIdx</span>);
+				<span class="r63 r">localname</span> = <span class="r63 r">localname</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(<span class="r66 r">dotIdx</span> + 1);
+				<a href="/Xamarin.Forms.Core/A.html#99c63f26760b949a" class="t t">XamlParseException</a> <span id="r68 rd" class="r68 r">xpe</span>;
+				<span class="r61 r">elementType</span> = <a href="XamlParser.cs.html#761f9f93317ccb07" class="t t">XamlParser</a>.<a href="XamlParser.cs.html#860a8b316d6b0881" class="i method">GetElementType</a>(<b>new</b> <a href="XamlNode.cs.html#0a1740224b8aaa73" class="t constructor">XmlType</a>(<span class="r62 r">namespaceURI</span>, <span class="r67 r">typename</span>, <b>null</b>), <span class="r65 r">lineInfo</span>,
+					<span class="r64 r">context</span>.<a href="HydrationContext.cs.html#85e0c98e31a53ea0" class="i property">RootElement</a>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetTypeInfo</span>().<span class="i property">Assembly</span>, <b>out</b> <span class="r68 r">xpe</span>);
+				<b>if</b> (<span class="r68 r">xpe</span> != <b>null</b>)
+					<b>throw</b> <span class="r68 r">xpe</span>;
+				<b>return true</b>;
+			}
+			<b>return false</b>;
+		}
+ 
+		<b>static</b> <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="97fc1dd145dd632d" href="R/97fc1dd145dd632d.html" target="n" data-glyph="76,1" class="i method">GetBindableProperty</a>(<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r69 rd" class="r69 r">elementType</span>, <b>string</b> <span id="r70 rd" class="r70 r">localName</span>, <span class="t t">IXmlLineInfo</span> <span id="r71 rd" class="r71 r">lineInfo</span>,
+			<b>bool</b> <span id="r72 rd" class="r72 r">throwOnError</span> = <b>false</b>)
+		{
+			<b>var</b> <span id="r73 rd" class="r73 r">bindableFieldInfo</span> =
+				<span class="r69 r">elementType</span>.<a href="/Xamarin.Forms.Core/A.html#968d2e09e0e40e6a" class="i method">GetFields</a>().<span class="i method">FirstOrDefault</span>(<span id="r74 rd" class="r74 r">fi</span> =&gt; <span class="r74 r">fi</span>.<span class="i property">Name</span> == <span class="r70 r">localName</span> + <span class="s">&quot;Property&quot;</span> &amp;&amp; <span class="r74 r">fi</span>.<span class="i property">IsStatic</span> &amp;&amp; <span class="r74 r">fi</span>.<span class="i property">IsPublic</span>);
+ 
+			<a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r75 rd" class="r75 r">exception</span> = <b>null</b>;
+			<b>if</b> (<span class="r75 r">exception</span> == <b>null</b> &amp;&amp; <span class="r73 r">bindableFieldInfo</span> == <b>null</b>) {
+				<span class="r75 r">exception</span> =
+					<b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(
+						<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;BindableProperty {0} not found on {1}&quot;</span>, <span class="r70 r">localName</span> + <span class="s">&quot;Property&quot;</span>, <span class="r69 r">elementType</span>.<a href="@1@System.Runtime/A.html#6068b0ba926a961b" class="i property">Name</a>), <span class="r71 r">lineInfo</span>);
+			}
+ 
+			<b>if</b> (<span class="r75 r">exception</span> == <b>null</b>)
+				<b>return</b> <span class="r73 r">bindableFieldInfo</span>.<span class="i method">GetValue</span>(<b>null</b>) <b>as</b> <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a>;
+			<b>if</b> (<span class="r72 r">throwOnError</span>)
+				<b>throw</b> <span class="r75 r">exception</span>;
+			<b>return null</b>;
+		}
+ 
+		<b>static object</b> <a id="6efa0f083c9c4ee7" href="R/6efa0f083c9c4ee7.html" target="n" data-glyph="76,1" class="i method">GetTargetProperty</a>(<b>object</b> <span id="r76 rd" class="r76 r">xamlelement</span>, <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a> <span id="r77 rd" class="r77 r">propertyName</span>, <a href="HydrationContext.cs.html#30eb9f712f99d66c" class="t t">HydrationContext</a> <span id="r78 rd" class="r78 r">context</span>, <span class="t t">IXmlLineInfo</span> <span id="r79 rd" class="r79 r">lineInfo</span>)
+		{
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r80 rd" class="r80 r">localName</span> = <span class="r77 r">propertyName</span>.<a href="XmlName.cs.html#cc8572c325a516bb" class="i property">LocalName</a>;
+			<span class="c">//If it&#39;s an attached BP, update elementType and propertyName</span>
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r81 rd" class="r81 r">bpOwnerType</span> = <span class="r76 r">xamlelement</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+			<a href="#b24e38a3990a453f" class="i method">GetRealNameAndType</a>(<b>ref</b> <span class="r81 r">bpOwnerType</span>, <span class="r77 r">propertyName</span>.<a href="XmlName.cs.html#93aca3a09ec7299d" class="i property">NamespaceURI</a>, <b>ref</b> <span class="r80 r">localName</span>, <span class="r78 r">context</span>, <span class="r79 r">lineInfo</span>);
+			<a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="k">var</a> <span id="r82 rd" class="r82 r">property</span> = <a href="#97fc1dd145dd632d" class="i method">GetBindableProperty</a>(<span class="r81 r">bpOwnerType</span>, <span class="r80 r">localName</span>, <span class="r79 r">lineInfo</span>, <b>false</b>);
+ 
+			<b>if</b> (<span class="r82 r">property</span> != <b>null</b>)
+				<b>return</b> <span class="r82 r">property</span>;
+			
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r83 rd" class="r83 r">elementType</span> = <span class="r76 r">xamlelement</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+			<b>var</b> <span id="r84 rd" class="r84 r">propertyInfo</span> = <span class="r83 r">elementType</span>.<span class="i method">GetRuntimeProperties</span>().<span class="i method">FirstOrDefault</span>(<span id="r85 rd" class="r85 r">p</span> =&gt; <span class="r85 r">p</span>.<span class="i property">Name</span> == <span class="r80 r">localName</span>);
+			<b>return</b> <span class="r84 r">propertyInfo</span>;
+		}
+ 
+		<b>public static void</b> <a id="a6a7b280bdbd423b" href="R/a6a7b280bdbd423b.html" target="n" data-glyph="72,1" class="i method">SetPropertyValue</a>(<b>object</b> <span id="r86 rd" class="r86 r">xamlelement</span>, <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a> <span id="r87 rd" class="r87 r">propertyName</span>, <b>object</b> <span id="r88 rd" class="r88 r">value</span>, <b>object</b> <span id="r89 rd" class="r89 r">rootElement</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r90 rd" class="r90 r">node</span>, <a href="HydrationContext.cs.html#30eb9f712f99d66c" class="t t">HydrationContext</a> <span id="r91 rd" class="r91 r">context</span>, <span class="t t">IXmlLineInfo</span> <span id="r92 rd" class="r92 r">lineInfo</span>)
+		{
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r93 rd" class="r93 r">localName</span> = <span class="r87 r">propertyName</span>.<a href="XmlName.cs.html#cc8572c325a516bb" class="i property">LocalName</a>;
+			<a href="XamlServiceProvider.cs.html#820a1bf30a03f150" class="k">var</a> <span id="r94 rd" class="r94 r">serviceProvider</span> = <b>new</b> <a href="XamlServiceProvider.cs.html#c50940b0b669a5c2" class="t constructor">XamlServiceProvider</a>(<span class="r90 r">node</span>, <span class="r91 r">context</span>);
+			<a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r95 rd" class="r95 r">xpe</span> = <b>null</b>;
+ 
+			<span class="c">//If it&#39;s an attached BP, update elementType and propertyName</span>
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r96 rd" class="r96 r">bpOwnerType</span> = <span class="r86 r">xamlelement</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+			<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r97 rd" class="r97 r">attached</span> = <a href="#b24e38a3990a453f" class="i method">GetRealNameAndType</a>(<b>ref</b> <span class="r96 r">bpOwnerType</span>, <span class="r87 r">propertyName</span>.<a href="XmlName.cs.html#93aca3a09ec7299d" class="i property">NamespaceURI</a>, <b>ref</b> <span class="r93 r">localName</span>, <span class="r91 r">context</span>, <span class="r92 r">lineInfo</span>);
+			<a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="k">var</a> <span id="r98 rd" class="r98 r">property</span> = <a href="#97fc1dd145dd632d" class="i method">GetBindableProperty</a>(<span class="r96 r">bpOwnerType</span>, <span class="r93 r">localName</span>, <span class="r92 r">lineInfo</span>, <b>false</b>);
+ 
+			<span class="c">//If the target is an event, connect</span>
+			<b>if</b> (<span class="r95 r">xpe</span> == <b>null</b> &amp;&amp; <a href="#d85a80e32b7520d1" class="i method">TryConnectEvent</a>(<span class="r86 r">xamlelement</span>, <span class="r93 r">localName</span>, <span class="r88 r">value</span>, <span class="r89 r">rootElement</span>, <span class="r92 r">lineInfo</span>, <b>out</b> <span class="r95 r">xpe</span>))
+				<b>return</b>;
+ 
+			<span class="c">//If Value is DynamicResource and it&#39;s a BP, SetDynamicResource</span>
+			<b>if</b> (<span class="r95 r">xpe</span> == <b>null</b> &amp;&amp; <a href="#b3de6e9f10905623" class="i method">TrySetDynamicResource</a>(<span class="r86 r">xamlelement</span>, <span class="r98 r">property</span>, <span class="r88 r">value</span>, <span class="r92 r">lineInfo</span>, <b>out</b> <span class="r95 r">xpe</span>))
+				<b>return</b>;
+ 
+			<span class="c">//If value is BindingBase, SetBinding</span>
+			<b>if</b> (<span class="r95 r">xpe</span> == <b>null</b> &amp;&amp; <a href="#65f4662e280d496b" class="i method">TrySetBinding</a>(<span class="r86 r">xamlelement</span>, <span class="r98 r">property</span>, <span class="r93 r">localName</span>, <span class="r88 r">value</span>, <span class="r92 r">lineInfo</span>, <b>out</b> <span class="r95 r">xpe</span>))
+				<b>return</b>;
+ 
+			<span class="c">//If it&#39;s a BindableProberty, SetValue</span>
+			<b>if</b> (<span class="r95 r">xpe</span> == <b>null</b> &amp;&amp; <a href="#03567cbadaf7b2b7" class="i method">TrySetValue</a>(<span class="r86 r">xamlelement</span>, <span class="r98 r">property</span>, <span class="r97 r">attached</span>, <span class="r88 r">value</span>, <span class="r92 r">lineInfo</span>, <span class="r94 r">serviceProvider</span>, <b>out</b> <span class="r95 r">xpe</span>))
+				<b>return</b>;
+ 
+			<span class="c">//If we can assign that value to a normal property, let&#39;s do it</span>
+			<b>if</b> (<span class="r95 r">xpe</span> == <b>null</b> &amp;&amp; <a href="#e35b91f8cf461cc0" class="i method">TrySetProperty</a>(<span class="r86 r">xamlelement</span>, <span class="r93 r">localName</span>, <span class="r88 r">value</span>, <span class="r92 r">lineInfo</span>, <span class="r94 r">serviceProvider</span>, <span class="r91 r">context</span>, <b>out</b> <span class="r95 r">xpe</span>))
+				<b>return</b>;
+ 
+			<span class="c">//If it&#39;s an already initialized property, add to it</span>
+			<b>if</b> (<span class="r95 r">xpe</span> == <b>null</b> &amp;&amp; <a href="#6ed04e5d26b1e6a4" class="i method">TryAddToProperty</a>(<span class="r86 r">xamlelement</span>, <span class="r93 r">localName</span>, <span class="r88 r">value</span>, <span class="r92 r">lineInfo</span>, <span class="r94 r">serviceProvider</span>, <b>out</b> <span class="r95 r">xpe</span>))
+				<b>return</b>;
+ 
+			<span class="r95 r">xpe</span> = <span class="r95 r">xpe</span> ?? <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Cannot assign property \&quot;</span>{<span class="r93 r">localName</span>}<span class="s">\&quot;: Property does not exists, or is not assignable, or mismatching type between value and property</span><span class="s">&quot;</span>, <span class="r92 r">lineInfo</span>);
+			<b>if</b> (<span class="r91 r">context</span>.<a href="HydrationContext.cs.html#68d8b9058bd97698" class="i property">ExceptionHandler</a> != <b>null</b>)
+				<span class="r91 r">context</span>.<a href="HydrationContext.cs.html#68d8b9058bd97698" class="i property">ExceptionHandler</a>(<span class="r95 r">xpe</span>);
+			<b>else
+				throw</b> <span class="r95 r">xpe</span>;
+		}
+ 
+		<b>static bool</b> <a id="d85a80e32b7520d1" href="R/d85a80e32b7520d1.html" target="n" data-glyph="76,1" class="i method">TryConnectEvent</a>(<b>object</b> <span id="r99 rd" class="r99 r">element</span>, <b>string</b> <span id="r100 rd" class="r100 r">localName</span>, <b>object</b> <span id="r101 rd" class="r101 r">value</span>, <b>object</b> <span id="r102 rd" class="r102 r">rootElement</span>, <span class="t t">IXmlLineInfo</span> <span id="r103 rd" class="r103 r">lineInfo</span>, <b>out</b> <a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r104 rd" class="r104 r">exception</span>)
+		{
+			<span class="r104 r">exception</span> = <b>null</b>;
+ 
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r105 rd" class="r105 r">elementType</span> = <span class="r99 r">element</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+			<b>var</b> <span id="r106 rd" class="r106 r">eventInfo</span> = <span class="r105 r">elementType</span>.<span class="i method">GetRuntimeEvent</span>(<span class="r100 r">localName</span>);
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r107 rd" class="r107 r">stringValue</span> = <span class="r101 r">value</span> <b>as string</b>;
+ 
+			<b>if</b> (<span class="r106 r">eventInfo</span> == <b>null</b> || <a href="@1@System.Runtime/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r107 r">stringValue</span>))
+				<b>return false</b>;
+ 
+			<b>var</b> <span id="r108 rd" class="r108 r">methodInfo</span> = <span class="r102 r">rootElement</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetRuntimeMethods</span>().<span class="i method">FirstOrDefault</span>(<span id="r109 rd" class="r109 r">mi</span> =&gt; <span class="r109 r">mi</span>.<span class="i property">Name</span> == (<b>string</b>)<span class="r101 r">value</span>);
+			<b>if</b> (<span class="r108 r">methodInfo</span> == <b>null</b>) {
+				<span class="r104 r">exception</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">No method </span>{<span class="r101 r">value</span>}<span class="s"> found on type </span>{<span class="r102 r">rootElement</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>()}<span class="s">&quot;</span>, <span class="r103 r">lineInfo</span>);
+				<b>return false</b>;
+			}
+ 
+			<b>try</b> {
+				<span class="r106 r">eventInfo</span>.<span class="i method">AddEventHandler</span>(<span class="r99 r">element</span>, <span class="r108 r">methodInfo</span>.<span class="i method">CreateDelegate</span>(<span class="r106 r">eventInfo</span>.<span class="i property">EventHandlerType</span>, <span class="r102 r">rootElement</span>));
+				<b>return true</b>;
+			} <b>catch</b> (<a href="@1@System.Runtime/A.html#109b3ef6299ef9df" class="t t">ArgumentException</a> <span id="r110 rd" class="r110 r">ae</span>) {
+				<span class="r104 r">exception</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Method </span>{<span class="r107 r">stringValue</span>}<span class="s"> does not have the correct signature</span><span class="s">&quot;</span>, <span class="r103 r">lineInfo</span>, <span class="r110 r">ae</span>);
+			}
+			<b>return false</b>;
+		}
+ 
+		<b>static bool</b> <a id="b3de6e9f10905623" href="R/b3de6e9f10905623.html" target="n" data-glyph="76,1" class="i method">TrySetDynamicResource</a>(<b>object</b> <span id="r111 rd" class="r111 r">element</span>, <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r112 rd" class="r112 r">property</span>, <b>object</b> <span id="r113 rd" class="r113 r">value</span>, <span class="t t">IXmlLineInfo</span> <span id="r114 rd" class="r114 r">lineInfo</span>, <b>out</b> <a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r115 rd" class="r115 r">exception</span>)
+		{
+			<span class="r115 r">exception</span> = <b>null</b>;
+ 
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r116 rd" class="r116 r">elementType</span> = <span class="r111 r">element</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+			<a href="/Xamarin.Forms.Core/A.html#c82a08b846f4bfdc" class="k">var</a> <span id="r117 rd" class="r117 r">dynamicResource</span> = <span class="r113 r">value</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#c82a08b846f4bfdc" class="t t">DynamicResource</a>;
+			<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="k">var</a> <span id="r118 rd" class="r118 r">bindable</span> = <span class="r111 r">element</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a>;
+ 
+			<b>if</b> (<span class="r117 r">dynamicResource</span> == <b>null</b> || <span class="r112 r">property</span> == <b>null</b>)
+				<b>return false</b>;
+ 
+			<b>if</b> (<span class="r118 r">bindable</span> == <b>null</b>) {
+				<span class="r115 r">exception</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span>{<span class="r116 r">elementType</span>.<a href="@1@System.Runtime/A.html#6068b0ba926a961b" class="i property">Name</a>}<span class="s"> is not a BindableObject</span><span class="s">&quot;</span>, <span class="r114 r">lineInfo</span>);
+				<b>return false</b>;
+			}
+ 
+			<span class="r118 r">bindable</span>.<a href="/Xamarin.Forms.Core/A.html#de4e393b2a95b6e6" class="i method">SetDynamicResource</a>(<span class="r112 r">property</span>, <span class="r117 r">dynamicResource</span>.<a href="/Xamarin.Forms.Core/A.html#74259ff71b5e27b8" class="i property">Key</a>);
+			<b>return true</b>;
+		}
+ 
+		<b>static bool</b> <a id="65f4662e280d496b" href="R/65f4662e280d496b.html" target="n" data-glyph="76,1" class="i method">TrySetBinding</a>(<b>object</b> <span id="r119 rd" class="r119 r">element</span>, <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r120 rd" class="r120 r">property</span>, <b>string</b> <span id="r121 rd" class="r121 r">localName</span>, <b>object</b> <span id="r122 rd" class="r122 r">value</span>, <span class="t t">IXmlLineInfo</span> <span id="r123 rd" class="r123 r">lineInfo</span>, <b>out</b> <a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r124 rd" class="r124 r">exception</span>)
+		{
+			<span class="r124 r">exception</span> = <b>null</b>;
+ 
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r125 rd" class="r125 r">elementType</span> = <span class="r119 r">element</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+			<a href="/Xamarin.Forms.Core/A.html#d4b9ac5f0cf91b95" class="k">var</a> <span id="r126 rd" class="r126 r">binding</span> = <span class="r122 r">value</span>.<a href="/Xamarin.Forms.Core/A.html#3b9fa9018b616600" class="i method">ConvertTo</a>(<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a>),<span class="r127 r">pinfoRetriever</span>:<b>null</b>,<span class="r128 r">serviceProvider</span>:<b>null</b>) <b>as</b> <a href="/Xamarin.Forms.Core/A.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a>;
+			<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="k">var</a> <span id="r129 rd" class="r129 r">bindable</span> = <span class="r119 r">element</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a>;
+			<a href="/Xamarin.Forms.Core/A.html#7cc5fad1b85ea5f0" class="k">var</a> <span id="r130 rd" class="r130 r">nativeBindingService</span> = <a href="/Xamarin.Forms.Core/A.html#8d311a81ee952ba4" class="t t">DependencyService</a>.<a href="/Xamarin.Forms.Core/A.html#ac938f0fb30da4e5" class="i method">Get</a>&lt;<a href="/Xamarin.Forms.Core/A.html#7cc5fad1b85ea5f0" class="t t">INativeBindingService</a>&gt;();
+ 
+			<b>if</b> (<span class="r126 r">binding</span> == <b>null</b>)
+				<b>return false</b>;
+ 
+			<b>if</b> (<span class="r129 r">bindable</span> != <b>null</b> &amp;&amp; <span class="r120 r">property</span> != <b>null</b>) {
+				<span class="r129 r">bindable</span>.<a href="/Xamarin.Forms.Core/A.html#d05c3999b6e90555" class="i method">SetBinding</a>(<span class="r120 r">property</span>, <span class="r126 r">binding</span>);
+				<b>return true</b>;
+			}
+ 
+			<b>if</b> (<span class="r130 r">nativeBindingService</span> != <b>null</b> &amp;&amp; <span class="r120 r">property</span> != <b>null</b> &amp;&amp; <span class="r130 r">nativeBindingService</span>.<a href="/Xamarin.Forms.Core/A.html#2d48029b8132965d" class="i method">TrySetBinding</a>(<span class="r119 r">element</span>, <span class="r120 r">property</span>, <span class="r126 r">binding</span>))
+				<b>return true</b>;
+ 
+			<b>if</b> (<span class="r130 r">nativeBindingService</span> != <b>null</b> &amp;&amp; <span class="r130 r">nativeBindingService</span>.<a href="/Xamarin.Forms.Core/A.html#1cb23debc07cef13" class="i method">TrySetBinding</a>(<span class="r119 r">element</span>, <span class="r121 r">localName</span>, <span class="r126 r">binding</span>))
+				<b>return true</b>;
+ 
+			<b>if</b> (<span class="r120 r">property</span> != <b>null</b>)
+				<span class="r124 r">exception</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span>{<span class="r125 r">elementType</span>.<a href="@1@System.Runtime/A.html#6068b0ba926a961b" class="i property">Name</a>}<span class="s"> is not a BindableObject or does not support native bindings</span><span class="s">&quot;</span>, <span class="r123 r">lineInfo</span>);
+ 
+			<b>return false</b>;
+		}
+ 
+		<b>static bool</b> <a id="03567cbadaf7b2b7" href="R/03567cbadaf7b2b7.html" target="n" data-glyph="76,1" class="i method">TrySetValue</a>(<b>object</b> <span id="r131 rd" class="r131 r">element</span>, <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r132 rd" class="r132 r">property</span>, <b>bool</b> <span id="r133 rd" class="r133 r">attached</span>, <b>object</b> <span id="r134 rd" class="r134 r">value</span>, <span class="t t">IXmlLineInfo</span> <span id="r135 rd" class="r135 r">lineInfo</span>, <a href="XamlServiceProvider.cs.html#820a1bf30a03f150" class="t t">XamlServiceProvider</a> <span id="r136 rd" class="r136 r">serviceProvider</span>, <b>out</b> <a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r137 rd" class="r137 r">exception</span>)
+		{
+			<span class="r137 r">exception</span> = <b>null</b>;
+ 
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r138 rd" class="r138 r">elementType</span> = <span class="r131 r">element</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+			<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="k">var</a> <span id="r139 rd" class="r139 r">bindable</span> = <span class="r131 r">element</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a>;
+			<a href="/Xamarin.Forms.Core/A.html#7cc5fad1b85ea5f0" class="k">var</a> <span id="r140 rd" class="r140 r">nativeBindingService</span> = <a href="/Xamarin.Forms.Core/A.html#8d311a81ee952ba4" class="t t">DependencyService</a>.<a href="/Xamarin.Forms.Core/A.html#ac938f0fb30da4e5" class="i method">Get</a>&lt;<a href="/Xamarin.Forms.Core/A.html#7cc5fad1b85ea5f0" class="t t">INativeBindingService</a>&gt;();
+ 
+			<b>if</b> (<span class="r132 r">property</span> == <b>null</b>)
+				<b>return false</b>;
+ 
+			<b>if</b> (<span class="r136 r">serviceProvider</span> != <b>null</b> &amp;&amp; <span class="r136 r">serviceProvider</span>.<a href="XamlServiceProvider.cs.html#f1dbe573b48a017d" class="i property">IProvideValueTarget</a> != <b>null</b>)
+				((<a href="XamlServiceProvider.cs.html#f9f814646ad0b326" class="t t">XamlValueTargetProvider</a>)<span class="r136 r">serviceProvider</span>.<a href="XamlServiceProvider.cs.html#f1dbe573b48a017d" class="i property">IProvideValueTarget</a>).<a href="XamlServiceProvider.cs.html#d3a97d8972ed0a3e" class="i property">TargetProperty</a> = <span class="r132 r">property</span>;
+ 
+			<a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<span class="t t">MemberInfo</span>&gt; <span id="r141 rd" class="r141 r">minforetriever</span>;
+			<b>if</b> (<span class="r133 r">attached</span>)
+				<span class="r141 r">minforetriever</span> = () =&gt; <span class="r132 r">property</span>.<a href="/Xamarin.Forms.Core/A.html#7a0e7c9a8e08c999" class="i property">DeclaringType</a>.<span class="i method">GetRuntimeMethod</span>(<span class="s">&quot;Get&quot;</span> + <span class="r132 r">property</span>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>, <b>new</b> [] { <b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a>) });
+			<b>else</b>
+				<span class="r141 r">minforetriever</span> = () =&gt; <span class="r132 r">property</span>.<a href="/Xamarin.Forms.Core/A.html#7a0e7c9a8e08c999" class="i property">DeclaringType</a>.<span class="i method">GetRuntimeProperty</span>(<span class="r132 r">property</span>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>);
+			<a href="@1@System.Runtime/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r142 rd" class="r142 r">convertedValue</span> = <span class="r134 r">value</span>.<a href="/Xamarin.Forms.Core/A.html#85616d28c3af8095" class="i method">ConvertTo</a>(<span class="r132 r">property</span>.<a href="/Xamarin.Forms.Core/A.html#3a88e13a70e1553a" class="i property">ReturnType</a>, <span class="r141 r">minforetriever</span>, <span class="r136 r">serviceProvider</span>);
+ 
+			<b>if</b> (<span class="r139 r">bindable</span> != <b>null</b>) {
+				<span class="c">//SetValue doesn&#39;t throw on mismatching type, so check before to get a chance to try the property setting or the collection adding</span>
+				<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r143 rd" class="r143 r">nullable</span> = <span class="r132 r">property</span>.<a href="/Xamarin.Forms.Core/A.html#769dda66686e9efa" class="i property">ReturnTypeInfo</a>.<span class="i property">IsGenericType</span> &amp;&amp;
+							   <span class="r132 r">property</span>.<a href="/Xamarin.Forms.Core/A.html#769dda66686e9efa" class="i property">ReturnTypeInfo</a>.<span class="i method">GetGenericTypeDefinition</span>() == <b>typeof</b>(<a href="@1@System.Runtime/A.html#ffebe438fd9cbf0e" class="t t">Nullable</a>&lt;&gt;);
+				<b>if</b> ((<span class="r142 r">convertedValue</span> == <b>null</b> &amp;&amp; (!<span class="r132 r">property</span>.<a href="/Xamarin.Forms.Core/A.html#769dda66686e9efa" class="i property">ReturnTypeInfo</a>.<span class="i property">IsValueType</span> || <span class="r143 r">nullable</span>)) ||
+					(<span class="r132 r">property</span>.<a href="/Xamarin.Forms.Core/A.html#3a88e13a70e1553a" class="i property">ReturnType</a>.<a href="/Xamarin.Forms.Core/A.html#8c499ef170a390f5" class="i method">IsInstanceOfType</a>(<span class="r142 r">convertedValue</span>))) {
+					<span class="r139 r">bindable</span>.<a href="/Xamarin.Forms.Core/A.html#71f22f51364ed0e1" class="i method">SetValue</a>(<span class="r132 r">property</span>, <span class="r142 r">convertedValue</span>);
+					<b>return true</b>;
+				}
+				<b>return false</b>;
+			}
+ 
+			<b>if</b> (<span class="r140 r">nativeBindingService</span> != <b>null</b> &amp;&amp; <span class="r140 r">nativeBindingService</span>.<a href="/Xamarin.Forms.Core/A.html#a28ae34ce1c6055c" class="i method">TrySetValue</a>(<span class="r131 r">element</span>, <span class="r132 r">property</span>, <span class="r142 r">convertedValue</span>))
+				<b>return true</b>;
+ 
+			<span class="r137 r">exception</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span>{<span class="r138 r">elementType</span>.<a href="@1@System.Runtime/A.html#6068b0ba926a961b" class="i property">Name</a>}<span class="s"> is not a BindableObject or does not support setting native BindableProperties</span><span class="s">&quot;</span>, <span class="r135 r">lineInfo</span>);
+			<b>return false</b>;
+		}
+ 
+		<b>static bool</b> <a id="e35b91f8cf461cc0" href="R/e35b91f8cf461cc0.html" target="n" data-glyph="76,1" class="i method">TrySetProperty</a>(<b>object</b> <span id="r144 rd" class="r144 r">element</span>, <b>string</b> <span id="r145 rd" class="r145 r">localName</span>, <b>object</b> <span id="r146 rd" class="r146 r">value</span>, <span class="t t">IXmlLineInfo</span> <span id="r147 rd" class="r147 r">lineInfo</span>, <a href="XamlServiceProvider.cs.html#820a1bf30a03f150" class="t t">XamlServiceProvider</a> <span id="r148 rd" class="r148 r">serviceProvider</span>, <a href="HydrationContext.cs.html#30eb9f712f99d66c" class="t t">HydrationContext</a> <span id="r149 rd" class="r149 r">context</span>, <b>out</b> <a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r150 rd" class="r150 r">exception</span>)
+		{
+			<span class="r150 r">exception</span> = <b>null</b>;
+ 
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r151 rd" class="r151 r">elementType</span> = <span class="r144 r">element</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+			<b>var</b> <span id="r152 rd" class="r152 r">propertyInfo</span> = <span class="r151 r">elementType</span>.<span class="i method">GetRuntimeProperties</span>().<span class="i method">FirstOrDefault</span>(<span id="r153 rd" class="r153 r">p</span> =&gt; <span class="r153 r">p</span>.<span class="i property">Name</span> == <span class="r145 r">localName</span>);
+			<span class="t t">MethodInfo</span> <span id="r154 rd" class="r154 r">setter</span>;
+			<b>if</b> (<span class="r152 r">propertyInfo</span> == <b>null</b> || !<span class="r152 r">propertyInfo</span>.<span class="i property">CanWrite</span> || (<span class="r154 r">setter</span> = <span class="r152 r">propertyInfo</span>.<span class="i property">SetMethod</span>) == <b>null</b>)
+				<b>return false</b>;
+ 
+			<b>if</b> (!<a href="#5d62abfbbf5032b8" class="i method">IsVisibleFrom</a>(<span class="r154 r">setter</span>, <span class="r149 r">context</span>.<a href="HydrationContext.cs.html#85e0c98e31a53ea0" class="i property">RootElement</a>))
+				<b>return false</b>;
+ 
+			<b>if</b> (<span class="r148 r">serviceProvider</span> != <b>null</b> &amp;&amp; <span class="r148 r">serviceProvider</span>.<a href="XamlServiceProvider.cs.html#f1dbe573b48a017d" class="i property">IProvideValueTarget</a> != <b>null</b>)
+				((<a href="XamlServiceProvider.cs.html#f9f814646ad0b326" class="t t">XamlValueTargetProvider</a>)<span class="r148 r">serviceProvider</span>.<a href="XamlServiceProvider.cs.html#f1dbe573b48a017d" class="i property">IProvideValueTarget</a>).<a href="XamlServiceProvider.cs.html#d3a97d8972ed0a3e" class="i property">TargetProperty</a> = <span class="r152 r">propertyInfo</span>;
+ 
+			<b>object</b> <span id="r155 rd" class="r155 r">convertedValue</span> = <span class="r146 r">value</span>.<a href="/Xamarin.Forms.Core/A.html#85616d28c3af8095" class="i method">ConvertTo</a>(<span class="r152 r">propertyInfo</span>.<span class="i property">PropertyType</span>, () =&gt; <span class="r152 r">propertyInfo</span>, <span class="r148 r">serviceProvider</span>);
+			<b>if</b> (<span class="r155 r">convertedValue</span> != <b>null</b> &amp;&amp; !<span class="r152 r">propertyInfo</span>.<span class="i property">PropertyType</span>.<a href="/Xamarin.Forms.Core/A.html#8c499ef170a390f5" class="i method">IsInstanceOfType</a>(<span class="r155 r">convertedValue</span>))
+				<b>return false</b>;
+ 
+			<span class="r154 r">setter</span>.<span class="i method">Invoke</span>(<span class="r144 r">element</span>, <b>new</b> <b>object</b> [] { <span class="r155 r">convertedValue</span> });
+			<b>return true</b>;
+		}
+ 
+		<b>static bool</b> <a id="5d62abfbbf5032b8" href="R/5d62abfbbf5032b8.html" target="n" data-glyph="76,1" class="i method">IsVisibleFrom</a>(<span class="t t">MethodInfo</span> <span id="r156 rd" class="r156 r">setter</span>, <b>object</b> <span id="r157 rd" class="r157 r">rootElement</span>)
+		{
+			<b>if</b> (<span class="r156 r">setter</span>.<span class="i property">IsPublic</span>)
+				<b>return true</b>;
+			<b>if</b> (<span class="r156 r">setter</span>.<span class="i property">IsPrivate</span> &amp;&amp; <span class="r156 r">setter</span>.<span class="i property">DeclaringType</span> == <span class="r157 r">rootElement</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>())
+				<b>return true</b>;
+			<b>if</b> ((<span class="r156 r">setter</span>.<span class="i property">IsAssembly</span> || <span class="r156 r">setter</span>.<span class="i property">IsFamilyOrAssembly</span>) &amp;&amp; <span class="r156 r">setter</span>.<span class="i property">DeclaringType</span>.<a href="@1@System.Runtime/A.html#760775dbd11fb354" class="i property">AssemblyQualifiedName</a> == <span class="r157 r">rootElement</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<a href="@1@System.Runtime/A.html#760775dbd11fb354" class="i property">AssemblyQualifiedName</a>)
+				<b>return true</b>;
+			<b>if</b> (<span class="r156 r">setter</span>.<span class="i property">IsFamily</span> &amp;&amp; <span class="r156 r">setter</span>.<span class="i property">DeclaringType</span>.<a href="/Xamarin.Forms.Core/A.html#4aeb7fed02b54bd2" class="i method">IsAssignableFrom</a>(<span class="r157 r">rootElement</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>()))
+				<b>return true</b>;
+			<b>return false</b>;
+		}
+ 
+		<b>static bool</b> <a id="6ed04e5d26b1e6a4" href="R/6ed04e5d26b1e6a4.html" target="n" data-glyph="76,1" class="i method">TryAddToProperty</a>(<b>object</b> <span id="r158 rd" class="r158 r">element</span>, <b>string</b> <span id="r159 rd" class="r159 r">localName</span>, <b>object</b> <span id="r160 rd" class="r160 r">value</span>, <span class="t t">IXmlLineInfo</span> <span id="r161 rd" class="r161 r">lineInfo</span>, <a href="XamlServiceProvider.cs.html#820a1bf30a03f150" class="t t">XamlServiceProvider</a> <span id="r162 rd" class="r162 r">serviceProvider</span>, <b>out</b> <a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r163 rd" class="r163 r">exception</span>)
+		{
+			<span class="r163 r">exception</span> = <b>null</b>;
+ 
+			<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r164 rd" class="r164 r">elementType</span> = <span class="r158 r">element</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+			<b>var</b> <span id="r165 rd" class="r165 r">propertyInfo</span> = <span class="r164 r">elementType</span>.<span class="i method">GetRuntimeProperties</span>().<span class="i method">FirstOrDefault</span>(<span id="r166 rd" class="r166 r">p</span> =&gt; <span class="r166 r">p</span>.<span class="i property">Name</span> == <span class="r159 r">localName</span>);
+			<span class="t t">MethodInfo</span> <span id="r167 rd" class="r167 r">getter</span>;
+			<b>if</b> (<span class="r165 r">propertyInfo</span> == <b>null</b> || !<span class="r165 r">propertyInfo</span>.<span class="i property">CanRead</span> || (<span class="r167 r">getter</span> = <span class="r165 r">propertyInfo</span>.<span class="i property">GetMethod</span>) == <b>null</b>)
+				<b>return false</b>;
+ 
+			<a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="k">var</a> <span id="r168 rd" class="r168 r">collection</span> = <span class="r167 r">getter</span>.<span class="i method">Invoke</span>(<span class="r158 r">element</span>, <b>new</b> <b>object</b> [] { }) <b>as</b> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>;
+			<b>if</b> (<span class="r168 r">collection</span> == <b>null</b>)
+				<b>return false</b>;
+ 
+			<b>var</b> <span id="r169 rd" class="r169 r">addMethod</span> = <span class="r168 r">collection</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetRuntimeMethods</span>().<span class="i method">First</span>(<span id="r170 rd" class="r170 r">mi</span> =&gt; <span class="r170 r">mi</span>.<span class="i property">Name</span> == <span class="s">&quot;Add&quot;</span> &amp;&amp; <span class="r170 r">mi</span>.<span class="i method">GetParameters</span>().<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 1);
+			<b>if</b> (<span class="r169 r">addMethod</span> == <b>null</b>)
+				<b>return false</b>;
+ 
+			((<a href="XamlServiceProvider.cs.html#f9f814646ad0b326" class="t t">XamlValueTargetProvider</a>)<span class="r162 r">serviceProvider</span>.<a href="XamlServiceProvider.cs.html#f1dbe573b48a017d" class="i property">IProvideValueTarget</a>).<a href="XamlServiceProvider.cs.html#d3a97d8972ed0a3e" class="i property">TargetProperty</a> = <span class="r165 r">propertyInfo</span>;
+			<span class="r169 r">addMethod</span>.<span class="i method">Invoke</span>(<span class="r168 r">collection</span>, <b>new</b> [] { <span class="r160 r">value</span>.<a href="/Xamarin.Forms.Core/A.html#6dd8d100a436d8ba" class="i method">ConvertTo</a>(<span class="r169 r">addMethod</span>.<span class="i method">GetParameters</span>() [0].<span class="i property">ParameterType</span>, (<a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<a href="/Xamarin.Forms.Core/A.html#07b618880a109e92" class="t t">TypeConverter</a>&gt;)<b>null</b>, <span class="r162 r">serviceProvider</span>) });
+			<b>return true</b>;
+		}
+ 
+		<b>void</b> <a id="6598a85b221fa281" href="R/6598a85b221fa281.html" target="n" data-glyph="76,1" class="i method">SetTemplate</a>(<a href="/Xamarin.Forms.Core/A.html#fd62151249ceec37" class="t t">ElementTemplate</a> <span id="r171 rd" class="r171 r">dt</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r172 rd" class="r172 r">node</span>)
+		{
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 0612
+			((<a href="/Xamarin.Forms.Core/A.html#12afc260d3791851" class="t t">IDataTemplate</a>)<span class="r171 r">dt</span>).<a href="/Xamarin.Forms.Core/A.html#839093b393bce3f5" class="i property">LoadTemplate</a> = () =&gt; {
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 0612
+				<a href="XamlNode.cs.html#9697de7bafb1de38" class="k">var</a> <span id="r173 rd" class="r173 r">cnode</span> = <span class="r172 r">node</span>.<a href="XamlNode.cs.html#c5bbd74f8856ebd7" class="i method">Clone</a>();
+				<a href="HydrationContext.cs.html#30eb9f712f99d66c" class="k">var</a> <span id="r174 rd" class="r174 r">context</span> = <b>new</b> <a href="HydrationContext.cs.html#33c446a3c8eb3153" class="t constructor">HydrationContext</a> { <a href="HydrationContext.cs.html#829455c135b07888" class="i property">ParentContext</a> = <a href="#f05aee9536574e18" class="i property">Context</a>, <a href="HydrationContext.cs.html#85e0c98e31a53ea0" class="i property">RootElement</a> = <a href="#f05aee9536574e18" class="i property">Context</a>.<a href="HydrationContext.cs.html#85e0c98e31a53ea0" class="i property">RootElement</a> };
+				<span class="r173 r">cnode</span>.<a href="XamlNode.cs.html#4ef492041d2c00e5" class="i method">Accept</a>(<b>new</b> <a href="XamlNodeVisitor.cs.html#80c30157d20236c0" class="t constructor">XamlNodeVisitor</a>((<span id="r175 rd" class="r175 r">n</span>, <span id="r176 rd" class="r176 r">parent</span>) =&gt; <span class="r175 r">n</span>.<a href="XamlNode.cs.html#aaa082f00606354b" class="i property">Parent</a> = <span class="r176 r">parent</span>), <span class="r172 r">node</span>.<a href="XamlNode.cs.html#aaa082f00606354b" class="i property">Parent</a>); <span class="c">//set parents for {StaticResource}</span>
+				<span class="r173 r">cnode</span>.<a href="XamlNode.cs.html#4ef492041d2c00e5" class="i method">Accept</a>(<b>new</b> <a href="ExpandMarkupsVisitor.cs.html#49fafd4fcff73ddd" class="t constructor">ExpandMarkupsVisitor</a>(<span class="r174 r">context</span>), <b>null</b>);
+				<span class="r173 r">cnode</span>.<a href="XamlNode.cs.html#4ef492041d2c00e5" class="i method">Accept</a>(<b>new</b> <a href="NamescopingVisitor.cs.html#6defbe3bef4ab1a3" class="t constructor">NamescopingVisitor</a>(<span class="r174 r">context</span>), <b>null</b>);
+				<span class="r173 r">cnode</span>.<a href="XamlNode.cs.html#4ef492041d2c00e5" class="i method">Accept</a>(<b>new</b> <a href="CreateValuesVisitor.cs.html#347bbc7ebd23b0a3" class="t constructor">CreateValuesVisitor</a>(<span class="r174 r">context</span>), <b>null</b>);
+				<span class="r173 r">cnode</span>.<a href="XamlNode.cs.html#4ef492041d2c00e5" class="i method">Accept</a>(<b>new</b> <a href="RegisterXNamesVisitor.cs.html#0119270b2ad477a0" class="t constructor">RegisterXNamesVisitor</a>(<span class="r174 r">context</span>), <b>null</b>);
+				<span class="r173 r">cnode</span>.<a href="XamlNode.cs.html#4ef492041d2c00e5" class="i method">Accept</a>(<b>new</b> <a href="FillResourceDictionariesVisitor.cs.html#c6fc3e271a6f6e7d" class="t constructor">FillResourceDictionariesVisitor</a>(<span class="r174 r">context</span>), <b>null</b>);
+				<span class="r173 r">cnode</span>.<a href="XamlNode.cs.html#4ef492041d2c00e5" class="i method">Accept</a>(<b>new</b> <a href="#7dd9e338884703ef" class="t constructor">ApplyPropertiesVisitor</a>(<span class="r174 r">context</span>, <b>true</b>), <b>null</b>);
+				<b>return</b> <span class="r174 r">context</span>.<a href="HydrationContext.cs.html#f7f6ecfaaac2a343" class="i property">Values</a> [<span class="r173 r">cnode</span>];
+			};
+		}
+	}
+}</pre></td></tr></table></div></body></html>

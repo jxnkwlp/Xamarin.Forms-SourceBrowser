@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html><head><title>LayoutRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(39);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/Renderers/LayoutRenderer.cs" target="_top">Renderers\LayoutRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">CoreGraphics</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>internal class</b> <a id="4d0844dbee6e50a7" href="../R/4d0844dbee6e50a7.html" target="n" data-glyph="2,0" class="t t"><span id="07dd4ea0481bd9ca">LayoutRenderer</span></a> : <a href="DefaultRenderer.cs.html#b315752f27fada62" class="t t">DefaultRenderer</a>
+	{
+		<span class="t t">CGRect</span> <a id="0513309c3233f330" href="../R/0513309c3233f330.html" target="n" data-glyph="46,1" class="i field">_bounds</a>;
+ 
+		<b>public override void</b> <a id="f2696a89b1a1d55e" href="../R/f2696a89b1a1d55e.html" target="n" data-glyph="72,1" class="i method">Layout</a>()
+		{
+			<a href="DefaultRenderer.cs.html#b315752f27fada62" class="k">base</a>.<span class="i method">Layout</span>();
+ 
+			<b>if</b> (<a href="#0513309c3233f330" class="i field">_bounds</a> == <span class="i property">Bounds</span>)
+				<b>return</b>;
+ 
+			<a href="#0513309c3233f330" class="i field">_bounds</a> = <span class="i property">Bounds</span>;
+ 
+			<span class="c">//when the layout changes we might need to update  the children position based in our new size,</span>
+			<span class="c">//this is only needed in MacOS because of the inversion of the Y coordinate. </span>
+			<span class="c">//Forms layout system doesn&#39;t know we need to relayout the other items ,(first ones for example)</span>
+			<span class="c">//so we do it here </span>
+			<b>for</b> (<b>int</b> <span id="r0 rd" class="r0 r">i</span> = 0; <span class="r0 r">i</span> &lt; <span class="i property">Subviews</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a>; <span class="r0 r">i</span>++)
+			{
+				<a href="../IVisualElementRenderer.cs.html#06d80d1922189ea9" class="k">var</a> <span id="r1 rd" class="r1 r">item</span> = <span class="i property">Subviews</span>[<span class="r0 r">i</span>] <b>as</b> <a href="../IVisualElementRenderer.cs.html#06d80d1922189ea9" class="t t">IVisualElementRenderer</a>;
+				<b>if</b> (<span class="r1 r">item</span> == <b>null</b>)
+					<b>continue</b>;
+				<b>var</b> <span id="r2 rd" class="r2 r">oldFrame</span> = <span class="r1 r">item</span>.<a href="../IVisualElementRenderer.cs.html#cc642a2f9731ed4a" class="i property">NativeView</a>.<span class="i property">Frame</span>;
+ 
+				<a href="@0@mscorlib/A.html#dda909df0f8d2fd0" class="k">var</a> <span id="r3 rd" class="r3 r">newY</span> = <a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#c2b57dc2156f32d4" class="i method">Max</a>(0, (<b>float</b>)(<a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a> - <span class="r1 r">item</span>.<a href="../IVisualElementRenderer.cs.html#7d0d13bd54221563" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a> - <span class="r1 r">item</span>.<a href="../IVisualElementRenderer.cs.html#7d0d13bd54221563" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#d889d87a84b3b903" class="i property">Y</a>));
+				<b>if</b> (<span class="r2 r">oldFrame</span>.<span class="i property">Y</span> == <span class="r3 r">newY</span>)
+					<b>continue</b>;
+				<b>var</b> <span id="r4 rd" class="r4 r">newPosition</span> = <b>new</b> <span class="t constructor">CGPoint</span>(<span class="r2 r">oldFrame</span>.<span class="i property">X</span>, <span class="r3 r">newY</span>);
+				<span class="r1 r">item</span>.<a href="../IVisualElementRenderer.cs.html#cc642a2f9731ed4a" class="i property">NativeView</a>.<span class="i property">Frame</span> = <b>new</b> <span class="t constructor">CGRect</span>(<span class="r4 r">newPosition</span>, <span class="r2 r">oldFrame</span>.<span class="i property">Size</span>);
+				<a href="@0@mscorlib/A.html#f907d79481da6ba4" class="t t">Console</a>.<a href="@0@mscorlib/A.html#5ac7c4fda643413b" class="i method">WriteLine</a>(<span class="s">$&quot;</span><span class="s">New Frame - </span>{<span class="r1 r">item</span>.<a href="../IVisualElementRenderer.cs.html#cc642a2f9731ed4a" class="i property">NativeView</a>.<span class="i property">Frame</span>}<span class="s">&quot;</span>);
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

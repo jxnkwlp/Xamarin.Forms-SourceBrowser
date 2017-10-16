@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html><head><title>ImageViewExtensions.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(69);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Extensions/ImageViewExtensions.cs" target="_top">Extensions\ImageViewExtensions.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Graphics</span>;
+<b>using</b> <span class="i">AImageView</span> = <span class="i">Android</span>.<span class="i">Widget</span>.<span class="i">ImageView</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>internal static class</b> <a id="5696978e83a25208" href="../R/../../0000000000.html" target="n" data-glyph="2,0" class="t t">ImageViewExtensions</a>
+	{
+		<span class="c">// TODO hartez 2017/04/07 09:33:03 Review this again, not sure it&#39;s handling the transition from previousImage to &#39;null&#39; newImage correctly</span>
+		<b>public static async</b> <span class="i">Task</span> <a id="4e8fc1858861637f" href="../R/4e8fc1858861637f.html" target="n" data-glyph="220,1" class="i method">UpdateBitmap</a>(<b>this</b> <span class="i">AImageView</span> <span id="r0 rd" class="r0 r">imageView</span>, <a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a> <span id="r1 rd" class="r1 r">newImage</span>, <a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a> <span id="r2 rd" class="r2 r">previousImage</span> = <b>null</b>)
+		{
+			<b>if</b> (<span class="r0 r">imageView</span> == <b>null</b> || <span class="r0 r">imageView</span>.<span class="i">IsDisposed</span>())
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#5d83ac629978e91e" class="i property">IsInvokeRequired</a>)
+				<b>throw</b> <b>new</b> <span class="i">InvalidOperationException</span>(<span class="s">&quot;Image Bitmap must not be updated from background thread&quot;</span>);
+ 
+			<b>if</b> (<span class="r2 r">previousImage</span> != <b>null</b> &amp;&amp; <span class="i">Equals</span>(<span class="r2 r">previousImage</span>.<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a>, <span class="r1 r">newImage</span>.<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a>))
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#23cbcc80dd868d05" class="k">var</a> <span id="r3 rd" class="r3 r">imageController</span> = <span class="r1 r">newImage</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#23cbcc80dd868d05" class="t t">IImageController</a>;
+ 
+			<span class="r3 r">imageController</span>?.<span class="i">SetIsLoading</span>(<b>true</b>);
+ 
+			(<span class="r0 r">imageView</span> <b>as</b> <a href="../Renderers/ImageRenderer.cs.html#485079e3dcbbbe28" class="t t">IImageRendererController</a>)?.<a href="../Renderers/ImageRenderer.cs.html#ac2d6c4d134e21ee" class="i method">SkipInvalidate</a>();
+ 
+			<span class="r0 r">imageView</span>.<span class="i">SetImageResource</span>(<b>global</b>::<span class="i">Android</span>.<span class="i">Resource</span>.<span class="i">Color</span>.<span class="i">Transparent</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="t t">ImageSource</a> <span id="r4 rd" class="r4 r">source</span> = <span class="r1 r">newImage</span>?.<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a>;
+			<span class="i">Bitmap</span> <span id="r5 rd" class="r5 r">bitmap</span> = <b>null</b>;
+			<a href="../Renderers/IImageSourceHandler.cs.html#fd3a24431f187d68" class="t t">IImageSourceHandler</a> <span id="r6 rd" class="r6 r">handler</span>;
+ 
+			<b>if</b> (<span class="r4 r">source</span> != <b>null</b> &amp;&amp; (<span class="r6 r">handler</span> = <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="/Xamarin.Forms.Core/A.html#5f29d2ac0e30bd81" class="i property">Registered</a>.<span class="i">GetHandlerForObject</span>&lt;<a href="../Renderers/IImageSourceHandler.cs.html#fd3a24431f187d68" class="t t">IImageSourceHandler</a>&gt;(<span class="r4 r">source</span>)) != <b>null</b>)
+			{
+				<b>try</b>
+				{
+					<span class="r5 r">bitmap</span> = <b>await</b> <span class="r6 r">handler</span>.<span class="i">LoadImageAsync</span>(<span class="r4 r">source</span>, <span class="r0 r">imageView</span>.<span class="i">Context</span>);
+				}
+				<b>catch</b> (<span class="i">TaskCanceledException</span>)
+				{
+					<span class="r3 r">imageController</span>?.<span class="i">SetIsLoading</span>(<b>false</b>);
+				}
+			}
+ 
+			<b>if</b> (<span class="r1 r">newImage</span> == <b>null</b> || !<span class="i">Equals</span>(<span class="r1 r">newImage</span>.<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a>, <span class="r4 r">source</span>))
+			{
+				<span class="r5 r">bitmap</span>?.<span class="i">Dispose</span>();
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (!<span class="r0 r">imageView</span>.<span class="i">IsDisposed</span>())
+			{
+				<b>if</b> (<span class="r5 r">bitmap</span> == <b>null</b> &amp;&amp; <span class="r4 r">source</span> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a>)
+					<span class="r0 r">imageView</span>.<span class="i">SetImageResource</span>(<a href="../ResourceManager.cs.html#1c4bd056b700c13c" class="t t">ResourceManager</a>.<a href="../ResourceManager.cs.html#ea421134c1ab17d0" class="i method">GetDrawableByName</a>(((<a href="/Xamarin.Forms.Core/A.html#16dea7efcaba1d0f" class="t t">FileImageSource</a>)<span class="r4 r">source</span>).<a href="/Xamarin.Forms.Core/A.html#a7a7e7a7e3b9cdb3" class="i property">File</a>));
+				<b>else</b>
+				{
+					<span class="r0 r">imageView</span>.<span class="i">SetImageBitmap</span>(<span class="r5 r">bitmap</span>);
+				}
+			}
+ 
+			<span class="r5 r">bitmap</span>?.<span class="i">Dispose</span>();
+ 
+			<span class="r3 r">imageController</span>?.<span class="i">SetIsLoading</span>(<b>false</b>);
+			((<a href="/Xamarin.Forms.Core/A.html#d605b7264f63ff57" class="t t">IVisualElementController</a>)<span class="r1 r">newImage</span>).<span class="i">NativeSizeChanged</span>();
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

@@ -1,0 +1,226 @@
+﻿<!DOCTYPE html>
+<html><head><title>ImageRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(217);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/FastRenderers/ImageRenderer.cs" target="_top">FastRenderers\ImageRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i">AImageView</span> = <span class="i">Android</span>.<span class="i">Widget</span>.<span class="i">ImageView</span>;
+<b>using</b> <span class="i">AView</span> = <span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>.<span class="i n">FastRenderers</span>
+{
+	<b>internal sealed class</b> <a id="cdaecdf7ef397e4b" href="../R/cdaecdf7ef397e4b.html" target="n" data-glyph="2,0" class="t t">ImageRenderer</a> : <span class="i">AImageView</span>, <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>, <a href="../Renderers/ImageRenderer.cs.html#485079e3dcbbbe28" class="t t">IImageRendererController</a>
+	{
+		<b>bool</b> <a id="d0e9fe567121571f" href="../R/d0e9fe567121571f.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+		<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a> <a id="d6e03d3e64bf5c96" href="../R/d6e03d3e64bf5c96.html" target="n" data-glyph="46,1" class="i field">_element</a>;
+		<b>bool</b> <a id="eab1fb4f6724100a" href="../R/eab1fb4f6724100a.html" target="n" data-glyph="46,1" class="i field">_skipInvalidate</a>;
+		<b>int</b>? <a id="d929fee543cf7d6e" href="../R/d929fee543cf7d6e.html" target="n" data-glyph="46,1" class="i field">_defaultLabelFor</a>;
+		<a href="../VisualElementTracker.cs.html#d538081d9f94da4d" class="t t">VisualElementTracker</a> <a id="e557f4f38139bd26" href="../R/e557f4f38139bd26.html" target="n" data-glyph="46,1" class="i field">_visualElementTracker</a>;
+		<a href="VisualElementRenderer.cs.html#e7cf429857787087" class="t t">VisualElementRenderer</a> <a id="e90edd858ada6b4d" href="../R/e90edd858ada6b4d.html" target="n" data-glyph="46,1" class="i field">_visualElementRenderer</a>;
+		<b>readonly</b> <a href="../Renderers/MotionEventHelper.cs.html#cc0d68295adb8939" class="t t">MotionEventHelper</a> <a id="af92c879c15d5040" href="../R/af92c879c15d5040.html" target="n" data-glyph="46,1" class="i field">_motionEventHelper</a> = <b>new</b> <a href="../Renderers/MotionEventHelper.cs.html#cc0d68295adb8939" class="t constructor">MotionEventHelper</a>();
+ 
+		<b>protected override void</b> <a id="e764a273448dc5c7" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r0 rd" class="r0 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#d0e9fe567121571f" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<a href="#d0e9fe567121571f" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<b>if</b> (<span class="r0 r">disposing</span>)
+			{
+				<b>if</b> (<a href="#e557f4f38139bd26" class="i field">_visualElementTracker</a> != <b>null</b>)
+				{
+					<a href="#e557f4f38139bd26" class="i field">_visualElementTracker</a>.<a href="../VisualElementTracker.cs.html#10977b30ca8b0186" class="i method">Dispose</a>();
+					<a href="#e557f4f38139bd26" class="i field">_visualElementTracker</a> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<a href="#e90edd858ada6b4d" class="i field">_visualElementRenderer</a> != <b>null</b>)
+				{
+					<a href="#e90edd858ada6b4d" class="i field">_visualElementRenderer</a>.<a href="VisualElementRenderer.cs.html#1ae0cb620666331d" class="i method">Dispose</a>();
+					<a href="#e90edd858ada6b4d" class="i field">_visualElementRenderer</a> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<a href="#d6e03d3e64bf5c96" class="i field">_element</a> != <b>null</b>)
+				{
+					<a href="#d6e03d3e64bf5c96" class="i field">_element</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <span class="i">OnElementPropertyChanged</span>;
+ 
+					<b>if</b> (<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<a href="#d6e03d3e64bf5c96" class="i field">_element</a>) == <a href="#cdaecdf7ef397e4b" class="k">this</a>)
+						<a href="#d6e03d3e64bf5c96" class="i field">_element</a>.<span class="i">ClearValue</span>(<a href="../Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="../Platform.cs.html#cda3e6f7841c17d4" class="i field">RendererProperty</a>);
+				}
+			}
+ 
+			<b>base</b>.<span class="i">Dispose</span>(<span class="r0 r">disposing</span>);
+		}
+ 
+		<b>public override void</b> <a id="e49c7454ab9ebc3f" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Invalidate</a>()
+		{
+			<b>if</b> (<a href="#eab1fb4f6724100a" class="i field">_skipInvalidate</a>)
+			{
+				<a href="#eab1fb4f6724100a" class="i field">_skipInvalidate</a> = <b>false</b>;
+				<b>return</b>;
+			}
+ 
+			<b>base</b>.<span class="i">Invalidate</span>();
+		}
+ 
+		<b>async void</b> <a id="c0cfee755308a149" href="../R/c0cfee755308a149.html" target="n" data-glyph="76,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#9a1366c2961f4fde" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>&gt; <span id="r1 rd" class="r1 r">e</span>)
+		{
+			<b>await</b> <a href="#cab74e3dc8baaa93" class="i method">TryUpdateBitmap</a>(<span class="r1 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>);
+			<a href="#cbe127b98c2ea41a" class="i method">UpdateAspect</a>();
+			<a href="#cdaecdf7ef397e4b" class="k">this</a>.<span class="i">EnsureId</span>();
+ 
+			<a href="../Elevation.cs.html#4878da890f34a431" class="t t">ElevationHelper</a>.<span class="i">SetElevation</span>(<a href="#cdaecdf7ef397e4b" class="k">this</a>, <span class="r1 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>);
+ 
+			<a href="#72f29160654c86fd" class="i">ElementChanged</a>?.<span class="i">Invoke</span>(<a href="#cdaecdf7ef397e4b" class="k">this</a>, <b>new</b> <a href="../VisualElementChangedEventArgs.cs.html#6a37702d575e1b52" class="t constructor">VisualElementChangedEventArgs</a>(<span class="r1 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>, <span class="r1 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>));
+		}
+ 
+		<b>public override bool</b> <a id="51a6a0610e36c3b0" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnTouchEvent</a>(<span class="i">MotionEvent</span> <span id="r2 rd" class="r2 r">e</span>)
+		{
+			<b>if</b> (<a href="#e90edd858ada6b4d" class="i field">_visualElementRenderer</a>.<a href="VisualElementRenderer.cs.html#5e6448cb94a7bca2" class="i method">OnTouchEvent</a>(<span class="r2 r">e</span>))
+			{
+				<b>return true</b>;
+			}
+ 
+			<b>return</b> <a href="#af92c879c15d5040" class="i field">_motionEventHelper</a>.<span class="i">HandleMotionEvent</span>(<span class="i">Parent</span>, <span class="r2 r">e</span>);
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <a id="ee412418e0f86549" href="../R/ee412418e0f86549.html" target="n" data-glyph="76,1" class="i method">MinimumSize</a>()
+		{
+			<b>return</b> <b>new</b> <span class="t">Size</span>();
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#bb0c64306434c3a0" class="i method">GetDesiredSize</a>(<b>int</b> <span id="r3 rd" class="r3 r">widthConstraint</span>, <b>int</b> <span id="r4 rd" class="r4 r">heightConstraint</span>)
+		{
+			<b>if</b> (<a href="#d0e9fe567121571f" class="i field">_disposed</a>)
+			{
+				<b>return</b> <b>new</b> <span class="t">SizeRequest</span>();
+			}
+ 
+			<span class="i">Measure</span>(<span class="r3 r">widthConstraint</span>, <span class="r4 r">heightConstraint</span>);
+			<b>return</b> <b>new</b> <span class="t">SizeRequest</span>(<b>new</b> <span class="t">Size</span>(<span class="i">MeasuredWidth</span>, <span class="i">MeasuredHeight</span>), <a href="#ee412418e0f86549" class="i method">MinimumSize</a>());
+		}
+ 
+		<b>void</b> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#149302ec71c12b79" class="i method">SetElement</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r5 rd" class="r5 r">element</span>)
+		{
+			<b>if</b> (<span class="r5 r">element</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<b>nameof</b>(<span class="r5 r">element</span>));
+ 
+			<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="k">var</a> <span id="r6 rd" class="r6 r">image</span> = <span class="r5 r">element</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>;
+			<b>if</b> (<span class="r6 r">image</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentException</span>(<span class="s">&quot;Element is not of type &quot;</span> + <b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>), <b>nameof</b>(<span class="r5 r">element</span>));
+ 
+			<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a> <span id="r7 rd" class="r7 r">oldElement</span> = <a href="#d6e03d3e64bf5c96" class="i field">_element</a>;
+			<a href="#d6e03d3e64bf5c96" class="i field">_element</a> = <span class="r6 r">image</span>;
+ 
+			<span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>();
+ 
+			<b>if</b> (<span class="r7 r">oldElement</span> != <b>null</b>)
+				<span class="r7 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <span class="i">OnElementPropertyChanged</span>;
+ 
+			<span class="r5 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <span class="i">OnElementPropertyChanged</span>;
+ 
+			<b>if</b> (<a href="#e557f4f38139bd26" class="i field">_visualElementTracker</a> == <b>null</b>)
+				<a href="#e557f4f38139bd26" class="i field">_visualElementTracker</a> = <b>new</b> <a href="../VisualElementTracker.cs.html#4656ffbcfdf6338a" class="t constructor">VisualElementTracker</a>(<a href="#cdaecdf7ef397e4b" class="k">this</a>);
+ 
+			<b>if</b> (<a href="#e90edd858ada6b4d" class="i field">_visualElementRenderer</a> == <b>null</b>)
+			{
+				<a href="#e90edd858ada6b4d" class="i field">_visualElementRenderer</a> = <b>new</b> <a href="VisualElementRenderer.cs.html#926d7cc17f848648" class="t constructor">VisualElementRenderer</a>(<a href="#cdaecdf7ef397e4b" class="k">this</a>);
+			}
+ 
+			<span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>();
+			<a href="#af92c879c15d5040" class="i field">_motionEventHelper</a>.<a href="../Renderers/MotionEventHelper.cs.html#dbb9b1a5610d7f41" class="i method">UpdateElement</a>(<span class="r5 r">element</span>);
+			<a href="#c0cfee755308a149" class="i method">OnElementChanged</a>(<b>new</b> <a href="../ElementChangedEventArgs.cs.html#af39acd48262b8b2" class="t constructor">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>&gt;(<span class="r7 r">oldElement</span>, <a href="#d6e03d3e64bf5c96" class="i field">_element</a>));
+ 
+			<a href="#d6e03d3e64bf5c96" class="i field">_element</a>?.<span class="i">SendViewInitialized</span>(<a href="#a647128296a8651f" class="i property">Control</a>);
+		}
+		
+		<b>void</b> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#cad9af341c40f73b" class="i method">SetLabelFor</a>(<b>int</b>? <span id="r8 rd" class="r8 r">id</span>)
+		{
+			<b>if</b> (<a href="#d929fee543cf7d6e" class="i field">_defaultLabelFor</a> == <b>null</b>)
+				<a href="#d929fee543cf7d6e" class="i field">_defaultLabelFor</a> = <span class="i">LabelFor</span>;
+ 
+			<span class="i">LabelFor</span> = (<b>int</b>)(<span class="r8 r">id</span> ?? <a href="#d929fee543cf7d6e" class="i field">_defaultLabelFor</a>);
+		}
+ 
+		<b>void</b> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#45d0cfa8761dcd6c" class="i method">UpdateLayout</a>() =&gt; <a href="#e557f4f38139bd26" class="i field">_visualElementTracker</a>?.<a href="../VisualElementTracker.cs.html#0e37e7edf6aa3434" class="i method">UpdateLayout</a>();
+ 
+		<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a> =&gt; <a href="#d6e03d3e64bf5c96" class="i field">_element</a>;
+ 
+		<a href="../VisualElementTracker.cs.html#d538081d9f94da4d" class="t t">VisualElementTracker</a> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#cfa32eccc8f34910" class="i property">Tracker</a> =&gt; <a href="#e557f4f38139bd26" class="i field">_visualElementTracker</a>;
+ 
+		<span class="i">AView</span> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a> =&gt; <a href="#cdaecdf7ef397e4b" class="k">this</a>;
+ 
+		<span class="i">ViewGroup</span> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#9e8dee2b480dc4e6" class="i property">ViewGroup</a> =&gt; <b>null</b>;
+ 
+		<b>void</b> <a href="../Renderers/ImageRenderer.cs.html#485079e3dcbbbe28" class="t t">IImageRendererController</a>.<a href="../Renderers/ImageRenderer.cs.html#ac2d6c4d134e21ee" class="i method">SkipInvalidate</a>() =&gt; <a href="#eab1fb4f6724100a" class="i field">_skipInvalidate</a> = <b>true</b>;
+ 
+		<span class="i">AImageView</span> <a id="a647128296a8651f" href="../R/a647128296a8651f.html" target="n" data-glyph="106,1" class="i property">Control</a> =&gt; <a href="#cdaecdf7ef397e4b" class="k">this</a>;
+ 
+		<b>public event</b> <span class="i">EventHandler</span>&lt;<a href="../VisualElementChangedEventArgs.cs.html#af6d54330067744b" class="t t">VisualElementChangedEventArgs</a>&gt; <a id="72f29160654c86fd" href="../R/72f29160654c86fd.html" target="n" data-glyph="30,1" class="i">ElementChanged</a>;
+		<b>public event</b> <span class="i">EventHandler</span>&lt;<span class="i">PropertyChangedEventArgs</span>&gt; <a id="4dd4494bc77b6c28" href="../R/4dd4494bc77b6c28.html" target="n" data-glyph="30,1" class="i">ElementPropertyChanged</a>;
+ 
+		<b>public</b> <a id="4a90ed69053192d5" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">ImageRenderer</a>() : <b>base</b>(<a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>)
+		{
+		}
+ 
+		<b>async void</b> <a id="a74d2c22f7d8549e" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<b>if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>.<a href="/Xamarin.Forms.Core/A.html#c12a3e7016107bf8" class="i field">SourceProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<b>await</b> <a href="#cab74e3dc8baaa93" class="i method">TryUpdateBitmap</a>();
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a>.<a href="/Xamarin.Forms.Core/A.html#f8b94d8bc734379f" class="i field">AspectProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#cbe127b98c2ea41a" class="i method">UpdateAspect</a>();
+ 
+			<a href="#4dd4494bc77b6c28" class="i">ElementPropertyChanged</a>?.<span class="i">Invoke</span>(<a href="#cdaecdf7ef397e4b" class="k">this</a>, <span class="r10 r">e</span>);
+		}
+ 
+		<b>async</b> <span class="i">Task</span> <a id="cab74e3dc8baaa93" href="../R/cab74e3dc8baaa93.html" target="n" data-glyph="76,1" class="i method">TryUpdateBitmap</a>(<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a> <span id="r11 rd" class="r11 r">previous</span> = <b>null</b>)
+		{
+			<span class="c">// By default we&#39;ll just catch and log any exceptions thrown by UpdateBitmap so they don&#39;t bring down</span>
+			<span class="c">// the application; a custom renderer can override this method and handle exceptions from</span>
+			<span class="c">// UpdateBitmap differently if it wants to</span>
+ 
+			<b>try</b>
+			{
+				<b>await</b> <a href="#1759503f1ed21b16" class="i method">UpdateBitmap</a>(<span class="r11 r">previous</span>);
+			}
+			<b>catch</b> (<span class="i">Exception</span> <span id="r12 rd" class="r12 r">ex</span>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<span class="i">Warning</span>(<b>nameof</b>(<a href="#cdaecdf7ef397e4b" class="t t">ImageRenderer</a>), <span class="s">&quot;Error loading image: {0}&quot;</span>, <span class="r12 r">ex</span>);
+			}
+			<b>finally</b>
+			{
+				((<a href="/Xamarin.Forms.Core/A.html#23cbcc80dd868d05" class="t t">IImageController</a>)<a href="#d6e03d3e64bf5c96" class="i field">_element</a>)?.<span class="i">SetIsLoading</span>(<b>false</b>);
+			}
+		}
+ 
+		<b>async</b> <span class="i">Task</span> <a id="1759503f1ed21b16" href="../R/1759503f1ed21b16.html" target="n" data-glyph="76,1" class="i method">UpdateBitmap</a>(<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a> <span id="r13 rd" class="r13 r">previous</span> = <b>null</b>)
+		{
+			<b>if</b> (<a href="#d6e03d3e64bf5c96" class="i field">_element</a> == <b>null</b> || <a href="#d0e9fe567121571f" class="i field">_disposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>await</b> <a href="#a647128296a8651f" class="i property">Control</a>.<a href="../Extensions/ImageViewExtensions.cs.html#4e8fc1858861637f" class="i method">UpdateBitmap</a>(<a href="#d6e03d3e64bf5c96" class="i field">_element</a>, <span class="r13 r">previous</span>);
+		}
+ 
+		<b>void</b> <a id="cbe127b98c2ea41a" href="../R/cbe127b98c2ea41a.html" target="n" data-glyph="76,1" class="i method">UpdateAspect</a>()
+		{
+			<b>if</b> (<a href="#d6e03d3e64bf5c96" class="i field">_element</a> == <b>null</b> || <a href="#d0e9fe567121571f" class="i field">_disposed</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<span class="i">ScaleType</span> <span id="r14 rd" class="r14 r">type</span> = <a href="#d6e03d3e64bf5c96" class="i field">_element</a>.<a href="/Xamarin.Forms.Core/A.html#ee4d50419878101a" class="i property">Aspect</a>.<a href="../Renderers/ImageExtensions.cs.html#935a52559abe86a6" class="i method">ToScaleType</a>();
+			<span class="i">SetScaleType</span>(<span class="r14 r">type</span>);
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

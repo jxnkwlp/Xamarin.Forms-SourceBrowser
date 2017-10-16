@@ -1,0 +1,734 @@
+﻿<!DOCTYPE html>
+<html><head><title>MacOSApp.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(725);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core.macOS.UITests/MacOSApp.cs" target="_top">MacOSApp.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core.macOS.UITests" target="_top">Xamarin.Forms.Core.macOS.UITests\Xamarin.Forms.Core.macOS.UITests.csproj</a> (Xamarin.Forms.Core.macOS.UITests)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i">UITest</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Desktop</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Drawing</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Core</span>.<span class="i n">macOS</span>.<span class="i n">UITests</span>
+{
+	<b>public static class</b> <a id="3bdff074ea3a8a68" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t">MacOSAppExtensions</a>
+	{
+		<b>public static</b> <span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span> <a id="be51eee90d53fd89" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">ToUITestResult</a>(<b>this</b> <span class="i">UITest</span>.<span class="i">Desktop</span>.<span class="i">AppResult</span> <span id="r0 rd" class="r0 r">result</span>)
+		{
+			<b>return</b> <b>new</b> <span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>
+			{
+				<span class="i">Id</span> = <span class="r0 r">result</span>.<span class="i">Id</span> ?? <span class="r0 r">result</span>.<span class="i">TestId</span>,
+				<span class="i">Label</span> = <span class="r0 r">result</span>.<span class="i">Label</span>,
+				<span class="i">Text</span> = <span class="r0 r">result</span>.<span class="i">Text</span> ?? <span class="r0 r">result</span>.<span class="i">Value</span>,
+				<span class="i">Enabled</span> = <span class="r0 r">result</span>.<span class="i">Enabled</span>,
+				<span class="i">Class</span> = <span class="r0 r">result</span>.<span class="i">Class</span>,
+				<span class="i">Rect</span> = <b>new</b> <span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppRect</span>
+				{
+					<span class="i">X</span> = <span class="r0 r">result</span>.<span class="i">Rect</span>.<span class="i">X</span>,
+					<span class="i">Y</span> = <span class="r0 r">result</span>.<span class="i">Rect</span>.<span class="i">Y</span>,
+					<span class="i">Width</span> = <span class="r0 r">result</span>.<span class="i">Rect</span>.<span class="i">Width</span>,
+					<span class="i">Height</span> = <span class="r0 r">result</span>.<span class="i">Rect</span>.<span class="i">Height</span>,
+					<span class="i">CenterX</span> = <span class="r0 r">result</span>.<span class="i">Rect</span>.<span class="i">CenterX</span>,
+					<span class="i">CenterY</span> = <span class="r0 r">result</span>.<span class="i">Rect</span>.<span class="i">CenterY</span>
+				}
+			};
+		}
+	}
+ 
+ 
+	<b>public class</b> <a id="d6aa90903ec31540" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t">MacOSApp</a> : <span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">IApp</span>
+	{
+		<b>string</b> <a id="3e4af1666e5fd9bb" href="R/3e4af1666e5fd9bb.html" target="n" data-glyph="46,1" class="i field">_backButtonIdentifier</a> = <span class="s">&quot;NSBackButton&quot;</span>;
+		<b>static</b> <span class="i">CocoaApp</span> <a id="4ef8e509c28d613d" href="R/4ef8e509c28d613d.html" target="n" data-glyph="46,1" class="i field">_cocoaApp</a>;
+		<b>public</b> <a id="31f60455dd31fbf3" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">MacOSApp</a>(<span class="i">CocoaApp</span> <span id="r1 rd" class="r1 r">app</span>)
+		{
+			<a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a> = <span class="r1 r">app</span>;
+		}
+		<b>public</b> <span class="i">IDevice</span> <a id="2ae6c62978a882e7" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Device</a>
+		{
+			<b>get</b>
+			{
+				<b>return null</b>;
+			}
+		}
+ 
+		<b>public</b> <span class="i">AppPrintHelper</span> <a id="6d1216d7599278ee" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Print</a>
+		{
+			<b>get</b>
+			{
+				<b>return null</b>;
+			}
+		}
+ 
+		<b>public</b> <span class="i">ITestServer</span> <a id="af3a1ba4a38c464e" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">TestServer</a>
+		{
+			<b>get</b>
+			{
+				<b>return null</b>;
+			}
+		}
+ 
+		<b>public void</b> <a id="702136051a759c42" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Back</a>()
+		{
+			<a href="#3b54997dfdc1e39f" class="i method">Tap</a>(<a href="#3e4af1666e5fd9bb" class="i field">_backButtonIdentifier</a>);
+		}
+ 
+		<b>public void</b> <a id="0df1b25c1c15c83a" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ClearText</a>()
+		{
+			<a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">ClearText</span>();
+		}
+ 
+		<b>public void</b> <a id="95058704ab8cbdef" href="R/95058704ab8cbdef.html" target="n" data-glyph="72,1" class="i method">ClearText</a>(<b>string</b> <span id="r2 rd" class="r2 r">marked</span>)
+		{
+			<b>var</b> <span id="r3 rd" class="r3 r">textField</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryById</span>(<span class="r2 r">marked</span>).<span class="i">FirstOrDefault</span>((<span id="r4 rd" class="r4 r">arg</span>) =&gt; <span class="r4 r">arg</span>.<span class="i">Class</span>.<span class="i">Contains</span>(<span class="s">&quot;SearchField&quot;</span>) || <span class="r4 r">arg</span>.<span class="i">Class</span>.<span class="i">Contains</span>(<span class="s">&quot;TextField&quot;</span>));
+			<span class="i">ClearText</span>(<span class="r3 r">textField</span>.<span class="i">Rect</span>.<span class="i">CenterX</span>, <span class="r3 r">textField</span>.<span class="i">Rect</span>.<span class="i">CenterY</span>);
+		}
+ 
+		<b>public void</b> <a id="eabc8015057d1fee" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ClearText</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppWebQuery</span>&gt; <span id="r5 rd" class="r5 r">query</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="35026a6834246785" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ClearText</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r6 rd" class="r6 r">query</span>)
+		{
+			<b>var</b> <span id="r7 rd" class="r7 r">queryStr</span> = <span class="r6 r">query</span>(<b>new</b> <span class="i">AppQuery</span>(<span class="i">QueryPlatform</span>.<span class="i">iOS</span>)).<span class="i">ToString</span>();
+ 
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r8 rd" class="r8 r">isMarked</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">IsMatch</span>(<span class="r7 r">queryStr</span>, <span class="s">@&quot;\bmarked\b&quot;</span>);
+			<b>if</b> (<span class="r8 r">isMarked</span>)
+			{
+				<b>var</b> <span id="r9 rd" class="r9 r">markedWord</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">Split</span>(<span class="r7 r">queryStr</span>, <span class="s">@&quot;\bmarked\b:&#39;&quot;</span>);
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r10 rd" class="r10 r">isAll</span> = <span class="r9 r">markedWord</span>[0].<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>() == <span class="s">&quot;*&quot;</span>;
+				<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r11 rd" class="r11 r">marked</span> = <span class="r9 r">markedWord</span>[1].<a href="@0@mscorlib/A.html#69fc1d0aa6df8a90" class="i method">Replace</a>(<span class="s">&quot;&#39;&quot;</span>, <span class="s">&quot;&quot;</span>);
+				<a href="#95058704ab8cbdef" class="i method">ClearText</a>(<span class="r11 r">marked</span>);
+			}
+		}
+ 
+		<b>public void</b> <a id="9424fa88a2372ee6" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">DismissKeyboard</a>()
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="8501edf5ec97b2cd" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">DoubleTap</a>(<b>string</b> <span id="r12 rd" class="r12 r">marked</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="2d3dd5facd592ac7" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">DoubleTap</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r13 rd" class="r13 r">query</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="bc78b22d279d61b9" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">DoubleTapCoordinates</a>(<b>float</b> <span id="r14 rd" class="r14 r">x</span>, <b>float</b> <span id="r15 rd" class="r15 r">y</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="e2e419249afcb04a" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">DragAndDrop</a>(<b>string</b> <span id="r16 rd" class="r16 r">from</span>, <b>string</b> <span id="r17 rd" class="r17 r">to</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="e84470515181912b" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">DragAndDrop</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r18 rd" class="r18 r">from</span>, <a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r19 rd" class="r19 r">to</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="619ebbd92f3915cf" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">DragCoordinates</a>(<b>float</b> <span id="r20 rd" class="r20 r">fromX</span>, <b>float</b> <span id="r21 rd" class="r21 r">fromY</span>, <b>float</b> <span id="r22 rd" class="r22 r">toX</span>, <b>float</b> <span id="r23 rd" class="r23 r">toY</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="e4e8b9ef0ff6e98e" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">EnterText</a>(<b>string</b> <span id="r24 rd" class="r24 r">text</span>)
+		{
+			<b>var</b> <span id="r25 rd" class="r25 r">all</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Query</span>();
+			<b>var</b> <span id="r26 rd" class="r26 r">staticText</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryByType</span>(<span class="s">&quot;StaticText&quot;</span>);
+			<b>var</b> <span id="r27 rd" class="r27 r">textFields</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryByType</span>(<span class="s">&quot;Textfield&quot;</span>);
+			<b>var</b> <span id="r28 rd" class="r28 r">textField</span> = <span class="r26 r">staticText</span>.<span class="i">Union</span>(<span class="r27 r">textFields</span>).<span class="i">FirstOrDefault</span>();
+			<span class="i">EnterText</span>(<span class="r24 r">text</span>, <span class="r28 r">textField</span>.<span class="i">Rect</span>.<span class="i">CenterX</span>, <span class="r28 r">textField</span>.<span class="i">Rect</span>.<span class="i">CenterY</span>);
+		}
+ 
+		<b>public void</b> <a id="f4184432921f4980" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">EnterText</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppWebQuery</span>&gt; <span id="r29 rd" class="r29 r">query</span>, <b>string</b> <span id="r30 rd" class="r30 r">text</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="b6e76bf5e5b07e70" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">EnterText</a>(<b>string</b> <span id="r31 rd" class="r31 r">marked</span>, <b>string</b> <span id="r32 rd" class="r32 r">text</span>)
+		{
+			<b>var</b> <span id="r33 rd" class="r33 r">textField</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryById</span>(<span class="r31 r">marked</span>).<span class="i">FirstOrDefault</span>((<span id="r34 rd" class="r34 r">arg</span>) =&gt; <span class="r34 r">arg</span>.<span class="i">Class</span>.<span class="i">Contains</span>(<span class="s">&quot;SearchField&quot;</span>) || <span class="r34 r">arg</span>.<span class="i">Class</span>.<span class="i">Contains</span>(<span class="s">&quot;TextField&quot;</span>));
+			<span class="i">EnterText</span>(<span class="r32 r">text</span>, <span class="r33 r">textField</span>.<span class="i">Rect</span>.<span class="i">CenterX</span>, <span class="r33 r">textField</span>.<span class="i">Rect</span>.<span class="i">CenterY</span>);
+		}
+ 
+		<b>public void</b> <a id="fe242df3e42aaa65" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">EnterText</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r35 rd" class="r35 r">query</span>, <b>string</b> <span id="r36 rd" class="r36 r">text</span>)
+		{
+			<b>string</b> <span id="r37 rd" class="r37 r">markedWord</span> = <b>string</b>.<a href="@0@mscorlib/A.html#c9f70a27facb27cf" class="i field">Empty</a>;
+			<b>int</b> <span id="r38 rd" class="r38 r">indexMarked</span> = 0;
+ 
+			<b>if</b> (<a href="#e1f1a33f07815079" class="i method">ExtractInfo</a>(<span class="r35 r">query</span>, <b>out</b> <span class="r37 r">markedWord</span>, <b>out</b> <span class="r38 r">indexMarked</span>))
+				<a href="#077953b14e422462" class="i method">EnterText</a>(<span class="r37 r">markedWord</span>, <span class="r38 r">indexMarked</span>, <span class="r36 r">text</span>);
+		}
+ 
+		<b>public</b> <span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>[] <a id="800e0edd939e08d8" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Flash</a>(<b>string</b> <span id="r39 rd" class="r39 r">marked</span>)
+		{
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r40 rd" class="r40 r">resulr</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>&gt;();
+			<b>return</b> <span class="r40 r">resulr</span>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public</b> <span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>[] <a id="923f3453cda2e028" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Flash</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r41 rd" class="r41 r">query</span> = <b>null</b>)
+		{
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r42 rd" class="r42 r">resulr</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>&gt;();
+			<b>return</b> <span class="r42 r">resulr</span>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public object</b> <a id="193374d5eb4c56c5" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Invoke</a>(<b>string</b> <span id="r43 rd" class="r43 r">methodName</span>, <b>object</b>[] <span id="r44 rd" class="r44 r">arguments</span>)
+		{
+			<b>return null</b>;
+		}
+ 
+		<b>public object</b> <a id="d018d12438820e43" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Invoke</a>(<b>string</b> <span id="r45 rd" class="r45 r">methodName</span>, <b>object</b> <span id="r46 rd" class="r46 r">argument</span> = <b>null</b>)
+		{
+			<b>return null</b>;
+		}
+ 
+		<b>public void</b> <a id="ca01363b2e1a426d" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">PinchToZoomIn</a>(<b>string</b> <span id="r47 rd" class="r47 r">marked</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r48 rd" class="r48 r">duration</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="9cebe86ee9fd9ea1" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">PinchToZoomIn</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r49 rd" class="r49 r">query</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r50 rd" class="r50 r">duration</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="c41878624f9ebb75" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">PinchToZoomInCoordinates</a>(<b>float</b> <span id="r51 rd" class="r51 r">x</span>, <b>float</b> <span id="r52 rd" class="r52 r">y</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r53 rd" class="r53 r">duration</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="9487684791cd272f" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">PinchToZoomOut</a>(<b>string</b> <span id="r54 rd" class="r54 r">marked</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r55 rd" class="r55 r">duration</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="215c92b10bd36391" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">PinchToZoomOut</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r56 rd" class="r56 r">query</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r57 rd" class="r57 r">duration</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="5f58b60fe7c1165b" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">PinchToZoomOutCoordinates</a>(<b>float</b> <span id="r58 rd" class="r58 r">x</span>, <b>float</b> <span id="r59 rd" class="r59 r">y</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r60 rd" class="r60 r">duration</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="542fe0e064ea76e9" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">PressEnter</a>()
+		{
+			<a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">SendKey</span>(13, <span class="i">KeyModifier</span>.<span class="i">None</span>);
+		}
+ 
+		<b>public void</b> <a id="848ff3aec1b64db4" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">PressVolumeDown</a>()
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="fa5009c2c8f30708" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">PressVolumeUp</a>()
+		{
+ 
+		}
+ 
+		<b>public</b> <span class="i">AppWebResult</span>[] <a id="2612b71f4cf0b4e3" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Query</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppQuery</span>, <span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppWebQuery</span>&gt; <span id="r61 rd" class="r61 r">query</span>)
+		{
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r62 rd" class="r62 r">resulr</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppWebResult</span>&gt;();
+			<b>return</b> <span class="r62 r">resulr</span>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public string</b>[] <a id="7dd56a26ac15f7b1" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Query</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppQuery</span>, <span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">InvokeJSAppQuery</span>&gt; <span id="r63 rd" class="r63 r">query</span>)
+		{
+			<b>return</b> <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;().<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public</b> <span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>[] <a id="255450a1b2a976d7" href="R/255450a1b2a976d7.html" target="n" data-glyph="72,1" class="i method">Query</a>(<b>string</b> <span id="r64 rd" class="r64 r">marked</span>)
+		{
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r65 rd" class="r65 r">results</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>&gt;();
+			<b>var</b> <span id="r66 rd" class="r66 r">allResults</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Query</span>();
+			<b>var</b> <span id="r67 rd" class="r67 r">allResultsById</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryById</span>(<span class="r64 r">marked</span>);
+			<b>foreach</b> (<b>var</b> <span id="r68 rd" class="r68 r">result</span> <b>in</b> <span class="r67 r">allResultsById</span>)
+				<span class="r65 r">results</span>.<span class="i">Add</span>(<span class="r68 r">result</span>.<span class="i">ToUITestResult</span>());
+			<b>var</b> <span id="r69 rd" class="r69 r">allResultsByText</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryByText</span>(<span class="r64 r">marked</span>);
+			<b>foreach</b> (<b>var</b> <span id="r70 rd" class="r70 r">result</span> <b>in</b> <span class="r69 r">allResultsByText</span>)
+				<span class="r65 r">results</span>.<span class="i">Add</span>(<span class="r70 r">result</span>.<span class="i">ToUITestResult</span>());
+			<b>return</b> <span class="r65 r">results</span>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public</b> <span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>[] <a id="4218136750236765" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Query</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppQuery</span>, <span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppQuery</span>&gt; <span id="r71 rd" class="r71 r">query</span> = <b>null</b>)
+		{
+			<b>var</b> <span id="r72 rd" class="r72 r">queryStr</span> = <span class="r71 r">query</span>(<b>new</b> <span class="i">AppQuery</span>(<span class="i">QueryPlatform</span>.<span class="i">iOS</span>)).<span class="i">ToString</span>();
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r73 rd" class="r73 r">results</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>&gt;();
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r74 rd" class="r74 r">isMarked</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">IsMatch</span>(<span class="r72 r">queryStr</span>, <span class="s">@&quot;\bmarked\b&quot;</span>);
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r75 rd" class="r75 r">isText</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">IsMatch</span>(<span class="r72 r">queryStr</span>, <span class="s">@&quot;\btext\b&quot;</span>);
+			<b>if</b> (<span class="r74 r">isMarked</span>)
+			{
+				<b>var</b> <span id="r76 rd" class="r76 r">markedWords</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">Split</span>(<span class="r72 r">queryStr</span>, <span class="s">@&quot;\bmarked\b:&#39;&quot;</span>);
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r77 rd" class="r77 r">isAll</span> = <span class="r76 r">markedWords</span>[0].<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>() == <span class="s">&quot;*&quot;</span>;
+				<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r78 rd" class="r78 r">markedWord</span> = <span class="r76 r">markedWords</span>[1].<a href="@0@mscorlib/A.html#1aa209df053ff944" class="i method">Remove</a>(<span class="r76 r">markedWords</span>[1].<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> - 1).<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+				<b>return</b> <a href="#255450a1b2a976d7" class="i method">Query</a>(<span class="r78 r">markedWord</span>);
+			}
+			<b>if</b> (<span class="r75 r">isText</span>)
+			{
+				<b>var</b> <span id="r79 rd" class="r79 r">textWords</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">Split</span>(<span class="r72 r">queryStr</span>, <span class="s">@&quot;\btext\b:&#39;&quot;</span>);
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r80 rd" class="r80 r">isAll</span> = <span class="r79 r">textWords</span>[0].<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>() == <span class="s">&quot;*&quot;</span>;
+				<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r81 rd" class="r81 r">textWord</span> = <span class="r79 r">textWords</span>[1].<a href="@0@mscorlib/A.html#1aa209df053ff944" class="i method">Remove</a>(<span class="r79 r">textWords</span>[1].<a href="@0@mscorlib/A.html#e13f5829ef28aa07" class="i property">Length</a> - 1).<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+				<b>return</b> <a href="#255450a1b2a976d7" class="i method">Query</a>(<span class="r81 r">textWord</span>);
+			}
+			<b>else if</b> (<span class="r72 r">queryStr</span>.<span class="i">Contains</span>(<span class="s">&quot;* index:0&quot;</span>))
+			{
+				<b>var</b> <span id="r82 rd" class="r82 r">allREsults</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Query</span>();
+				<b>var</b> <span id="r83 rd" class="r83 r">result</span> = <span class="r82 r">allREsults</span>[0].<span class="i">Children</span>[0];
+				<span class="r73 r">results</span>.<span class="i">Add</span>(<span class="r83 r">result</span>.<span class="i">ToUITestResult</span>());
+			}
+			<b>else if</b> (<span class="r72 r">queryStr</span>.<span class="i">Contains</span>(<span class="s">&quot;* index:7&quot;</span>))
+			{
+				<b>var</b> <span id="r84 rd" class="r84 r">allREsults</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Query</span>();
+				<b>var</b> <span id="r85 rd" class="r85 r">result</span> = <span class="r84 r">allREsults</span>[0].<span class="i">Children</span>[0].<span class="i">Children</span>[0].<span class="i">Children</span>[1];
+				<span class="r73 r">results</span>.<span class="i">Add</span>(<span class="r85 r">result</span>.<span class="i">ToUITestResult</span>());
+			}
+			<b>else if</b> (<span class="r72 r">queryStr</span>.<span class="i">Contains</span>(<span class="s">&quot;button&quot;</span>))
+			{
+				<b>var</b> <span id="r86 rd" class="r86 r">allREsults</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryByType</span>(<span class="s">&quot;button&quot;</span>);
+				<b>foreach</b> (<b>var</b> <span id="r87 rd" class="r87 r">item</span> <b>in</b> <span class="r86 r">allREsults</span>)
+				{
+					<span class="r73 r">results</span>.<span class="i">Add</span>(<span class="r87 r">item</span>.<span class="i">ToUITestResult</span>());
+				}
+ 
+			}
+ 
+			<b>return</b> <span class="r73 r">results</span>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public</b> <span class="r88 r t">T</span>[] <a id="7c7b4ed42791a827" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Query</a>&lt;<span id="r88 rd t" class="r88 r t">T</span>&gt;(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppQuery</span>, <span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppTypedSelector</span>&lt;<span class="r88 r t">T</span>&gt;&gt; <span id="r89 rd" class="r89 r">query</span>)
+		{
+ 
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r90 rd" class="r90 r">results</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="r88 r t">T</span>&gt;();
+			<b>var</b> <span id="r91 rd" class="r91 r">queryStr</span> = <span class="r89 r">query</span>(<b>new</b> <span class="i">AppQuery</span>(<span class="i">QueryPlatform</span>.<span class="i">iOS</span>)).<span class="i">ToString</span>();
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r92 rd" class="r92 r">isMarked</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">IsMatch</span>(<span class="r91 r">queryStr</span>, <span class="s">@&quot;\bmarked\b&quot;</span>);
+			<b>if</b> (<span class="r92 r">isMarked</span>)
+			{
+				<b>var</b> <span id="r93 rd" class="r93 r">markedWords</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">Split</span>(<span class="r91 r">queryStr</span>, <span class="s">@&quot;\bmarked\b:&#39;&quot;</span>);
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r94 rd" class="r94 r">isAll</span> = <span class="r93 r">markedWords</span>[0].<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>() == <span class="s">&quot;*&quot;</span>;
+				<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r95 rd" class="r95 r">markedWord</span> = <span class="r93 r">markedWords</span>[1].<a href="@0@mscorlib/A.html#69fc1d0aa6df8a90" class="i method">Replace</a>(<span class="s">&quot;&#39;&quot;</span>, <span class="s">&quot;&quot;</span>);
+				<b>var</b> <span id="r96 rd" class="r96 r">ss</span> = <a href="#255450a1b2a976d7" class="i method">Query</a>(<span class="r95 r">markedWord</span>);
+ 
+			}
+			<b>else if</b> (<span class="r91 r">queryStr</span>.<span class="i">Contains</span>(<span class="s">&quot;* index:0&quot;</span>))
+			{
+ 
+				<b>var</b> <span id="r97 rd" class="r97 r">allREsults</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Query</span>();
+				<b>var</b> <span id="r98 rd" class="r98 r">result</span> = <span class="r97 r">allREsults</span>[0].<span class="i">Children</span>[0];
+				<span class="c">//	results.Add(result.ToUITestResult());</span>
+			}
+			<b>else if</b> (<span class="r91 r">queryStr</span>.<span class="i">Contains</span>(<span class="s">&quot;* index:7&quot;</span>))
+			{
+				<b>var</b> <span id="r99 rd" class="r99 r">allREsults</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Query</span>();
+				<b>var</b> <span id="r100 rd" class="r100 r">result</span> = <span class="r99 r">allREsults</span>[0].<span class="i">Children</span>[0].<span class="i">Children</span>[0].<span class="i">Children</span>[1];
+				<span class="c">//	results.Add(result.ToUITestResult());</span>
+			}
+ 
+			<b>return</b> <span class="r90 r">results</span>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public void</b> <a id="7cc400fdab303f2d" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Repl</a>()
+		{
+ 
+		}
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#4ee673c1a4ecad41" class="t t">FileInfo</a> <a id="6fc4c6db485ab08a" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Screenshot</a>(<b>string</b> <span id="r101 rd" class="r101 r">title</span>)
+		{
+			<b>return null</b>;
+		}
+ 
+		<b>public void</b> <a id="8b568f9c9ee3a288" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollDown</a>(<b>string</b> <span id="r102 rd" class="r102 r">withinMarked</span>, <span class="i">ScrollStrategy</span> <span id="r103 rd" class="r103 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r104 rd" class="r104 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r105 rd" class="r105 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r106 rd" class="r106 r">withInertia</span> = <b>true</b>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="c0011a55900715f0" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollDown</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r107 rd" class="r107 r">withinQuery</span> = <b>null</b>, <span class="i">ScrollStrategy</span> <span id="r108 rd" class="r108 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r109 rd" class="r109 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r110 rd" class="r110 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r111 rd" class="r111 r">withInertia</span> = <b>true</b>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="bdd8bf309f7ccc34" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollDownTo</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r112 rd" class="r112 r">toQuery</span>, <a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r113 rd" class="r113 r">withinQuery</span> = <b>null</b>, <span class="i">ScrollStrategy</span> <span id="r114 rd" class="r114 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r115 rd" class="r115 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r116 rd" class="r116 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r117 rd" class="r117 r">withInertia</span> = <b>true</b>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r118 rd" class="r118 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="d3948795fcc119ee" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollDownTo</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppWebQuery</span>&gt; <span id="r119 rd" class="r119 r">toQuery</span>, <a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r120 rd" class="r120 r">withinQuery</span> = <b>null</b>, <span class="i">ScrollStrategy</span> <span id="r121 rd" class="r121 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r122 rd" class="r122 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r123 rd" class="r123 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r124 rd" class="r124 r">withInertia</span> = <b>true</b>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r125 rd" class="r125 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="8f7720edb025220d" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollDownTo</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppWebQuery</span>&gt; <span id="r126 rd" class="r126 r">toQuery</span>, <b>string</b> <span id="r127 rd" class="r127 r">withinMarked</span>, <span class="i">ScrollStrategy</span> <span id="r128 rd" class="r128 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r129 rd" class="r129 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r130 rd" class="r130 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r131 rd" class="r131 r">withInertia</span> = <b>true</b>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r132 rd" class="r132 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="a1de15a809b843fc" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollDownTo</a>(<b>string</b> <span id="r133 rd" class="r133 r">toMarked</span>, <b>string</b> <span id="r134 rd" class="r134 r">withinMarked</span> = <b>null</b>, <span class="i">ScrollStrategy</span> <span id="r135 rd" class="r135 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r136 rd" class="r136 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r137 rd" class="r137 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r138 rd" class="r138 r">withInertia</span> = <b>true</b>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r139 rd" class="r139 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="5342384260320cae" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollTo</a>(<b>string</b> <span id="r140 rd" class="r140 r">toMarked</span>, <b>string</b> <span id="r141 rd" class="r141 r">withinMarked</span> = <b>null</b>, <span class="i">ScrollStrategy</span> <span id="r142 rd" class="r142 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r143 rd" class="r143 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r144 rd" class="r144 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r145 rd" class="r145 r">withInertia</span> = <b>true</b>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r146 rd" class="r146 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="2ef0ad535f86259f" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollUp</a>(<b>string</b> <span id="r147 rd" class="r147 r">withinMarked</span>, <span class="i">ScrollStrategy</span> <span id="r148 rd" class="r148 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r149 rd" class="r149 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r150 rd" class="r150 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r151 rd" class="r151 r">withInertia</span> = <b>true</b>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="5b2930bb469330ed" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollUp</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r152 rd" class="r152 r">query</span> = <b>null</b>, <span class="i">ScrollStrategy</span> <span id="r153 rd" class="r153 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r154 rd" class="r154 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r155 rd" class="r155 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r156 rd" class="r156 r">withInertia</span> = <b>true</b>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="9f48546f1a534b14" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollUpTo</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppWebQuery</span>&gt; <span id="r157 rd" class="r157 r">toQuery</span>, <b>string</b> <span id="r158 rd" class="r158 r">withinMarked</span>, <span class="i">ScrollStrategy</span> <span id="r159 rd" class="r159 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r160 rd" class="r160 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r161 rd" class="r161 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r162 rd" class="r162 r">withInertia</span> = <b>true</b>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r163 rd" class="r163 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="a401ac63f7a354e2" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollUpTo</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r164 rd" class="r164 r">toQuery</span>, <a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r165 rd" class="r165 r">withinQuery</span> = <b>null</b>, <span class="i">ScrollStrategy</span> <span id="r166 rd" class="r166 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r167 rd" class="r167 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r168 rd" class="r168 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r169 rd" class="r169 r">withInertia</span> = <b>true</b>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r170 rd" class="r170 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="57ab2d2bc797e627" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollUpTo</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppWebQuery</span>&gt; <span id="r171 rd" class="r171 r">toQuery</span>, <a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r172 rd" class="r172 r">withinQuery</span> = <b>null</b>, <span class="i">ScrollStrategy</span> <span id="r173 rd" class="r173 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r174 rd" class="r174 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r175 rd" class="r175 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r176 rd" class="r176 r">withInertia</span> = <b>true</b>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r177 rd" class="r177 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="28041cbc656e1bd2" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">ScrollUpTo</a>(<b>string</b> <span id="r178 rd" class="r178 r">toMarked</span>, <b>string</b> <span id="r179 rd" class="r179 r">withinMarked</span> = <b>null</b>, <span class="i">ScrollStrategy</span> <span id="r180 rd" class="r180 r">strategy</span> = <span class="i">ScrollStrategy</span>.<span class="i">Auto</span>, <b>double</b> <span id="r181 rd" class="r181 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r182 rd" class="r182 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r183 rd" class="r183 r">withInertia</span> = <b>true</b>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r184 rd" class="r184 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="e815fff874e92f8d" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SetOrientationLandscape</a>()
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="1b4c35610098f020" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SetOrientationPortrait</a>()
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="29669a4904fd0ed1" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SetSliderValue</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r185 rd" class="r185 r">query</span>, <b>double</b> <span id="r186 rd" class="r186 r">value</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="0871480fac61115f" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SetSliderValue</a>(<b>string</b> <span id="r187 rd" class="r187 r">marked</span>, <b>double</b> <span id="r188 rd" class="r188 r">value</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="5a59dcfa2f2b8a59" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SwipeLeft</a>()
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="90d059f3ac7eb209" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SwipeLeftToRight</a>(<b>double</b> <span id="r189 rd" class="r189 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r190 rd" class="r190 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r191 rd" class="r191 r">withInertia</span> = <b>true</b>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="f4a55ffd6760e898" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SwipeLeftToRight</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r192 rd" class="r192 r">query</span>, <b>double</b> <span id="r193 rd" class="r193 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r194 rd" class="r194 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r195 rd" class="r195 r">withInertia</span> = <b>true</b>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="9fa60d3e11f815e9" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SwipeLeftToRight</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppWebQuery</span>&gt; <span id="r196 rd" class="r196 r">query</span>, <b>double</b> <span id="r197 rd" class="r197 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r198 rd" class="r198 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r199 rd" class="r199 r">withInertia</span> = <b>true</b>)
+		{
+			<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#085d4139ffb78d13" class="t constructor">NotImplementedException</a>();
+		}
+ 
+		<b>public void</b> <a id="efe6b59d2e389440" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SwipeLeftToRight</a>(<b>string</b> <span id="r200 rd" class="r200 r">marked</span>, <b>double</b> <span id="r201 rd" class="r201 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r202 rd" class="r202 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r203 rd" class="r203 r">withInertia</span> = <b>true</b>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="6d164bd466029876" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SwipeRight</a>()
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="b1b4f13175e14e13" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SwipeRightToLeft</a>(<b>double</b> <span id="r204 rd" class="r204 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r205 rd" class="r205 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r206 rd" class="r206 r">withInertia</span> = <b>true</b>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="5ee5270cef73043f" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SwipeRightToLeft</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppWebQuery</span>&gt; <span id="r207 rd" class="r207 r">query</span>, <b>double</b> <span id="r208 rd" class="r208 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r209 rd" class="r209 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r210 rd" class="r210 r">withInertia</span> = <b>true</b>)
+		{
+			<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#085d4139ffb78d13" class="t constructor">NotImplementedException</a>();
+		}
+ 
+		<b>public void</b> <a id="aff9e0e61311d638" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SwipeRightToLeft</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r211 rd" class="r211 r">query</span>, <b>double</b> <span id="r212 rd" class="r212 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r213 rd" class="r213 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r214 rd" class="r214 r">withInertia</span> = <b>true</b>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="3432e9605f908319" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SwipeRightToLeft</a>(<b>string</b> <span id="r215 rd" class="r215 r">marked</span>, <b>double</b> <span id="r216 rd" class="r216 r">swipePercentage</span> = 0.67, <b>int</b> <span id="r217 rd" class="r217 r">swipeSpeed</span> = 500, <b>bool</b> <span id="r218 rd" class="r218 r">withInertia</span> = <b>true</b>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="d69d2a03ea7a30d7" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Tap</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppWebQuery</span>&gt; <span id="r219 rd" class="r219 r">query</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="3b54997dfdc1e39f" href="R/3b54997dfdc1e39f.html" target="n" data-glyph="72,1" class="i method">Tap</a>(<b>string</b> <span id="r220 rd" class="r220 r">marked</span>)
+		{
+			<a href="#9bc837033be1d5bb" class="i method">Tap</a>(<span class="r220 r">marked</span>, 0);
+		}
+ 
+		<b>public void</b> <a id="c5daaf88c343c372" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Tap</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r221 rd" class="r221 r">query</span>)
+		{
+			<b>string</b> <span id="r222 rd" class="r222 r">markedWord</span> = <b>string</b>.<a href="@0@mscorlib/A.html#c9f70a27facb27cf" class="i field">Empty</a>;
+			<b>int</b> <span id="r223 rd" class="r223 r">indexMarked</span> = 0;
+ 
+			<b>if</b> (<a href="#e1f1a33f07815079" class="i method">ExtractInfo</a>(<span class="r221 r">query</span>, <b>out</b> <span class="r222 r">markedWord</span>, <b>out</b> <span class="r223 r">indexMarked</span>))
+				<a href="#9bc837033be1d5bb" class="i method">Tap</a>(<span class="r222 r">markedWord</span>, <span class="r223 r">indexMarked</span>);
+		}
+ 
+		<b>public void</b> <a id="c110e86f30c7c4d5" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">TapCoordinates</a>(<b>float</b> <span id="r224 rd" class="r224 r">x</span>, <b>float</b> <span id="r225 rd" class="r225 r">y</span>)
+		{
+ 
+		}
+ 
+		<b>public void</b> <a id="81ede2557c2da950" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">TouchAndHold</a>(<b>string</b> <span id="r226 rd" class="r226 r">marked</span>)
+		{
+			<a href="#694523d4cdbb2e87" class="i method">TouchAndHold</a>(<span class="r226 r">marked</span>, 0);
+		}
+ 
+		<b>void</b> <a id="694523d4cdbb2e87" href="R/694523d4cdbb2e87.html" target="n" data-glyph="76,1" class="i method">TouchAndHold</a>(<b>string</b> <span id="r227 rd" class="r227 r">marked</span>, <b>int</b> <span id="r228 rd" class="r228 r">index</span>)
+		{
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r229 rd" class="r229 r">safeIndex</span> = <a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#80ff956e9ca8e414" class="i method">Max</a>(<span class="r228 r">index</span>, 0);
+			<b>var</b> <span id="r230 rd" class="r230 r">queryById</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryById</span>(<span class="r227 r">marked</span>.<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>())[<span class="r229 r">safeIndex</span>];
+			<span class="i">TouchAndHoldCoordinates</span>(<span class="r230 r">queryById</span>.<span class="i">Rect</span>.<span class="i">CenterX</span>, <span class="r230 r">queryById</span>.<span class="i">Rect</span>.<span class="i">CenterY</span>);
+ 
+		}
+ 
+		<b>public void</b> <a id="20d99871884a5546" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">TouchAndHold</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r231 rd" class="r231 r">query</span>)
+		{
+			<b>string</b> <span id="r232 rd" class="r232 r">markedWord</span> = <b>string</b>.<a href="@0@mscorlib/A.html#c9f70a27facb27cf" class="i field">Empty</a>;
+			<b>int</b> <span id="r233 rd" class="r233 r">indexMarked</span> = 0;
+ 
+			<b>if</b> (<a href="#e1f1a33f07815079" class="i method">ExtractInfo</a>(<span class="r231 r">query</span>, <b>out</b> <span class="r232 r">markedWord</span>, <b>out</b> <span class="r233 r">indexMarked</span>))
+				<a href="#694523d4cdbb2e87" class="i method">TouchAndHold</a>(<span class="r232 r">markedWord</span>, <span class="r233 r">indexMarked</span>);
+		}
+ 
+		<b>public void</b> <a id="80cfc66ded88e210" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">TouchAndHoldCoordinates</a>(<b>float</b> <span id="r234 rd" class="r234 r">x</span>, <b>float</b> <span id="r235 rd" class="r235 r">y</span>)
+		{
+			<a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">RightClick</span>(<span class="r234 r">x</span>, <span class="r235 r">y</span>);
+			<a href="@0@mscorlib/A.html#3980e012bae82e96" class="t t">Thread</a>.<a href="@0@mscorlib/A.html#5f1072b92dae1dd8" class="i method">Sleep</a>(1000);
+		}
+ 
+		<b>public void</b> <a id="d4df177fdf8b660f" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">WaitFor</a>(<a href="@0@mscorlib/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>bool</b>&gt; <span id="r236 rd" class="r236 r">predicate</span>, <b>string</b> <span id="r237 rd" class="r237 r">timeoutMessage</span> = <span class="s">&quot;Timed out waiting...&quot;</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r238 rd" class="r238 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r239 rd" class="r239 r">retryFrequency</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r240 rd" class="r240 r">postTimeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+		}
+ 
+		<b>public</b> <span class="i">AppWebResult</span>[] <a id="cb2f96ddcb083d47" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">WaitForElement</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppWebQuery</span>&gt; <span id="r241 rd" class="r241 r">query</span>, <b>string</b> <span id="r242 rd" class="r242 r">timeoutMessage</span> = <span class="s">&quot;Timed out waiting for element...&quot;</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r243 rd" class="r243 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r244 rd" class="r244 r">retryFrequency</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r245 rd" class="r245 r">postTimeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r246 rd" class="r246 r">resulr</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppWebResult</span>&gt;();
+			<b>return</b> <span class="r246 r">resulr</span>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public</b> <span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>[] <a id="8aaf8c4d2df7ba6e" href="R/8aaf8c4d2df7ba6e.html" target="n" data-glyph="72,1" class="i method">WaitForElement</a>(<b>string</b> <span id="r247 rd" class="r247 r">marked</span>, <b>string</b> <span id="r248 rd" class="r248 r">timeoutMessage</span> = <span class="s">&quot;Timed out waiting for element...&quot;</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r249 rd" class="r249 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r250 rd" class="r250 r">retryFrequency</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r251 rd" class="r251 r">postTimeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r252 rd" class="r252 r">results</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>&gt;();
+ 
+			<b>var</b> <span id="r253 rd" class="r253 r">queryById</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryById</span>(<span class="r247 r">marked</span>);
+			<b>foreach</b> (<b>var</b> <span id="r254 rd" class="r254 r">res</span> <b>in</b> <span class="r253 r">queryById</span>)
+			{
+				<span class="r252 r">results</span>.<span class="i">Add</span>(<span class="r254 r">res</span>.<span class="i">ToUITestResult</span>());
+			}
+			<a href="@0@System/A.html#ceb0ba9cc88de82e" class="t t">Stopwatch</a> <span id="r255 rd" class="r255 r">s</span> = <b>new</b> <a href="@0@System/A.html#e0a8bcc83e66a717" class="t constructor">Stopwatch</a>();
+			<span class="r255 r">s</span>.<a href="@0@System/A.html#f56fda03f3c59486" class="i method">Start</a>();
+			<b>bool</b> <span id="r256 rd" class="r256 r">foundElement</span> = <b>false</b>;
+			<b>while</b> (<span class="r255 r">s</span>.<a href="@0@System/A.html#60e03fb80c10ec79" class="i property">Elapsed</a> &lt; <span class="r249 r">timeout</span> &amp;&amp; !<span class="r256 r">foundElement</span>)
+			{
+				<b>var</b> <span id="r257 rd" class="r257 r">allResultsById</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryById</span>(<span class="r247 r">marked</span>);
+				<b>foreach</b> (<b>var</b> <span id="r258 rd" class="r258 r">res</span> <b>in</b> <span class="r253 r">queryById</span>)
+				{
+					<span class="r252 r">results</span>.<span class="i">Add</span>(<span class="r258 r">res</span>.<span class="i">ToUITestResult</span>());
+				}
+				<span class="r256 r">foundElement</span> = <span class="r252 r">results</span>.<a href="@0@mscorlib/A.html#78a69d857716bc68" class="i property">Count</a> &gt; 0;
+				<span class="i n">System</span>.<span class="i n">Diagnostics</span>.<a href="@0@System/A.html#632c6da37ce825df" class="t t">Debug</a>.<a href="@0@System/A.html#de18340cbf015ef1" class="i method">WriteLine</a>(<span class="r256 r">foundElement</span>);
+			}
+			<span class="r255 r">s</span>.<a href="@0@System/A.html#9dd6cac7fc1e2117" class="i method">Stop</a>();
+ 
+			<b>return</b> <span class="r252 r">results</span>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public</b> <span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>[] <a id="955ed0b107d2db1f" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">WaitForElement</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r259 rd" class="r259 r">query</span>, <b>string</b> <span id="r260 rd" class="r260 r">timeoutMessage</span> = <span class="s">&quot;Timed out waiting for element...&quot;</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r261 rd" class="r261 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r262 rd" class="r262 r">retryFrequency</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r263 rd" class="r263 r">postTimeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+			<b>var</b> <span id="r264 rd" class="r264 r">queryStr</span> = <span class="r259 r">query</span>(<b>new</b> <span class="i">AppQuery</span>(<span class="i">QueryPlatform</span>.<span class="i">iOS</span>)).<span class="i">ToString</span>();
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r265 rd" class="r265 r">isMarked</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">IsMatch</span>(<span class="r264 r">queryStr</span>, <span class="s">@&quot;\bmarked\b&quot;</span>);
+			<b>if</b> (<span class="r265 r">isMarked</span>)
+			{
+				<b>var</b> <span id="r266 rd" class="r266 r">markedWords</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">Split</span>(<span class="r264 r">queryStr</span>, <span class="s">@&quot;\bmarked\b:&#39;&quot;</span>);
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r267 rd" class="r267 r">isAll</span> = <span class="r266 r">markedWords</span>[0].<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>() == <span class="s">&quot;*&quot;</span>;
+				<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r268 rd" class="r268 r">markedWord</span> = <span class="r266 r">markedWords</span>[1].<a href="@0@mscorlib/A.html#69fc1d0aa6df8a90" class="i method">Replace</a>(<span class="s">&quot;&#39;&quot;</span>, <span class="s">&quot;&quot;</span>).<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+				<b>return</b> <a href="#8aaf8c4d2df7ba6e" class="i method">WaitForElement</a>(<span class="r268 r">markedWord</span>, <span class="r260 r">timeoutMessage</span>, <span class="r261 r">timeout</span>, <span class="r262 r">retryFrequency</span>, <span class="r263 r">postTimeout</span>);
+			}
+			<b>return</b> <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">Queries</span>.<span class="i">AppResult</span>&gt;().<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public void</b> <a id="a56555056ee92d60" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">WaitForNoElement</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppWebQuery</span>&gt; <span id="r269 rd" class="r269 r">query</span>, <b>string</b> <span id="r270 rd" class="r270 r">timeoutMessage</span> = <span class="s">&quot;Timed out waiting for no element...&quot;</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r271 rd" class="r271 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r272 rd" class="r272 r">retryFrequency</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r273 rd" class="r273 r">postTimeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+ 
+ 
+		}
+ 
+		<b>public void</b> <a id="f3b1d8a1f984a3ef" href="R/f3b1d8a1f984a3ef.html" target="n" data-glyph="72,1" class="i method">WaitForNoElement</a>(<b>string</b> <span id="r274 rd" class="r274 r">marked</span>, <b>string</b> <span id="r275 rd" class="r275 r">timeoutMessage</span> = <span class="s">&quot;Timed out waiting for no element...&quot;</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r276 rd" class="r276 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r277 rd" class="r277 r">retryFrequency</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r278 rd" class="r278 r">postTimeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+			<a href="@0@System/A.html#ceb0ba9cc88de82e" class="t t">Stopwatch</a> <span id="r279 rd" class="r279 r">s</span> = <b>new</b> <a href="@0@System/A.html#e0a8bcc83e66a717" class="t constructor">Stopwatch</a>();
+			<span class="r279 r">s</span>.<a href="@0@System/A.html#f56fda03f3c59486" class="i method">Start</a>();
+			<b>bool</b> <span id="r280 rd" class="r280 r">noElement</span> = <b>false</b>;
+			<b>while</b> (<span class="r279 r">s</span>.<a href="@0@System/A.html#60e03fb80c10ec79" class="i property">Elapsed</a> &lt; <span class="r276 r">timeout</span> &amp;&amp; !<span class="r280 r">noElement</span>)
+			{
+				<b>var</b> <span id="r281 rd" class="r281 r">allResultsById</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryById</span>(<span class="r274 r">marked</span>);
+				<span class="r280 r">noElement</span> = <span class="r281 r">allResultsById</span>.<span class="i">Length</span> == 0;
+				<span class="i n">System</span>.<span class="i n">Diagnostics</span>.<a href="@0@System/A.html#632c6da37ce825df" class="t t">Debug</a>.<a href="@0@System/A.html#de18340cbf015ef1" class="i method">WriteLine</a>(<span class="r280 r">noElement</span>);
+			}
+			<span class="r279 r">s</span>.<a href="@0@System/A.html#9dd6cac7fc1e2117" class="i method">Stop</a>();
+			<b>if</b> (<span class="r279 r">s</span>.<a href="@0@System/A.html#60e03fb80c10ec79" class="i property">Elapsed</a> &lt; <span class="r276 r">timeout</span> &amp;&amp; !<span class="r280 r">noElement</span>)
+				<b>throw</b> (<b>new</b> <a href="@0@mscorlib/A.html#df2d82d91ca29e40" class="t constructor">Exception</a>(<span class="r275 r">timeoutMessage</span>));
+ 
+		}
+ 
+		<b>public void</b> <a id="ea6bddcf8c6c717e" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">WaitForNoElement</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r282 rd" class="r282 r">query</span>, <b>string</b> <span id="r283 rd" class="r283 r">timeoutMessage</span> = <span class="s">&quot;Timed out waiting for no element...&quot;</span>, <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r284 rd" class="r284 r">timeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r285 rd" class="r285 r">retryFrequency</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?), <a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>? <span id="r286 rd" class="r286 r">postTimeout</span> = <b>default</b>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>?))
+		{
+			<b>var</b> <span id="r287 rd" class="r287 r">queryStr</span> = <span class="r282 r">query</span>(<b>new</b> <span class="i">AppQuery</span>(<span class="i">QueryPlatform</span>.<span class="i">iOS</span>)).<span class="i">ToString</span>();
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r288 rd" class="r288 r">isMarked</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">IsMatch</span>(<span class="r287 r">queryStr</span>, <span class="s">@&quot;\bmarked\b&quot;</span>);
+			<b>if</b> (<span class="r288 r">isMarked</span>)
+			{
+				<b>var</b> <span id="r289 rd" class="r289 r">markedWords</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">Split</span>(<span class="r287 r">queryStr</span>, <span class="s">@&quot;\bmarked\b:&#39;&quot;</span>);
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r290 rd" class="r290 r">isAll</span> = <span class="r289 r">markedWords</span>[0].<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>() == <span class="s">&quot;*&quot;</span>;
+				<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r291 rd" class="r291 r">markedWord</span> = <span class="r289 r">markedWords</span>[1].<a href="@0@mscorlib/A.html#69fc1d0aa6df8a90" class="i method">Replace</a>(<span class="s">&quot;&#39;&quot;</span>, <span class="s">&quot;&quot;</span>).<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+				<a href="#f3b1d8a1f984a3ef" class="i method">WaitForNoElement</a>(<span class="r291 r">markedWord</span>, <span class="r283 r">timeoutMessage</span>, <span class="r284 r">timeout</span>, <span class="r285 r">retryFrequency</span>, <span class="r286 r">postTimeout</span>);
+			}
+		}
+ 
+		<b>static bool</b> <a id="e1f1a33f07815079" href="R/e1f1a33f07815079.html" target="n" data-glyph="76,1" class="i method">ExtractInfo</a>(<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">AppQuery</span>, <span class="i">AppQuery</span>&gt; <span id="r292 rd" class="r292 r">query</span>, <b>out string</b> <span id="r293 rd" class="r293 r">markedWord</span>, <b>out int</b> <span id="r294 rd" class="r294 r">indexMarked</span>)
+		{
+			<span class="r294 r">indexMarked</span> = 0;
+			<span class="r293 r">markedWord</span> = <b>string</b>.<a href="@0@mscorlib/A.html#c9f70a27facb27cf" class="i field">Empty</a>;
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r295 rd" class="r295 r">isSuccess</span> = <b>false</b>;
+ 
+			<b>var</b> <span id="r296 rd" class="r296 r">queryStr</span> = <span class="r292 r">query</span>(<b>new</b> <span class="i">AppQuery</span>(<span class="i">QueryPlatform</span>.<span class="i">iOS</span>)).<span class="i">ToString</span>();
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r297 rd" class="r297 r">isIndex</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">IsMatch</span>(<span class="r296 r">queryStr</span>, <span class="s">@&quot;\bindex\b&quot;</span>);
+			<b>if</b> (<span class="r297 r">isIndex</span>)
+			{
+				<b>var</b> <span id="r298 rd" class="r298 r">indexWords</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">Split</span>(<span class="r296 r">queryStr</span>, <span class="s">@&quot;\bindex\b:&quot;</span>);
+				<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r299 rd" class="r299 r">indexWord</span> = <span class="r298 r">indexWords</span>[1];
+				<b>int</b>.<a href="@0@mscorlib/A.html#325507e509229dbc" class="i method">TryParse</a>(<span class="r299 r">indexWord</span>, <b>out</b> <span class="r294 r">indexMarked</span>);
+				<span class="r296 r">queryStr</span> = <span class="r298 r">indexWords</span>[0].<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+			}
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r300 rd" class="r300 r">isMarked</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">IsMatch</span>(<span class="r296 r">queryStr</span>, <span class="s">@&quot;\bmarked\b&quot;</span>);
+			<b>if</b> (<span class="r300 r">isMarked</span>)
+			{
+				<b>var</b> <span id="r301 rd" class="r301 r">markedWords</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">Split</span>(<span class="r296 r">queryStr</span>, <span class="s">@&quot;\bmarked\b:&#39;&quot;</span>);
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r302 rd" class="r302 r">isAll</span> = <span class="r301 r">markedWords</span>[0].<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>() == <span class="s">&quot;*&quot;</span>;
+				<span class="r293 r">markedWord</span> = <span class="r301 r">markedWords</span>[1].<a href="@0@mscorlib/A.html#69fc1d0aa6df8a90" class="i method">Replace</a>(<span class="s">&quot;&#39;&quot;</span>, <span class="s">&quot;&quot;</span>).<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+				<span class="r295 r">isSuccess</span> = <b>true</b>;
+ 
+			}
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r303 rd" class="r303 r">isText</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">IsMatch</span>(<span class="r296 r">queryStr</span>, <span class="s">@&quot;\btext\b&quot;</span>);
+			<b>if</b> (<span class="r303 r">isText</span>)
+			{
+				<b>var</b> <span id="r304 rd" class="r304 r">markedWords</span> = <span class="i n">System</span>.<span class="i n">Text</span>.<span class="i n">RegularExpressions</span>.<a href="@0@System/A.html#bbe3b2eb80ae5526" class="t t">Regex</a>.<span class="i">Split</span>(<span class="r296 r">queryStr</span>, <span class="s">@&quot;\btext\b:&#39;&quot;</span>);
+				<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r305 rd" class="r305 r">isAll</span> = <span class="r304 r">markedWords</span>[0].<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>() == <span class="s">&quot;*&quot;</span>;
+				<span class="r293 r">markedWord</span> = <span class="r304 r">markedWords</span>[1].<a href="@0@mscorlib/A.html#69fc1d0aa6df8a90" class="i method">Replace</a>(<span class="s">&quot;&#39;&quot;</span>, <span class="s">&quot;&quot;</span>).<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+				<span class="r295 r">isSuccess</span> = <b>true</b>;
+			}
+			<b>if</b> (!<span class="r295 r">isSuccess</span>)
+			{
+				<b>if</b> (<span class="r296 r">queryStr</span> == <span class="s">&quot;button&quot;</span>)
+				{
+					<span class="r295 r">isSuccess</span> = <b>true</b>;
+				}
+			}
+			<b>return</b> <span class="r295 r">isSuccess</span>;
+		}
+ 
+		<b>void</b> <a id="9bc837033be1d5bb" href="R/9bc837033be1d5bb.html" target="n" data-glyph="76,1" class="i method">Tap</a>(<b>string</b> <span id="r306 rd" class="r306 r">marked</span>, <b>int</b> <span id="r307 rd" class="r307 r">index</span>)
+		{
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r308 rd" class="r308 r">safeIndex</span> = <a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#80ff956e9ca8e414" class="i method">Max</a>(<span class="r307 r">index</span>, 0);
+			<b>var</b> <span id="r309 rd" class="r309 r">all</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Query</span>();
+			<a href="@0@System.Drawing/A.html#b4963c55b18ead87" class="k">var</a> <span id="r310 rd" class="r310 r">centerPoint</span> = <b>new</b> <a href="@0@System.Drawing/A.html#b4963c55b18ead87" class="t constructor">PointF</a>();
+			<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r306 r">marked</span>))
+				<span class="r310 r">centerPoint</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryById</span>(<span class="r306 r">marked</span>.<a href="@0@mscorlib/A.html#06a5f7c688e69307" class="i method">Trim</a>())[<span class="r308 r">safeIndex</span>].<span class="i">Rect</span>.<span class="i">Center</span>;
+			<b>else</b>
+				<span class="r310 r">centerPoint</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryByType</span>(<span class="s">&quot;Button&quot;</span>)[<span class="r308 r">safeIndex</span>].<span class="i">Rect</span>.<span class="i">Center</span>;
+			<a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Click</span>(<span class="r310 r">centerPoint</span>.<a href="@0@System.Drawing/A.html#aff0c1c8460420e8" class="i property">X</a>, <span class="r310 r">centerPoint</span>.<a href="@0@System.Drawing/A.html#c78fb7c60bf2b02f" class="i property">Y</a>);
+			<a href="@0@mscorlib/A.html#3980e012bae82e96" class="t t">Thread</a>.<a href="@0@mscorlib/A.html#5f1072b92dae1dd8" class="i method">Sleep</a>(1000);
+		}
+ 
+		<b>static void</b> <a id="077953b14e422462" href="R/077953b14e422462.html" target="n" data-glyph="76,1" class="i method">EnterText</a>(<b>string</b> <span id="r311 rd" class="r311 r">marked</span>, <b>int</b> <span id="r312 rd" class="r312 r">index</span>, <b>string</b> <span id="r313 rd" class="r313 r">text</span>)
+		{
+			<span class="i">UITest</span>.<span class="i">Desktop</span>.<span class="i">AppResult</span> <span id="r314 rd" class="r314 r">textField</span> = <b>null</b>;
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r315 rd" class="r315 r">safeIndex</span> = <a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#80ff956e9ca8e414" class="i method">Max</a>(<span class="r312 r">index</span>, 0);
+			<b>var</b> <span id="r316 rd" class="r316 r">textFields</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryById</span>(<span class="r311 r">marked</span>).<span class="i">Where</span>((<span id="r317 rd" class="r317 r">arg</span>) =&gt; <span class="r317 r">arg</span>.<span class="i">Class</span>.<span class="i">Contains</span>(<span class="s">&quot;SearchField&quot;</span>) || <span class="r317 r">arg</span>.<span class="i">Class</span>.<span class="i">Contains</span>(<span class="s">&quot;TextField&quot;</span>));
+			<b>if</b> (<span class="r316 r">textFields</span>.<span class="i">Count</span>() &gt; 0)
+			{
+				<span class="r314 r">textField</span> = <span class="r316 r">textFields</span>.<span class="i">ElementAt</span>(<span class="r315 r">safeIndex</span>);
+			}
+			<b>else</b>
+			{
+				<b>var</b> <span id="r318 rd" class="r318 r">markedField</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryById</span>(<span class="r311 r">marked</span>);
+				<b>if</b> (<span class="r318 r">markedField</span>.<span class="i">Length</span> &gt; 0)
+				{
+					<span class="r314 r">textField</span> = <span class="r318 r">markedField</span>[0];
+				}
+				<b>else</b>
+				{
+ 
+					<b>var</b> <span id="r319 rd" class="r319 r">allTextFields</span> = <a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">QueryByType</span>(<span class="s">&quot;TextField&quot;</span>);
+					<span class="r314 r">textField</span> = <span class="r319 r">allTextFields</span>[0];
+				}
+			}
+ 
+			<b>if</b> (<span class="r314 r">textField</span> != <b>null</b>)
+				<span class="i">EnterText</span>(<span class="r313 r">text</span>, <span class="r314 r">textField</span>.<span class="i">Rect</span>.<span class="i">CenterX</span>, <span class="r314 r">textField</span>.<span class="i">Rect</span>.<span class="i">CenterY</span>);
+ 
+		}
+ 
+		<b>static void</b> <a id="7312f36a7378e86b" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">EnterText</a>(<b>string</b> <span id="r320 rd" class="r320 r">text</span>, <b>float</b> <span id="r321 rd" class="r321 r">x</span>, <b>float</b> <span id="r322 rd" class="r322 r">y</span>)
+		{
+			<a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Click</span>(<span class="r321 r">x</span>, <span class="r322 r">y</span>);
+			<a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Click</span>(<span class="r321 r">x</span>, <span class="r322 r">y</span>);
+			<a href="@0@mscorlib/A.html#3980e012bae82e96" class="t t">Thread</a>.<a href="@0@mscorlib/A.html#5f1072b92dae1dd8" class="i method">Sleep</a>(500);
+			<a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">EnterText</span>(<span class="r320 r">text</span>);
+			<a href="@0@mscorlib/A.html#3980e012bae82e96" class="t t">Thread</a>.<a href="@0@mscorlib/A.html#5f1072b92dae1dd8" class="i method">Sleep</a>(500);
+		}
+ 
+		<b>static void</b> <a id="f450ea4a2938d801" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">ClearText</a>(<b>float</b> <span id="r323 rd" class="r323 r">x</span>, <b>float</b> <span id="r324 rd" class="r324 r">y</span>)
+		{
+			<a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Click</span>(<span class="r323 r">x</span>, <span class="r324 r">y</span>);
+			<a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">Click</span>(<span class="r323 r">x</span>, <span class="r324 r">y</span>);
+			<a href="@0@mscorlib/A.html#3980e012bae82e96" class="t t">Thread</a>.<a href="@0@mscorlib/A.html#5f1072b92dae1dd8" class="i method">Sleep</a>(500);
+			<a href="#4ef8e509c28d613d" class="i field">_cocoaApp</a>.<span class="i">ClearText</span>();
+			<a href="@0@mscorlib/A.html#3980e012bae82e96" class="t t">Thread</a>.<a href="@0@mscorlib/A.html#5f1072b92dae1dd8" class="i method">Sleep</a>(500);
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

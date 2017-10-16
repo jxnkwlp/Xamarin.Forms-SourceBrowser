@@ -1,0 +1,195 @@
+﻿<!DOCTYPE html>
+<html><head><title>ExpandMarkupsVisitor.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(186);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Xaml/ExpandMarkupsVisitor.cs" target="_top">ExpandMarkupsVisitor.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Xaml" target="_top">Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj</a> (Xamarin.Forms.Xaml)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>
+{
+	<b>internal class</b> <a id="afe18f445b5d8ef8" href="R/afe18f445b5d8ef8.html" target="n" data-glyph="2,0" class="t t">ExpandMarkupsVisitor</a> : <a href="XamlNodeVisitor.cs.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a>
+	{
+		<b>public</b> <a id="49fafd4fcff73ddd" href="R/49fafd4fcff73ddd.html" target="n" data-glyph="72,1" class="i constructor">ExpandMarkupsVisitor</a>(<a href="HydrationContext.cs.html#30eb9f712f99d66c" class="t t">HydrationContext</a> <span id="r0 rd" class="r0 r">context</span>)
+		{
+			<a href="#9c501acf5da88e06" class="i property">Context</a> = <span class="r0 r">context</span>;
+		}
+ 
+		<b>public static readonly</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>&gt; <a id="411800f56e218694" href="R/411800f56e218694.html" target="n" data-glyph="42,1" class="i field">Skips</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>&gt;
+		{
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#ce88fd5516a3db5c" class="i field">xKey</a>,
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#2d7fbef61f459440" class="i field">xTypeArguments</a>,
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#2c33b8fa36839efb" class="i field">xFactoryMethod</a>,
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#4dd36ca233878b27" class="i field">xName</a>,
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#02206a874bd4f9a9" class="i field">xDataType</a>
+		};
+ 
+		<a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a>, <b>object</b>&gt; <a id="10fdfaac3b4febca" href="R/../../0000000000.html" target="n" data-glyph="106,1" class="i property">Values</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#9c501acf5da88e06" class="i property">Context</a>.<a href="HydrationContext.cs.html#f7f6ecfaaac2a343" class="i property">Values</a>; }
+		}
+ 
+		<a href="HydrationContext.cs.html#30eb9f712f99d66c" class="t t">HydrationContext</a> <a id="9c501acf5da88e06" href="R/9c501acf5da88e06.html" target="n" data-glyph="106,1" class="i property">Context</a> { <b>get</b>; }
+ 
+		<b>public</b> <a href="XamlNodeVisitor.cs.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a> <a id="177cbdffa63edeca" href="R/177cbdffa63edeca.html" target="n" data-glyph="102,1" class="i property">VisitingMode</a> =&gt; <a href="XamlNodeVisitor.cs.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a>.<a href="XamlNodeVisitor.cs.html#0b6fe56bad8bf80b" class="i field">BottomUp</a>;
+		<b>public bool</b> <a id="37e03b3e8f6aec5a" href="R/37e03b3e8f6aec5a.html" target="n" data-glyph="102,1" class="i property">StopOnDataTemplate</a> =&gt; <b>false</b>;
+		<b>public bool</b> <a id="bb0f076f7a65692b" href="R/bb0f076f7a65692b.html" target="n" data-glyph="102,1" class="i property">StopOnResourceDictionary</a> =&gt; <b>false</b>;
+		<b>public bool</b> <a id="8b0304892974342e" href="R/8b0304892974342e.html" target="n" data-glyph="102,1" class="i property">VisitNodeOnDataTemplate</a> =&gt; <b>true</b>;
+ 
+		<b>public void</b> <a id="13d47039cedb62bf" href="R/13d47039cedb62bf.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="XamlNode.cs.html#8154936e25abda05" class="t t">ValueNode</a> <span id="r1 rd" class="r1 r">node</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r2 rd" class="r2 r">parentNode</span>)
+		{
+		}
+ 
+		<b>public void</b> <a id="1b36bd80679dffc9" href="R/1b36bd80679dffc9.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="XamlNode.cs.html#429a1b2e0cd22849" class="t t">MarkupNode</a> <span id="r3 rd" class="r3 r">markupnode</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r4 rd" class="r4 r">parentNode</span>)
+		{
+			<a href="XamlNode.cs.html#0395ca46ae80839a" class="k">var</a> <span id="r5 rd" class="r5 r">parentElement</span> = <span class="r4 r">parentNode</span> <b>as</b> <a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>;
+			<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a> <span id="r6 rd" class="r6 r">propertyName</span>;
+			<b>if</b> (!<a href="ApplyPropertiesVisitor.cs.html#515768b28c4a51c5" class="t t">ApplyPropertiesVisitor</a>.<a href="ApplyPropertiesVisitor.cs.html#3615d7bd660c2085" class="i method">TryGetPropertyName</a>(<span class="r3 r">markupnode</span>, <span class="r4 r">parentNode</span>, <b>out</b> <span class="r6 r">propertyName</span>))
+				<b>return</b>;
+			<b>if</b> (<a href="#411800f56e218694" class="i field">Skips</a>.<a href="@1@System.Runtime/A.html#8f74065d140cfe04" class="i method">Contains</a>(<span class="r6 r">propertyName</span>))
+				<b>return</b>;
+			<b>if</b> (<span class="r5 r">parentElement</span>.<a href="XamlNode.cs.html#153777a0650db791" class="i property">SkipProperties</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r6 r">propertyName</span>))
+				<b>return</b>;
+ 
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r7 rd" class="r7 r">markupString</span> = <span class="r3 r">markupnode</span>.<a href="XamlNode.cs.html#974058dab4443b2b" class="i property">MarkupString</a>;
+			<a href="XamlNode.cs.html#0395ca46ae80839a" class="k">var</a> <span id="r8 rd" class="r8 r">node</span> =
+				<a href="#4a4f7720c5ad7d6b" class="i method">ParseExpression</a>(<b>ref</b> <span class="r7 r">markupString</span>, <span class="r3 r">markupnode</span>.<a href="XamlNode.cs.html#4c29fc7211aeb588" class="i property">NamespaceResolver</a>, <span class="r3 r">markupnode</span>, <span class="r3 r">markupnode</span>, <span class="r4 r">parentNode</span>) <b>as</b> <a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>;
+			<b>if</b> (<span class="r8 r">node</span> != <b>null</b>)
+			{
+				((<a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a>)<span class="r4 r">parentNode</span>).<a href="XamlNode.cs.html#ca11b3b288ccdec1" class="i property">Properties</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r6 r">propertyName</span>] = <span class="r8 r">node</span>;
+				<span class="r8 r">node</span>.<a href="XamlNode.cs.html#aaa082f00606354b" class="i property">Parent</a> = <span class="r4 r">parentNode</span>;
+			}
+		}
+ 
+		<b>public void</b> <a id="f27a760356926602" href="R/f27a760356926602.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="XamlNode.cs.html#6162566191bf011a" class="t t">ElementNode</a> <span id="r9 rd" class="r9 r">node</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r10 rd" class="r10 r">parentNode</span>)
+		{
+		}
+ 
+		<b>public void</b> <a id="4d2fe88098d44cee" href="R/4d2fe88098d44cee.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="XamlNode.cs.html#539c4bdaedfa22a3" class="t t">RootNode</a> <span id="r11 rd" class="r11 r">node</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r12 rd" class="r12 r">parentNode</span>)
+		{
+		}
+ 
+		<b>public void</b> <a id="00c859df699b4238" href="R/00c859df699b4238.html" target="n" data-glyph="72,1" class="i method">Visit</a>(<a href="XamlNode.cs.html#0a483d0bd41cadb6" class="t t">ListNode</a> <span id="r13 rd" class="r13 r">node</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r14 rd" class="r14 r">parentNode</span>)
+		{
+		}
+ 
+		<a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <a id="4a4f7720c5ad7d6b" href="R/4a4f7720c5ad7d6b.html" target="n" data-glyph="76,1" class="i method">ParseExpression</a>(<b>ref string</b> <span id="r15 rd" class="r15 r">expression</span>, <span class="t t">IXmlNamespaceResolver</span> <span id="r16 rd" class="r16 r">nsResolver</span>, <span class="t t">IXmlLineInfo</span> <span id="r17 rd" class="r17 r">xmlLineInfo</span>, <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r18 rd" class="r18 r">node</span>,
+			<a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <span id="r19 rd" class="r19 r">parentNode</span>)
+		{
+			<b>if</b> (<span class="r15 r">expression</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;{}&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+				<b>return</b> <b>new</b> <a href="XamlNode.cs.html#e2360d8fe4cc7ae5" class="t constructor">ValueNode</a>(<span class="r15 r">expression</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(2), <b>null</b>);
+ 
+			<b>if</b> (<span class="r15 r">expression</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r15 r">expression</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> - 1] != <span class="s">&#39;}&#39;</span>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#df2d82d91ca29e40" class="t constructor">Exception</a>(<span class="s">&quot;Expression must end with &#39;}&#39;&quot;</span>);
+ 
+			<b>int</b> <span id="r20 rd" class="r20 r">len</span>;
+			<b>string</b> <span id="r21 rd" class="r21 r">match</span>;
+			<b>if</b> (!<a href="MarkupExpressionParser.cs.html#ede638ca290763d2" class="t t">MarkupExpressionParser</a>.<a href="MarkupExpressionParser.cs.html#ca5b20768f2f1cb2" class="i method">MatchMarkup</a>(<b>out</b> <span class="r21 r">match</span>, <span class="r15 r">expression</span>, <b>out</b> <span class="r20 r">len</span>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5ee7f173f9e53170" class="t constructor">Exception</a>();
+			<span class="r15 r">expression</span> = <span class="r15 r">expression</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(<span class="r20 r">len</span>).<a href="@1@System.Runtime/A.html#5137a6065a1c1234" class="i method">TrimStart</a>();
+			<b>if</b> (<span class="r15 r">expression</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a> == 0)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#df2d82d91ca29e40" class="t constructor">Exception</a>(<span class="s">&quot;Expression did not end in &#39;}&#39;&quot;</span>);
+ 
+			<a href="XamlServiceProvider.cs.html#820a1bf30a03f150" class="k">var</a> <span id="r22 rd" class="r22 r">serviceProvider</span> = <b>new</b> <a href="XamlServiceProvider.cs.html#c50940b0b669a5c2" class="t constructor">XamlServiceProvider</a>(<span class="r18 r">node</span>, <a href="#9c501acf5da88e06" class="i property">Context</a>);
+			<span class="r22 r">serviceProvider</span>.<a href="XamlServiceProvider.cs.html#528663d7302c9dcf" class="i method">Add</a>(<b>typeof</b> (<span class="t t">IXmlNamespaceResolver</span>), <span class="r16 r">nsResolver</span>);
+ 
+			<b>return</b> <b>new</b> <a href="#b8d6b574e7cf6f79" class="t constructor">MarkupExpansionParser</a>().<a href="#ef4e6bf2cb6adbd8" class="i method">Parse</a>(<span class="r21 r">match</span>, <b>ref</b> <span class="r15 r">expression</span>, <span class="r22 r">serviceProvider</span>);
+		}
+ 
+		<b>public class</b> <a id="b8d6b574e7cf6f79" href="R/b8d6b574e7cf6f79.html" target="n" data-glyph="0,1" class="t t"><span id="045c00181ebde261">MarkupExpansionParser</span></a> : <a href="MarkupExpressionParser.cs.html#ede638ca290763d2" class="t t">MarkupExpressionParser</a>, <a href="IExpressionParser.cs.html#c5d658d22bbdb3d4" class="t t">IExpressionParser</a>&lt;<a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a>&gt;
+		{
+			<a href="XamlNode.cs.html#0395ca46ae80839a" class="t t">IElementNode</a> <a id="625a140c7f0a6f63" href="R/625a140c7f0a6f63.html" target="n" data-glyph="46,2" class="i field">node</a>;
+ 
+			<b>object</b> <a href="IExpressionParser.cs.html#3f7bc43818ac6803" class="t t">IExpressionParser</a>.<a href="IExpressionParser.cs.html#899cdaa0b9220fa5" class="i method">Parse</a>(<b>string</b> <span id="r23 rd" class="r23 r">match</span>, <b>ref string</b> <span id="r24 rd" class="r24 r">remaining</span>, <span class="t t">IServiceProvider</span> <span id="r25 rd" class="r25 r">serviceProvider</span>)
+			{
+				<b>return</b> <a href="#ef4e6bf2cb6adbd8" class="i method">Parse</a>(<span class="r23 r">match</span>, <b>ref</b> <span class="r24 r">remaining</span>, <span class="r25 r">serviceProvider</span>);
+			}
+ 
+			<b>public</b> <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> <a id="ef4e6bf2cb6adbd8" href="R/ef4e6bf2cb6adbd8.html" target="n" data-glyph="72,2" class="i method">Parse</a>(<b>string</b> <span id="r26 rd" class="r26 r">match</span>, <b>ref string</b> <span id="r27 rd" class="r27 r">remaining</span>, <span class="t t">IServiceProvider</span> <span id="r28 rd" class="r28 r">serviceProvider</span>)
+			{
+				<b>var</b> <span id="r29 rd" class="r29 r">nsResolver</span> = <span class="r28 r">serviceProvider</span>.<span class="i method">GetService</span>(<b>typeof</b> (<span class="t t">IXmlNamespaceResolver</span>)) <b>as</b> <span class="t t">IXmlNamespaceResolver</span>;
+				<b>if</b> (<span class="r29 r">nsResolver</span> == <b>null</b>)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#71d200dcf0047f8b" class="t constructor">ArgumentException</a>();
+				<span class="t t">IXmlLineInfo</span> <span id="r30 rd" class="r30 r">xmlLineInfo</span> = <b>null</b>;
+				<a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="k">var</a> <span id="r31 rd" class="r31 r">xmlLineInfoProvider</span> = <span class="r28 r">serviceProvider</span>.<span class="i method">GetService</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="t t">IXmlLineInfoProvider</a>)) <b>as</b> <a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="t t">IXmlLineInfoProvider</a>;
+				<b>if</b> (<span class="r31 r">xmlLineInfoProvider</span> != <b>null</b>)
+					<span class="r30 r">xmlLineInfo</span> = <span class="r31 r">xmlLineInfoProvider</span>.<a href="/Xamarin.Forms.Core/A.html#33daa4514b972f6e" class="i property">XmlLineInfo</a>;
+ 
+				<b>var</b> <span id="r32 rd" class="r32 r">split</span> = <span class="r26 r">match</span>.<a href="@1@System.Runtime/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;:&#39;</span>);
+				<b>if</b> (<span class="r32 r">split</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 2)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#71d200dcf0047f8b" class="t constructor">ArgumentException</a>();
+ 
+				<b>string</b> <span id="r33 rd" class="r33 r">prefix</span>; <span class="c">//, name;</span>
+				<b>if</b> (<span class="r32 r">split</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 2)
+				{
+					<span class="r33 r">prefix</span> = <span class="r32 r">split</span>[0];
+					<span class="c">//					name = split [1];</span>
+				}
+				<b>else</b>
+				{
+					<span class="r33 r">prefix</span> = <span class="s">&quot;&quot;</span>;
+					<span class="c">//					name = split [0];</span>
+				}
+ 
+				<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r34 rd" class="r34 r">type</span>;
+				<a href="/Xamarin.Forms.Core/A.html#d05cb618ccf24dce" class="k">var</a> <span id="r35 rd" class="r35 r">typeResolver</span> = <span class="r28 r">serviceProvider</span>.<span class="i method">GetService</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#d05cb618ccf24dce" class="t t">IXamlTypeResolver</a>)) <b>as</b> <a href="/Xamarin.Forms.Core/A.html#d05cb618ccf24dce" class="t t">IXamlTypeResolver</a>;
+				<b>if</b> (<span class="r35 r">typeResolver</span> == <b>null</b>)
+					<span class="r34 r">type</span> = <b>null</b>;
+				<b>else</b>
+				{
+					<span class="c">//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.</span>
+					<b>if</b> (!<span class="r35 r">typeResolver</span>.<a href="/Xamarin.Forms.Core/A.html#0c3fe2005c0f104b" class="i method">TryResolve</a>(<span class="r26 r">match</span> + <span class="s">&quot;Extension&quot;</span>, <b>out</b> <span class="r34 r">type</span>) &amp;&amp; !<span class="r35 r">typeResolver</span>.<a href="/Xamarin.Forms.Core/A.html#0c3fe2005c0f104b" class="i method">TryResolve</a>(<span class="r26 r">match</span>, <b>out</b> <span class="r34 r">type</span>))
+					{
+						<a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="k">var</a> <span id="r36 rd" class="r36 r">lineInfoProvider</span> = <span class="r28 r">serviceProvider</span>.<span class="i method">GetService</span>(<b>typeof</b> (<a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="t t">IXmlLineInfoProvider</a>)) <b>as</b> <a href="/Xamarin.Forms.Core/A.html#17842d11cf09e875" class="t t">IXmlLineInfoProvider</a>;
+						<b>var</b> <span id="r37 rd" class="r37 r">lineInfo</span> = (<span class="r36 r">lineInfoProvider</span> != <b>null</b>) ? <span class="r36 r">lineInfoProvider</span>.<a href="/Xamarin.Forms.Core/A.html#33daa4514b972f6e" class="i property">XmlLineInfo</a> : <b>new</b> <a href="/Xamarin.Forms.Core/A.html#6bd51fe48cf6e68a" class="t constructor">XmlLineInfo</a>();
+						<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="t t">String</a>.<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;MarkupExtension not found for {0}&quot;</span>, <span class="r26 r">match</span>), <span class="r37 r">lineInfo</span>);
+					}
+				}
+ 
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r38 rd" class="r38 r">namespaceuri</span> = <span class="r29 r">nsResolver</span>.<span class="i method">LookupNamespace</span>(<span class="r33 r">prefix</span>) ?? <span class="s">&quot;&quot;</span>;
+				<a href="XamlNode.cs.html#944154aac15f45be" class="k">var</a> <span id="r39 rd" class="r39 r">xmltype</span> = <b>new</b> <a href="XamlNode.cs.html#0a1740224b8aaa73" class="t constructor">XmlType</a>(<span class="r38 r">namespaceuri</span>, <span class="r34 r">type</span>.<a href="@1@System.Runtime/A.html#6068b0ba926a961b" class="i property">Name</a>, <b>null</b>);
+ 
+				<b>if</b> (<span class="r34 r">type</span> == <b>null</b>)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#ab0acd5f99886747" class="t constructor">NotSupportedException</a>();
+ 
+				<a href="#625a140c7f0a6f63" class="i field">node</a> = <span class="r30 r">xmlLineInfo</span> == <b>null</b>
+					? <b>new</b> <a href="XamlNode.cs.html#61ae0169eb29388e" class="t constructor">ElementNode</a>(<span class="r39 r">xmltype</span>, <b>null</b>, <span class="r29 r">nsResolver</span>)
+					: <b>new</b> <a href="XamlNode.cs.html#61ae0169eb29388e" class="t constructor">ElementNode</a>(<span class="r39 r">xmltype</span>, <b>null</b>, <span class="r29 r">nsResolver</span>, <span class="r30 r">xmlLineInfo</span>.<span class="i property">LineNumber</span>, <span class="r30 r">xmlLineInfo</span>.<span class="i property">LinePosition</span>);
+ 
+				<b>if</b> (<span class="r27 r">remaining</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;}&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+				{
+					<span class="r27 r">remaining</span> = <span class="r27 r">remaining</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(1);
+					<b>return</b> <a href="#625a140c7f0a6f63" class="i field">node</a>;
+				}
+ 
+				<b>char</b> <span id="r40 rd" class="r40 r">next</span>;
+				<b>string</b> <span id="r41 rd" class="r41 r">piece</span>;
+				<b>while</b> ((<span class="r41 r">piece</span> = <a href="MarkupExpressionParser.cs.html#2e63e57ed89db678" class="i method">GetNextPiece</a>(<b>ref</b> <span class="r27 r">remaining</span>, <b>out</b> <span class="r40 r">next</span>)) != <b>null</b>)
+					<a href="MarkupExpressionParser.cs.html#a7e5527a5364e337" class="i method">HandleProperty</a>(<span class="r41 r">piece</span>, <span class="r28 r">serviceProvider</span>, <b>ref</b> <span class="r27 r">remaining</span>, <span class="r40 r">next</span> != <span class="s">&#39;=&#39;</span>);
+ 
+				<b>return</b> <a href="#625a140c7f0a6f63" class="i field">node</a>;
+			}
+ 
+			<b>protected override void</b> <a id="cfad71715cbab2ed" href="R/cfad71715cbab2ed.html" target="n" data-glyph="75,2" class="i method">SetPropertyValue</a>(<b>string</b> <span id="r42 rd" class="r42 r">prop</span>, <b>string</b> <span id="r43 rd" class="r43 r">strValue</span>, <b>object</b> <span id="r44 rd" class="r44 r">value</span>, <span class="t t">IServiceProvider</span> <span id="r45 rd" class="r45 r">serviceProvider</span>)
+			{
+				<b>var</b> <span id="r46 rd" class="r46 r">nsResolver</span> = <span class="r45 r">serviceProvider</span>.<span class="i method">GetService</span>(<b>typeof</b> (<span class="t t">IXmlNamespaceResolver</span>)) <b>as</b> <span class="t t">IXmlNamespaceResolver</span>;
+ 
+				<a href="XamlNode.cs.html#9697de7bafb1de38" class="k">var</a> <span id="r47 rd" class="r47 r">childnode</span> = <span class="r44 r">value</span> <b>as</b> <a href="XamlNode.cs.html#9697de7bafb1de38" class="t t">INode</a> ?? <b>new</b> <a href="XamlNode.cs.html#e2360d8fe4cc7ae5" class="t constructor">ValueNode</a>(<span class="r43 r">strValue</span>, <span class="r46 r">nsResolver</span>);
+				<span class="r47 r">childnode</span>.<a href="XamlNode.cs.html#aaa082f00606354b" class="i property">Parent</a> = <a href="#625a140c7f0a6f63" class="i field">node</a>;
+				<b>if</b> (<span class="r42 r">prop</span> != <b>null</b>)
+				{
+					<a href="XmlName.cs.html#78eee6e8b684a76e" class="k">var</a> <span id="r48 rd" class="r48 r">name</span> = <b>new</b> <a href="XmlName.cs.html#655d78af446a108a" class="t constructor">XmlName</a>(<a href="#625a140c7f0a6f63" class="i field">node</a>.<a href="XamlNode.cs.html#3d69442fa39dc0af" class="i property">NamespaceURI</a>, <span class="r42 r">prop</span>);
+					<a href="#625a140c7f0a6f63" class="i field">node</a>.<a href="XamlNode.cs.html#ca11b3b288ccdec1" class="i property">Properties</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r48 r">name</span>] = <span class="r47 r">childnode</span>;
+				}
+				<b>else</b> <span class="c">//ContentProperty</span>
+					<a href="#625a140c7f0a6f63" class="i field">node</a>.<a href="XamlNode.cs.html#fb3a9fc1d07f233b" class="i property">CollectionItems</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r47 r">childnode</span>);
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

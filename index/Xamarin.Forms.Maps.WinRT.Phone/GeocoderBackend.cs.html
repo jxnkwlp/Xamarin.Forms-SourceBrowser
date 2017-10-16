@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html>
+<html><head><title>GeocoderBackend.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(86);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Maps.WinRT.Phone/GeocoderBackend.cs" target="_top">GeocoderBackend.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Maps.WinRT.Phone" target="_top">Xamarin.Forms.Maps.WinRT.Phone\Xamarin.Forms.Maps.WinRT.Phone.csproj</a> (Xamarin.Forms.Maps.WinRT.Phone)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i">Windows</span>.<span class="i">Devices</span>.<span class="i">Geolocation</span>;
+<b>using</b> <span class="i">Windows</span>.<span class="i">Services</span>.<span class="i">Maps</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">
+namespace Xamarin.Forms.Maps.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Maps</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal class</b> <a id="af2db4fcc3719cbc" href="R/af2db4fcc3719cbc.html" target="n" data-glyph="2,0" class="t t"><span id="8f212e4bf0316913">GeocoderBackend</span></a>
+	{
+		<b>public static void</b> <a id="103cc23a0047dbb4" href="R/103cc23a0047dbb4.html" target="n" data-glyph="72,1" class="i method">Register</a>()
+		{
+			<a href="/Xamarin.Forms.Maps/A.html#908bd5781ab8af17" class="t t">Geocoder</a>.<a href="/Xamarin.Forms.Maps/A.html#7093028813e72150" class="i field">GetPositionsForAddressAsyncFunc</a> = <span class="i">GetPositionsForAddress</span>;
+			<a href="/Xamarin.Forms.Maps/A.html#908bd5781ab8af17" class="t t">Geocoder</a>.<a href="/Xamarin.Forms.Maps/A.html#a7ac9971edd79d98" class="i field">GetAddressesForPositionFuncAsync</a> = <span class="i">GetAddressesForPositionAsync</span>;
+		}
+ 
+		<b>static string</b> <a id="44c70c194b5963c6" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">AddressToString</a>(<span class="i">MapAddress</span> <span id="r0 rd" class="r0 r">address</span>)
+		{
+			<b>string</b> <span id="r1 rd" class="r1 r">building</span> = <span class="s">&quot;&quot;</span>, <span id="r2 rd" class="r2 r">house</span> = <span class="s">&quot;&quot;</span>, <span id="r3 rd" class="r3 r">city</span> = <span class="s">&quot;&quot;</span>, <span id="r4 rd" class="r4 r">country</span> = <span class="s">&quot;&quot;</span>;
+ 
+			<b>var</b> <span id="r5 rd" class="r5 r">bldg</span> = <b>new</b> <span class="i">List</span>&lt;<b>string</b>&gt;();
+			<b>if</b> (!<span class="s">&quot;&quot;</span>.<span class="i">Equals</span>(<span class="r0 r">address</span>.<span class="i">BuildingRoom</span>))
+				<span class="r5 r">bldg</span>.<span class="i">Add</span>(<span class="r0 r">address</span>.<span class="i">BuildingRoom</span>);
+			<b>if</b> (!<span class="s">&quot;&quot;</span>.<span class="i">Equals</span>(<span class="r0 r">address</span>.<span class="i">BuildingFloor</span>))
+				<span class="r5 r">bldg</span>.<span class="i">Add</span>(<span class="r0 r">address</span>.<span class="i">BuildingFloor</span>);
+			<b>if</b> (!<span class="s">&quot;&quot;</span>.<span class="i">Equals</span>(<span class="r0 r">address</span>.<span class="i">BuildingName</span>))
+				<span class="r5 r">bldg</span>.<span class="i">Add</span>(<span class="r0 r">address</span>.<span class="i">BuildingName</span>);
+			<b>if</b> (!<span class="s">&quot;&quot;</span>.<span class="i">Equals</span>(<span class="r0 r">address</span>.<span class="i">BuildingWing</span>))
+				<span class="r5 r">bldg</span>.<span class="i">Add</span>(<span class="r0 r">address</span>.<span class="i">BuildingWing</span>);
+			<b>if</b> (<span class="r5 r">bldg</span>.<span class="i">Count</span> &gt; 0)
+				<span class="r1 r">building</span> = <b>string</b>.<span class="i">Join</span>(<span class="s">&quot; &quot;</span>, <span class="r5 r">bldg</span>) + <span class="i">Environment</span>.<span class="i">NewLine</span>;
+ 
+			<b>var</b> <span id="r6 rd" class="r6 r">hs</span> = <b>new</b> <span class="i">List</span>&lt;<b>string</b>&gt;();
+			<b>if</b> (!<span class="s">&quot;&quot;</span>.<span class="i">Equals</span>(<span class="r0 r">address</span>.<span class="i">StreetNumber</span>))
+				<span class="r6 r">hs</span>.<span class="i">Add</span>(<span class="r0 r">address</span>.<span class="i">StreetNumber</span>);
+			<b>if</b> (!<span class="s">&quot;&quot;</span>.<span class="i">Equals</span>(<span class="r0 r">address</span>.<span class="i">Street</span>))
+				<span class="r6 r">hs</span>.<span class="i">Add</span>(<span class="r0 r">address</span>.<span class="i">Street</span>);
+			<b>if</b> (<span class="r6 r">hs</span>.<span class="i">Count</span> &gt; 0)
+				<span class="r2 r">house</span> = <b>string</b>.<span class="i">Join</span>(<span class="s">&quot; &quot;</span>, <span class="r6 r">hs</span>) + <span class="i">Environment</span>.<span class="i">NewLine</span>;
+ 
+			<b>var</b> <span id="r7 rd" class="r7 r">cs</span> = <b>new</b> <span class="i">List</span>&lt;<b>string</b>&gt;();
+			<b>if</b> (!<span class="s">&quot;&quot;</span>.<span class="i">Equals</span>(<span class="r0 r">address</span>.<span class="i">Town</span>))
+				<span class="r7 r">cs</span>.<span class="i">Add</span>(<span class="r0 r">address</span>.<span class="i">Town</span>);
+			<b>if</b> (!<span class="s">&quot;&quot;</span>.<span class="i">Equals</span>(<span class="r0 r">address</span>.<span class="i">Neighborhood</span>))
+				<span class="r7 r">cs</span>.<span class="i">Add</span>(<span class="r0 r">address</span>.<span class="i">Neighborhood</span>);
+			<b>else if</b> (!<span class="s">&quot;&quot;</span>.<span class="i">Equals</span>(<span class="r0 r">address</span>.<span class="i">Region</span>))
+				<span class="r7 r">cs</span>.<span class="i">Add</span>(<span class="r0 r">address</span>.<span class="i">Region</span>);
+			<b>if</b> (!<span class="s">&quot;&quot;</span>.<span class="i">Equals</span>(<span class="r0 r">address</span>.<span class="i">PostCode</span>))
+				<span class="r7 r">cs</span>.<span class="i">Add</span>(<span class="r0 r">address</span>.<span class="i">PostCode</span>);
+			<b>if</b> (<span class="r7 r">cs</span>.<span class="i">Count</span> &gt; 0)
+				<span class="r3 r">city</span> = <b>string</b>.<span class="i">Join</span>(<span class="s">&quot; &quot;</span>, <span class="r7 r">cs</span>) + <span class="i">Environment</span>.<span class="i">NewLine</span>;
+ 
+			<b>if</b> (!<span class="s">&quot;&quot;</span>.<span class="i">Equals</span>(<span class="r0 r">address</span>.<span class="i">Country</span>))
+				<span class="r4 r">country</span> = <span class="r0 r">address</span>.<span class="i">Country</span>;
+			<b>return</b> <span class="r1 r">building</span> + <span class="r2 r">house</span> + <span class="r3 r">city</span> + <span class="r4 r">country</span>;
+		}
+ 
+		<b>static async</b> <span class="i">Task</span>&lt;<span class="i">IEnumerable</span>&lt;<b>string</b>&gt;&gt; <a id="1233ccb7b62ebdfc" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">GetAddressesForPositionAsync</a>(<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a> <span id="r8 rd" class="r8 r">position</span>)
+		{
+			<b>var</b> <span id="r9 rd" class="r9 r">queryResults</span> =
+				<b>await</b>
+					<span class="i">MapLocationFinder</span>.<span class="i">FindLocationsAtAsync</span>(
+						<b>new</b> <span class="i">Geopoint</span>(<b>new</b> <span class="i">BasicGeoposition</span> { <span class="i">Latitude</span> = <span class="r8 r">position</span>.<a href="/Xamarin.Forms.Maps/A.html#cb5045a0674344be" class="i property">Latitude</a>, <span class="i">Longitude</span> = <span class="r8 r">position</span>.<a href="/Xamarin.Forms.Maps/A.html#e52379d680105ddc" class="i property">Longitude</a> }));
+			<b>var</b> <span id="r10 rd" class="r10 r">addresses</span> = <b>new</b> <span class="i">List</span>&lt;<b>string</b>&gt;();
+			<b>foreach</b> (<b>var</b> <span id="r11 rd" class="r11 r">result</span> <b>in</b> <span class="r9 r">queryResults</span>?.<span class="i">Locations</span>)
+				<span class="r10 r">addresses</span>.<span class="i">Add</span>(<span class="i">AddressToString</span>(<span class="r11 r">result</span>.<span class="i">Address</span>));
+ 
+			<b>return</b> <span class="r10 r">addresses</span>;
+		}
+ 
+		<b>static async</b> <span class="i">Task</span>&lt;<span class="i">IEnumerable</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a>&gt;&gt; <a id="984f9d2d03041ea4" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">GetPositionsForAddress</a>(<b>string</b> <span id="r12 rd" class="r12 r">address</span>)
+		{
+			<b>var</b> <span id="r13 rd" class="r13 r">queryResults</span> = <b>await</b> <span class="i">MapLocationFinder</span>.<span class="i">FindLocationsAsync</span>(<span class="r12 r">address</span>, <b>null</b>, 10);
+			<b>var</b> <span id="r14 rd" class="r14 r">positions</span> = <b>new</b> <span class="i">List</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a>&gt;();
+			<b>foreach</b> (<b>var</b> <span id="r15 rd" class="r15 r">result</span> <b>in</b> <span class="r13 r">queryResults</span>?.<span class="i">Locations</span>)
+				<span class="r14 r">positions</span>.<span class="i">Add</span>(<b>new</b> <span class="t">Position</span>(<span class="r15 r">result</span>.<span class="i">Point</span>.<span class="i">Position</span>.<span class="i">Latitude</span>, <span class="r15 r">result</span>.<span class="i">Point</span>.<span class="i">Position</span>.<span class="i">Longitude</span>));
+			<b>return</b> <span class="r14 r">positions</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

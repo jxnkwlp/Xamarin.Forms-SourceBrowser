@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html><head><title>RendererPool.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(92);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/RendererPool.cs" target="_top">RendererPool.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>public sealed class</b> <a id="877f41b9df8cef44" href="R/877f41b9df8cef44.html" target="n" data-glyph="0,0" class="t t">RendererPool</a>
+	{
+		<b>readonly</b> <span class="i">Dictionary</span>&lt;<span class="i">Type</span>, <span class="i">Stack</span>&lt;<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>&gt;&gt; <a id="873d980b02db85b2" href="R/873d980b02db85b2.html" target="n" data-glyph="46,1" class="i field">_freeRenderers</a> = <b>new</b> <span class="i">Dictionary</span>&lt;<span class="i">Type</span>, <span class="i">Stack</span>&lt;<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>&gt;&gt;();
+ 
+		<b>readonly</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a id="f9939679b5c12bd4" href="R/f9939679b5c12bd4.html" target="n" data-glyph="46,1" class="i field">_oldElement</a>;
+ 
+		<b>readonly</b> <a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <a id="7a994f8a2887f4ee" href="R/7a994f8a2887f4ee.html" target="n" data-glyph="46,1" class="i field">_parent</a>;
+ 
+		<b>public</b> <a id="969e5d9314807447" href="R/969e5d9314807447.html" target="n" data-glyph="72,1" class="i constructor">RendererPool</a>(<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r0 rd" class="r0 r">renderer</span>, <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r1 rd" class="r1 r">oldElement</span>)
+		{
+			<b>if</b> (<span class="r0 r">renderer</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<span class="s">&quot;renderer&quot;</span>);
+ 
+			<b>if</b> (<span class="r1 r">oldElement</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<span class="s">&quot;oldElement&quot;</span>);
+ 
+			<a href="#f9939679b5c12bd4" class="i field">_oldElement</a> = <span class="r1 r">oldElement</span>;
+			<a href="#7a994f8a2887f4ee" class="i field">_parent</a> = <span class="r0 r">renderer</span>;
+		}
+ 
+		<b>public void</b> <a id="ae41ce0b6fcf158f" href="R/ae41ce0b6fcf158f.html" target="n" data-glyph="72,1" class="i method">ClearChildrenRenderers</a>()
+		{
+			<b>if</b> (((<a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a>)<a href="#7a994f8a2887f4ee" class="i field">_parent</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#cbe8ebab3c282a32" class="i property">LogicalChildren</a>.<span class="i">Count</span> == 0)
+				<b>return</b>;
+			<a href="#94dcef272a5d6f3a" class="i method">ClearChildrenRenderers</a>(<a href="#f9939679b5c12bd4" class="i field">_oldElement</a>);
+		}
+ 
+		<b>public</b> <a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <a id="88f15ac4b781d882" href="R/88f15ac4b781d882.html" target="n" data-glyph="72,1" class="i method">GetFreeRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r2 rd" class="r2 r">view</span>)
+		{
+			<b>if</b> (<span class="r2 r">view</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<span class="s">&quot;view&quot;</span>);
+ 
+			<span class="i">Type</span> <span id="r3 rd" class="r3 r">rendererType</span> = <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="/Xamarin.Forms.Core/A.html#5f29d2ac0e30bd81" class="i property">Registered</a>.<span class="i">GetHandlerTypeForObject</span>(<span class="r2 r">view</span>) ?? <b>typeof</b>(<a href="ViewRenderer.cs.html#651f8c2c853ce075" class="t t">ViewRenderer</a>);
+ 
+			<span class="i">Stack</span>&lt;<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>&gt; <span id="r4 rd" class="r4 r">renderers</span>;
+			<b>if</b> (!<a href="#873d980b02db85b2" class="i field">_freeRenderers</a>.<span class="i">TryGetValue</span>(<span class="r3 r">rendererType</span>, <b>out</b> <span class="r4 r">renderers</span>) || <span class="r4 r">renderers</span>.<span class="i">Count</span> == 0)
+				<b>return null</b>;
+ 
+			<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r5 rd" class="r5 r">renderer</span> = <span class="r4 r">renderers</span>.<span class="i">Pop</span>();
+			<span class="r5 r">renderer</span>.<a href="IVisualElementRenderer.cs.html#149302ec71c12b79" class="i method">SetElement</a>(<span class="r2 r">view</span>);
+			<b>return</b> <span class="r5 r">renderer</span>;
+		}
+ 
+		<b>void</b> <a id="94dcef272a5d6f3a" href="R/94dcef272a5d6f3a.html" target="n" data-glyph="76,1" class="i method">ClearChildrenRenderers</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r6 rd" class="r6 r">view</span>)
+		{
+			<b>if</b> (<span class="r6 r">view</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#76098df8350c0484" class="t t">Element</a> <span id="r7 rd" class="r7 r">logicalChild</span> <b>in</b> ((<a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a>)<span class="r6 r">view</span>).<a href="/Xamarin.Forms.Core/A.html#cbe8ebab3c282a32" class="i property">LogicalChildren</a>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="k">var</a> <span id="r8 rd" class="r8 r">child</span> = <span class="r7 r">logicalChild</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>;
+				<b>if</b> (<span class="r8 r">child</span> != <b>null</b>)
+				{
+					<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r9 rd" class="r9 r">renderer</span> = <a href="Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="Platform.cs.html#1b78ee69c66639c4" class="i method">GetRenderer</a>(<span class="r8 r">child</span>);
+					<b>if</b> (<span class="r9 r">renderer</span> == <b>null</b>)
+						<b>continue</b>;
+ 
+					<b>if</b> (<span class="r9 r">renderer</span>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">Parent</span> != <a href="#7a994f8a2887f4ee" class="i field">_parent</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>)
+						<b>continue</b>;
+ 
+					<span class="r9 r">renderer</span>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<a href="ViewExtensions.cs.html#ed54340ae84abc92" class="i method">RemoveFromParent</a>();
+ 
+					<a href="Platform.cs.html#479e712741d44fa2" class="t t">Platform</a>.<a href="Platform.cs.html#fd4d9b7c2836c5e6" class="i method">SetRenderer</a>(<span class="r8 r">child</span>, <b>null</b>);
+					<a href="#cbb70e1298490e26" class="i method">PushRenderer</a>(<span class="r9 r">renderer</span>);
+				}
+			}
+ 
+			<b>var</b> <span id="r10 rd" class="r10 r">viewGroup</span> = <a href="#7a994f8a2887f4ee" class="i field">_parent</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a> <b>as</b> <span class="i">ViewGroup</span>;
+ 
+			<b>if</b> (<span class="r10 r">viewGroup</span> != <b>null</b> &amp;&amp; <span class="r10 r">viewGroup</span>.<span class="i">ChildCount</span> != 0)
+				<span class="r10 r">viewGroup</span>.<span class="i">RemoveAllViews</span>();
+		}
+ 
+		<b>void</b> <a id="cbb70e1298490e26" href="R/cbb70e1298490e26.html" target="n" data-glyph="76,1" class="i method">PushRenderer</a>(<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r11 rd" class="r11 r">renderer</span>)
+		{
+			<b>var</b> <span id="r12 rd" class="r12 r">reflectableType</span> = <span class="r11 r">renderer</span> <b>as</b> <span class="i">System</span>.<span class="i">Reflection</span>.<span class="i">IReflectableType</span>;
+			<b>var</b> <span id="r13 rd" class="r13 r">rendererType</span> = <span class="r12 r">reflectableType</span> != <b>null</b> ? <span class="r12 r">reflectableType</span>.<span class="i">GetTypeInfo</span>().<span class="i">AsType</span>() : <span class="r11 r">renderer</span>.<span class="i">GetType</span>();
+ 
+			<span class="i">Stack</span>&lt;<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>&gt; <span id="r14 rd" class="r14 r">renderers</span>;
+			<b>if</b> (!<a href="#873d980b02db85b2" class="i field">_freeRenderers</a>.<span class="i">TryGetValue</span>(<span class="r13 r">rendererType</span>, <b>out</b> <span class="r14 r">renderers</span>))
+				<a href="#873d980b02db85b2" class="i field">_freeRenderers</a>[<span class="r13 r">rendererType</span>] = <span class="r14 r">renderers</span> = <b>new</b> <span class="i">Stack</span>&lt;<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>&gt;();
+ 
+			<span class="r14 r">renderers</span>.<span class="i">Push</span>(<span class="r11 r">renderer</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

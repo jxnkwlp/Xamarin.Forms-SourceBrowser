@@ -1,0 +1,427 @@
+﻿<!DOCTYPE html>
+<html><head><title>ScrollViewRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(418);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Renderers/ScrollViewRenderer.cs" target="_top">Renderers\ScrollViewRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Animation</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Graphics</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Widget</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i">AScrollView</span> = <span class="i">Android</span>.<span class="i">Widget</span>.<span class="i">ScrollView</span>;
+<b>using</b> <span class="i">AView</span> = <span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>public class</b> <a id="ffefb095af72852e" href="../R/ffefb095af72852e.html" target="n" data-glyph="0,0" class="t t">ScrollViewRenderer</a> : <span class="i">AScrollView</span>, <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>, <a href="/Xamarin.Forms.Core/A.html#1ec8f97ecf2bfedd" class="t t">IEffectControlProvider</a>
+	{
+		<a href="ScrollViewContainer.cs.html#c893212bfc1d9842" class="t t">ScrollViewContainer</a> <a id="696f79ee1f4b7156" href="../R/696f79ee1f4b7156.html" target="n" data-glyph="46,1" class="i field">_container</a>;
+		<span class="i">HorizontalScrollView</span> <a id="6e54f5572e69eae1" href="../R/6e54f5572e69eae1.html" target="n" data-glyph="46,1" class="i field">_hScrollView</a>;
+		<b>bool</b> <a id="5d7e13f02690a723" href="../R/5d7e13f02690a723.html" target="n" data-glyph="46,1" class="i field">_isAttached</a>;
+		<b>internal bool</b> <a id="064f8ffba70319e2" href="../R/064f8ffba70319e2.html" target="n" data-glyph="44,1" class="i field">ShouldSkipOnTouch</a>;
+		<b>bool</b> <a id="e8cf0786848636d2" href="../R/e8cf0786848636d2.html" target="n" data-glyph="46,1" class="i field">_isBidirectional</a>;
+		<a href="/Xamarin.Forms.Core/A.html#f4df39c3e50ec61f" class="t t">ScrollView</a> <a id="f9a1e68c34caf58a" href="../R/f9a1e68c34caf58a.html" target="n" data-glyph="46,1" class="i field">_view</a>;
+		<b>int</b> <a id="52b16ea523e48502" href="../R/52b16ea523e48502.html" target="n" data-glyph="46,1" class="i field">_previousBottom</a>;
+		<b>bool</b> <a id="532e9afbbe7e2cac" href="../R/532e9afbbe7e2cac.html" target="n" data-glyph="46,1" class="i field">_isEnabled</a>;
+ 
+		<b>public</b> <a id="4b5c2a17b19a2bde" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">ScrollViewRenderer</a>() : <b>base</b>(<a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>)
+		{
+		}
+ 
+		<b>protected</b> <a href="/Xamarin.Forms.Core/A.html#385a2c6940ef35e9" class="t t">IScrollViewController</a> <a id="de8371b05ef7641e" href="../R/de8371b05ef7641e.html" target="n" data-glyph="105,1" class="i property">Controller</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="/Xamarin.Forms.Core/A.html#385a2c6940ef35e9" class="t t">IScrollViewController</a>)<a href="#aab850412ab714de" class="i property">Element</a>; }
+		}
+ 
+		<b>internal float</b> <a id="7b20b41e3fb6a163" href="../R/7b20b41e3fb6a163.html" target="n" data-glyph="104,1" class="i property">LastX</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>internal float</b> <a id="6b146ec4d295a31b" href="../R/6b146ec4d295a31b.html" target="n" data-glyph="104,1" class="i property">LastY</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a id="aab850412ab714de" href="../R/aab850412ab714de.html" target="n" data-glyph="102,1" class="i property">Element</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#f9a1e68c34caf58a" class="i field">_view</a>; }
+		}
+ 
+		<b>public event</b> <span class="i">EventHandler</span>&lt;<a href="../VisualElementChangedEventArgs.cs.html#af6d54330067744b" class="t t">VisualElementChangedEventArgs</a>&gt; <a id="0d52f9b312e933cc" href="../R/0d52f9b312e933cc.html" target="n" data-glyph="30,1" class="i">ElementChanged</a>;
+ 
+		<b>event</b> <span class="i">EventHandler</span>&lt;<span class="i">PropertyChangedEventArgs</span>&gt; <a id="ba38b5b2edff5862" href="../R/ba38b5b2edff5862.html" target="n" data-glyph="34,1" class="i">ElementPropertyChanged</a>;
+		<b>event</b> <span class="i">EventHandler</span>&lt;<span class="i">PropertyChangedEventArgs</span>&gt; <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#8db4ccf1bc524c1e" class="i">ElementPropertyChanged</a>
+		{
+			<b>add</b> { <a href="#ba38b5b2edff5862" class="i">ElementPropertyChanged</a> += <b>value</b>; }
+			<b>remove</b> { <a href="#ba38b5b2edff5862" class="i">ElementPropertyChanged</a> -= <b>value</b>; }
+		}
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="75e5f658199494e9" href="../R/75e5f658199494e9.html" target="n" data-glyph="72,1" class="i method">GetDesiredSize</a>(<b>int</b> <span id="r0 rd" class="r0 r">widthConstraint</span>, <b>int</b> <span id="r1 rd" class="r1 r">heightConstraint</span>)
+		{
+			<span class="i">Measure</span>(<span class="r0 r">widthConstraint</span>, <span class="r1 r">heightConstraint</span>);
+			<b>return</b> <b>new</b> <span class="t">SizeRequest</span>(<b>new</b> <span class="t">Size</span>(<span class="i">MeasuredWidth</span>, <span class="i">MeasuredHeight</span>), <b>new</b> <span class="t">Size</span>(40, 40));
+		}
+ 
+		<b>public void</b> <a id="f86e4df664e1b5ff" href="../R/f86e4df664e1b5ff.html" target="n" data-glyph="72,1" class="i method">SetElement</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r2 rd" class="r2 r">element</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#f4df39c3e50ec61f" class="t t">ScrollView</a> <span id="r3 rd" class="r3 r">oldElement</span> = <a href="#f9a1e68c34caf58a" class="i field">_view</a>;
+			<a href="#f9a1e68c34caf58a" class="i field">_view</a> = (<a href="/Xamarin.Forms.Core/A.html#f4df39c3e50ec61f" class="t t">ScrollView</a>)<span class="r2 r">element</span>;
+ 
+			<b>if</b> (<span class="r3 r">oldElement</span> != <b>null</b>)
+			{
+				<span class="r3 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <span class="i">HandlePropertyChanged</span>;
+				((<a href="/Xamarin.Forms.Core/A.html#385a2c6940ef35e9" class="t t">IScrollViewController</a>)<span class="r3 r">oldElement</span>).<a href="/Xamarin.Forms.Core/A.html#4788334bed2d660e" class="i">ScrollToRequested</a> -= <span class="i">OnScrollToRequested</span>;
+			}
+			<b>if</b> (<span class="r2 r">element</span> != <b>null</b>)
+			{
+				<a href="#13de7274f05d2196" class="i method">OnElementChanged</a>(<b>new</b> <a href="../VisualElementChangedEventArgs.cs.html#6a37702d575e1b52" class="t constructor">VisualElementChangedEventArgs</a>(<span class="r3 r">oldElement</span>, <span class="r2 r">element</span>));
+ 
+				<b>if</b> (<a href="#696f79ee1f4b7156" class="i field">_container</a> == <b>null</b>)
+				{
+					<a href="#d0e80d1495630a10" class="i property">Tracker</a> = <b>new</b> <a href="../VisualElementTracker.cs.html#4656ffbcfdf6338a" class="t constructor">VisualElementTracker</a>(<a href="#ffefb095af72852e" class="k">this</a>);
+					<a href="#696f79ee1f4b7156" class="i field">_container</a> = <b>new</b> <a href="ScrollViewContainer.cs.html#9e8aaf1ffa9d0033" class="t constructor">ScrollViewContainer</a>(<a href="#f9a1e68c34caf58a" class="i field">_view</a>, <a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>);
+				}
+ 
+				<a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <span class="i">HandlePropertyChanged</span>;
+				<a href="#de8371b05ef7641e" class="i property">Controller</a>.<a href="/Xamarin.Forms.Core/A.html#4788334bed2d660e" class="i">ScrollToRequested</a> += <span class="i">OnScrollToRequested</span>;
+ 
+				<a href="#e41eddf7e1f12875" class="i method">LoadContent</a>();
+				<a href="#b55193a109780e15" class="i method">UpdateBackgroundColor</a>();
+				<a href="#244f5f0251011188" class="i method">UpdateOrientation</a>();
+				<a href="#9a3010a3b0ab9bb9" class="i method">UpdateIsEnabled</a>();
+ 
+				<span class="r2 r">element</span>.<span class="i">SendViewInitialized</span>(<a href="#ffefb095af72852e" class="k">this</a>);
+ 
+				<b>if</b> (!<b>string</b>.<span class="i">IsNullOrEmpty</span>(<span class="r2 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>))
+					<span class="i">ContentDescription</span> = <span class="r2 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a>;
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#f41400798b78aca4" class="t t">EffectUtilities</a>.<span class="i">RegisterEffectControlProvider</span>(<a href="#ffefb095af72852e" class="k">this</a>, <span class="r3 r">oldElement</span>, <span class="r2 r">element</span>);
+		}
+ 
+		<b>public</b> <a href="../VisualElementTracker.cs.html#d538081d9f94da4d" class="t t">VisualElementTracker</a> <a id="d0e80d1495630a10" href="../R/d0e80d1495630a10.html" target="n" data-glyph="102,1" class="i property">Tracker</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>public void</b> <a id="cfb7334fb8a9e1c5" href="../R/cfb7334fb8a9e1c5.html" target="n" data-glyph="72,1" class="i method">UpdateLayout</a>()
+		{
+			<b>if</b> (<a href="#d0e80d1495630a10" class="i property">Tracker</a> != <b>null</b>)
+				<a href="#d0e80d1495630a10" class="i property">Tracker</a>.<a href="../VisualElementTracker.cs.html#0e37e7edf6aa3434" class="i method">UpdateLayout</a>();
+		}
+ 
+		<b>public</b> <span class="i">ViewGroup</span> <a id="f957cdb67fe692c4" href="../R/f957cdb67fe692c4.html" target="n" data-glyph="102,1" class="i property">ViewGroup</a> =&gt; <a href="#ffefb095af72852e" class="k">this</a>;
+ 
+		<span class="i">AView</span> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a> =&gt; <a href="#ffefb095af72852e" class="k">this</a>;
+ 
+		<b>public override void</b> <a id="059a32537850eb81" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Draw</a>(<span class="i">Canvas</span> <span id="r4 rd" class="r4 r">canvas</span>)
+		{
+			<span class="r4 r">canvas</span>.<span class="i">ClipRect</span>(<span class="r4 r">canvas</span>.<span class="i">ClipBounds</span>);
+ 
+			<b>base</b>.<span class="i">Draw</span>(<span class="r4 r">canvas</span>);
+		}
+ 
+		<b>public override bool</b> <a id="9e9fddcea0a13325" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnInterceptTouchEvent</a>(<span class="i">MotionEvent</span> <span id="r5 rd" class="r5 r">ev</span>)
+		{
+			<b>if</b> (<a href="#aab850412ab714de" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#02b822eb508e27ff" class="i property">InputTransparent</a>)
+				<b>return false</b>;
+ 
+			<span class="c">// set the start point for the bidirectional scroll; </span>
+			<span class="c">// Down is swallowed by other controls, so we&#39;ll just sneak this in here without actually preventing</span>
+			<span class="c">// other controls from getting the event.			</span>
+			<b>if</b> (<a href="#e8cf0786848636d2" class="i field">_isBidirectional</a> &amp;&amp; <span class="r5 r">ev</span>.<span class="i">Action</span> == <span class="i">MotionEventActions</span>.<span class="i">Down</span>)
+			{
+				<a href="#6b146ec4d295a31b" class="i property">LastY</a> = <span class="r5 r">ev</span>.<span class="i">RawY</span>;
+				<a href="#7b20b41e3fb6a163" class="i property">LastX</a> = <span class="r5 r">ev</span>.<span class="i">RawX</span>;
+			}
+ 
+			<b>return</b> <b>base</b>.<span class="i">OnInterceptTouchEvent</span>(<span class="r5 r">ev</span>);
+		}
+ 
+		<b>public override bool</b> <a id="84de80aaf75d98fd" href="../R/84de80aaf75d98fd.html" target="n" data-glyph="72,1" class="i method">OnTouchEvent</a>(<span class="i">MotionEvent</span> <span id="r6 rd" class="r6 r">ev</span>)
+		{
+			<b>if</b> (!<a href="#532e9afbbe7e2cac" class="i field">_isEnabled</a>)
+				<b>return false</b>;
+ 
+			<b>if</b> (<a href="#064f8ffba70319e2" class="i field">ShouldSkipOnTouch</a>)
+			{
+				<a href="#064f8ffba70319e2" class="i field">ShouldSkipOnTouch</a> = <b>false</b>;
+				<b>return false</b>;
+			}
+ 
+			<span class="c">// The nested ScrollViews will allow us to scroll EITHER vertically OR horizontally in a single gesture.</span>
+			<span class="c">// This will allow us to also scroll diagonally.</span>
+			<span class="c">// We&#39;ll fall through to the base event so we still get the fling from the ScrollViews.</span>
+			<span class="c">// We have to do this in both ScrollViews, since a single gesture will be owned by one or the other, depending</span>
+			<span class="c">// on the initial direction of movement (i.e., horizontal/vertical).</span>
+			<b>if</b> (<a href="#e8cf0786848636d2" class="i field">_isBidirectional</a> &amp;&amp; !<a href="#aab850412ab714de" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#02b822eb508e27ff" class="i property">InputTransparent</a>)
+			{
+				<b>float</b> <span id="r7 rd" class="r7 r">dX</span> = <a href="#7b20b41e3fb6a163" class="i property">LastX</a> - <span class="r6 r">ev</span>.<span class="i">RawX</span>;
+				<b>float</b> <span id="r8 rd" class="r8 r">dY</span> = <a href="#6b146ec4d295a31b" class="i property">LastY</a> - <span class="r6 r">ev</span>.<span class="i">RawY</span>;
+				<a href="#6b146ec4d295a31b" class="i property">LastY</a> = <span class="r6 r">ev</span>.<span class="i">RawY</span>;
+				<a href="#7b20b41e3fb6a163" class="i property">LastX</a> = <span class="r6 r">ev</span>.<span class="i">RawX</span>;
+				<b>if</b> (<span class="r6 r">ev</span>.<span class="i">Action</span> == <span class="i">MotionEventActions</span>.<span class="i">Move</span>)
+				{
+					<span class="i">ScrollBy</span>(0, (<b>int</b>)<span class="r8 r">dY</span>);
+					<b>foreach</b> (<a href="AHorizontalScrollView.cs.html#a82eb3df5ef6efa2" class="t t">AHorizontalScrollView</a> <span id="r9 rd" class="r9 r">child</span> <b>in</b> <a href="#ffefb095af72852e" class="k">this</a>.<span class="i">GetChildrenOfType</span>&lt;<a href="AHorizontalScrollView.cs.html#a82eb3df5ef6efa2" class="t t">AHorizontalScrollView</a>&gt;())
+					{
+						<span class="r9 r">child</span>.<span class="i">ScrollBy</span>((<b>int</b>)<span class="r7 r">dX</span>, 0);
+						<b>break</b>;
+					}
+				}
+			}
+			<b>return</b> <b>base</b>.<span class="i">OnTouchEvent</span>(<span class="r6 r">ev</span>);
+		}
+ 
+		<b>protected override void</b> <a id="eb1557434261a23d" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r10 rd" class="r10 r">disposing</span>)
+		{
+			<b>base</b>.<span class="i">Dispose</span>(<span class="r10 r">disposing</span>);
+ 
+			<a href="#f86e4df664e1b5ff" class="i method">SetElement</a>(<b>null</b>);
+ 
+			<b>if</b> (<span class="r10 r">disposing</span>)
+			{
+				<a href="#d0e80d1495630a10" class="i property">Tracker</a>.<a href="../VisualElementTracker.cs.html#10977b30ca8b0186" class="i method">Dispose</a>();
+				<a href="#d0e80d1495630a10" class="i property">Tracker</a> = <b>null</b>;
+				<span class="i">RemoveAllViews</span>();
+				<a href="#696f79ee1f4b7156" class="i field">_container</a>.<span class="i">Dispose</span>();
+				<a href="#696f79ee1f4b7156" class="i field">_container</a> = <b>null</b>;
+			}
+		}
+ 
+		<b>protected override void</b> <a id="6ab4b9addda7ed1e" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnAttachedToWindow</a>()
+		{
+			<b>base</b>.<span class="i">OnAttachedToWindow</span>();
+ 
+			<a href="#5d7e13f02690a723" class="i field">_isAttached</a> = <b>true</b>;
+		}
+ 
+		<b>protected override void</b> <a id="23b7d384dadda4db" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnDetachedFromWindow</a>()
+		{
+			<b>base</b>.<span class="i">OnDetachedFromWindow</span>();
+ 
+			<a href="#5d7e13f02690a723" class="i field">_isAttached</a> = <b>false</b>;
+		}
+ 
+		<b>protected virtual void</b> <a id="13de7274f05d2196" href="../R/13de7274f05d2196.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../VisualElementChangedEventArgs.cs.html#af6d54330067744b" class="t t">VisualElementChangedEventArgs</a> <span id="r11 rd" class="r11 r">e</span>)
+		{
+			<span class="i">EventHandler</span>&lt;<a href="../VisualElementChangedEventArgs.cs.html#af6d54330067744b" class="t t">VisualElementChangedEventArgs</a>&gt; <span id="r12 rd" class="r12 r">changed</span> = <a href="#0d52f9b312e933cc" class="i">ElementChanged</a>;
+			<b>if</b> (<span class="r12 r">changed</span> != <b>null</b>)
+				<span class="r12 r">changed</span>(<a href="#ffefb095af72852e" class="k">this</a>, <span class="r11 r">e</span>);
+		}
+ 
+		<b>protected override void</b> <a id="8f89a382f6bfd7e4" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnLayout</a>(<b>bool</b> <span id="r13 rd" class="r13 r">changed</span>, <b>int</b> <span id="r14 rd" class="r14 r">left</span>, <b>int</b> <span id="r15 rd" class="r15 r">top</span>, <b>int</b> <span id="r16 rd" class="r16 r">right</span>, <b>int</b> <span id="r17 rd" class="r17 r">bottom</span>)
+		{
+			<span class="c">// If the scroll view has changed size because of soft keyboard dismissal</span>
+			<span class="c">// (while WindowSoftInputModeAdjust is set to Resize), then we may need to request a </span>
+			<span class="c">// layout of the ScrollViewContainer</span>
+			<b>bool</b> <span id="r18 rd" class="r18 r">requestContainerLayout</span> = <span class="r17 r">bottom</span> &gt; <a href="#52b16ea523e48502" class="i field">_previousBottom</a>;
+			<a href="#52b16ea523e48502" class="i field">_previousBottom</a> = <span class="r17 r">bottom</span>;
+ 
+			<b>base</b>.<span class="i">OnLayout</span>(<span class="r13 r">changed</span>, <span class="r14 r">left</span>, <span class="r15 r">top</span>, <span class="r16 r">right</span>, <span class="r17 r">bottom</span>);
+			<b>if</b> (<a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#8250985f9bd67342" class="i property">Content</a> != <b>null</b> &amp;&amp; <a href="#6e54f5572e69eae1" class="i field">_hScrollView</a> != <b>null</b>)
+				<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>.<span class="i">Layout</span>(0, 0, <span class="r16 r">right</span> - <span class="r14 r">left</span>, <span class="i">Math</span>.<span class="i">Max</span>(<span class="r17 r">bottom</span> - <span class="r15 r">top</span>, (<b>int</b>)<span class="i">Context</span>.<span class="i">ToPixels</span>(<a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#8250985f9bd67342" class="i property">Content</a>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a>)));
+			<b>else if</b>(<a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#8250985f9bd67342" class="i property">Content</a> != <b>null</b> &amp;&amp; <span class="r18 r">requestContainerLayout</span>)
+				<a href="#696f79ee1f4b7156" class="i field">_container</a>?.<span class="i">RequestLayout</span>();
+		}
+ 
+		<b>protected override void</b> <a id="d6b3201cd3c06069" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnScrollChanged</a>(<b>int</b> <span id="r19 rd" class="r19 r">l</span>, <b>int</b> <span id="r20 rd" class="r20 r">t</span>, <b>int</b> <span id="r21 rd" class="r21 r">oldl</span>, <b>int</b> <span id="r22 rd" class="r22 r">oldt</span>)
+		{
+			<b>base</b>.<span class="i">OnScrollChanged</span>(<span class="r19 r">l</span>, <span class="r20 r">t</span>, <span class="r21 r">oldl</span>, <span class="r22 r">oldt</span>);
+ 
+			<a href="#0bd3945df4e3fcc0" class="i method">UpdateScrollPosition</a>(<a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<a href="../ContextExtensions.cs.html#cce5139585f8ebc7" class="i method">FromPixels</a>(<span class="r19 r">l</span>), <a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<a href="../ContextExtensions.cs.html#cce5139585f8ebc7" class="i method">FromPixels</a>(<span class="r20 r">t</span>));
+		}
+ 
+		<b>internal void</b> <a id="0bd3945df4e3fcc0" href="../R/0bd3945df4e3fcc0.html" target="n" data-glyph="74,1" class="i method">UpdateScrollPosition</a>(<b>double</b> <span id="r23 rd" class="r23 r">x</span>, <b>double</b> <span id="r24 rd" class="r24 r">y</span>)
+		{
+			<b>if</b> (<a href="#f9a1e68c34caf58a" class="i field">_view</a> != <b>null</b>)
+			{
+				<b>if</b> (<a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#0715cd2a10cf2197" class="i property">Orientation</a> == <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#7a7908f950176f24" class="i field">Both</a>)
+				{
+					<b>if</b> (<span class="r23 r">x</span> == 0)
+						<span class="r23 r">x</span> = <a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<span class="i">FromPixels</span>(<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>.<span class="i">ScrollX</span>);
+ 
+					<b>if</b> (<span class="r24 r">y</span> == 0)
+						<span class="r24 r">y</span> = <a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<span class="i">FromPixels</span>(<span class="i">ScrollY</span>);
+				}
+ 
+				<a href="#de8371b05ef7641e" class="i property">Controller</a>.<span class="i">SetScrolledPosition</span>(<span class="r23 r">x</span>, <span class="r24 r">y</span>);
+			}
+		}
+ 
+		<b>void</b> <a href="/Xamarin.Forms.Core/A.html#1ec8f97ecf2bfedd" class="t t">IEffectControlProvider</a>.<a href="/Xamarin.Forms.Core/A.html#b783dcc5e3ec781f" class="i method">RegisterEffect</a>(<a href="/Xamarin.Forms.Core/A.html#e864ca63b39ef663" class="t t">Effect</a> <span id="r25 rd" class="r25 r">effect</span>)
+		{
+			<a href="../PlatformEffect.cs.html#3e4e0a547914f11a" class="k">var</a> <span id="r26 rd" class="r26 r">platformEffect</span> = <span class="r25 r">effect</span> <b>as</b> <a href="../PlatformEffect.cs.html#3e4e0a547914f11a" class="t t">PlatformEffect</a>;
+			<b>if</b> (<span class="r26 r">platformEffect</span> != <b>null</b>)
+				<a href="#3e6ad390ed9f709f" class="i method">OnRegisterEffect</a>(<span class="r26 r">platformEffect</span>);
+		}
+ 
+		<b>void</b> <a id="3e6ad390ed9f709f" href="../R/3e6ad390ed9f709f.html" target="n" data-glyph="76,1" class="i method">OnRegisterEffect</a>(<a href="../PlatformEffect.cs.html#3e4e0a547914f11a" class="t t">PlatformEffect</a> <span id="r27 rd" class="r27 r">effect</span>)
+		{
+			<span class="r27 r">effect</span>.<span class="i">SetContainer</span>(<a href="#ffefb095af72852e" class="k">this</a>);
+			<span class="r27 r">effect</span>.<span class="i">SetControl</span>(<a href="#ffefb095af72852e" class="k">this</a>);
+		}
+ 
+		<b>static int</b> <a id="9da575c25c196964" href="../R/9da575c25c196964.html" target="n" data-glyph="76,1" class="i method">GetDistance</a>(<b>double</b> <span id="r28 rd" class="r28 r">start</span>, <b>double</b> <span id="r29 rd" class="r29 r">position</span>, <b>double</b> <span id="r30 rd" class="r30 r">v</span>)
+		{
+			<b>return</b> (<b>int</b>)(<span class="r28 r">start</span> + (<span class="r29 r">position</span> - <span class="r28 r">start</span>) * <span class="r30 r">v</span>);
+		}
+ 
+		<b>void</b> <a id="6be3588f83a7e553" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">HandlePropertyChanged</a>(<b>object</b> <span id="r31 rd" class="r31 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r32 rd" class="r32 r">e</span>)
+		{
+			<a href="#ba38b5b2edff5862" class="i">ElementPropertyChanged</a>?.<span class="i">Invoke</span>(<a href="#ffefb095af72852e" class="k">this</a>, <span class="r32 r">e</span>);
+ 
+			<b>if</b> (<span class="r32 r">e</span>.<span class="i">PropertyName</span> == <span class="s">&quot;Content&quot;</span>)
+				<a href="#e41eddf7e1f12875" class="i method">LoadContent</a>();
+			<b>else if</b> (<span class="r32 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#4d5a7481d6e7289d" class="i field">BackgroundColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#b55193a109780e15" class="i method">UpdateBackgroundColor</a>();
+			<b>else if</b> (<span class="r32 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#f4df39c3e50ec61f" class="t t">ScrollView</a>.<a href="/Xamarin.Forms.Core/A.html#81eb053a8e7531bd" class="i field">OrientationProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#244f5f0251011188" class="i method">UpdateOrientation</a>();
+			<b>else if</b> (<span class="r32 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#d798cc16e0e87f98" class="i field">IsEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#9a3010a3b0ab9bb9" class="i method">UpdateIsEnabled</a>();
+		}
+ 
+		<b>void</b> <a id="9a3010a3b0ab9bb9" href="../R/9a3010a3b0ab9bb9.html" target="n" data-glyph="76,1" class="i method">UpdateIsEnabled</a>()
+		{
+			<b>if</b> (<a href="#aab850412ab714de" class="i property">Element</a> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="#532e9afbbe7e2cac" class="i field">_isEnabled</a> = <a href="#aab850412ab714de" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>;
+		}
+ 
+		<b>void</b> <a id="e41eddf7e1f12875" href="../R/e41eddf7e1f12875.html" target="n" data-glyph="76,1" class="i method">LoadContent</a>()
+		{
+			<a href="#696f79ee1f4b7156" class="i field">_container</a>.<a href="ScrollViewContainer.cs.html#6a5046431c24a634" class="i property">ChildView</a> = <a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#8250985f9bd67342" class="i property">Content</a>;
+		}
+ 
+		<b>async void</b> <a id="20f3b62418cc1c6b" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnScrollToRequested</a>(<b>object</b> <span id="r33 rd" class="r33 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#f03c2a98424144b5" class="t t">ScrollToRequestedEventArgs</a> <span id="r34 rd" class="r34 r">e</span>)
+		{
+			<b>if</b> (!<a href="#5d7e13f02690a723" class="i field">_isAttached</a>)
+			{
+				<b>return</b>;
+			}
+ 
+			<span class="c">// 99.99% of the time simply queuing to the end of the execution queue should handle this case.</span>
+			<span class="c">// However it is possible to end a layout cycle and STILL be layout requested. We want to</span>
+			<span class="c">// back off until all are done, even if they trigger layout storms over and over. So we back off</span>
+			<span class="c">// for 10ms tops then move on.</span>
+			<b>var</b> <span id="r35 rd" class="r35 r">cycle</span> = 0;
+			<b>while</b> (<span class="i">IsLayoutRequested</span>)
+			{
+				<b>await</b> <span class="i">Task</span>.<span class="i">Delay</span>(<span class="i">TimeSpan</span>.<span class="i">FromMilliseconds</span>(1));
+				<span class="r35 r">cycle</span>++;
+ 
+				<b>if</b> (<span class="r35 r">cycle</span> &gt;= 10)
+					<b>break</b>;
+			}
+ 
+			<b>var</b> <span id="r36 rd" class="r36 r">x</span> = (<b>int</b>)<a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<a href="../ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r34 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#1a9827fc1de72624" class="i property">ScrollX</a>);
+			<b>var</b> <span id="r37 rd" class="r37 r">y</span> = (<b>int</b>)<a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<a href="../ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r34 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#687144c4a34e50fc" class="i property">ScrollY</a>);
+			<b>int</b> <span id="r38 rd" class="r38 r">currentX</span> = <a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#0715cd2a10cf2197" class="i property">Orientation</a> == <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#213b91ef71896415" class="i field">Horizontal</a> || <a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#0715cd2a10cf2197" class="i property">Orientation</a> == <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#7a7908f950176f24" class="i field">Both</a> ? <a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>.<span class="i">ScrollX</span> : <span class="i">ScrollX</span>;
+			<b>int</b> <span id="r39 rd" class="r39 r">currentY</span> = <a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#0715cd2a10cf2197" class="i property">Orientation</a> == <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#98e792869ca74c5d" class="i field">Vertical</a> || <a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#0715cd2a10cf2197" class="i property">Orientation</a> == <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#7a7908f950176f24" class="i field">Both</a> ? <span class="i">ScrollY</span> : <a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>.<span class="i">ScrollY</span>;
+			<b>if</b> (<span class="r34 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#090e50bdd2b862ac" class="i property">Mode</a> == <a href="/Xamarin.Forms.Core/A.html#20430ff109b5c1f8" class="t t">ScrollToMode</a>.<a href="/Xamarin.Forms.Core/A.html#004975a789d4429c" class="i field">Element</a>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#71c2b8add148844d" class="t t">Point</a> <span id="r40 rd" class="r40 r">itemPosition</span> = <a href="#de8371b05ef7641e" class="i property">Controller</a>.<a href="/Xamarin.Forms.Core/A.html#fa078d2d16b8c837" class="i method">GetScrollPositionForElement</a>(<span class="r34 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#11e5514da2648c85" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>, <span class="r34 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#fc0ff6f15e752ead" class="i property">Position</a>);
+ 
+				<span class="r36 r">x</span> = (<b>int</b>)<a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<a href="../ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r40 r">itemPosition</span>.<a href="/Xamarin.Forms.Core/A.html#e872b708b176ccbd" class="i property">X</a>);
+				<span class="r37 r">y</span> = (<b>int</b>)<a href="../Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="../Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<a href="../ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r40 r">itemPosition</span>.<a href="/Xamarin.Forms.Core/A.html#ed844b5bb67ba407" class="i property">Y</a>);
+			}
+			<b>if</b> (<span class="r34 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#a431f3b81325da89" class="i property">ShouldAnimate</a>)
+			{
+				<span class="i">ValueAnimator</span> <span id="r41 rd" class="r41 r">animator</span> = <span class="i">ValueAnimator</span>.<span class="i">OfFloat</span>(0f, 1f);
+				<span class="r41 r">animator</span>.<span class="i">SetDuration</span>(1000);
+				<span class="r41 r">animator</span>.<span class="i">Update</span> += (<span id="r42 rd" class="r42 r">o</span>, <span id="r43 rd" class="r43 r">animatorUpdateEventArgs</span>) =&gt;
+				{
+					<b>var</b> <span id="r44 rd" class="r44 r">v</span> = (<b>double</b>)<span class="r43 r">animatorUpdateEventArgs</span>.<span class="i">Animation</span>.<span class="i">AnimatedValue</span>;
+					<b>int</b> <span id="r45 rd" class="r45 r">distX</span> = <a href="#9da575c25c196964" class="i method">GetDistance</a>(<span class="r38 r">currentX</span>, <span class="r36 r">x</span>, <span class="r44 r">v</span>);
+					<b>int</b> <span id="r46 rd" class="r46 r">distY</span> = <a href="#9da575c25c196964" class="i method">GetDistance</a>(<span class="r39 r">currentY</span>, <span class="r37 r">y</span>, <span class="r44 r">v</span>);
+ 
+					<b>if</b> (<a href="#f9a1e68c34caf58a" class="i field">_view</a> == <b>null</b>)
+					{
+						<span class="c">// This is probably happening because the page with this Scroll View</span>
+						<span class="c">// was popped off the stack during animation</span>
+						<span class="r41 r">animator</span>.<span class="i">Cancel</span>();
+						<b>return</b>;
+					}
+ 
+					<b>switch</b> (<a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#0715cd2a10cf2197" class="i property">Orientation</a>)
+					{
+						<b>case</b> <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#213b91ef71896415" class="i field">Horizontal</a>:
+							<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>.<span class="i">ScrollTo</span>(<span class="r45 r">distX</span>, <span class="r46 r">distY</span>);
+							<b>break</b>;
+						<b>case</b> <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#98e792869ca74c5d" class="i field">Vertical</a>:
+							<span class="i">ScrollTo</span>(<span class="r45 r">distX</span>, <span class="r46 r">distY</span>);
+							<b>break</b>;
+						<b>default</b>:
+							<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>.<span class="i">ScrollTo</span>(<span class="r45 r">distX</span>, <span class="r46 r">distY</span>);
+							<span class="i">ScrollTo</span>(<span class="r45 r">distX</span>, <span class="r46 r">distY</span>);
+							<b>break</b>;
+					}
+				};
+				<span class="r41 r">animator</span>.<span class="i">AnimationEnd</span> += <b>delegate</b>
+				{
+					<b>if</b> (<a href="#de8371b05ef7641e" class="i property">Controller</a> == <b>null</b>)
+						<b>return</b>;
+					<a href="#de8371b05ef7641e" class="i property">Controller</a>.<span class="i">SendScrollFinished</span>();
+				};
+ 
+				<span class="r41 r">animator</span>.<span class="i">Start</span>();
+			}
+			<b>else</b>
+			{
+				<b>switch</b> (<a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#0715cd2a10cf2197" class="i property">Orientation</a>)
+				{
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#213b91ef71896415" class="i field">Horizontal</a>:
+						<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>.<span class="i">ScrollTo</span>(<span class="r36 r">x</span>, <span class="r37 r">y</span>);
+						<b>break</b>;
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#98e792869ca74c5d" class="i field">Vertical</a>:
+						<span class="i">ScrollTo</span>(<span class="r36 r">x</span>, <span class="r37 r">y</span>);
+						<b>break</b>;
+					<b>default</b>:
+						<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>.<span class="i">ScrollTo</span>(<span class="r36 r">x</span>, <span class="r37 r">y</span>);
+						<span class="i">ScrollTo</span>(<span class="r36 r">x</span>, <span class="r37 r">y</span>);
+						<b>break</b>;
+				}
+				<a href="#de8371b05ef7641e" class="i property">Controller</a>.<span class="i">SendScrollFinished</span>();
+			}
+		}
+ 
+		<b>void</b> <a href="../IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>.<a href="../IVisualElementRenderer.cs.html#cad9af341c40f73b" class="i method">SetLabelFor</a>(<b>int</b>? <span id="r47 rd" class="r47 r">id</span>)
+		{
+		}
+ 
+		<b>void</b> <a id="b55193a109780e15" href="../R/b55193a109780e15.html" target="n" data-glyph="76,1" class="i method">UpdateBackgroundColor</a>()
+		{
+			<span class="i">SetBackgroundColor</span>(<a href="#aab850412ab714de" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a>.<span class="i">ToAndroid</span>(<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#c3b341023bda5948" class="i field">Transparent</a>));
+		}
+ 
+		<b>void</b> <a id="244f5f0251011188" href="../R/244f5f0251011188.html" target="n" data-glyph="76,1" class="i method">UpdateOrientation</a>()
+		{
+			<b>if</b> (<a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#0715cd2a10cf2197" class="i property">Orientation</a> == <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#213b91ef71896415" class="i field">Horizontal</a> || <a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#0715cd2a10cf2197" class="i property">Orientation</a> == <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#7a7908f950176f24" class="i field">Both</a>)
+			{
+				<b>if</b> (<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a> == <b>null</b>)
+					<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a> = <b>new</b> <span class="t">AHorizontalScrollView</span>(<span class="i">Context</span>, <a href="#ffefb095af72852e" class="k">this</a>);
+ 
+				((<a href="AHorizontalScrollView.cs.html#a82eb3df5ef6efa2" class="t t">AHorizontalScrollView</a>)<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>).<a href="AHorizontalScrollView.cs.html#3d4c37081126815d" class="i property">IsBidirectional</a> = <a href="#e8cf0786848636d2" class="i field">_isBidirectional</a> = <a href="#f9a1e68c34caf58a" class="i field">_view</a>.<a href="/Xamarin.Forms.Core/A.html#0715cd2a10cf2197" class="i property">Orientation</a> == <a href="/Xamarin.Forms.Core/A.html#15a4015835b42551" class="t t">ScrollOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#7a7908f950176f24" class="i field">Both</a>;
+ 
+				<b>if</b> (<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>.<span class="i">Parent</span> != <a href="#ffefb095af72852e" class="k">this</a>)
+				{
+					<a href="#696f79ee1f4b7156" class="i field">_container</a>.<span class="i">RemoveFromParent</span>();
+					<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>.<span class="i">AddView</span>(<a href="#696f79ee1f4b7156" class="i field">_container</a>);
+					<span class="i">AddView</span>(<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>);
+				}
+			}
+			<b>else</b>
+			{
+				<b>if</b> (<a href="#696f79ee1f4b7156" class="i field">_container</a>.<span class="i">Parent</span> != <a href="#ffefb095af72852e" class="k">this</a>)
+				{
+					<a href="#696f79ee1f4b7156" class="i field">_container</a>.<span class="i">RemoveFromParent</span>();
+					<b>if</b> (<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a> != <b>null</b>)
+						<a href="#6e54f5572e69eae1" class="i field">_hScrollView</a>.<span class="i">RemoveFromParent</span>();
+					<span class="i">AddView</span>(<a href="#696f79ee1f4b7156" class="i field">_container</a>);
+				}
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

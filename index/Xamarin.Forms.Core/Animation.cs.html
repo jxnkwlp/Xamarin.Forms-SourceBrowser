@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html>
+<html><head><title>Animation.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(144);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/Animation.cs" target="_top">Animation.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<span class="c">//</span>
+<span class="c">// Tweener.cs</span>
+<span class="c">//</span>
+<span class="c">// Author:</span>
+<span class="c">//       Jason Smith &lt;jason.smith@xamarin.com&gt;</span>
+<span class="c">//</span>
+<span class="c">// Copyright (c) 2012 Xamarin Inc.</span>
+<span class="c">//</span>
+<span class="c">// Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c">// of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c">// in the Software without restriction, including without limitation the rights</span>
+<span class="c">// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c">// copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c">// furnished to do so, subject to the following conditions:</span>
+<span class="c">//</span>
+<span class="c">// The above copyright notice and this permission notice shall be included in</span>
+<span class="c">// all copies or substantial portions of the Software.</span>
+<span class="c">//</span>
+<span class="c">// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c">// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c">// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c">// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c">// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c">// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span class="c">// THE SOFTWARE.</span>
+ 
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>public class</b> <a id="f93a4a2563080f0a" href="R/f93a4a2563080f0a.html" target="n" data-glyph="0,0" class="t t">Animation</a> : <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>
+	{
+		<b>readonly</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#f93a4a2563080f0a" class="t t">Animation</a>&gt; <a id="54b5ed18b461ecf7" href="R/54b5ed18b461ecf7.html" target="n" data-glyph="46,1" class="i field">_children</a>;
+		<b>readonly</b> <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a> <a id="73434cffa574a905" href="R/73434cffa574a905.html" target="n" data-glyph="46,1" class="i field">_easing</a>;
+		<b>readonly</b> <a href="@1@System.Runtime/A.html#9147ae6f76643aae" class="t t">Action</a> <a id="862af0e24099073a" href="R/862af0e24099073a.html" target="n" data-glyph="46,1" class="i field">_finished</a>;
+		<b>readonly</b> <a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>double</b>&gt; <a id="dac154e6c1ef203f" href="R/dac154e6c1ef203f.html" target="n" data-glyph="46,1" class="i field">_step</a>;
+		<b>double</b> <a id="9b995ba5fb6b6536" href="R/9b995ba5fb6b6536.html" target="n" data-glyph="46,1" class="i field">_beginAt</a>;
+		<b>double</b> <a id="7873ae2fa5b415ac" href="R/7873ae2fa5b415ac.html" target="n" data-glyph="46,1" class="i field">_finishAt</a>;
+		<b>bool</b> <a id="81e1430048fd8631" href="R/81e1430048fd8631.html" target="n" data-glyph="46,1" class="i field">_finishedTriggered</a>;
+ 
+		<b>public</b> <a id="267891b033f1eb33" href="R/267891b033f1eb33.html" target="n" data-glyph="72,1" class="i constructor">Animation</a>()
+		{
+			<a href="#54b5ed18b461ecf7" class="i field">_children</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="#f93a4a2563080f0a" class="t t">Animation</a>&gt;();
+			<a href="#73434cffa574a905" class="i field">_easing</a> = <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a>.<a href="Easing.cs.html#e7d3cb5b1ace0636" class="i field">Linear</a>;
+			<a href="#dac154e6c1ef203f" class="i field">_step</a> = <span id="r0 rd" class="r0 r">f</span> =&gt; { };
+		}
+ 
+		<b>public</b> <a id="77e7ea281d5db646" href="R/77e7ea281d5db646.html" target="n" data-glyph="72,1" class="i constructor">Animation</a>(<a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>double</b>&gt; <span id="r1 rd" class="r1 r">callback</span>, <b>double</b> <span id="r2 rd" class="r2 r">start</span> = 0.0f, <b>double</b> <span id="r3 rd" class="r3 r">end</span> = 1.0f, <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a> <span id="r4 rd" class="r4 r">easing</span> = <b>null</b>, <a href="@1@System.Runtime/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r5 rd" class="r5 r">finished</span> = <b>null</b>)
+		{
+			<a href="#54b5ed18b461ecf7" class="i field">_children</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="#f93a4a2563080f0a" class="t t">Animation</a>&gt;();
+			<a href="#73434cffa574a905" class="i field">_easing</a> = <span class="r4 r">easing</span> ?? <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a>.<a href="Easing.cs.html#e7d3cb5b1ace0636" class="i field">Linear</a>;
+			<a href="#862af0e24099073a" class="i field">_finished</a> = <span class="r5 r">finished</span>;
+ 
+			<a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>double</b>, <b>double</b>&gt; <span id="r6 rd" class="r6 r">transform</span> = <a href="AnimationExtensions.cs.html#8c5153c8c7b18af8" class="t t">AnimationExtensions</a>.<a href="AnimationExtensions.cs.html#8550b92f3bc77943" class="i method">Interpolate</a>(<span class="r2 r">start</span>, <span class="r3 r">end</span>);
+			<a href="#dac154e6c1ef203f" class="i field">_step</a> = <span id="r7 rd" class="r7 r">f</span> =&gt; <span class="r1 r">callback</span>(<span class="r6 r">transform</span>(<span class="r7 r">f</span>));
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a id="febb6f2fa47cf020" href="R/febb6f2fa47cf020.html" target="n" data-glyph="72,1" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <a href="#54b5ed18b461ecf7" class="i field">_children</a>.<a href="@1@System.Collections/A.html#5d3accf5b217bdbf" class="i method">GetEnumerator</a>();
+		}
+ 
+		<b>public void</b> <a id="5cb70a7f58fe0180" href="R/5cb70a7f58fe0180.html" target="n" data-glyph="72,1" class="i method">Add</a>(<b>double</b> <span id="r8 rd" class="r8 r">beginAt</span>, <b>double</b> <span id="r9 rd" class="r9 r">finishAt</span>, <a href="#f93a4a2563080f0a" class="t t">Animation</a> <span id="r10 rd" class="r10 r">animation</span>)
+		{
+			<b>if</b> (<span class="r8 r">beginAt</span> &lt; 0 || <span class="r8 r">beginAt</span> &gt; 1)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;beginAt&quot;</span>);
+ 
+			<b>if</b> (<span class="r9 r">finishAt</span> &lt; 0 || <span class="r9 r">finishAt</span> &gt; 1)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;finishAt&quot;</span>);
+ 
+			<b>if</b> (<span class="r9 r">finishAt</span> &lt;= <span class="r8 r">beginAt</span>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;finishAt must be greater than beginAt&quot;</span>);
+ 
+			<span class="r10 r">animation</span>.<a href="#9b995ba5fb6b6536" class="i field">_beginAt</a> = <span class="r8 r">beginAt</span>;
+			<span class="r10 r">animation</span>.<a href="#7873ae2fa5b415ac" class="i field">_finishAt</a> = <span class="r9 r">finishAt</span>;
+			<a href="#54b5ed18b461ecf7" class="i field">_children</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r10 r">animation</span>);
+		}
+ 
+		<b>public void</b> <a id="b6966277c57f6390" href="R/b6966277c57f6390.html" target="n" data-glyph="72,1" class="i method">Commit</a>(<a href="IAnimatable.cs.html#d15a066340e4eeae" class="t t">IAnimatable</a> <span id="r11 rd" class="r11 r">owner</span>, <b>string</b> <span id="r12 rd" class="r12 r">name</span>, <b>uint</b> <span id="r13 rd" class="r13 r">rate</span> = 16, <b>uint</b> <span id="r14 rd" class="r14 r">length</span> = 250, <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a> <span id="r15 rd" class="r15 r">easing</span> = <b>null</b>, <a href="@1@System.Runtime/A.html#27863de72c2c9b49" class="t t">Action</a>&lt;<b>double</b>, <b>bool</b>&gt; <span id="r16 rd" class="r16 r">finished</span> = <b>null</b>, <a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>bool</b>&gt; <span id="r17 rd" class="r17 r">repeat</span> = <b>null</b>)
+		{
+			<span class="r11 r">owner</span>.<a href="AnimationExtensions.cs.html#4d4c70a6b9d87910" class="i method">Animate</a>(<span class="r12 r">name</span>, <a href="#f93a4a2563080f0a" class="k">this</a>, <span class="r13 r">rate</span>, <span class="r14 r">length</span>, <span class="r15 r">easing</span>, <span class="r16 r">finished</span>, <span class="r17 r">repeat</span>);
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>double</b>&gt; <a id="e835e594f9057ed1" href="R/e835e594f9057ed1.html" target="n" data-glyph="72,1" class="i method">GetCallback</a>()
+		{
+			<a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>double</b>&gt; <span id="r18 rd" class="r18 r">result</span> = <span id="r19 rd" class="r19 r">f</span> =&gt;
+			{
+				<a href="#dac154e6c1ef203f" class="i field">_step</a>(<a href="#73434cffa574a905" class="i field">_easing</a>.<a href="Easing.cs.html#465ea104c1db0088" class="i method">Ease</a>(<span class="r19 r">f</span>));
+				<b>foreach</b> (<a href="#f93a4a2563080f0a" class="t t">Animation</a> <span id="r20 rd" class="r20 r">animation</span> <b>in</b> <a href="#54b5ed18b461ecf7" class="i field">_children</a>)
+				{
+					<b>if</b> (<span class="r20 r">animation</span>.<a href="#81e1430048fd8631" class="i field">_finishedTriggered</a>)
+						<b>continue</b>;
+ 
+					<b>double</b> <span id="r21 rd" class="r21 r">val</span> = <span class="t t">Math</span>.<span class="i method">Max</span>(0.0f, <span class="t t">Math</span>.<span class="i method">Min</span>(1.0f, (<span class="r19 r">f</span> - <span class="r20 r">animation</span>.<a href="#9b995ba5fb6b6536" class="i field">_beginAt</a>) / (<span class="r20 r">animation</span>.<a href="#7873ae2fa5b415ac" class="i field">_finishAt</a> - <span class="r20 r">animation</span>.<a href="#9b995ba5fb6b6536" class="i field">_beginAt</a>)));
+ 
+					<b>if</b> (<span class="r21 r">val</span> &lt;= 0.0f) <span class="c">// not ready to process yet</span>
+						<b>continue</b>;
+ 
+					<a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>double</b>&gt; <span id="r22 rd" class="r22 r">callback</span> = <span class="r20 r">animation</span>.<a href="#e835e594f9057ed1" class="i method">GetCallback</a>();
+					<span class="r22 r">callback</span>(<span class="r21 r">val</span>);
+ 
+					<b>if</b> (<span class="r21 r">val</span> &gt;= 1.0f)
+					{
+						<span class="r20 r">animation</span>.<a href="#81e1430048fd8631" class="i field">_finishedTriggered</a> = <b>true</b>;
+						<b>if</b> (<span class="r20 r">animation</span>.<a href="#862af0e24099073a" class="i field">_finished</a> != <b>null</b>)
+							<span class="r20 r">animation</span>.<a href="#862af0e24099073a" class="i field">_finished</a>();
+					}
+				}
+			};
+			<b>return</b> <span class="r18 r">result</span>;
+		}
+ 
+		<b>internal void</b> <a id="693394eb1fc88212" href="R/693394eb1fc88212.html" target="n" data-glyph="74,1" class="i method">ResetChildren</a>()
+		{
+			<b>foreach</b> (<a href="#f93a4a2563080f0a" class="k">var</a> <span id="r23 rd" class="r23 r">anim</span> <b>in</b> <a href="#54b5ed18b461ecf7" class="i field">_children</a>)
+				<span class="r23 r">anim</span>.<a href="#81e1430048fd8631" class="i field">_finishedTriggered</a> = <b>false</b>;
+		}
+ 
+		<b>public</b> <a href="#f93a4a2563080f0a" class="t t">Animation</a> <a id="4e1fdf83141d88af" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Insert</a>(<b>double</b> <span id="r24 rd" class="r24 r">beginAt</span>, <b>double</b> <span id="r25 rd" class="r25 r">finishAt</span>, <a href="#f93a4a2563080f0a" class="t t">Animation</a> <span id="r26 rd" class="r26 r">animation</span>)
+		{
+			<a href="#5cb70a7f58fe0180" class="i method">Add</a>(<span class="r24 r">beginAt</span>, <span class="r25 r">finishAt</span>, <span class="r26 r">animation</span>);
+			<b>return</b> <a href="#f93a4a2563080f0a" class="k">this</a>;
+		}
+ 
+		<b>public</b> <a href="#f93a4a2563080f0a" class="t t">Animation</a> <a id="08dbd90667291805" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">WithConcurrent</a>(<a href="#f93a4a2563080f0a" class="t t">Animation</a> <span id="r27 rd" class="r27 r">animation</span>, <b>double</b> <span id="r28 rd" class="r28 r">beginAt</span> = 0.0f, <b>double</b> <span id="r29 rd" class="r29 r">finishAt</span> = 1.0f)
+		{
+			<span class="r27 r">animation</span>.<a href="#9b995ba5fb6b6536" class="i field">_beginAt</a> = <span class="r28 r">beginAt</span>;
+			<span class="r27 r">animation</span>.<a href="#7873ae2fa5b415ac" class="i field">_finishAt</a> = <span class="r29 r">finishAt</span>;
+			<a href="#54b5ed18b461ecf7" class="i field">_children</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r27 r">animation</span>);
+			<b>return</b> <a href="#f93a4a2563080f0a" class="k">this</a>;
+		}
+ 
+		<b>public</b> <a href="#f93a4a2563080f0a" class="t t">Animation</a> <a id="2f0af303ebe08fc5" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">WithConcurrent</a>(<a href="@1@System.Runtime/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<b>double</b>&gt; <span id="r30 rd" class="r30 r">callback</span>, <b>double</b> <span id="r31 rd" class="r31 r">start</span> = 0.0f, <b>double</b> <span id="r32 rd" class="r32 r">end</span> = 1.0f, <a href="Easing.cs.html#ac19aa218a440553" class="t t">Easing</a> <span id="r33 rd" class="r33 r">easing</span> = <b>null</b>, <b>double</b> <span id="r34 rd" class="r34 r">beginAt</span> = 0.0f, <b>double</b> <span id="r35 rd" class="r35 r">finishAt</span> = 1.0f)
+		{
+			<a href="#f93a4a2563080f0a" class="k">var</a> <span id="r36 rd" class="r36 r">child</span> = <b>new</b> <a href="#77e7ea281d5db646" class="t constructor">Animation</a>(<span class="r30 r">callback</span>, <span class="r31 r">start</span>, <span class="r32 r">end</span>, <span class="r33 r">easing</span>);
+			<span class="r36 r">child</span>.<a href="#9b995ba5fb6b6536" class="i field">_beginAt</a> = <span class="r34 r">beginAt</span>;
+			<span class="r36 r">child</span>.<a href="#7873ae2fa5b415ac" class="i field">_finishAt</a> = <span class="r35 r">finishAt</span>;
+			<a href="#54b5ed18b461ecf7" class="i field">_children</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r36 r">child</span>);
+			<b>return</b> <a href="#f93a4a2563080f0a" class="k">this</a>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html><head><title>GeocoderBackend.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(71);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Maps.iOS/GeocoderBackend.cs" target="_top">GeocoderBackend.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Maps.iOS" target="_top">Xamarin.Forms.Maps.iOS\Xamarin.Forms.Maps.iOS.csproj</a> (Xamarin.Forms.Maps.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i">Contacts</span>;
+<b>using</b> <span class="i">CoreLocation</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<b>using</b> <span class="i">AddressBookUI</span>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<b>using</b> <span class="i">CCLGeocoder</span> = <span class="i">CoreLocation</span>.<span class="i">CLGeocoder</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Maps</span>.<span class="i n">iOS</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">namespace Xamarin.Forms.Maps.MacOS
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal class</b> <a id="154f970411114754" href="R/154f970411114754.html" target="n" data-glyph="2,0" class="t t"><span id="791bb6c9ebb99457">GeocoderBackend</span></a>
+	{
+		<b>public static void</b> <a id="f61585768183eb03" href="R/f61585768183eb03.html" target="n" data-glyph="72,1" class="i method">Register</a>()
+		{
+			<a href="/Xamarin.Forms.Maps/A.html#908bd5781ab8af17" class="t t">Geocoder</a>.<a href="/Xamarin.Forms.Maps/A.html#7093028813e72150" class="i field">GetPositionsForAddressAsyncFunc</a> = <span class="i">GetPositionsForAddressAsync</span>;
+			<a href="/Xamarin.Forms.Maps/A.html#908bd5781ab8af17" class="t t">Geocoder</a>.<a href="/Xamarin.Forms.Maps/A.html#a7ac9971edd79d98" class="i field">GetAddressesForPositionFuncAsync</a> = <span class="i">GetAddressesForPositionAsync</span>;
+		}
+ 
+		<b>static</b> <span class="i">Task</span>&lt;<span class="i">IEnumerable</span>&lt;<b>string</b>&gt;&gt; <a id="52b43581c0b251c9" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">GetAddressesForPositionAsync</a>(<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a> <span id="r0 rd" class="r0 r">position</span>)
+		{
+			<b>var</b> <span id="r1 rd" class="r1 r">location</span> = <b>new</b> <span class="i">CLLocation</span>(<span class="r0 r">position</span>.<a href="/Xamarin.Forms.Maps/A.html#cb5045a0674344be" class="i property">Latitude</a>, <span class="r0 r">position</span>.<a href="/Xamarin.Forms.Maps/A.html#e52379d680105ddc" class="i property">Longitude</a>);
+			<b>var</b> <span id="r2 rd" class="r2 r">geocoder</span> = <b>new</b> <span class="i">CCLGeocoder</span>();
+			<b>var</b> <span id="r3 rd" class="r3 r">source</span> = <b>new</b> <span class="i">TaskCompletionSource</span>&lt;<span class="i">IEnumerable</span>&lt;<b>string</b>&gt;&gt;();
+			<span class="r2 r">geocoder</span>.<span class="i">ReverseGeocodeLocation</span>(<span class="r1 r">location</span>, (<span id="r4 rd" class="r4 r">placemarks</span>, <span id="r5 rd" class="r5 r">error</span>) =&gt;
+			{
+				<b>if</b> (<span class="r4 r">placemarks</span> == <b>null</b>)
+					<span class="r4 r">placemarks</span> = <b>new</b> <span class="i">CLPlacemark</span>[0];
+				<span class="i">List</span>&lt;<b>string</b>&gt; <span id="r6 rd" class="r6 r">addresses</span> = <b>new</b> <span class="i">List</span>&lt;<b>string</b>&gt;();
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+				<span class="r6 r">addresses</span> = <span class="r4 r">placemarks</span>.<span class="i">Select</span>(<span id="r7 rd" class="r7 r">p</span> =&gt; <span class="i">ABAddressFormatting</span>.<span class="i">ToString</span>(<span class="r7 r">p</span>.<span class="i">AddressDictionary</span>, <b>false</b>)).<span class="i">ToList</span>();
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">				foreach (var item in placemarks)
+				{
+					var address = new CNMutablePostalAddress();
+					address.Street = item.AddressDictionary[&quot;Street&quot;] == null ? &quot;&quot; : item.AddressDictionary[&quot;Street&quot;].ToString();
+					address.State = item.AddressDictionary[&quot;State&quot;] == null ? &quot;&quot; : item.AddressDictionary[&quot;State&quot;].ToString();
+					address.City = item.AddressDictionary[&quot;City&quot;] == null ? &quot;&quot; : item.AddressDictionary[&quot;City&quot;].ToString();
+					address.Country = item.AddressDictionary[&quot;Country&quot;] == null ? &quot;&quot; : item.AddressDictionary[&quot;Country&quot;].ToString();
+					address.PostalCode = item.AddressDictionary[&quot;ZIP&quot;] == null ? &quot;&quot; : item.AddressDictionary[&quot;ZIP&quot;].ToString();
+					addresses.Add(CNPostalAddressFormatter.GetStringFrom(address, CNPostalAddressFormatterStyle.MailingAddress));
+				}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+				<span class="r3 r">source</span>.<span class="i">SetResult</span>(<span class="r6 r">addresses</span>);
+ 
+			});
+			<b>return</b> <span class="r3 r">source</span>.<span class="i">Task</span>;
+		}
+ 
+		<b>static</b> <span class="i">Task</span>&lt;<span class="i">IEnumerable</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a>&gt;&gt; <a id="3b61b900a2e40083" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">GetPositionsForAddressAsync</a>(<b>string</b> <span id="r8 rd" class="r8 r">address</span>)
+		{
+			<b>var</b> <span id="r9 rd" class="r9 r">geocoder</span> = <b>new</b> <span class="i">CCLGeocoder</span>();
+			<b>var</b> <span id="r10 rd" class="r10 r">source</span> = <b>new</b> <span class="i">TaskCompletionSource</span>&lt;<span class="i">IEnumerable</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a>&gt;&gt;();
+			<span class="r9 r">geocoder</span>.<span class="i">GeocodeAddress</span>(<span class="r8 r">address</span>, (<span id="r11 rd" class="r11 r">placemarks</span>, <span id="r12 rd" class="r12 r">error</span>) =&gt;
+			{
+				<b>if</b> (<span class="r11 r">placemarks</span> == <b>null</b>)
+					<span class="r11 r">placemarks</span> = <b>new</b> <span class="i">CLPlacemark</span>[0];
+				<span class="i">IEnumerable</span>&lt;<a href="/Xamarin.Forms.Maps/A.html#f366402b2b958699" class="t t">Position</a>&gt; <span id="r13 rd" class="r13 r">positions</span> = <span class="r11 r">placemarks</span>.<span class="i">Select</span>(<span id="r14 rd" class="r14 r">p</span> =&gt; <b>new</b> <span class="t">Position</span>(<span class="r14 r">p</span>.<span class="i">Location</span>.<span class="i">Coordinate</span>.<span class="i">Latitude</span>, <span class="r14 r">p</span>.<span class="i">Location</span>.<span class="i">Coordinate</span>.<span class="i">Longitude</span>));
+				<span class="r10 r">source</span>.<span class="i">SetResult</span>(<span class="r13 r">positions</span>);
+			});
+			<b>return</b> <span class="r10 r">source</span>.<span class="i">Task</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

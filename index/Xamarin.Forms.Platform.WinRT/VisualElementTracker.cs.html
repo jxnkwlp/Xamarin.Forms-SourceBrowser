@@ -1,0 +1,596 @@
+﻿<!DOCTYPE html>
+<html><head><title>VisualElementTracker.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(587);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.WinRT/VisualElementTracker.cs" target="_top">VisualElementTracker.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.WinRT" target="_top">Xamarin.Forms.Platform.WinRT\Xamarin.Forms.Platform.WinRT.csproj</a> (Xamarin.Forms.Platform.WinRT)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Input</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public class</b> <a id="aa2c3153ee06f03d" href="R/aa2c3153ee06f03d.html" target="n" data-glyph="0,0" class="t t">VisualElementTracker</a>&lt;<span id="r0 rd t" class="r0 r t">TElement</span>, <span id="r1 rd t" class="r1 r t">TNativeElement</span>&gt; : <a href="@1@System.Runtime/A.html#1f55292c3174123d" class="t t">IDisposable</a> <b>where</b> <span class="r0 r t">TElement</span> : <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <b>where</b> <span class="r1 r t">TNativeElement</span> : <span class="t t">FrameworkElement</span>
+	{
+		<b>readonly</b> <span class="t t">NotifyCollectionChangedEventHandler</span> <a id="69a14174f8a85c84" href="R/69a14174f8a85c84.html" target="n" data-glyph="46,1" class="i field">_collectionChangedHandler</a>;
+		<b>readonly</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>uint</b>&gt; <a id="d2875440c5e858fe" href="R/d2875440c5e858fe.html" target="n" data-glyph="46,1" class="i field">_fingers</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>uint</b>&gt;();
+		<span class="t t">FrameworkElement</span> <a id="4ef3fe0b90371bf5" href="R/4ef3fe0b90371bf5.html" target="n" data-glyph="46,1" class="i field">_container</a>;
+		<span class="r1 r t">TNativeElement</span> <a id="6db48aec47c0ef66" href="R/6db48aec47c0ef66.html" target="n" data-glyph="46,1" class="i field">_control</a>;
+		<span class="r0 r t">TElement</span> <a id="eb903c7a591c7fda" href="R/eb903c7a591c7fda.html" target="n" data-glyph="46,1" class="i field">_element</a>;
+ 
+		<b>bool</b> <a id="0195c615e05ae400" href="R/0195c615e05ae400.html" target="n" data-glyph="46,1" class="i field">_invalidateArrangeNeeded</a>;
+ 
+		<b>bool</b> <a id="d1a87bb17e75d1e8" href="R/d1a87bb17e75d1e8.html" target="n" data-glyph="46,1" class="i field">_isDisposed</a>;
+		<b>bool</b> <a id="742a9aa1a6949a38" href="R/742a9aa1a6949a38.html" target="n" data-glyph="46,1" class="i field">_isPanning</a>;
+		<b>bool</b> <a id="3d5aeb45cc78b13b" href="R/3d5aeb45cc78b13b.html" target="n" data-glyph="46,1" class="i field">_isPinching</a>;
+		<b>bool</b> <a id="39d57613ba37dd6b" href="R/39d57613ba37dd6b.html" target="n" data-glyph="46,1" class="i field">_wasPanGestureStartedSent</a>;
+		<b>bool</b> <a id="1dccca6144c82e9c" href="R/1dccca6144c82e9c.html" target="n" data-glyph="46,1" class="i field">_wasPinchGestureStartedSent</a>;
+ 
+		<b>public</b> <a id="f753bfc1ce87c85b" href="R/f753bfc1ce87c85b.html" target="n" data-glyph="72,1" class="i constructor">VisualElementTracker</a>()
+		{
+			<a href="#69a14174f8a85c84" class="i field">_collectionChangedHandler</a> = <a href="#b13bcec75ee96cfc" class="i method">ModelGestureRecognizersOnCollectionChanged</a>;
+		}
+ 
+		<b>public</b> <span class="t t">FrameworkElement</span> <a id="2cf0467095adbcee" href="R/2cf0467095adbcee.html" target="n" data-glyph="102,1" class="i property">Container</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#4ef3fe0b90371bf5" class="i field">_container</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#4ef3fe0b90371bf5" class="i field">_container</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<b>if</b> (<a href="#4ef3fe0b90371bf5" class="i field">_container</a> != <b>null</b>)
+				{
+					<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">Tapped</span> -= <a href="#05994f176c89b058" class="i method">OnTap</a>;
+					<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">DoubleTapped</span> -= <a href="#84aa852c83bad6d2" class="i method">OnDoubleTap</a>;
+					<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationDelta</span> -= <a href="#b9d9c42244da58aa" class="i method">OnManipulationDelta</a>;
+					<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationStarted</span> -= <a href="#a4ced8666f91a308" class="i method">OnManipulationStarted</a>;
+					<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationCompleted</span> -= <a href="#ed7913188641187b" class="i method">OnManipulationCompleted</a>;
+					<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerPressed</span> -= <a href="#d13fe61aa8ce3e43" class="i method">OnPointerPressed</a>;
+					<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerExited</span> -= <a href="#063c1094be722bcc" class="i method">OnPointerExited</a>;
+					<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerReleased</span> -= <a href="#b8feac54efba62a9" class="i method">OnPointerReleased</a>;
+					<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerCanceled</span> -= <a href="#629de94a1e6a759d" class="i method">OnPointerCanceled</a>;
+				}
+ 
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a> = <b>value</b>;
+ 
+				<a href="#ad6ddde1945ff382" class="i method">UpdatingGestureRecognizers</a>();
+ 
+				<a href="#b46b7dafebd9ea3c" class="i method">UpdateNativeControl</a>();
+			}
+		}
+ 
+		<b>public bool</b> <a id="b516d9cf4ad425fb" href="R/b516d9cf4ad425fb.html" target="n" data-glyph="102,1" class="i property">PreventGestureBubbling</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public</b> <span class="r1 r t">TNativeElement</span> <a id="66e6d5a3a7e2bde0" href="R/66e6d5a3a7e2bde0.html" target="n" data-glyph="102,1" class="i property">Control</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#6db48aec47c0ef66" class="i field">_control</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#6db48aec47c0ef66" class="i field">_control</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<b>if</b> (<a href="#6db48aec47c0ef66" class="i field">_control</a> != <b>null</b>)
+				{
+					<a href="#6db48aec47c0ef66" class="i field">_control</a>.<span class="i">Tapped</span> -= <a href="#c4169b570ab0bf51" class="i method">HandleTapped</a>;
+					<a href="#6db48aec47c0ef66" class="i field">_control</a>.<span class="i">DoubleTapped</span> -= <a href="#fc6b261e24ea1948" class="i method">HandleDoubleTapped</a>;
+				}
+ 
+				<a href="#6db48aec47c0ef66" class="i field">_control</a> = <b>value</b>;
+				<a href="#b46b7dafebd9ea3c" class="i method">UpdateNativeControl</a>();
+ 
+				<b>if</b> (<a href="#b516d9cf4ad425fb" class="i property">PreventGestureBubbling</a>)
+				{
+					<a href="#ad6ddde1945ff382" class="i method">UpdatingGestureRecognizers</a>();
+				}
+			}
+		}
+ 
+		<b>public</b> <span class="r0 r t">TElement</span> <a id="295566bcf8d3d33e" href="R/295566bcf8d3d33e.html" target="n" data-glyph="102,1" class="i property">Element</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#eb903c7a591c7fda" class="i field">_element</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#eb903c7a591c7fda" class="i field">_element</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<b>if</b> (<a href="#eb903c7a591c7fda" class="i field">_element</a> != <b>null</b>)
+				{
+					<a href="#eb903c7a591c7fda" class="i field">_element</a>.<a href="/Xamarin.Forms.Core/A.html#7650aa028977a179" class="i">BatchCommitted</a> -= <a href="#dc640eb0cd11208d" class="i method">OnRedrawNeeded</a>;
+					<a href="#eb903c7a591c7fda" class="i field">_element</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#139a92f815e7b009" class="i method">OnPropertyChanged</a>;
+ 
+					<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r2 rd" class="r2 r">view</span> = <a href="#eb903c7a591c7fda" class="i field">_element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>;
+					<b>if</b> (<span class="r2 r">view</span> != <b>null</b>)
+					{
+						<b>var</b> <span id="r3 rd" class="r3 r">oldRecognizers</span> = (<span class="t t">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Core/A.html#dded1e9ac7a4a124" class="t t">IGestureRecognizer</a>&gt;)<span class="r2 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#47b8b15a0c49e516" class="i property">GestureRecognizers</a>;
+						<span class="r3 r">oldRecognizers</span>.<span class="i">CollectionChanged</span> -= <a href="#69a14174f8a85c84" class="i field">_collectionChangedHandler</a>;
+					}
+				}
+ 
+				<a href="#eb903c7a591c7fda" class="i field">_element</a> = <b>value</b>;
+ 
+				<b>if</b> (<a href="#eb903c7a591c7fda" class="i field">_element</a> != <b>null</b>)
+				{
+					<a href="#eb903c7a591c7fda" class="i field">_element</a>.<a href="/Xamarin.Forms.Core/A.html#7650aa028977a179" class="i">BatchCommitted</a> += <a href="#dc640eb0cd11208d" class="i method">OnRedrawNeeded</a>;
+					<a href="#eb903c7a591c7fda" class="i field">_element</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#139a92f815e7b009" class="i method">OnPropertyChanged</a>;
+ 
+					<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r4 rd" class="r4 r">view</span> = <a href="#eb903c7a591c7fda" class="i field">_element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>;
+					<b>if</b> (<span class="r4 r">view</span> != <b>null</b>)
+					{
+						<b>var</b> <span id="r5 rd" class="r5 r">newRecognizers</span> = (<span class="t t">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Core/A.html#dded1e9ac7a4a124" class="t t">IGestureRecognizer</a>&gt;)<span class="r4 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#47b8b15a0c49e516" class="i property">GestureRecognizers</a>;
+						<span class="r5 r">newRecognizers</span>.<span class="i">CollectionChanged</span> += <a href="#69a14174f8a85c84" class="i field">_collectionChangedHandler</a>;
+					}
+				}
+ 
+				<a href="#b46b7dafebd9ea3c" class="i method">UpdateNativeControl</a>();
+			}
+		}
+ 
+		<b>public void</b> <a id="faeb92f3611a8a62" href="R/faeb92f3611a8a62.html" target="n" data-glyph="72,1" class="i method">Dispose</a>()
+		{
+			<a href="#e79ce7db543b3451" class="i method">Dispose</a>(<b>true</b>);
+		}
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="9aa3226ffb96c48d" href="R/9aa3226ffb96c48d.html" target="n" data-glyph="30,1" class="i">Updated</a>;
+ 
+		<b>protected virtual void</b> <a id="e79ce7db543b3451" href="R/e79ce7db543b3451.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r6 rd" class="r6 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#d1a87bb17e75d1e8" class="i field">_isDisposed</a>)
+				<b>return</b>;
+ 
+			<a href="#d1a87bb17e75d1e8" class="i field">_isDisposed</a> = <b>true</b>;
+ 
+			<b>if</b> (!<span class="r6 r">disposing</span>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#4ef3fe0b90371bf5" class="i field">_container</a> != <b>null</b>)
+			{
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerPressed</span> -= <a href="#d13fe61aa8ce3e43" class="i method">OnPointerPressed</a>;
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerExited</span> -= <a href="#063c1094be722bcc" class="i method">OnPointerExited</a>;
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerReleased</span> -= <a href="#b8feac54efba62a9" class="i method">OnPointerReleased</a>;
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerCanceled</span> -= <a href="#629de94a1e6a759d" class="i method">OnPointerCanceled</a>;
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">Tapped</span> -= <a href="#05994f176c89b058" class="i method">OnTap</a>;
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">DoubleTapped</span> -= <a href="#84aa852c83bad6d2" class="i method">OnDoubleTap</a>;
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationDelta</span> -= <a href="#b9d9c42244da58aa" class="i method">OnManipulationDelta</a>;
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationStarted</span> -= <a href="#a4ced8666f91a308" class="i method">OnManipulationStarted</a>;
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationCompleted</span> -= <a href="#ed7913188641187b" class="i method">OnManipulationCompleted</a>;
+			}
+ 
+			<b>if</b> (<a href="#eb903c7a591c7fda" class="i field">_element</a> != <b>null</b>)
+			{
+				<a href="#eb903c7a591c7fda" class="i field">_element</a>.<a href="/Xamarin.Forms.Core/A.html#7650aa028977a179" class="i">BatchCommitted</a> -= <a href="#dc640eb0cd11208d" class="i method">OnRedrawNeeded</a>;
+				<a href="#eb903c7a591c7fda" class="i field">_element</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#139a92f815e7b009" class="i method">OnPropertyChanged</a>;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r7 rd" class="r7 r">view</span> = <a href="#eb903c7a591c7fda" class="i field">_element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>;
+				<b>if</b> (<span class="r7 r">view</span> != <b>null</b>)
+				{
+					<b>var</b> <span id="r8 rd" class="r8 r">oldRecognizers</span> = (<span class="t t">ObservableCollection</span>&lt;<a href="/Xamarin.Forms.Core/A.html#dded1e9ac7a4a124" class="t t">IGestureRecognizer</a>&gt;)<span class="r7 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#47b8b15a0c49e516" class="i property">GestureRecognizers</a>;
+					<span class="r8 r">oldRecognizers</span>.<span class="i">CollectionChanged</span> -= <a href="#69a14174f8a85c84" class="i field">_collectionChangedHandler</a>;
+				}
+			}
+ 
+			<b>if</b> (<a href="#6db48aec47c0ef66" class="i field">_control</a> != <b>null</b>)
+			{
+				<a href="#6db48aec47c0ef66" class="i field">_control</a>.<span class="i">Tapped</span> -= <a href="#c4169b570ab0bf51" class="i method">HandleTapped</a>;
+				<a href="#6db48aec47c0ef66" class="i field">_control</a>.<span class="i">DoubleTapped</span> -= <a href="#fc6b261e24ea1948" class="i method">HandleDoubleTapped</a>;
+			}
+ 
+			<a href="#66e6d5a3a7e2bde0" class="i property">Control</a> = <b>null</b>;
+			<a href="#295566bcf8d3d33e" class="i property">Element</a> = <b>null</b>;
+			<a href="#2cf0467095adbcee" class="i property">Container</a> = <b>null</b>;
+		}
+ 
+		<b>protected virtual void</b> <a id="139a92f815e7b009" href="R/139a92f815e7b009.html" target="n" data-glyph="75,1" class="i method">OnPropertyChanged</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<b>if</b> (<a href="#295566bcf8d3d33e" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#585b4979a16bfbb1" class="i property">Batched</a>)
+			{
+				<b>if</b> (<span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#46ccfebde8187f9b" class="i field">XProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#dbd1b0cda0775f3b" class="i field">YProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#da94b849bc513d64" class="i field">WidthProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+					<span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#bd8332aab95ecbe7" class="i field">HeightProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				{
+					<a href="#0195c615e05ae400" class="i field">_invalidateArrangeNeeded</a> = <b>true</b>;
+				}
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#46ccfebde8187f9b" class="i field">XProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#dbd1b0cda0775f3b" class="i field">YProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#da94b849bc513d64" class="i field">WidthProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+				<span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#bd8332aab95ecbe7" class="i field">HeightProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#d6d8890ff4fd9398" class="i method">MaybeInvalidate</a>();
+			}
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#8b4971ff4c0bf69e" class="i field">AnchorXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#c36c1b05b1f88233" class="i field">AnchorYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#cce781f6f94dd8af" class="i method">UpdateScaleAndRotation</a>(<a href="#295566bcf8d3d33e" class="i property">Element</a>, <a href="#2cf0467095adbcee" class="i property">Container</a>);
+			}
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#7101c14ebc333e1d" class="i field">ScaleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#cce781f6f94dd8af" class="i method">UpdateScaleAndRotation</a>(<a href="#295566bcf8d3d33e" class="i property">Element</a>, <a href="#2cf0467095adbcee" class="i property">Container</a>);
+			}
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#c3af2bf418be5028" class="i field">TranslationXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#753acb521b5e3f04" class="i field">TranslationYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+					 <span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#81bca7dd24e8a626" class="i field">RotationProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#212ad62d6a9bf671" class="i field">RotationXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#818973b117d7de1f" class="i field">RotationYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#095e5416d7dc2af2" class="i method">UpdateRotation</a>(<a href="#295566bcf8d3d33e" class="i property">Element</a>, <a href="#2cf0467095adbcee" class="i property">Container</a>);
+			}
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#acdb30ca7e3e8994" class="i field">IsVisibleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#aebec6ed1893f56d" class="i method">UpdateVisibility</a>(<a href="#295566bcf8d3d33e" class="i property">Element</a>, <a href="#2cf0467095adbcee" class="i property">Container</a>);
+			}
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#b7f80bf625ddd6d6" class="i field">OpacityProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#69da3a66e11eee0b" class="i method">UpdateOpacity</a>(<a href="#295566bcf8d3d33e" class="i property">Element</a>, <a href="#2cf0467095adbcee" class="i property">Container</a>);
+			}
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#0a624730d6bd2c02" class="i field">InputTransparentProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#466adedeb1c990f5" class="i method">UpdateInputTransparent</a>(<a href="#295566bcf8d3d33e" class="i property">Element</a>, <a href="#2cf0467095adbcee" class="i property">Container</a>);
+			}
+			<b>else if</b> (<span class="r10 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#d798cc16e0e87f98" class="i field">IsEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#466adedeb1c990f5" class="i method">UpdateInputTransparent</a>(<a href="#295566bcf8d3d33e" class="i property">Element</a>, <a href="#2cf0467095adbcee" class="i property">Container</a>);
+			}
+		}
+ 
+		<b>protected virtual void</b> <a id="b46b7dafebd9ea3c" href="R/b46b7dafebd9ea3c.html" target="n" data-glyph="75,1" class="i method">UpdateNativeControl</a>()
+		{
+			<b>if</b> (<a href="#295566bcf8d3d33e" class="i property">Element</a> == <b>null</b> || <a href="#2cf0467095adbcee" class="i property">Container</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="#aebec6ed1893f56d" class="i method">UpdateVisibility</a>(<a href="#295566bcf8d3d33e" class="i property">Element</a>, <a href="#2cf0467095adbcee" class="i property">Container</a>);
+			<a href="#69da3a66e11eee0b" class="i method">UpdateOpacity</a>(<a href="#295566bcf8d3d33e" class="i property">Element</a>, <a href="#2cf0467095adbcee" class="i property">Container</a>);
+			<a href="#cce781f6f94dd8af" class="i method">UpdateScaleAndRotation</a>(<a href="#295566bcf8d3d33e" class="i property">Element</a>, <a href="#2cf0467095adbcee" class="i property">Container</a>);
+			<a href="#466adedeb1c990f5" class="i method">UpdateInputTransparent</a>(<a href="#295566bcf8d3d33e" class="i property">Element</a>, <a href="#2cf0467095adbcee" class="i property">Container</a>);
+ 
+			<b>if</b> (<a href="#0195c615e05ae400" class="i field">_invalidateArrangeNeeded</a>)
+			{
+				<a href="#d6d8890ff4fd9398" class="i method">MaybeInvalidate</a>();
+			}
+			<a href="#0195c615e05ae400" class="i field">_invalidateArrangeNeeded</a> = <b>false</b>;
+ 
+			<a href="#afe684403570cdfb" class="i method">OnUpdated</a>();
+		}
+ 
+		<b>void</b> <a id="48ad8fa437adcefb" href="R/48ad8fa437adcefb.html" target="n" data-glyph="76,1" class="i method">HandlePan</a>(<span class="t t">ManipulationDeltaRoutedEventArgs</span> <span id="r11 rd" class="r11 r">e</span>, <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a> <span id="r12 rd" class="r12 r">view</span>)
+		{
+			<b>if</b> (<span class="r12 r">view</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="#742a9aa1a6949a38" class="i field">_isPanning</a> = <b>true</b>;
+ 
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#1f03cea068cff275" class="t t">PanGestureRecognizer</a> <span id="r13 rd" class="r13 r">recognizer</span> <b>in</b> <span class="r12 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#47b8b15a0c49e516" class="i property">GestureRecognizers</a>.<a href="/Xamarin.Forms.Core/A.html#3876189ef7a22180" class="i method">GetGesturesFor</a>&lt;<a href="/Xamarin.Forms.Core/A.html#1f03cea068cff275" class="t t">PanGestureRecognizer</a>&gt;().<span class="i method">Where</span>(<span id="r14 rd" class="r14 r">g</span> =&gt; <span class="r14 r">g</span>.<a href="/Xamarin.Forms.Core/A.html#a1252078ce103d65" class="i property">TouchPoints</a> == <a href="#d2875440c5e858fe" class="i field">_fingers</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>))
+			{
+				<b>if</b> (!<a href="#39d57613ba37dd6b" class="i field">_wasPanGestureStartedSent</a>)
+				{
+					<span class="r13 r">recognizer</span>.<a href="/Xamarin.Forms.Core/A.html#5f3703478c6ffc1b" class="i method">SendPanStarted</a>(<span class="r12 r">view</span>, <a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a>.<a href="/Xamarin.Forms.Core/A.html#f64242468de64fbc" class="i property">Current</a>.<a href="/Xamarin.Forms.Core/A.html#e25b34aa6b05e57d" class="i property">PanGestureId</a>);
+				}
+				<span class="r13 r">recognizer</span>.<a href="/Xamarin.Forms.Core/A.html#f5947d6e5a744290" class="i method">SendPan</a>(<span class="r12 r">view</span>, <span class="r11 r">e</span>.<span class="i property">Delta</span>.<span class="i field">Translation</span>.<span class="i property">X</span> + <span class="r11 r">e</span>.<span class="i property">Cumulative</span>.<span class="i field">Translation</span>.<span class="i property">X</span>, <span class="r11 r">e</span>.<span class="i property">Delta</span>.<span class="i field">Translation</span>.<span class="i property">Y</span> + <span class="r11 r">e</span>.<span class="i property">Cumulative</span>.<span class="i field">Translation</span>.<span class="i property">Y</span>, <a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a>.<a href="/Xamarin.Forms.Core/A.html#f64242468de64fbc" class="i property">Current</a>.<a href="/Xamarin.Forms.Core/A.html#e25b34aa6b05e57d" class="i property">PanGestureId</a>);
+			}
+			<a href="#39d57613ba37dd6b" class="i field">_wasPanGestureStartedSent</a> = <b>true</b>;
+		}
+ 
+		<b>void</b> <a id="240f1baad00668e4" href="R/240f1baad00668e4.html" target="n" data-glyph="76,1" class="i method">HandlePinch</a>(<span class="t t">ManipulationDeltaRoutedEventArgs</span> <span id="r15 rd" class="r15 r">e</span>, <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a> <span id="r16 rd" class="r16 r">view</span>)
+		{
+			<b>if</b> (<a href="#d2875440c5e858fe" class="i field">_fingers</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> &lt; 2 || <span class="r16 r">view</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="#3d5aeb45cc78b13b" class="i field">_isPinching</a> = <b>true</b>;
+ 
+			<span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="t t">Point</span> <span id="r17 rd" class="r17 r">translationPoint</span> = <span class="r15 r">e</span>.<span class="i property">Container</span>.<span class="i method">TransformToVisual</span>(<a href="#2cf0467095adbcee" class="i property">Container</a>).<span class="i method">TransformPoint</span>(<span class="r15 r">e</span>.<span class="i property">Position</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#71c2b8add148844d" class="k">var</a> <span id="r18 rd" class="r18 r">scaleOriginPoint</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#a96bb28c9688c765" class="t constructor">Point</a>(<span class="r17 r">translationPoint</span>.<span class="i property">X</span> / <span class="r16 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#4b4ff8e00e0429d0" class="i property">Width</a>, <span class="r17 r">translationPoint</span>.<span class="i property">Y</span> / <span class="r16 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a>);
+			<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="/Xamarin.Forms.Core/A.html#9699ff25643962b1" class="t t">PinchGestureRecognizer</a>&gt; <span id="r19 rd" class="r19 r">pinchGestures</span> = <span class="r16 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#47b8b15a0c49e516" class="i property">GestureRecognizers</a>.<a href="/Xamarin.Forms.Core/A.html#3876189ef7a22180" class="i method">GetGesturesFor</a>&lt;<a href="/Xamarin.Forms.Core/A.html#9699ff25643962b1" class="t t">PinchGestureRecognizer</a>&gt;();
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#9699ff25643962b1" class="t t">PinchGestureRecognizer</a> <span id="r20 rd" class="r20 r">recognizer</span> <b>in</b> <span class="r19 r">pinchGestures</span>)
+			{
+				<b>if</b> (!<a href="#1dccca6144c82e9c" class="i field">_wasPinchGestureStartedSent</a>)
+				{
+					<span class="r20 r">recognizer</span>.<a href="/Xamarin.Forms.Core/A.html#8b9b0c1d06a5817b" class="i method">SendPinchStarted</a>(<span class="r16 r">view</span>, <span class="r18 r">scaleOriginPoint</span>);
+				}
+				<span class="r20 r">recognizer</span>.<a href="/Xamarin.Forms.Core/A.html#c42e587e445de34e" class="i method">SendPinch</a>(<span class="r16 r">view</span>, <span class="r15 r">e</span>.<span class="i property">Delta</span>.<span class="i field">Scale</span>, <span class="r18 r">scaleOriginPoint</span>);
+			}
+			<a href="#1dccca6144c82e9c" class="i field">_wasPinchGestureStartedSent</a> = <b>true</b>;
+		}
+ 
+		<b>void</b> <a id="d6d8890ff4fd9398" href="R/d6d8890ff4fd9398.html" target="n" data-glyph="76,1" class="i method">MaybeInvalidate</a>()
+		{
+			<b>if</b> (<a href="#295566bcf8d3d33e" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#9a7a7e8e6086044a" class="i property">IsInNativeLayout</a>)
+				<b>return</b>;
+ 
+			<b>var</b> <span id="r21 rd" class="r21 r">parent</span> = (<span class="t t">FrameworkElement</span>)<a href="#2cf0467095adbcee" class="i property">Container</a>.<span class="i property">Parent</span>;
+			<span class="r21 r">parent</span>?.<span class="i method">InvalidateMeasure</span>();
+			<a href="#2cf0467095adbcee" class="i property">Container</a>.<span class="i method">InvalidateMeasure</span>();
+		}
+ 
+		<b>void</b> <a id="b13bcec75ee96cfc" href="R/b13bcec75ee96cfc.html" target="n" data-glyph="76,1" class="i method">ModelGestureRecognizersOnCollectionChanged</a>(<b>object</b> <span id="r22 rd" class="r22 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r23 rd" class="r23 r">notifyCollectionChangedEventArgs</span>)
+		{
+			<a href="#ad6ddde1945ff382" class="i method">UpdatingGestureRecognizers</a>();
+		}
+ 
+		<b>void</b> <a id="84aa852c83bad6d2" href="R/84aa852c83bad6d2.html" target="n" data-glyph="76,1" class="i method">OnDoubleTap</a>(<b>object</b> <span id="r24 rd" class="r24 r">sender</span>, <span class="t t">DoubleTappedRoutedEventArgs</span> <span id="r25 rd" class="r25 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r26 rd" class="r26 r">view</span> = <a href="#295566bcf8d3d33e" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>;
+			<b>if</b> (<span class="r26 r">view</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee3163fce3030ae2" class="t t">TapGestureRecognizer</a>&gt; <span id="r27 rd" class="r27 r">doubleTapGestures</span> = <span class="r26 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#47b8b15a0c49e516" class="i property">GestureRecognizers</a>.<a href="/Xamarin.Forms.Core/A.html#3876189ef7a22180" class="i method">GetGesturesFor</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee3163fce3030ae2" class="t t">TapGestureRecognizer</a>&gt;(<span id="r28 rd" class="r28 r">g</span> =&gt; <span class="r28 r">g</span>.<a href="/Xamarin.Forms.Core/A.html#b8c3346cd591a8df" class="i property">NumberOfTapsRequired</a> == 2);
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#ee3163fce3030ae2" class="t t">TapGestureRecognizer</a> <span id="r29 rd" class="r29 r">recognizer</span> <b>in</b> <span class="r27 r">doubleTapGestures</span>)
+				<span class="r29 r">recognizer</span>.<a href="/Xamarin.Forms.Core/A.html#13ba7bfb11a9fe5d" class="i method">SendTapped</a>(<span class="r26 r">view</span>);
+		}
+ 
+		<b>void</b> <a id="ed7913188641187b" href="R/ed7913188641187b.html" target="n" data-glyph="76,1" class="i method">OnManipulationCompleted</a>(<b>object</b> <span id="r30 rd" class="r30 r">sender</span>, <span class="t t">ManipulationCompletedRoutedEventArgs</span> <span id="r31 rd" class="r31 r">e</span>)
+		{
+			<a href="#41cc2be66d53383a" class="i method">PinchComplete</a>(<b>true</b>);
+			<a href="#dec9564d168c001d" class="i method">PanComplete</a>(<b>true</b>);
+		}
+ 
+		<b>void</b> <a id="b9d9c42244da58aa" href="R/b9d9c42244da58aa.html" target="n" data-glyph="76,1" class="i method">OnManipulationDelta</a>(<b>object</b> <span id="r32 rd" class="r32 r">sender</span>, <span class="t t">ManipulationDeltaRoutedEventArgs</span> <span id="r33 rd" class="r33 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r34 rd" class="r34 r">view</span> = <a href="#295566bcf8d3d33e" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>;
+			<b>if</b> (<span class="r34 r">view</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="#240f1baad00668e4" class="i method">HandlePinch</a>(<span class="r33 r">e</span>, <span class="r34 r">view</span>);
+			<a href="#48ad8fa437adcefb" class="i method">HandlePan</a>(<span class="r33 r">e</span>, <span class="r34 r">view</span>);
+		}
+ 
+		<b>void</b> <a id="a4ced8666f91a308" href="R/a4ced8666f91a308.html" target="n" data-glyph="76,1" class="i method">OnManipulationStarted</a>(<b>object</b> <span id="r35 rd" class="r35 r">sender</span>, <span class="t t">ManipulationStartedRoutedEventArgs</span> <span id="r36 rd" class="r36 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r37 rd" class="r37 r">view</span> = <a href="#295566bcf8d3d33e" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>;
+			<b>if</b> (<span class="r37 r">view</span> == <b>null</b>)
+				<b>return</b>;
+			<a href="#1dccca6144c82e9c" class="i field">_wasPinchGestureStartedSent</a> = <b>false</b>;
+			<a href="#39d57613ba37dd6b" class="i field">_wasPanGestureStartedSent</a> = <b>false</b>;
+		}
+ 
+		<b>void</b> <a id="629de94a1e6a759d" href="R/629de94a1e6a759d.html" target="n" data-glyph="76,1" class="i method">OnPointerCanceled</a>(<b>object</b> <span id="r38 rd" class="r38 r">sender</span>, <span class="t t">PointerRoutedEventArgs</span> <span id="r39 rd" class="r39 r">e</span>)
+		{
+			<b>uint</b> <span id="r40 rd" class="r40 r">id</span> = <span class="r39 r">e</span>.<span class="i property">Pointer</span>.<span class="i property">PointerId</span>;
+			<b>if</b> (<a href="#d2875440c5e858fe" class="i field">_fingers</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r40 r">id</span>))
+				<a href="#d2875440c5e858fe" class="i field">_fingers</a>.<a href="@1@System.Collections/A.html#db8cdd552a0bb10c" class="i method">Remove</a>(<span class="r40 r">id</span>);
+ 
+			<a href="#41cc2be66d53383a" class="i method">PinchComplete</a>(<b>false</b>);
+			<a href="#dec9564d168c001d" class="i method">PanComplete</a>(<b>false</b>);
+		}
+ 
+		<b>void</b> <a id="063c1094be722bcc" href="R/063c1094be722bcc.html" target="n" data-glyph="76,1" class="i method">OnPointerExited</a>(<b>object</b> <span id="r41 rd" class="r41 r">sender</span>, <span class="t t">PointerRoutedEventArgs</span> <span id="r42 rd" class="r42 r">e</span>)
+		{
+			<b>uint</b> <span id="r43 rd" class="r43 r">id</span> = <span class="r42 r">e</span>.<span class="i property">Pointer</span>.<span class="i property">PointerId</span>;
+			<b>if</b> (<a href="#d2875440c5e858fe" class="i field">_fingers</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r43 r">id</span>))
+				<a href="#d2875440c5e858fe" class="i field">_fingers</a>.<a href="@1@System.Collections/A.html#db8cdd552a0bb10c" class="i method">Remove</a>(<span class="r43 r">id</span>);
+ 
+			<a href="#41cc2be66d53383a" class="i method">PinchComplete</a>(<b>true</b>);
+			<a href="#dec9564d168c001d" class="i method">PanComplete</a>(<b>true</b>);
+		}
+ 
+		<b>void</b> <a id="d13fe61aa8ce3e43" href="R/d13fe61aa8ce3e43.html" target="n" data-glyph="76,1" class="i method">OnPointerPressed</a>(<b>object</b> <span id="r44 rd" class="r44 r">sender</span>, <span class="t t">PointerRoutedEventArgs</span> <span id="r45 rd" class="r45 r">e</span>)
+		{
+			<b>uint</b> <span id="r46 rd" class="r46 r">id</span> = <span class="r45 r">e</span>.<span class="i property">Pointer</span>.<span class="i property">PointerId</span>;
+			<b>if</b> (!<a href="#d2875440c5e858fe" class="i field">_fingers</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r46 r">id</span>))
+				<a href="#d2875440c5e858fe" class="i field">_fingers</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r46 r">id</span>);
+		}
+ 
+		<b>void</b> <a id="b8feac54efba62a9" href="R/b8feac54efba62a9.html" target="n" data-glyph="76,1" class="i method">OnPointerReleased</a>(<b>object</b> <span id="r47 rd" class="r47 r">sender</span>, <span class="t t">PointerRoutedEventArgs</span> <span id="r48 rd" class="r48 r">e</span>)
+		{
+			<b>uint</b> <span id="r49 rd" class="r49 r">id</span> = <span class="r48 r">e</span>.<span class="i property">Pointer</span>.<span class="i property">PointerId</span>;
+			<b>if</b> (<a href="#d2875440c5e858fe" class="i field">_fingers</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r49 r">id</span>))
+				<a href="#d2875440c5e858fe" class="i field">_fingers</a>.<a href="@1@System.Collections/A.html#db8cdd552a0bb10c" class="i method">Remove</a>(<span class="r49 r">id</span>);
+ 
+			<a href="#41cc2be66d53383a" class="i method">PinchComplete</a>(<b>true</b>);
+			<a href="#dec9564d168c001d" class="i method">PanComplete</a>(<b>true</b>);
+		}
+ 
+		<b>void</b> <a id="dc640eb0cd11208d" href="R/dc640eb0cd11208d.html" target="n" data-glyph="76,1" class="i method">OnRedrawNeeded</a>(<b>object</b> <span id="r50 rd" class="r50 r">sender</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r51 rd" class="r51 r">e</span>)
+		{
+			<a href="#b46b7dafebd9ea3c" class="i method">UpdateNativeControl</a>();
+		}
+ 
+		<b>void</b> <a id="05994f176c89b058" href="R/05994f176c89b058.html" target="n" data-glyph="76,1" class="i method">OnTap</a>(<b>object</b> <span id="r52 rd" class="r52 r">sender</span>, <span class="t t">TappedRoutedEventArgs</span> <span id="r53 rd" class="r53 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r54 rd" class="r54 r">view</span> = <a href="#295566bcf8d3d33e" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>;
+			<b>if</b> (<span class="r54 r">view</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee3163fce3030ae2" class="t t">TapGestureRecognizer</a>&gt; <span id="r55 rd" class="r55 r">tapGestures</span> = <span class="r54 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#47b8b15a0c49e516" class="i property">GestureRecognizers</a>.<a href="/Xamarin.Forms.Core/A.html#3876189ef7a22180" class="i method">GetGesturesFor</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee3163fce3030ae2" class="t t">TapGestureRecognizer</a>&gt;(<span id="r56 rd" class="r56 r">g</span> =&gt; <span class="r56 r">g</span>.<a href="/Xamarin.Forms.Core/A.html#b8c3346cd591a8df" class="i property">NumberOfTapsRequired</a> == 1);
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#ee3163fce3030ae2" class="t t">TapGestureRecognizer</a> <span id="r57 rd" class="r57 r">recognizer</span> <b>in</b> <span class="r55 r">tapGestures</span>)
+			{
+				<span class="r57 r">recognizer</span>.<a href="/Xamarin.Forms.Core/A.html#13ba7bfb11a9fe5d" class="i method">SendTapped</a>(<span class="r54 r">view</span>);
+				<span class="r53 r">e</span>.<span class="i property">Handled</span> = <b>true</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="afe684403570cdfb" href="R/afe684403570cdfb.html" target="n" data-glyph="76,1" class="i method">OnUpdated</a>()
+		{
+			<b>if</b> (<a href="#9aa3226ffb96c48d" class="i">Updated</a> != <b>null</b>)
+				<a href="#9aa3226ffb96c48d" class="i">Updated</a>(<a href="#aa2c3153ee06f03d" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+ 
+		<b>void</b> <a id="dec9564d168c001d" href="R/dec9564d168c001d.html" target="n" data-glyph="76,1" class="i method">PanComplete</a>(<b>bool</b> <span id="r58 rd" class="r58 r">success</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r59 rd" class="r59 r">view</span> = <a href="#295566bcf8d3d33e" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>;
+			<b>if</b> (<span class="r59 r">view</span> == <b>null</b> || !<a href="#742a9aa1a6949a38" class="i field">_isPanning</a>)
+				<b>return</b>;
+ 
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#1f03cea068cff275" class="t t">PanGestureRecognizer</a> <span id="r60 rd" class="r60 r">recognizer</span> <b>in</b> <span class="r59 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#47b8b15a0c49e516" class="i property">GestureRecognizers</a>.<a href="/Xamarin.Forms.Core/A.html#3876189ef7a22180" class="i method">GetGesturesFor</a>&lt;<a href="/Xamarin.Forms.Core/A.html#1f03cea068cff275" class="t t">PanGestureRecognizer</a>&gt;().<span class="i method">Where</span>(<span id="r61 rd" class="r61 r">g</span> =&gt; <span class="r61 r">g</span>.<a href="/Xamarin.Forms.Core/A.html#a1252078ce103d65" class="i property">TouchPoints</a> == <a href="#d2875440c5e858fe" class="i field">_fingers</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>))
+			{
+				<b>if</b> (<span class="r58 r">success</span>)
+				{
+					<span class="r60 r">recognizer</span>.<a href="/Xamarin.Forms.Core/A.html#78ee5be96879e49f" class="i method">SendPanCompleted</a>(<span class="r59 r">view</span>, <a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a>.<a href="/Xamarin.Forms.Core/A.html#f64242468de64fbc" class="i property">Current</a>.<a href="/Xamarin.Forms.Core/A.html#e25b34aa6b05e57d" class="i property">PanGestureId</a>);
+				}
+				<b>else</b>
+				{
+					<span class="r60 r">recognizer</span>.<a href="/Xamarin.Forms.Core/A.html#14769bf544dbbdd2" class="i method">SendPanCanceled</a>(<span class="r59 r">view</span>, <a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a>.<a href="/Xamarin.Forms.Core/A.html#f64242468de64fbc" class="i property">Current</a>.<a href="/Xamarin.Forms.Core/A.html#e25b34aa6b05e57d" class="i property">PanGestureId</a>);
+				}
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a>.<a href="/Xamarin.Forms.Core/A.html#f64242468de64fbc" class="i property">Current</a>.<a href="/Xamarin.Forms.Core/A.html#e25b34aa6b05e57d" class="i property">PanGestureId</a>++;
+			<a href="#742a9aa1a6949a38" class="i field">_isPanning</a> = <b>false</b>;
+		}
+ 
+		<b>void</b> <a id="41cc2be66d53383a" href="R/41cc2be66d53383a.html" target="n" data-glyph="76,1" class="i method">PinchComplete</a>(<b>bool</b> <span id="r62 rd" class="r62 r">success</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r63 rd" class="r63 r">view</span> = <a href="#295566bcf8d3d33e" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>;
+			<b>if</b> (<span class="r63 r">view</span> == <b>null</b> || !<a href="#3d5aeb45cc78b13b" class="i field">_isPinching</a>)
+				<b>return</b>;
+ 
+			<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="/Xamarin.Forms.Core/A.html#9699ff25643962b1" class="t t">PinchGestureRecognizer</a>&gt; <span id="r64 rd" class="r64 r">pinchGestures</span> = <span class="r63 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#47b8b15a0c49e516" class="i property">GestureRecognizers</a>.<a href="/Xamarin.Forms.Core/A.html#3876189ef7a22180" class="i method">GetGesturesFor</a>&lt;<a href="/Xamarin.Forms.Core/A.html#9699ff25643962b1" class="t t">PinchGestureRecognizer</a>&gt;();
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#9699ff25643962b1" class="t t">PinchGestureRecognizer</a> <span id="r65 rd" class="r65 r">recognizer</span> <b>in</b> <span class="r64 r">pinchGestures</span>)
+			{
+				<b>if</b> (<span class="r62 r">success</span>)
+				{
+					<span class="r65 r">recognizer</span>.<a href="/Xamarin.Forms.Core/A.html#88325529f7f4d7cc" class="i method">SendPinchEnded</a>(<span class="r63 r">view</span>);
+				}
+				<b>else</b>
+				{
+					<span class="r65 r">recognizer</span>.<a href="/Xamarin.Forms.Core/A.html#43ae468ddf00f047" class="i method">SendPinchCanceled</a>(<span class="r63 r">view</span>);
+				}
+			}
+ 
+			<a href="#3d5aeb45cc78b13b" class="i field">_isPinching</a> = <b>false</b>;
+		}
+ 
+		<b>static void</b> <a id="466adedeb1c990f5" href="R/466adedeb1c990f5.html" target="n" data-glyph="76,1" class="i method">UpdateInputTransparent</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r66 rd" class="r66 r">view</span>, <span class="t t">FrameworkElement</span> <span id="r67 rd" class="r67 r">frameworkElement</span>)
+		{
+			<span class="r67 r">frameworkElement</span>.<span class="i property">IsHitTestVisible</span> = <span class="r66 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a> &amp;&amp; !<span class="r66 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#02b822eb508e27ff" class="i property">InputTransparent</a>;
+		}
+ 
+		<b>static void</b> <a id="69da3a66e11eee0b" href="R/69da3a66e11eee0b.html" target="n" data-glyph="76,1" class="i method">UpdateOpacity</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r68 rd" class="r68 r">view</span>, <span class="t t">FrameworkElement</span> <span id="r69 rd" class="r69 r">frameworkElement</span>)
+		{
+			<span class="r69 r">frameworkElement</span>.<span class="i property">Opacity</span> = <span class="r68 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#564121ba41a80a9d" class="i property">Opacity</a>;
+		}
+ 
+		<b>static void</b> <a id="095e5416d7dc2af2" href="R/095e5416d7dc2af2.html" target="n" data-glyph="76,1" class="i method">UpdateRotation</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r70 rd" class="r70 r">view</span>, <span class="t t">FrameworkElement</span> <span id="r71 rd" class="r71 r">frameworkElement</span>)
+		{
+			<b>double</b> <span id="r72 rd" class="r72 r">anchorX</span> = <span class="r70 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#a00998b71a5dcbae" class="i property">AnchorX</a>;
+			<b>double</b> <span id="r73 rd" class="r73 r">anchorY</span> = <span class="r70 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#f6d4e7f8be1952ed" class="i property">AnchorY</a>;
+			<b>double</b> <span id="r74 rd" class="r74 r">rotationX</span> = <span class="r70 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#ac8ee4ff2947fb8f" class="i property">RotationX</a>;
+			<b>double</b> <span id="r75 rd" class="r75 r">rotationY</span> = <span class="r70 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#dbfc39f79da9ef5e" class="i property">RotationY</a>;
+			<b>double</b> <span id="r76 rd" class="r76 r">rotation</span> = <span class="r70 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#d77e9855d74702dd" class="i property">Rotation</a>;
+			<b>double</b> <span id="r77 rd" class="r77 r">translationX</span> = <span class="r70 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#e319cb8ba4509319" class="i property">TranslationX</a>;
+			<b>double</b> <span id="r78 rd" class="r78 r">translationY</span> = <span class="r70 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#4f7b15503ebb471e" class="i property">TranslationY</a>;
+			<b>double</b> <span id="r79 rd" class="r79 r">scale</span> = <span class="r70 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#71fa0e02a53ce494" class="i property">Scale</a>;
+ 
+			<b>if</b> (<span class="r74 r">rotationX</span> % 360 == 0 &amp;&amp; <span class="r75 r">rotationY</span> % 360 == 0 &amp;&amp; <span class="r76 r">rotation</span> % 360 == 0 &amp;&amp; <span class="r77 r">translationX</span> == 0 &amp;&amp; <span class="r78 r">translationY</span> == 0 &amp;&amp; <span class="r79 r">scale</span> == 1)
+			{
+				<span class="r71 r">frameworkElement</span>.<span class="i property">Projection</span> = <b>null</b>;
+			}
+			<b>else</b>
+			{
+				<span class="r71 r">frameworkElement</span>.<span class="i property">Projection</span> = <b>new</b> <span class="t constructor">PlaneProjection</span>
+				{
+					<span class="i property">CenterOfRotationX</span> = <span class="r72 r">anchorX</span>,
+					<span class="i property">CenterOfRotationY</span> = <span class="r73 r">anchorY</span>,
+					<span class="i property">GlobalOffsetX</span> = <span class="r79 r">scale</span> == 0 ? 0 : <span class="r77 r">translationX</span> / <span class="r79 r">scale</span>,
+					<span class="i property">GlobalOffsetY</span> = <span class="r79 r">scale</span> == 0 ? 0 : <span class="r78 r">translationY</span> / <span class="r79 r">scale</span>,
+					<span class="i property">RotationX</span> = -<span class="r74 r">rotationX</span>,
+					<span class="i property">RotationY</span> = -<span class="r75 r">rotationY</span>,
+					<span class="i property">RotationZ</span> = -<span class="r76 r">rotation</span>
+				};
+			}
+		}
+ 
+		<b>static void</b> <a id="cce781f6f94dd8af" href="R/cce781f6f94dd8af.html" target="n" data-glyph="76,1" class="i method">UpdateScaleAndRotation</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r80 rd" class="r80 r">view</span>, <span class="t t">FrameworkElement</span> <span id="r81 rd" class="r81 r">frameworkElement</span>)
+		{
+			<b>double</b> <span id="r82 rd" class="r82 r">anchorX</span> = <span class="r80 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#a00998b71a5dcbae" class="i property">AnchorX</a>;
+			<b>double</b> <span id="r83 rd" class="r83 r">anchorY</span> = <span class="r80 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#f6d4e7f8be1952ed" class="i property">AnchorY</a>;
+			<b>double</b> <span id="r84 rd" class="r84 r">scale</span> = <span class="r80 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#71fa0e02a53ce494" class="i property">Scale</a>;
+			<span class="r81 r">frameworkElement</span>.<span class="i property">RenderTransformOrigin</span> = <b>new</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="t constructor">Point</span>(<span class="r82 r">anchorX</span>, <span class="r83 r">anchorY</span>);
+			<span class="r81 r">frameworkElement</span>.<span class="i property">RenderTransform</span> = <b>new</b> <span class="t constructor">ScaleTransform</span> { <span class="i property">ScaleX</span> = <span class="r84 r">scale</span>, <span class="i property">ScaleY</span> = <span class="r84 r">scale</span> };
+ 
+			<a href="#095e5416d7dc2af2" class="i method">UpdateRotation</a>(<span class="r80 r">view</span>, <span class="r81 r">frameworkElement</span>);
+		}
+ 
+		<b>static void</b> <a id="aebec6ed1893f56d" href="R/aebec6ed1893f56d.html" target="n" data-glyph="76,1" class="i method">UpdateVisibility</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r85 rd" class="r85 r">view</span>, <span class="t t">FrameworkElement</span> <span id="r86 rd" class="r86 r">frameworkElement</span>)
+		{
+			<span class="r86 r">frameworkElement</span>.<span class="i property">Visibility</span> = <span class="r85 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#138318a4447c6c41" class="i property">IsVisible</a> ? <span class="t t">Visibility</span>.<span class="i field">Visible</span> : <span class="t t">Visibility</span>.<span class="i field">Collapsed</span>;
+		}
+ 
+		<b>void</b> <a id="ad6ddde1945ff382" href="R/ad6ddde1945ff382.html" target="n" data-glyph="76,1" class="i method">UpdatingGestureRecognizers</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r87 rd" class="r87 r">view</span> = <a href="#295566bcf8d3d33e" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>;
+			<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="/Xamarin.Forms.Core/A.html#dded1e9ac7a4a124" class="t t">IGestureRecognizer</a>&gt; <span id="r88 rd" class="r88 r">gestures</span> = <span class="r87 r">view</span>?.<a href="/Xamarin.Forms.Core/A.html#47b8b15a0c49e516" class="i property">GestureRecognizers</a>;
+ 
+			<b>if</b> (<a href="#4ef3fe0b90371bf5" class="i field">_container</a> == <b>null</b> || <span class="r88 r">gestures</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">Tapped</span> -= <a href="#05994f176c89b058" class="i method">OnTap</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">DoubleTapped</span> -= <a href="#84aa852c83bad6d2" class="i method">OnDoubleTap</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationDelta</span> -= <a href="#b9d9c42244da58aa" class="i method">OnManipulationDelta</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationStarted</span> -= <a href="#a4ced8666f91a308" class="i method">OnManipulationStarted</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationCompleted</span> -= <a href="#ed7913188641187b" class="i method">OnManipulationCompleted</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerPressed</span> -= <a href="#d13fe61aa8ce3e43" class="i method">OnPointerPressed</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerExited</span> -= <a href="#063c1094be722bcc" class="i method">OnPointerExited</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerReleased</span> -= <a href="#b8feac54efba62a9" class="i method">OnPointerReleased</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerCanceled</span> -= <a href="#629de94a1e6a759d" class="i method">OnPointerCanceled</a>;
+ 
+			<b>if</b> (<span class="r88 r">gestures</span>.<a href="/Xamarin.Forms.Core/A.html#3876189ef7a22180" class="i method">GetGesturesFor</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee3163fce3030ae2" class="t t">TapGestureRecognizer</a>&gt;(<span id="r89 rd" class="r89 r">g</span> =&gt; <span class="r89 r">g</span>.<a href="/Xamarin.Forms.Core/A.html#b8c3346cd591a8df" class="i property">NumberOfTapsRequired</a> == 1).<span class="i method">Any</span>())
+			{
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">Tapped</span> += <a href="#05994f176c89b058" class="i method">OnTap</a>;
+			}
+			<b>else</b>
+			{
+				<b>if</b> (<a href="#6db48aec47c0ef66" class="i field">_control</a> != <b>null</b> &amp;&amp; <a href="#b516d9cf4ad425fb" class="i property">PreventGestureBubbling</a>)
+				{
+					<a href="#6db48aec47c0ef66" class="i field">_control</a>.<span class="i">Tapped</span> += <a href="#c4169b570ab0bf51" class="i method">HandleTapped</a>;
+				}
+			}
+ 
+			<b>if</b> (<span class="r88 r">gestures</span>.<a href="/Xamarin.Forms.Core/A.html#3876189ef7a22180" class="i method">GetGesturesFor</a>&lt;<a href="/Xamarin.Forms.Core/A.html#ee3163fce3030ae2" class="t t">TapGestureRecognizer</a>&gt;(<span id="r90 rd" class="r90 r">g</span> =&gt; <span class="r90 r">g</span>.<a href="/Xamarin.Forms.Core/A.html#b8c3346cd591a8df" class="i property">NumberOfTapsRequired</a> == 2).<span class="i method">Any</span>())
+			{
+				<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">DoubleTapped</span> += <a href="#84aa852c83bad6d2" class="i method">OnDoubleTap</a>;
+			}
+			<b>else</b>
+			{
+				<b>if</b> (<a href="#6db48aec47c0ef66" class="i field">_control</a> != <b>null</b> &amp;&amp; <a href="#b516d9cf4ad425fb" class="i property">PreventGestureBubbling</a>)
+				{
+					<a href="#6db48aec47c0ef66" class="i field">_control</a>.<span class="i">DoubleTapped</span> += <a href="#fc6b261e24ea1948" class="i method">HandleDoubleTapped</a>;
+				}
+			}
+ 
+			<b>bool</b> <span id="r91 rd" class="r91 r">hasPinchGesture</span> = <span class="r88 r">gestures</span>.<a href="/Xamarin.Forms.Core/A.html#3876189ef7a22180" class="i method">GetGesturesFor</a>&lt;<a href="/Xamarin.Forms.Core/A.html#9699ff25643962b1" class="t t">PinchGestureRecognizer</a>&gt;().<a href="@1@System.Runtime/A.html#a242475701b655b2" class="i method">GetEnumerator</a>().<a href="@1@System.Runtime/A.html#116c28c0f6355e3f" class="i method">MoveNext</a>();
+			<b>bool</b> <span id="r92 rd" class="r92 r">hasPanGesture</span> = <span class="r88 r">gestures</span>.<a href="/Xamarin.Forms.Core/A.html#3876189ef7a22180" class="i method">GetGesturesFor</a>&lt;<a href="/Xamarin.Forms.Core/A.html#1f03cea068cff275" class="t t">PanGestureRecognizer</a>&gt;().<a href="@1@System.Runtime/A.html#a242475701b655b2" class="i method">GetEnumerator</a>().<a href="@1@System.Runtime/A.html#116c28c0f6355e3f" class="i method">MoveNext</a>();
+			<b>if</b> (!<span class="r91 r">hasPinchGesture</span> &amp;&amp; !<span class="r92 r">hasPanGesture</span>)
+				<b>return</b>;
+ 
+			<span class="c">//We can&#39;t handle ManipulationMode.Scale and System , so we don&#39;t support pinch/pan on a scrollview </span>
+			<b>if</b> (<a href="#295566bcf8d3d33e" class="i property">Element</a> <b>is</b> <a href="/Xamarin.Forms.Core/A.html#f4df39c3e50ec61f" class="t t">ScrollView</a>)
+			{
+				<b>if</b> (<span class="r91 r">hasPinchGesture</span>)
+					<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;Gestures&quot;</span>, <span class="s">&quot;PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms&quot;</span>);
+				<b>if</b> (<span class="r92 r">hasPanGesture</span>)
+					<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;Gestures&quot;</span>, <span class="s">&quot;PanGestureRecognizer is not supported on a ScrollView in Windows Platforms&quot;</span>);
+				<b>return</b>;
+			}
+ 
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i property">ManipulationMode</span> = <span class="t t">ManipulationModes</span>.<span class="i field">Scale</span> | <span class="t t">ManipulationModes</span>.<span class="i field">TranslateX</span> | <span class="t t">ManipulationModes</span>.<span class="i field">TranslateY</span>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationDelta</span> += <a href="#b9d9c42244da58aa" class="i method">OnManipulationDelta</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationStarted</span> += <a href="#a4ced8666f91a308" class="i method">OnManipulationStarted</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">ManipulationCompleted</span> += <a href="#ed7913188641187b" class="i method">OnManipulationCompleted</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerPressed</span> += <a href="#d13fe61aa8ce3e43" class="i method">OnPointerPressed</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerExited</span> += <a href="#063c1094be722bcc" class="i method">OnPointerExited</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerReleased</span> += <a href="#b8feac54efba62a9" class="i method">OnPointerReleased</a>;
+			<a href="#4ef3fe0b90371bf5" class="i field">_container</a>.<span class="i">PointerCanceled</span> += <a href="#629de94a1e6a759d" class="i method">OnPointerCanceled</a>;
+		}
+ 
+		<b>void</b> <a id="c4169b570ab0bf51" href="R/c4169b570ab0bf51.html" target="n" data-glyph="76,1" class="i method">HandleTapped</a>(<b>object</b> <span id="r93 rd" class="r93 r">sender</span>, <span class="t t">TappedRoutedEventArgs</span> <span id="r94 rd" class="r94 r">tappedRoutedEventArgs</span>)
+		{
+			<span class="r94 r">tappedRoutedEventArgs</span>.<span class="i property">Handled</span> = <b>true</b>;
+		}
+ 
+		<b>void</b> <a id="fc6b261e24ea1948" href="R/fc6b261e24ea1948.html" target="n" data-glyph="76,1" class="i method">HandleDoubleTapped</a>(<b>object</b> <span id="r95 rd" class="r95 r">sender</span>, <span class="t t">DoubleTappedRoutedEventArgs</span> <span id="r96 rd" class="r96 r">doubleTappedRoutedEventArgs</span>)
+		{
+			<span class="r96 r">doubleTappedRoutedEventArgs</span>.<span class="i property">Handled</span> = <b>true</b>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

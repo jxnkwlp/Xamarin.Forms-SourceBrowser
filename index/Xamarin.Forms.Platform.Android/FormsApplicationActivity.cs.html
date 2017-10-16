@@ -1,0 +1,357 @@
+﻿<!DOCTYPE html>
+<html><head><title>FormsApplicationActivity.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(348);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/FormsApplicationActivity.cs" target="_top">FormsApplicationActivity.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Concurrent</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">App</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>.<span class="i">Res</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">OS</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Widget</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">AndroidSpecific</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>public class</b> <a id="f100ae49e577e713" href="R/f100ae49e577e713.html" target="n" data-glyph="0,0" class="t t">FormsApplicationActivity</a> : <span class="i">Activity</span>, <a href="IDeviceInfoProvider.cs.html#d72a34959b97f7b1" class="t t">IDeviceInfoProvider</a>, <a href="IStartActivityForResult.cs.html#5c2ef712eb1b2e13" class="t t">IStartActivityForResult</a>
+	{
+		<b>public delegate bool</b> <a id="203637b580519c40" href="R/203637b580519c40.html" target="n" data-glyph="12,1" class="t t"><span id="cbb1204d285bfb0f">BackButtonPressedEventHandler</span></a>(<b>object</b> <span id="r0 rd" class="r0 r">sender</span>, <span class="i">EventArgs</span> <span id="r1 rd" class="r1 r">e</span>);
+ 
+		<b>readonly</b> <span class="i">ConcurrentDictionary</span>&lt;<b>int</b>, <span class="i">Action</span>&lt;<span class="i">Result</span>, <span class="i">Intent</span>&gt;&gt; <a id="89dcdabb3776645b" href="R/89dcdabb3776645b.html" target="n" data-glyph="46,1" class="i field">_activityResultCallbacks</a> = <b>new</b> <span class="i">ConcurrentDictionary</span>&lt;<b>int</b>, <span class="i">Action</span>&lt;<span class="i">Result</span>, <span class="i">Intent</span>&gt;&gt;();
+ 
+		<a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a> <a id="1d71aecd476de41a" href="R/1d71aecd476de41a.html" target="n" data-glyph="46,1" class="i field">_application</a>;
+		<a href="Platform.cs.html#479e712741d44fa2" class="t t">Platform</a> <a id="9874c08a287302da" href="R/9874c08a287302da.html" target="n" data-glyph="46,1" class="i field">_canvas</a>;
+		<a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a> <a id="d9823c6475e1cd4c" href="R/d9823c6475e1cd4c.html" target="n" data-glyph="46,1" class="i field">_currentState</a>;
+		<span class="i">LinearLayout</span> <a id="9c9b1a703331509b" href="R/9c9b1a703331509b.html" target="n" data-glyph="46,1" class="i field">_layout</a>;
+ 
+		<b>int</b> <a id="685748fadc47339c" href="R/685748fadc47339c.html" target="n" data-glyph="46,1" class="i field">_nextActivityResultCallbackKey</a>;
+ 
+		<a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a> <a id="37460e4d29de61cc" href="R/37460e4d29de61cc.html" target="n" data-glyph="46,1" class="i field">_previousState</a>;
+ 
+		<b>protected</b> <a id="f4742b519b9330c9" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">FormsApplicationActivity</a>()
+		{
+			<a href="#37460e4d29de61cc" class="i field">_previousState</a> = <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#ab0a332836ccd9bd" class="i field">Uninitialized</a>;
+			<a href="#d9823c6475e1cd4c" class="i field">_currentState</a> = <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#ab0a332836ccd9bd" class="i field">Uninitialized</a>;
+		}
+ 
+		<b>public event</b> <span class="i">EventHandler</span> <a id="1922382fb5dd1c90" href="R/1922382fb5dd1c90.html" target="n" data-glyph="30,1" class="i">ConfigurationChanged</a>;
+ 
+		<b>int</b> <a href="IStartActivityForResult.cs.html#5c2ef712eb1b2e13" class="t t">IStartActivityForResult</a>.<a href="IStartActivityForResult.cs.html#0626ec4378ab2fe9" class="i method">RegisterActivityResultCallback</a>(<span class="i">Action</span>&lt;<span class="i">Result</span>, <span class="i">Intent</span>&gt; <span id="r2 rd" class="r2 r">callback</span>)
+		{
+			<b>int</b> <span id="r3 rd" class="r3 r">requestCode</span> = <a href="#685748fadc47339c" class="i field">_nextActivityResultCallbackKey</a>;
+ 
+			<b>while</b> (!<a href="#89dcdabb3776645b" class="i field">_activityResultCallbacks</a>.<span class="i">TryAdd</span>(<span class="r3 r">requestCode</span>, <span class="r2 r">callback</span>))
+			{
+				<a href="#685748fadc47339c" class="i field">_nextActivityResultCallbackKey</a> += 1;
+				<span class="r3 r">requestCode</span> = <a href="#685748fadc47339c" class="i field">_nextActivityResultCallbackKey</a>;
+			}
+ 
+			<a href="#685748fadc47339c" class="i field">_nextActivityResultCallbackKey</a> += 1;
+ 
+			<b>return</b> <span class="r3 r">requestCode</span>;
+		}
+ 
+		<b>void</b> <a href="IStartActivityForResult.cs.html#5c2ef712eb1b2e13" class="t t">IStartActivityForResult</a>.<a href="IStartActivityForResult.cs.html#6b7305b0fcdd508e" class="i method">UnregisterActivityResultCallback</a>(<b>int</b> <span id="r4 rd" class="r4 r">requestCode</span>)
+		{
+			<span class="i">Action</span>&lt;<span class="i">Result</span>, <span class="i">Intent</span>&gt; <span id="r5 rd" class="r5 r">callback</span>;
+			<a href="#89dcdabb3776645b" class="i field">_activityResultCallbacks</a>.<span class="i">TryRemove</span>(<span class="r4 r">requestCode</span>, <b>out</b> <span class="r5 r">callback</span>);
+		}
+ 
+		<b>public static event</b> <a href="#203637b580519c40" class="t t">BackButtonPressedEventHandler</a> <a id="91db9fe1bdf02c4c" href="R/91db9fe1bdf02c4c.html" target="n" data-glyph="30,1" class="i">BackPressed</a>;
+ 
+		<b>public override void</b> <a id="9c30bf60771ab3f2" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnBackPressed</a>()
+		{
+			<b>if</b> (<a href="#91db9fe1bdf02c4c" class="i">BackPressed</a> != <b>null</b> &amp;&amp; <a href="#91db9fe1bdf02c4c" class="i">BackPressed</a>(<a href="#f100ae49e577e713" class="k">this</a>, <span class="i">EventArgs</span>.<span class="i">Empty</span>))
+				<b>return</b>;
+			<b>base</b>.<span class="i">OnBackPressed</span>();
+		}
+ 
+		<b>public override void</b> <a id="abc8a4689f23ba40" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnConfigurationChanged</a>(<span class="t">Configuration</span> <span id="r6 rd" class="r6 r">newConfig</span>)
+		{
+			<b>base</b>.<span class="i">OnConfigurationChanged</span>(<span class="r6 r">newConfig</span>);
+			<span class="i">EventHandler</span> <span id="r7 rd" class="r7 r">handler</span> = <a href="#1922382fb5dd1c90" class="i">ConfigurationChanged</a>;
+			<b>if</b> (<span class="r7 r">handler</span> != <b>null</b>)
+				<span class="r7 r">handler</span>(<a href="#f100ae49e577e713" class="k">this</a>, <b>new</b> <span class="i">EventArgs</span>());
+		}
+ 
+		<span class="c">// FIXME: THIS SHOULD NOT BE MANDATORY</span>
+		<span class="c">// or</span>
+		<span class="c">// This should be specified in an interface and formalized, perhaps even provide a stock AndroidActivity users</span>
+		<span class="c">// can derive from to avoid having to do any work.</span>
+		<b>public override bool</b> <a id="e45a174ca0961675" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnOptionsItemSelected</a>(<span class="i">IMenuItem</span> <span id="r8 rd" class="r8 r">item</span>)
+		{
+			<b>if</b> (<span class="r8 r">item</span>.<span class="i">ItemId</span> == <b>global</b>::<span class="i">Android</span>.<span class="i">Resource</span>.<span class="i">Id</span>.<span class="i">Home</span>)
+				<a href="#9874c08a287302da" class="i field">_canvas</a>.<a href="Platform.cs.html#3eabee0975173322" class="i method">SendHomeClicked</a>();
+			<b>return</b> <b>base</b>.<span class="i">OnOptionsItemSelected</span>(<span class="r8 r">item</span>);
+		}
+ 
+		<b>public override bool</b> <a id="6d6ef09ab5d221d2" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnPrepareOptionsMenu</a>(<span class="i">IMenu</span> <span id="r9 rd" class="r9 r">menu</span>)
+		{
+			<a href="#9874c08a287302da" class="i field">_canvas</a>.<a href="Platform.cs.html#4d82278228098ea8" class="i method">PrepareMenu</a>(<span class="r9 r">menu</span>);
+			<b>return</b> <b>base</b>.<span class="i">OnPrepareOptionsMenu</span>(<span class="r9 r">menu</span>);
+		}
+ 
+		[<span class="i">Obsolete</span>(<span class="s">&quot;SetPage is obsolete as of version 1.3.0. Please use protected LoadApplication (Application app) instead.&quot;</span>)]
+		<b>public void</b> <a id="50323eaf85fc8ef2" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SetPage</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r10 rd" class="r10 r">page</span>)
+		{
+			<a href="#a823ec228f49b20f" class="k">var</a> <span id="r11 rd" class="r11 r">application</span> = <b>new</b> <a href="#a823ec228f49b20f" class="t constructor">DefaultApplication</a> { <span class="i">MainPage</span> = <span class="r10 r">page</span> };
+			<a href="#d838f321bc5bbf1e" class="i method">LoadApplication</a>(<span class="r11 r">application</span>);
+		}
+ 
+		<b>protected void</b> <a id="d838f321bc5bbf1e" href="R/d838f321bc5bbf1e.html" target="n" data-glyph="75,1" class="i method">LoadApplication</a>(<a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a> <span id="r12 rd" class="r12 r">application</span>)
+		{
+			<b>if</b> (<span class="r12 r">application</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<span class="s">&quot;application&quot;</span>);
+ 
+			(<span class="r12 r">application</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#7cbe485c49861db3" class="t t">IApplicationController</a>)?.<span class="i">SetAppIndexingProvider</span>(<b>new</b> <span class="t">AndroidAppIndexProvider</span>(<a href="#f100ae49e577e713" class="k">this</a>));
+ 
+			<a href="#1d71aecd476de41a" class="i field">_application</a> = <span class="r12 r">application</span>;
+			<span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a>.<span class="i">SetCurrentApplication</span>(<span class="r12 r">application</span>);
+ 
+			<a href="#e946edbc0b943c09" class="i method">SetSoftInputMode</a>();
+ 
+			<span class="r12 r">application</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <span class="i">AppOnPropertyChanged</span>;
+ 
+			<a href="#33d453683b527fd5" class="i method">SetMainPage</a>();
+		}
+ 
+		<b>protected override void</b> <a id="b212ca4efbd73788" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnActivityResult</a>(<b>int</b> <span id="r13 rd" class="r13 r">requestCode</span>, <span class="i">Result</span> <span id="r14 rd" class="r14 r">resultCode</span>, <span class="i">Intent</span> <span id="r15 rd" class="r15 r">data</span>)
+		{
+			<b>base</b>.<span class="i">OnActivityResult</span>(<span class="r13 r">requestCode</span>, <span class="r14 r">resultCode</span>, <span class="r15 r">data</span>);
+ 
+			<span class="i">Action</span>&lt;<span class="i">Result</span>, <span class="i">Intent</span>&gt; <span id="r16 rd" class="r16 r">callback</span>;
+ 
+			<b>if</b> (<a href="#89dcdabb3776645b" class="i field">_activityResultCallbacks</a>.<span class="i">TryGetValue</span>(<span class="r13 r">requestCode</span>, <b>out</b> <span class="r16 r">callback</span>))
+				<span class="r16 r">callback</span>(<span class="r14 r">resultCode</span>, <span class="r15 r">data</span>);
+		}
+ 
+		<b>protected override void</b> <a id="4d0283b2f12a1af8" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnCreate</a>(<span class="i">Bundle</span> <span id="r17 rd" class="r17 r">savedInstanceState</span>)
+		{
+			<span class="i">Window</span>.<span class="i">RequestFeature</span>(<span class="i">WindowFeatures</span>.<span class="i">IndeterminateProgress</span>);
+ 
+			<b>base</b>.<span class="i">OnCreate</span>(<span class="r17 r">savedInstanceState</span>);
+ 
+			<a href="#9c9b1a703331509b" class="i field">_layout</a> = <b>new</b> <span class="i">LinearLayout</span>(<span class="i">BaseContext</span>);
+			<span class="i">SetContentView</span>(<a href="#9c9b1a703331509b" class="i field">_layout</a>);
+ 
+			<span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a>.<span class="i">ClearCurrent</span>();
+ 
+			<a href="#37460e4d29de61cc" class="i field">_previousState</a> = <a href="#d9823c6475e1cd4c" class="i field">_currentState</a>;
+			<a href="#d9823c6475e1cd4c" class="i field">_currentState</a> = <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#63ef9ed33452955a" class="i field">OnCreate</a>;
+ 
+			<a href="#36d82d275977d7c3" class="i method">OnStateChanged</a>();
+		}
+ 
+		<b>protected override void</b> <a id="2cb795db50118b88" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnDestroy</a>()
+		{
+			<span class="c">// may never be called</span>
+			<b>base</b>.<span class="i">OnDestroy</span>();
+ 
+			<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Unsubscribe</span>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>, <a href="/Xamarin.Forms.Core/A.html#32920d433efc25db" class="t t">AlertArguments</a>&gt;(<a href="#f100ae49e577e713" class="k">this</a>, <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>.<a href="/Xamarin.Forms.Core/A.html#115351b35e78ba6a" class="i field">AlertSignalName</a>);
+			<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Unsubscribe</span>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>, <b>bool</b>&gt;(<a href="#f100ae49e577e713" class="k">this</a>, <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>.<a href="/Xamarin.Forms.Core/A.html#858c33fbb161609e" class="i field">BusySetSignalName</a>);
+			<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Unsubscribe</span>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>, <a href="/Xamarin.Forms.Core/A.html#58b1a909937065d8" class="t t">ActionSheetArguments</a>&gt;(<a href="#f100ae49e577e713" class="k">this</a>, <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>.<a href="/Xamarin.Forms.Core/A.html#062fcd5db3c56cb5" class="i field">ActionSheetSignalName</a>);
+ 
+			<b>if</b> (<a href="#9874c08a287302da" class="i field">_canvas</a> != <b>null</b>)
+				((<span class="i">IDisposable</span>)<a href="#9874c08a287302da" class="i field">_canvas</a>).<span class="i">Dispose</span>();
+		}
+ 
+		<b>protected override void</b> <a id="86d621b2f1c29cd9" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnPause</a>()
+		{
+			<a href="#9c9b1a703331509b" class="i field">_layout</a>.<span class="i">HideKeyboard</span>(<b>true</b>);
+ 
+			<span class="c">// Stop animations or other ongoing actions that could consume CPU</span>
+			<span class="c">// Commit unsaved changes, build only if users expect such changes to be permanently saved when thy leave such as a draft email</span>
+			<span class="c">// Release system resources, such as broadcast receivers, handles to sensors (like GPS), or any resources that may affect battery life when your activity is paused.</span>
+			<span class="c">// Avoid writing to permanent storage and CPU intensive tasks</span>
+			<b>base</b>.<span class="i">OnPause</span>();
+ 
+			<a href="#37460e4d29de61cc" class="i field">_previousState</a> = <a href="#d9823c6475e1cd4c" class="i field">_currentState</a>;
+			<a href="#d9823c6475e1cd4c" class="i field">_currentState</a> = <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#f90db7260cb9a002" class="i field">OnPause</a>;
+ 
+			<a href="#36d82d275977d7c3" class="i method">OnStateChanged</a>();
+		}
+ 
+		<b>protected override void</b> <a id="29565ce694f7c8c9" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnRestart</a>()
+		{
+			<b>base</b>.<span class="i">OnRestart</span>();
+ 
+			<a href="#37460e4d29de61cc" class="i field">_previousState</a> = <a href="#d9823c6475e1cd4c" class="i field">_currentState</a>;
+			<a href="#d9823c6475e1cd4c" class="i field">_currentState</a> = <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#9b5e1c5b9247a09a" class="i field">OnRestart</a>;
+ 
+			<a href="#36d82d275977d7c3" class="i method">OnStateChanged</a>();
+		}
+ 
+		<b>protected override void</b> <a id="faa176d75879656d" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnResume</a>()
+		{
+			<span class="c">// counterpart to OnPause</span>
+			<b>base</b>.<span class="i">OnResume</span>();
+ 
+			<a href="#37460e4d29de61cc" class="i field">_previousState</a> = <a href="#d9823c6475e1cd4c" class="i field">_currentState</a>;
+			<a href="#d9823c6475e1cd4c" class="i field">_currentState</a> = <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#96210cc845a2ed73" class="i field">OnResume</a>;
+ 
+			<a href="#36d82d275977d7c3" class="i method">OnStateChanged</a>();
+		}
+ 
+		<b>protected override void</b> <a id="4371050249cb8d60" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnStart</a>()
+		{
+			<b>base</b>.<span class="i">OnStart</span>();
+ 
+			<a href="#37460e4d29de61cc" class="i field">_previousState</a> = <a href="#d9823c6475e1cd4c" class="i field">_currentState</a>;
+			<a href="#d9823c6475e1cd4c" class="i field">_currentState</a> = <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#982f0b0cc46ba90f" class="i field">OnStart</a>;
+ 
+			<a href="#36d82d275977d7c3" class="i method">OnStateChanged</a>();
+		}
+ 
+		<span class="c">// Scenarios that stop and restart you app</span>
+		<span class="c">// -- Switches from your app to another app, activity restarts when clicking on the app again.</span>
+		<span class="c">// -- Action in your app that starts a new Activity, the current activity is stopped and the second is created, pressing back restarts the activity</span>
+		<span class="c">// -- The user recieves a phone call while using your app on his or her phone</span>
+		<b>protected override void</b> <a id="061c1acc5440e944" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">OnStop</a>()
+		{
+			<span class="c">// writing to storage happens here!</span>
+			<span class="c">// full UI obstruction</span>
+			<span class="c">// users focus in another activity</span>
+			<span class="c">// perform heavy load shutdown operations</span>
+			<span class="c">// clean up resources</span>
+			<span class="c">// clean up everything that may leak memory</span>
+			<b>base</b>.<span class="i">OnStop</span>();
+ 
+			<a href="#37460e4d29de61cc" class="i field">_previousState</a> = <a href="#d9823c6475e1cd4c" class="i field">_currentState</a>;
+			<a href="#d9823c6475e1cd4c" class="i field">_currentState</a> = <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#4b58d9cfef430bb8" class="i field">OnStop</a>;
+ 
+			<a href="#36d82d275977d7c3" class="i method">OnStateChanged</a>();
+		}
+ 
+		<b>void</b> <a id="3b39a6cd76107376" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">AppOnPropertyChanged</a>(<b>object</b> <span id="r18 rd" class="r18 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r19 rd" class="r19 r">args</span>)
+		{
+			<b>if</b> (<span class="r19 r">args</span>.<span class="i">PropertyName</span> == <span class="s">&quot;MainPage&quot;</span>)
+				<a href="#6687f8cab4b07a40" class="i method">InternalSetPage</a>(<a href="#1d71aecd476de41a" class="i field">_application</a>.<a href="/Xamarin.Forms.Core/A.html#05719483fad2d5f5" class="i property">MainPage</a>);
+			<b>if</b> (<span class="r19 r">args</span>.<span class="i">PropertyName</span> == <span class="i n">PlatformConfiguration</span>.<span class="i n">AndroidSpecific</span>.<a href="/Xamarin.Forms.Core/A.html#8279a0e1fbb36cdf" class="t t">Application</a>.<a href="/Xamarin.Forms.Core/A.html#e774038fd7e18a2d" class="i field">WindowSoftInputModeAdjustProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#e946edbc0b943c09" class="i method">SetSoftInputMode</a>();
+		}
+ 
+		<b>void</b> <a id="6687f8cab4b07a40" href="R/6687f8cab4b07a40.html" target="n" data-glyph="76,1" class="i method">InternalSetPage</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r20 rd" class="r20 r">page</span>)
+		{
+			<b>if</b> (!<a href="Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="Forms.cs.html#e95a77dd210e7a30" class="i property">IsInitialized</a>)
+				<b>throw</b> <b>new</b> <span class="i">InvalidOperationException</span>(<span class="s">&quot;Call Forms.Init (Activity, Bundle) before this&quot;</span>);
+ 
+			<b>if</b> (<a href="#9874c08a287302da" class="i field">_canvas</a> != <b>null</b>)
+			{
+				<a href="#9874c08a287302da" class="i field">_canvas</a>.<a href="Platform.cs.html#2511847144bc3e78" class="i method">SetPage</a>(<span class="r20 r">page</span>);
+				<b>return</b>;
+			}
+ 
+			<b>var</b> <span id="r21 rd" class="r21 r">busyCount</span> = 0;
+			<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Subscribe</span>(<a href="#f100ae49e577e713" class="k">this</a>, <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>.<a href="/Xamarin.Forms.Core/A.html#858c33fbb161609e" class="i field">BusySetSignalName</a>, (<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r22 rd" class="r22 r">sender</span>, <b>bool</b> <span id="r23 rd" class="r23 r">enabled</span>) =&gt;
+			{
+				<span class="r21 r">busyCount</span> = <span class="i">Math</span>.<span class="i">Max</span>(0, <span class="r23 r">enabled</span> ? <span class="r21 r">busyCount</span> + 1 : <span class="r21 r">busyCount</span> - 1);
+				<a href="#470f7eb9a0a4e462" class="i method">UpdateProgressBarVisibility</a>(<span class="r21 r">busyCount</span> &gt; 0);
+			});
+ 
+			<a href="#470f7eb9a0a4e462" class="i method">UpdateProgressBarVisibility</a>(<span class="r21 r">busyCount</span> &gt; 0);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Subscribe</span>(<a href="#f100ae49e577e713" class="k">this</a>, <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>.<a href="/Xamarin.Forms.Core/A.html#115351b35e78ba6a" class="i field">AlertSignalName</a>, (<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r24 rd" class="r24 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#32920d433efc25db" class="t t">AlertArguments</a> <span id="r25 rd" class="r25 r">arguments</span>) =&gt;
+			{
+				<span class="i">AlertDialog</span> <span id="r26 rd" class="r26 r">alert</span> = <b>new</b> <span class="i">AlertDialog</span>.<span class="i">Builder</span>(<a href="#f100ae49e577e713" class="k">this</a>).<span class="i">Create</span>();
+				<span class="r26 r">alert</span>.<span class="i">SetTitle</span>(<span class="r25 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#2e26dffe4a812855" class="i property">Title</a>);
+				<span class="r26 r">alert</span>.<span class="i">SetMessage</span>(<span class="r25 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#49169e8a2464dd4b" class="i property">Message</a>);
+				<b>if</b> (<span class="r25 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#caa50f3b494353d7" class="i property">Accept</a> != <b>null</b>)
+					<span class="r26 r">alert</span>.<span class="i">SetButton</span>((<b>int</b>)<span class="i">DialogButtonType</span>.<span class="i">Positive</span>, <span class="r25 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#caa50f3b494353d7" class="i property">Accept</a>, (<span id="r27 rd" class="r27 r">o</span>, <span id="r28 rd" class="r28 r">args</span>) =&gt; <span class="r25 r">arguments</span>.<span class="i">SetResult</span>(<b>true</b>));
+				<span class="r26 r">alert</span>.<span class="i">SetButton</span>((<b>int</b>)<span class="i">DialogButtonType</span>.<span class="i">Negative</span>, <span class="r25 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#4fd302614ee6cb82" class="i property">Cancel</a>, (<span id="r29 rd" class="r29 r">o</span>, <span id="r30 rd" class="r30 r">args</span>) =&gt; <span class="r25 r">arguments</span>.<span class="i">SetResult</span>(<b>false</b>));
+				<span class="r26 r">alert</span>.<span class="i">CancelEvent</span> += (<span id="r31 rd" class="r31 r">o</span>, <span id="r32 rd" class="r32 r">args</span>) =&gt; { <span class="r25 r">arguments</span>.<span class="i">SetResult</span>(<b>false</b>); };
+				<span class="r26 r">alert</span>.<span class="i">Show</span>();
+			});
+ 
+			<a href="/Xamarin.Forms.Core/A.html#68162056f69c1f2c" class="t t">MessagingCenter</a>.<span class="i">Subscribe</span>(<a href="#f100ae49e577e713" class="k">this</a>, <a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>.<a href="/Xamarin.Forms.Core/A.html#062fcd5db3c56cb5" class="i field">ActionSheetSignalName</a>, (<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r33 rd" class="r33 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#58b1a909937065d8" class="t t">ActionSheetArguments</a> <span id="r34 rd" class="r34 r">arguments</span>) =&gt;
+			{
+				<b>var</b> <span id="r35 rd" class="r35 r">builder</span> = <b>new</b> <span class="i">AlertDialog</span>.<span class="i">Builder</span>(<a href="#f100ae49e577e713" class="k">this</a>);
+				<span class="r35 r">builder</span>.<span class="i">SetTitle</span>(<span class="r34 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#f0cc8505afd56c53" class="i property">Title</a>);
+				<b>string</b>[] <span id="r36 rd" class="r36 r">items</span> = <span class="r34 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#fd69aef906d4a4f4" class="i property">Buttons</a>.<span class="i">ToArray</span>();
+				<span class="r35 r">builder</span>.<span class="i">SetItems</span>(<span class="r36 r">items</span>, (<span id="r37 rd" class="r37 r">sender2</span>, <span id="r38 rd" class="r38 r">args</span>) =&gt; { <span class="r34 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#a5d3f2e54bcbf7b0" class="i property">Result</a>.<span class="i">TrySetResult</span>(<span class="r36 r">items</span>[<span class="r38 r">args</span>.<span class="i">Which</span>]); });
+ 
+				<b>if</b> (<span class="r34 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#2d367a4b391b10d3" class="i property">Cancel</a> != <b>null</b>)
+					<span class="r35 r">builder</span>.<span class="i">SetPositiveButton</span>(<span class="r34 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#2d367a4b391b10d3" class="i property">Cancel</a>, <b>delegate</b> { <span class="r34 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#a5d3f2e54bcbf7b0" class="i property">Result</a>.<span class="i">TrySetResult</span>(<span class="r34 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#2d367a4b391b10d3" class="i property">Cancel</a>); });
+ 
+				<b>if</b> (<span class="r34 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#1a706b33137e918f" class="i property">Destruction</a> != <b>null</b>)
+					<span class="r35 r">builder</span>.<span class="i">SetNegativeButton</span>(<span class="r34 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#1a706b33137e918f" class="i property">Destruction</a>, <b>delegate</b> { <span class="r34 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#a5d3f2e54bcbf7b0" class="i property">Result</a>.<span class="i">TrySetResult</span>(<span class="r34 r">arguments</span>.<a href="/Xamarin.Forms.Core/A.html#1a706b33137e918f" class="i property">Destruction</a>); });
+ 
+				<span class="i">AlertDialog</span> <span id="r39 rd" class="r39 r">dialog</span> = <span class="r35 r">builder</span>.<span class="i">Create</span>();
+				<span class="r35 r">builder</span>.<span class="i">Dispose</span>();
+				<span class="c">//to match current functionality of renderer we set cancelable on outside</span>
+				<span class="c">//and return null</span>
+				<span class="r39 r">dialog</span>.<span class="i">SetCanceledOnTouchOutside</span>(<b>true</b>);
+				<span class="r39 r">dialog</span>.<span class="i">CancelEvent</span> += (<span id="r40 rd" class="r40 r">sender3</span>, <span id="r41 rd" class="r41 r">e</span>) =&gt; { <span class="r34 r">arguments</span>.<span class="i">SetResult</span>(<b>null</b>); };
+				<span class="r39 r">dialog</span>.<span class="i">Show</span>();
+			});
+ 
+			<a href="#9874c08a287302da" class="i field">_canvas</a> = <b>new</b> <span class="t">Platform</span>(<a href="#f100ae49e577e713" class="k">this</a>);
+			<b>if</b> (<a href="#1d71aecd476de41a" class="i field">_application</a> != <b>null</b>)
+				<a href="#1d71aecd476de41a" class="i field">_application</a>.<span class="i">Platform</span> = <a href="#9874c08a287302da" class="i field">_canvas</a>;
+			<a href="#9874c08a287302da" class="i field">_canvas</a>.<a href="Platform.cs.html#2511847144bc3e78" class="i method">SetPage</a>(<span class="r20 r">page</span>);
+			<a href="#9c9b1a703331509b" class="i field">_layout</a>.<span class="i">AddView</span>(<a href="#9874c08a287302da" class="i field">_canvas</a>.<a href="Platform.cs.html#2f2c17de9e5b2b31" class="i method">GetViewGroup</a>());
+		}
+ 
+		<b>async void</b> <a id="36d82d275977d7c3" href="R/36d82d275977d7c3.html" target="n" data-glyph="76,1" class="i method">OnStateChanged</a>()
+		{
+			<b>if</b> (<a href="#1d71aecd476de41a" class="i field">_application</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#37460e4d29de61cc" class="i field">_previousState</a> == <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#63ef9ed33452955a" class="i field">OnCreate</a> &amp;&amp; <a href="#d9823c6475e1cd4c" class="i field">_currentState</a> == <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#982f0b0cc46ba90f" class="i field">OnStart</a>)
+				<a href="#1d71aecd476de41a" class="i field">_application</a>.<span class="i">SendStart</span>();
+			<b>else if</b> (<a href="#37460e4d29de61cc" class="i field">_previousState</a> == <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#4b58d9cfef430bb8" class="i field">OnStop</a> &amp;&amp; <a href="#d9823c6475e1cd4c" class="i field">_currentState</a> == <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#9b5e1c5b9247a09a" class="i field">OnRestart</a>)
+				<a href="#1d71aecd476de41a" class="i field">_application</a>.<span class="i">SendResume</span>();
+			<b>else if</b> (<a href="#37460e4d29de61cc" class="i field">_previousState</a> == <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#f90db7260cb9a002" class="i field">OnPause</a> &amp;&amp; <a href="#d9823c6475e1cd4c" class="i field">_currentState</a> == <a href="AndroidApplicationLifecycleState.cs.html#a251deb1166f9127" class="t t">AndroidApplicationLifecycleState</a>.<a href="AndroidApplicationLifecycleState.cs.html#4b58d9cfef430bb8" class="i field">OnStop</a>)
+				<b>await</b> <a href="#1d71aecd476de41a" class="i field">_application</a>.<span class="i">SendSleepAsync</span>();
+		}
+ 
+		<b>void</b> <a id="33d453683b527fd5" href="R/33d453683b527fd5.html" target="n" data-glyph="76,1" class="i method">SetMainPage</a>()
+		{
+			<a href="#6687f8cab4b07a40" class="i method">InternalSetPage</a>(<a href="#1d71aecd476de41a" class="i field">_application</a>.<a href="/Xamarin.Forms.Core/A.html#05719483fad2d5f5" class="i property">MainPage</a>);
+		}
+ 
+		<b>void</b> <a id="e946edbc0b943c09" href="R/e946edbc0b943c09.html" target="n" data-glyph="76,1" class="i method">SetSoftInputMode</a>()
+		{
+			<span class="i">SoftInput</span> <span id="r42 rd" class="r42 r">adjust</span> = <span class="i">SoftInput</span>.<span class="i">AdjustPan</span>;
+ 
+			<b>if</b> (<span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a>.<a href="/Xamarin.Forms.Core/A.html#f64242468de64fbc" class="i property">Current</a> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#acf72966e107acfe" class="k">var</a> <span id="r43 rd" class="r43 r">elementValue</span> = <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a>.<a href="/Xamarin.Forms.Core/A.html#f64242468de64fbc" class="i property">Current</a>.<a href="PlatformConfigurationExtensions.cs.html#e5d2b3b6cebe48c2" class="i method">OnThisPlatform</a>().<a href="/Xamarin.Forms.Core/A.html#2a226598788b653f" class="i method">GetWindowSoftInputModeAdjust</a>();
+				<b>switch</b> (<span class="r43 r">elementValue</span>)
+				{
+					<b>default</b>:
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#acf72966e107acfe" class="t t">WindowSoftInputModeAdjust</a>.<a href="/Xamarin.Forms.Core/A.html#9fac614266026f2d" class="i field">Pan</a>:
+						<span class="r42 r">adjust</span> = <span class="i">SoftInput</span>.<span class="i">AdjustPan</span>;
+						<b>break</b>;
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#acf72966e107acfe" class="t t">WindowSoftInputModeAdjust</a>.<a href="/Xamarin.Forms.Core/A.html#da2b502112fda87a" class="i field">Resize</a>:
+						<span class="r42 r">adjust</span> = <span class="i">SoftInput</span>.<span class="i">AdjustResize</span>;
+						<b>break</b>;
+				}
+			}
+ 
+			<span class="i">Window</span>.<span class="i">SetSoftInputMode</span>(<span class="r42 r">adjust</span>);
+		}
+ 
+		<b>void</b> <a id="470f7eb9a0a4e462" href="R/470f7eb9a0a4e462.html" target="n" data-glyph="76,1" class="i method">UpdateProgressBarVisibility</a>(<b>bool</b> <span id="r44 rd" class="r44 r">isBusy</span>)
+		{
+			<b>if</b> (!<a href="Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="Forms.cs.html#5397e9428227378f" class="i property">SupportsProgress</a>)
+				<b>return</b>;
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 612, 618
+			<span class="i">SetProgressBarIndeterminate</span>(<b>true</b>);
+			<span class="i">SetProgressBarIndeterminateVisibility</span>(<span class="r44 r">isBusy</span>);
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 612, 618
+		}
+ 
+		<b>internal class</b> <a id="a823ec228f49b20f" href="R/a823ec228f49b20f.html" target="n" data-glyph="2,1" class="t t"><span id="e05d9c35463c0fc9">DefaultApplication</span></a> : <a href="/Xamarin.Forms.Core/A.html#05ea728f56cd3ad5" class="t t">Application</a>
+		{
+		}
+	}
+}</pre></td></tr></table></div></body></html>

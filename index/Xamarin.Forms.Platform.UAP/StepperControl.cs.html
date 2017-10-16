@@ -1,0 +1,262 @@
+﻿<!DOCTYPE html>
+<html><head><title>StepperControl.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(253);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/StepperControl.cs" target="_top">StepperControl.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+{
+	<b>public sealed class</b> <a id="d5f113b7175988d8" href="R/d5f113b7175988d8.html" target="n" data-glyph="0,0" class="t t">StepperControl</a> : <span class="t t">Control</span>
+	{
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="594b1d73dc714544" href="R/594b1d73dc714544.html" target="n" data-glyph="42,1" class="i field">ValueProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;Value&quot;</span>, <b>typeof</b>(<b>double</b>), <b>typeof</b>(<a href="#d5f113b7175988d8" class="t t">StepperControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<b>double</b>), <span class="i">OnValueChanged</span>));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="066e96ec73203e5f" href="R/066e96ec73203e5f.html" target="n" data-glyph="42,1" class="i field">MaximumProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;Maximum&quot;</span>, <b>typeof</b>(<b>double</b>), <b>typeof</b>(<a href="#d5f113b7175988d8" class="t t">StepperControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<b>double</b>), <span class="i">OnMaxMinChanged</span>));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="6f4ebb7b6a885531" href="R/6f4ebb7b6a885531.html" target="n" data-glyph="42,1" class="i field">MinimumProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;Minimum&quot;</span>, <b>typeof</b>(<b>double</b>), <b>typeof</b>(<a href="#d5f113b7175988d8" class="t t">StepperControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<b>double</b>), <span class="i">OnMaxMinChanged</span>));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="750a41b45519f5e9" href="R/750a41b45519f5e9.html" target="n" data-glyph="42,1" class="i field">IncrementProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;Increment&quot;</span>, <b>typeof</b>(<b>double</b>), <b>typeof</b>(<a href="#d5f113b7175988d8" class="t t">StepperControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<b>double</b>), <span class="i">OnIncrementChanged</span>));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="4c3cf66786df275f" href="R/4c3cf66786df275f.html" target="n" data-glyph="42,1" class="i field">ButtonBackgroundColorProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#b84628f01feb004a" class="i property">ButtonBackgroundColor</a>), <b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>), <b>typeof</b>(<a href="#d5f113b7175988d8" class="t t">StepperControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>), <span class="i">OnButtonBackgroundColorChanged</span>));
+ 
+		<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Button</span> <a id="f9bddded6b199226" href="R/f9bddded6b199226.html" target="n" data-glyph="46,1" class="i field">_plus</a>;
+		<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Button</span> <a id="93fb70d2c05d0a31" href="R/93fb70d2c05d0a31.html" target="n" data-glyph="46,1" class="i field">_minus</a>;
+		<a href="#8f544eb809ce6d15" class="t t">VisualStateCache</a> <a id="e5f0c9bc24376199" href="R/e5f0c9bc24376199.html" target="n" data-glyph="46,1" class="i field">_plusStateCache</a>;
+		<a href="#8f544eb809ce6d15" class="t t">VisualStateCache</a> <a id="d80c643b3fbed9b3" href="R/d80c643b3fbed9b3.html" target="n" data-glyph="46,1" class="i field">_minusStateCache</a>;
+ 
+		<b>public</b> <a id="9625686f5cb148ac" href="R/9625686f5cb148ac.html" target="n" data-glyph="72,1" class="i constructor">StepperControl</a>()
+		{
+			<span class="i property">DefaultStyleKey</span> = <b>typeof</b>(<a href="#d5f113b7175988d8" class="t t">StepperControl</a>);
+		}
+ 
+		<b>public double</b> <a id="e51102c6237382a0" href="R/e51102c6237382a0.html" target="n" data-glyph="102,1" class="i property">Increment</a>
+		{
+			<b>get</b> { <b>return</b> (<b>double</b>)<span class="i">GetValue</span>(<a href="#750a41b45519f5e9" class="i field">IncrementProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#750a41b45519f5e9" class="i field">IncrementProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public double</b> <a id="bab515f9f6e1e9b3" href="R/bab515f9f6e1e9b3.html" target="n" data-glyph="102,1" class="i property">Maximum</a>
+		{
+			<b>get</b> { <b>return</b> (<b>double</b>)<span class="i">GetValue</span>(<a href="#066e96ec73203e5f" class="i field">MaximumProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#066e96ec73203e5f" class="i field">MaximumProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public double</b> <a id="f843ae8ea26a7f53" href="R/f843ae8ea26a7f53.html" target="n" data-glyph="102,1" class="i property">Minimum</a>
+		{
+			<b>get</b> { <b>return</b> (<b>double</b>)<span class="i">GetValue</span>(<a href="#6f4ebb7b6a885531" class="i field">MinimumProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#6f4ebb7b6a885531" class="i field">MinimumProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public double</b> <a id="a25b85990bce70d9" href="R/a25b85990bce70d9.html" target="n" data-glyph="102,1" class="i property">Value</a>
+		{
+			<b>get</b> { <b>return</b> (<b>double</b>)<span class="i">GetValue</span>(<a href="#594b1d73dc714544" class="i field">ValueProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#594b1d73dc714544" class="i field">ValueProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <a id="b84628f01feb004a" href="R/b84628f01feb004a.html" target="n" data-glyph="102,1" class="i property">ButtonBackgroundColor</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>)<span class="i">GetValue</span>(<a href="#4c3cf66786df275f" class="i field">ButtonBackgroundColorProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#4c3cf66786df275f" class="i field">ButtonBackgroundColorProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public event</b> <span class="i">EventHandler</span> <a id="1c4f3fe2d37c18a6" href="R/1c4f3fe2d37c18a6.html" target="n" data-glyph="30,1" class="i">ValueChanged</a>;
+ 
+		<b>protected override void</b> <a id="93aec43847fa9dfd" href="R/93aec43847fa9dfd.html" target="n" data-glyph="75,1" class="i method">OnApplyTemplate</a>()
+		{
+			<b>base</b>.<span class="i">OnApplyTemplate</span>();
+ 
+			<a href="#f9bddded6b199226" class="i field">_plus</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;Plus&quot;</span>) <b>as</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Button</span>;
+			<b>if</b> (<a href="#f9bddded6b199226" class="i field">_plus</a> != <b>null</b>)
+				<a href="#f9bddded6b199226" class="i field">_plus</a>.<span class="i">Click</span> += <span class="i">OnPlusClicked</span>;
+ 
+			<a href="#93fb70d2c05d0a31" class="i field">_minus</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;Minus&quot;</span>) <b>as</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Button</span>;
+			<b>if</b> (<a href="#93fb70d2c05d0a31" class="i field">_minus</a> != <b>null</b>)
+				<a href="#93fb70d2c05d0a31" class="i field">_minus</a>.<span class="i">Click</span> += <span class="i">OnMinusClicked</span>;
+ 
+			<a href="#8d9a8740fd14cac8" class="i method">UpdateEnabled</a>(<a href="#a25b85990bce70d9" class="i property">Value</a>);
+			<a href="#8fa464f64fab21a5" class="i method">UpdateButtonBackgroundColor</a>(<a href="#b84628f01feb004a" class="i property">ButtonBackgroundColor</a>);
+		}
+ 
+		<b>static void</b> <a id="ff4740104e7aca8b" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnButtonBackgroundColorChanged</a>(<span class="t t">DependencyObject</span> <span id="r0 rd" class="r0 r">d</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r1 rd" class="r1 r">e</span>)
+		{
+			<a href="#d5f113b7175988d8" class="k">var</a> <span id="r2 rd" class="r2 r">stepper</span> = (<a href="#d5f113b7175988d8" class="t t">StepperControl</a>)<span class="r0 r">d</span>;
+			<span class="r2 r">stepper</span>.<a href="#8fa464f64fab21a5" class="i method">UpdateButtonBackgroundColor</a>(<span class="r2 r">stepper</span>.<a href="#b84628f01feb004a" class="i property">ButtonBackgroundColor</a>);
+		}
+ 
+		<b>static void</b> <a id="7b45e4e0b12b80ac" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnIncrementChanged</a>(<span class="t t">DependencyObject</span> <span id="r3 rd" class="r3 r">d</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r4 rd" class="r4 r">e</span>)
+		{
+			<a href="#d5f113b7175988d8" class="k">var</a> <span id="r5 rd" class="r5 r">stepper</span> = (<a href="#d5f113b7175988d8" class="t t">StepperControl</a>)<span class="r3 r">d</span>;
+			<span class="r5 r">stepper</span>.<a href="#8d9a8740fd14cac8" class="i method">UpdateEnabled</a>(<span class="r5 r">stepper</span>.<a href="#a25b85990bce70d9" class="i property">Value</a>);
+		}
+ 
+		<b>static void</b> <a id="9f538f4d446435b8" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnMaxMinChanged</a>(<span class="t t">DependencyObject</span> <span id="r6 rd" class="r6 r">d</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r7 rd" class="r7 r">e</span>)
+		{
+			<a href="#d5f113b7175988d8" class="k">var</a> <span id="r8 rd" class="r8 r">stepper</span> = (<a href="#d5f113b7175988d8" class="t t">StepperControl</a>)<span class="r6 r">d</span>;
+			<span class="r8 r">stepper</span>.<a href="#8d9a8740fd14cac8" class="i method">UpdateEnabled</a>(<span class="r8 r">stepper</span>.<a href="#a25b85990bce70d9" class="i property">Value</a>);
+		}
+ 
+		<b>void</b> <a id="c78ecd93074b1465" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnMinusClicked</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <span class="t t">RoutedEventArgs</span> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<span class="i">UpdateValue</span>(-<a href="#e51102c6237382a0" class="i property">Increment</a>);
+		}
+ 
+		<b>void</b> <a id="6bf5fd068672fa76" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnPlusClicked</a>(<b>object</b> <span id="r11 rd" class="r11 r">sender</span>, <span class="t t">RoutedEventArgs</span> <span id="r12 rd" class="r12 r">e</span>)
+		{
+			<span class="i">UpdateValue</span>(+<a href="#e51102c6237382a0" class="i property">Increment</a>);
+		}
+ 
+		<b>static void</b> <a id="e8d3eecf9d694efc" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnValueChanged</a>(<span class="t t">DependencyObject</span> <span id="r13 rd" class="r13 r">d</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r14 rd" class="r14 r">e</span>)
+		{
+			<a href="#d5f113b7175988d8" class="k">var</a> <span id="r15 rd" class="r15 r">stepper</span> = (<a href="#d5f113b7175988d8" class="t t">StepperControl</a>)<span class="r13 r">d</span>;
+			<span class="r15 r">stepper</span>.<a href="#8d9a8740fd14cac8" class="i method">UpdateEnabled</a>((<b>double</b>)<span class="r14 r">e</span>.<span class="i property">NewValue</span>);
+ 
+			<span class="i">EventHandler</span> <span id="r16 rd" class="r16 r">changed</span> = <span class="r15 r">stepper</span>.<a href="#1c4f3fe2d37c18a6" class="i">ValueChanged</a>;
+			<b>if</b> (<span class="r16 r">changed</span> != <b>null</b>)
+				<span class="r16 r">changed</span>(<span class="r13 r">d</span>, <span class="i">EventArgs</span>.<span class="i">Empty</span>);
+		}
+ 
+		<a href="#8f544eb809ce6d15" class="t t">VisualStateCache</a> <a id="2257e1b981beee79" href="R/2257e1b981beee79.html" target="n" data-glyph="76,1" class="i method">PseudoDisable</a>(<span class="t t">Control</span> <span id="r17 rd" class="r17 r">control</span>)
+		{
+			<b>if</b> (<span class="t t">VisualTreeHelper</span>.<span class="i">GetChildrenCount</span>(<span class="r17 r">control</span>) == 0)
+				<span class="r17 r">control</span>.<span class="i">ApplyTemplate</span>();
+ 
+			<span class="t t">VisualStateManager</span>.<span class="i">GoToState</span>(<span class="r17 r">control</span>, <span class="s">&quot;Disabled&quot;</span>, <b>true</b>);
+ 
+			<b>var</b> <span id="r18 rd" class="r18 r">rootElement</span> = (<span class="t t">FrameworkElement</span>)<span class="t t">VisualTreeHelper</span>.<span class="i">GetChild</span>(<span class="r17 r">control</span>, 0);
+ 
+			<a href="#8f544eb809ce6d15" class="k">var</a> <span id="r19 rd" class="r19 r">cache</span> = <b>new</b> <a href="#8f544eb809ce6d15" class="t constructor">VisualStateCache</a>();
+			<span class="i">IList</span>&lt;<span class="t t">VisualStateGroup</span>&gt; <span id="r20 rd" class="r20 r">groups</span> = <span class="t t">VisualStateManager</span>.<span class="i">GetVisualStateGroups</span>(<span class="r18 r">rootElement</span>);
+ 
+			<span class="t t">VisualStateGroup</span> <span id="r21 rd" class="r21 r">common</span> = <b>null</b>;
+			<b>foreach</b> (<b>var</b> <span id="r22 rd" class="r22 r">group</span> <b>in</b> <span class="r20 r">groups</span>)
+			{
+				<b>if</b> (<span class="r22 r">group</span>.<span class="i">Name</span> == <span class="s">&quot;CommonStates&quot;</span>)
+					<span class="r21 r">common</span> = <span class="r22 r">group</span>;
+				<b>else if</b> (<span class="r22 r">group</span>.<span class="i">Name</span> == <span class="s">&quot;FocusStates&quot;</span>)
+					<span class="r19 r">cache</span>.<a href="#9eec6db324a235ca" class="i field">FocusStates</a> = <span class="r22 r">group</span>;
+				<b>else if</b> (<span class="r19 r">cache</span>.<a href="#9eec6db324a235ca" class="i field">FocusStates</a> != <b>null</b> &amp;&amp; <span class="r21 r">common</span> != <b>null</b>)
+					<b>break</b>;
+			}
+ 
+			<b>if</b> (<span class="r19 r">cache</span>.<a href="#9eec6db324a235ca" class="i field">FocusStates</a> != <b>null</b>)
+				<span class="r20 r">groups</span>.<span class="i">Remove</span>(<span class="r19 r">cache</span>.<a href="#9eec6db324a235ca" class="i field">FocusStates</a>);
+ 
+			<b>if</b> (<span class="r21 r">common</span> != <b>null</b>)
+			{
+				<b>foreach</b> (<span class="t t">VisualState</span> <span id="r23 rd" class="r23 r">state</span> <b>in</b> <span class="r21 r">common</span>.<span class="i property">States</span>)
+				{
+					<b>if</b> (<span class="r23 r">state</span>.<span class="i property">Name</span> == <span class="s">&quot;Normal&quot;</span>)
+						<span class="r19 r">cache</span>.<a href="#a12604735d92a1be" class="i field">Normal</a> = <span class="r23 r">state</span>;
+					<b>else if</b> (<span class="r23 r">state</span>.<span class="i property">Name</span> == <span class="s">&quot;Pressed&quot;</span>)
+						<span class="r19 r">cache</span>.<a href="#c491433ecdbb9eec" class="i field">Pressed</a> = <span class="r23 r">state</span>;
+					<b>else if</b> (<span class="r23 r">state</span>.<span class="i property">Name</span> == <span class="s">&quot;PointerOver&quot;</span>)
+						<span class="r19 r">cache</span>.<a href="#144548eb383f3137" class="i field">PointerOver</a> = <span class="r23 r">state</span>;
+				}
+ 
+				<b>if</b> (<span class="r19 r">cache</span>.<a href="#a12604735d92a1be" class="i field">Normal</a> != <b>null</b>)
+					<span class="r21 r">common</span>.<span class="i property">States</span>.<span class="i">Remove</span>(<span class="r19 r">cache</span>.<a href="#a12604735d92a1be" class="i field">Normal</a>);
+				<b>if</b> (<span class="r19 r">cache</span>.<a href="#c491433ecdbb9eec" class="i field">Pressed</a> != <b>null</b>)
+					<span class="r21 r">common</span>.<span class="i property">States</span>.<span class="i">Remove</span>(<span class="r19 r">cache</span>.<a href="#c491433ecdbb9eec" class="i field">Pressed</a>);
+				<b>if</b> (<span class="r19 r">cache</span>.<a href="#144548eb383f3137" class="i field">PointerOver</a> != <b>null</b>)
+					<span class="r21 r">common</span>.<span class="i property">States</span>.<span class="i">Remove</span>(<span class="r19 r">cache</span>.<a href="#144548eb383f3137" class="i field">PointerOver</a>);
+			}
+ 
+			<b>return</b> <span class="r19 r">cache</span>;
+		}
+ 
+		<span class="c">/*
+		The below serves as a way to disable the button visually, rather than using IsEnabled. It&#39;s a hack
+		but should remain stable as long as the user doesn&#39;t change the WinRT Button template too much.
+ 
+		The reason we&#39;re not using IsEnabled is that the buttons have a click radius that overlap about 40%
+		of the next button. This doesn&#39;t cause a problem until one button becomes disabled, then if you think
+		you&#39;re still hitting + (haven&#39;t noticed its disabled), you will actually hit -. This hack doesn&#39;t
+		completely solve the problem, but it drops the overlap to something like 20%. I haven&#39;t found the root
+		cause, so this will have to suffice for now.
+		*/</span>
+ 
+		<b>void</b> <a id="063460810891c1f4" href="R/063460810891c1f4.html" target="n" data-glyph="76,1" class="i method">PsuedoEnable</a>(<span class="t t">Control</span> <span id="r24 rd" class="r24 r">control</span>, <b>ref</b> <a href="#8f544eb809ce6d15" class="t t">VisualStateCache</a> <span id="r25 rd" class="r25 r">cache</span>)
+		{
+			<b>if</b> (<span class="r25 r">cache</span> == <b>null</b> || <span class="t t">VisualTreeHelper</span>.<span class="i">GetChildrenCount</span>(<span class="r24 r">control</span>) == 0)
+				<b>return</b>;
+ 
+			<b>var</b> <span id="r26 rd" class="r26 r">rootElement</span> = (<span class="t t">FrameworkElement</span>)<span class="t t">VisualTreeHelper</span>.<span class="i">GetChild</span>(<span class="r24 r">control</span>, 0);
+ 
+			<span class="i">IList</span>&lt;<span class="t t">VisualStateGroup</span>&gt; <span id="r27 rd" class="r27 r">groups</span> = <span class="t t">VisualStateManager</span>.<span class="i">GetVisualStateGroups</span>(<span class="r26 r">rootElement</span>);
+ 
+			<b>if</b> (<span class="r25 r">cache</span>.<a href="#9eec6db324a235ca" class="i field">FocusStates</a> != <b>null</b>)
+				<span class="r27 r">groups</span>.<span class="i">Add</span>(<span class="r25 r">cache</span>.<a href="#9eec6db324a235ca" class="i field">FocusStates</a>);
+ 
+			<b>var</b> <span id="r28 rd" class="r28 r">commonStates</span> = <span class="r27 r">groups</span>.<span class="i">FirstOrDefault</span>(<span id="r29 rd" class="r29 r">g</span> =&gt; <span class="r29 r">g</span>.<span class="i">Name</span> == <span class="s">&quot;CommonStates&quot;</span>);
+			<b>if</b> (<span class="r28 r">commonStates</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<span class="r25 r">cache</span>.<a href="#a12604735d92a1be" class="i field">Normal</a> != <b>null</b>)
+				<span class="r28 r">commonStates</span>.<span class="i">States</span>.<span class="i">Insert</span>(0, <span class="r25 r">cache</span>.<a href="#a12604735d92a1be" class="i field">Normal</a>); <span class="c">// defensive</span>
+			<b>if</b> (<span class="r25 r">cache</span>.<a href="#c491433ecdbb9eec" class="i field">Pressed</a> != <b>null</b>)
+				<span class="r28 r">commonStates</span>.<span class="i">States</span>.<span class="i">Add</span>(<span class="r25 r">cache</span>.<a href="#c491433ecdbb9eec" class="i field">Pressed</a>);
+			<b>if</b> (<span class="r25 r">cache</span>.<a href="#144548eb383f3137" class="i field">PointerOver</a> != <b>null</b>)
+				<span class="r28 r">commonStates</span>.<span class="i">States</span>.<span class="i">Add</span>(<span class="r25 r">cache</span>.<a href="#144548eb383f3137" class="i field">PointerOver</a>);
+ 
+			<span class="t t">VisualStateManager</span>.<span class="i">GoToState</span>(<span class="r24 r">control</span>, <span class="s">&quot;Normal&quot;</span>, <b>true</b>);
+ 
+			<span class="r25 r">cache</span> = <b>null</b>;
+		}
+ 
+		<b>void</b> <a id="8fa464f64fab21a5" href="R/8fa464f64fab21a5.html" target="n" data-glyph="76,1" class="i method">UpdateButtonBackgroundColor</a>(<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r30 rd" class="r30 r">value</span>)
+		{
+			<span class="t t">Brush</span> <span id="r31 rd" class="r31 r">brush</span> = <span class="r30 r">value</span>.<a href="ConvertExtensions.cs.html#c3efec80155500f9" class="i method">ToBrush</a>();
+			<a href="#93fb70d2c05d0a31" class="i field">_minus</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;Minus&quot;</span>) <b>as</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Button</span>;
+			<a href="#f9bddded6b199226" class="i field">_plus</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;Plus&quot;</span>) <b>as</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Button</span>;
+			<b>if</b> (<a href="#93fb70d2c05d0a31" class="i field">_minus</a> != <b>null</b>)
+				<a href="#93fb70d2c05d0a31" class="i field">_minus</a>.<span class="i">Background</span> = <span class="r31 r">brush</span>;
+			<b>if</b> (<a href="#f9bddded6b199226" class="i field">_plus</a> != <b>null</b>)
+				<a href="#f9bddded6b199226" class="i field">_plus</a>.<span class="i">Background</span> = <span class="r31 r">brush</span>;
+		}
+ 
+		<b>void</b> <a id="8d9a8740fd14cac8" href="R/8d9a8740fd14cac8.html" target="n" data-glyph="76,1" class="i method">UpdateEnabled</a>(<b>double</b> <span id="r32 rd" class="r32 r">value</span>)
+		{
+			<b>double</b> <span id="r33 rd" class="r33 r">increment</span> = <a href="#e51102c6237382a0" class="i property">Increment</a>;
+			<b>if</b> (<a href="#f9bddded6b199226" class="i field">_plus</a> != <b>null</b>)
+			{
+				<b>if</b> (<span class="r32 r">value</span> + <span class="r33 r">increment</span> &gt; <a href="#bab515f9f6e1e9b3" class="i property">Maximum</a>)
+					<a href="#e5f0c9bc24376199" class="i field">_plusStateCache</a> = <a href="#2257e1b981beee79" class="i method">PseudoDisable</a>(<a href="#f9bddded6b199226" class="i field">_plus</a>);
+				<b>else</b>
+					<a href="#063460810891c1f4" class="i method">PsuedoEnable</a>(<a href="#f9bddded6b199226" class="i field">_plus</a>, <b>ref</b> <a href="#e5f0c9bc24376199" class="i field">_plusStateCache</a>);
+			}
+ 
+			<b>if</b> (<a href="#93fb70d2c05d0a31" class="i field">_minus</a> != <b>null</b>)
+			{
+				<b>if</b> (<span class="r32 r">value</span> - <span class="r33 r">increment</span> &lt; <a href="#f843ae8ea26a7f53" class="i property">Minimum</a>)
+					<a href="#d80c643b3fbed9b3" class="i field">_minusStateCache</a> = <a href="#2257e1b981beee79" class="i method">PseudoDisable</a>(<a href="#93fb70d2c05d0a31" class="i field">_minus</a>);
+				<b>else</b>
+					<a href="#063460810891c1f4" class="i method">PsuedoEnable</a>(<a href="#93fb70d2c05d0a31" class="i field">_minus</a>, <b>ref</b> <a href="#d80c643b3fbed9b3" class="i field">_minusStateCache</a>);
+			}
+		}
+ 
+		<b>void</b> <a id="9a2dfaa4fa2f6383" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">UpdateValue</a>(<b>double</b> <span id="r34 rd" class="r34 r">delta</span>)
+		{
+			<b>double</b> <span id="r35 rd" class="r35 r">newValue</span> = <a href="#a25b85990bce70d9" class="i property">Value</a> + <span class="r34 r">delta</span>;
+			<b>if</b> (<span class="r35 r">newValue</span> &gt; <a href="#bab515f9f6e1e9b3" class="i property">Maximum</a> || <span class="r35 r">newValue</span> &lt; <a href="#f843ae8ea26a7f53" class="i property">Minimum</a>)
+				<b>return</b>;
+ 
+			<a href="#a25b85990bce70d9" class="i property">Value</a> = <span class="r35 r">newValue</span>;
+		}
+ 
+		<b>class</b> <a id="8f544eb809ce6d15" href="R/8f544eb809ce6d15.html" target="n" data-glyph="4,1" class="t t"><span id="e8216ddd2b29b102">VisualStateCache</span></a>
+		{
+			<b>public</b> <span class="t t">VisualStateGroup</span> <a id="9eec6db324a235ca" href="R/9eec6db324a235ca.html" target="n" data-glyph="42,2" class="i field">FocusStates</a>;
+			<b>public</b> <span class="t t">VisualState</span> <a id="a12604735d92a1be" href="R/a12604735d92a1be.html" target="n" data-glyph="42,2" class="i field">Normal</a>, <a id="144548eb383f3137" href="R/144548eb383f3137.html" target="n" data-glyph="42,2" class="i field">PointerOver</a>, <a id="c491433ecdbb9eec" href="R/c491433ecdbb9eec.html" target="n" data-glyph="42,2" class="i field">Pressed</a>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html><head><title>EventTrigger.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(92);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/Interactivity/EventTrigger.cs" target="_top">Interactivity\EventTrigger.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	[<a href="../ContentPropertyAttribute.cs.html#bef2b2c38a491b0a" class="t constructor">ContentProperty</a>(<span class="s">&quot;Actions&quot;</span>)]
+	<b>public sealed class</b> <a id="315f8ef9b27de7cf" href="../R/315f8ef9b27de7cf.html" target="n" data-glyph="0,0" class="t t">EventTrigger</a> : <a href="TriggerBase.cs.html#c26b184b7439d738" class="t t">TriggerBase</a>
+	{
+		<b>static readonly</b> <span class="t t">MethodInfo</span> <a id="9fc97f9386595e45" href="../R/9fc97f9386595e45.html" target="n" data-glyph="46,1" class="i field">s_handlerinfo</a> = <b>typeof</b>(<a href="#315f8ef9b27de7cf" class="t t">EventTrigger</a>).<span class="i method">GetRuntimeMethods</span>().<span class="i method">Single</span>(<span id="r0 rd" class="r0 r">mi</span> =&gt; <span class="r0 r">mi</span>.<span class="i property">Name</span> == <span class="s">&quot;OnEventTriggered&quot;</span> &amp;&amp; <span class="r0 r">mi</span>.<span class="i property">IsPublic</span> == <b>false</b>);
+		<b>readonly</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>&gt; <a id="7b1b4d27f1e536e4" href="../R/7b1b4d27f1e536e4.html" target="n" data-glyph="46,1" class="i field">_associatedObjects</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>&gt;();
+ 
+		<span class="t t">EventInfo</span> <a id="8fca8d10d9121125" href="../R/8fca8d10d9121125.html" target="n" data-glyph="46,1" class="i field">_eventinfo</a>;
+ 
+		<b>string</b> <a id="b05dedc43c6b0157" href="../R/b05dedc43c6b0157.html" target="n" data-glyph="46,1" class="i field">_eventname</a>;
+		<a href="@1@System.Runtime/A.html#0dd8585ba1833ad7" class="t t">Delegate</a> <a id="92e8970c174c829c" href="../R/92e8970c174c829c.html" target="n" data-glyph="46,1" class="i field">_handlerdelegate</a>;
+ 
+		<b>public</b> <a id="de7cc163bc72b845" href="../R/de7cc163bc72b845.html" target="n" data-glyph="72,1" class="i constructor">EventTrigger</a>() : <a href="TriggerBase.cs.html#3331d0845c566e3a" class="k">base</a>(<b>typeof</b>(<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>))
+		{
+			<a href="#042667d9f301906b" class="i property">Actions</a> = <b>new</b> <a href="TriggerBase.cs.html#f5910302c93d61e4" class="t constructor">SealedList</a>&lt;<a href="TriggerAction.cs.html#edcce0c52e0ac88f" class="t t">TriggerAction</a>&gt;();
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="TriggerAction.cs.html#edcce0c52e0ac88f" class="t t">TriggerAction</a>&gt; <a id="042667d9f301906b" href="../R/042667d9f301906b.html" target="n" data-glyph="102,1" class="i property">Actions</a> { <b>get</b>; }
+ 
+		<b>public string</b> <a id="60931a51036b956b" href="../R/60931a51036b956b.html" target="n" data-glyph="102,1" class="i property">Event</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#b05dedc43c6b0157" class="i field">_eventname</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#b05dedc43c6b0157" class="i field">_eventname</a> == <b>value</b>)
+					<b>return</b>;
+				<b>if</b> (<a href="TriggerBase.cs.html#c958f9055ed6ee5c" class="i property">IsSealed</a>)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;Event cannot be changed once the Trigger has been applied&quot;</span>);
+				<a href="../BindableObject.cs.html#e5d2d1b731820b1b" class="i method">OnPropertyChanging</a>();
+				<a href="#b05dedc43c6b0157" class="i field">_eventname</a> = <b>value</b>;
+				<a href="../BindableObject.cs.html#d700e2f209d59b08" class="i method">OnPropertyChanged</a>();
+			}
+		}
+ 
+		<b>internal override void</b> <a id="04542050309efee8" href="../R/04542050309efee8.html" target="n" data-glyph="74,1" class="i method">OnAttachedTo</a>(<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r1 rd" class="r1 r">bindable</span>)
+		{
+			<a href="TriggerBase.cs.html#c26b184b7439d738" class="k">base</a>.<a href="TriggerBase.cs.html#9f9ff6e24527c472" class="i method">OnAttachedTo</a>(<span class="r1 r">bindable</span>);
+			<b>if</b> (!<b>string</b>.<a href="@1@System.Runtime/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="#60931a51036b956b" class="i property">Event</a>))
+				<a href="#1c7f5fa5b1e60894" class="i method">AttachHandlerTo</a>(<span class="r1 r">bindable</span>);
+			<a href="#7b1b4d27f1e536e4" class="i field">_associatedObjects</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r1 r">bindable</span>);
+		}
+ 
+		<b>internal override void</b> <a id="b0d4cfe8590360f4" href="../R/b0d4cfe8590360f4.html" target="n" data-glyph="74,1" class="i method">OnDetachingFrom</a>(<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r2 rd" class="r2 r">bindable</span>)
+		{
+			<a href="#7b1b4d27f1e536e4" class="i field">_associatedObjects</a>.<a href="@1@System.Collections/A.html#db8cdd552a0bb10c" class="i method">Remove</a>(<span class="r2 r">bindable</span>);
+			<a href="#2d03f1bdbbb31183" class="i method">DetachHandlerFrom</a>(<span class="r2 r">bindable</span>);
+			<a href="TriggerBase.cs.html#c26b184b7439d738" class="k">base</a>.<a href="TriggerBase.cs.html#cda03f9b39ec4463" class="i method">OnDetachingFrom</a>(<span class="r2 r">bindable</span>);
+		}
+ 
+		<b>internal override void</b> <a id="0a27051eb842fd81" href="../R/0a27051eb842fd81.html" target="n" data-glyph="74,1" class="i method">OnSeal</a>()
+		{
+			<a href="TriggerBase.cs.html#c26b184b7439d738" class="k">base</a>.<a href="TriggerBase.cs.html#01a9b10fa4310cb6" class="i method">OnSeal</a>();
+			((<a href="TriggerBase.cs.html#cb846b916f8e0413" class="t t">SealedList</a>&lt;<a href="TriggerAction.cs.html#edcce0c52e0ac88f" class="t t">TriggerAction</a>&gt;)<a href="#042667d9f301906b" class="i property">Actions</a>).<a href="TriggerBase.cs.html#d89f023963ef683a" class="i property">IsReadOnly</a> = <b>true</b>;
+		}
+ 
+		<b>void</b> <a id="1c7f5fa5b1e60894" href="../R/1c7f5fa5b1e60894.html" target="n" data-glyph="76,1" class="i method">AttachHandlerTo</a>(<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r3 rd" class="r3 r">bindable</span>)
+		{
+			<b>try</b>
+			{
+				<a href="#8fca8d10d9121125" class="i field">_eventinfo</a> = <span class="r3 r">bindable</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetRuntimeEvent</span>(<a href="#60931a51036b956b" class="i property">Event</a>);
+				<a href="#92e8970c174c829c" class="i field">_handlerdelegate</a> = <a href="#9fc97f9386595e45" class="i field">s_handlerinfo</a>.<span class="i method">CreateDelegate</span>(<a href="#8fca8d10d9121125" class="i field">_eventinfo</a>.<span class="i property">EventHandlerType</span>, <a href="#315f8ef9b27de7cf" class="k">this</a>);
+			}
+			<b>catch</b> (<a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a>)
+			{
+				<a href="../Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="../Log.cs.html#1776263ebad4afea" class="i method">Warning</a>(<span class="s">&quot;EventTrigger&quot;</span>, <span class="s">&quot;Can not attach EventTrigger to {0}.{1}. Check if the handler exists and if the signature is right.&quot;</span>, <span class="r3 r">bindable</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>(), <a href="#60931a51036b956b" class="i property">Event</a>);
+			}
+			<b>if</b> (<a href="#8fca8d10d9121125" class="i field">_eventinfo</a> != <b>null</b> &amp;&amp; <a href="#92e8970c174c829c" class="i field">_handlerdelegate</a> != <b>null</b>)
+				<a href="#8fca8d10d9121125" class="i field">_eventinfo</a>.<span class="i method">AddEventHandler</span>(<span class="r3 r">bindable</span>, <a href="#92e8970c174c829c" class="i field">_handlerdelegate</a>);
+		}
+ 
+		<b>void</b> <a id="2d03f1bdbbb31183" href="../R/2d03f1bdbbb31183.html" target="n" data-glyph="76,1" class="i method">DetachHandlerFrom</a>(<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r4 rd" class="r4 r">bindable</span>)
+		{
+			<b>if</b> (<a href="#8fca8d10d9121125" class="i field">_eventinfo</a> != <b>null</b> &amp;&amp; <a href="#92e8970c174c829c" class="i field">_handlerdelegate</a> != <b>null</b>)
+				<a href="#8fca8d10d9121125" class="i field">_eventinfo</a>.<span class="i method">RemoveEventHandler</span>(<span class="r4 r">bindable</span>, <a href="#92e8970c174c829c" class="i field">_handlerdelegate</a>);
+		}
+ 
+		[<a href="../Internals/PreserveAttribute.cs.html#86e8cd96f62aab08" class="t constructor">Preserve</a>]
+		<b>void</b> <a id="68eb0015e74d95c8" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnEventTriggered</a>(<b>object</b> <span id="r5 rd" class="r5 r">sender</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r6 rd" class="r6 r">e</span>)
+		{
+			<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="k">var</a> <span id="r7 rd" class="r7 r">bindable</span> = (<a href="../BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>)<span class="r5 r">sender</span>;
+			<b>foreach</b> (<a href="TriggerAction.cs.html#edcce0c52e0ac88f" class="t t">TriggerAction</a> <span id="r8 rd" class="r8 r">action</span> <b>in</b> <a href="#042667d9f301906b" class="i property">Actions</a>)
+				<span class="r8 r">action</span>.<a href="TriggerAction.cs.html#21d1ca049fa57b0d" class="i method">DoInvoke</a>(<span class="r7 r">bindable</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

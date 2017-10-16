@@ -1,0 +1,354 @@
+﻿<!DOCTYPE html>
+<html><head><title>ViewInspector.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(345);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core.macOS.UITests/ViewInspector.cs" target="_top">ViewInspector.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core.macOS.UITests" target="_top">Xamarin.Forms.Core.macOS.UITests\Xamarin.Forms.Core.macOS.UITests.csproj</a> (Xamarin.Forms.Core.macOS.UITests)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i">UITest</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Core</span>.<span class="i n">UITests</span>
+{
+	<b>internal static class</b> <a id="56eb7a41ee41f580" href="R/../../0000000000.html" target="n" data-glyph="2,0" class="t t">ViewInspector</a>
+	{
+	    <b>public static void</b> <a id="a33811ebacd4f229" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">LogPropertiesForView</a> (<b>this</b> <span class="i">IApp</span> <span id="r0 rd" class="r0 r">app</span>, <b>string</b> <span id="r1 rd" class="r1 r">query</span>, <b>bool</b> <span id="r2 rd" class="r2 r">isOnParent</span> = <b>false</b>)
+	    {
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__ANDROID__</span>
+<span class="e">			LogPropertiesForAndroidView (app, query, isOnParent);
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__IOS__</span>
+<span class="e">
+			LogPropertiesForUIView(app, query, isOnParent);
+			LogPropertiesForCALayer (app, query, isOnParent);
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+		<b>static void</b> <a id="bd7c3bb704495ff4" href="R/../../0000000000.html" target="n" data-glyph="224,1" class="i method">LogPropertiesForUIView</a> (<b>this</b> <span class="i">IApp</span> <span id="r3 rd" class="r3 r">app</span>, <b>string</b> <span id="r4 rd" class="r4 r">query</span>, <b>bool</b> <span id="r5 rd" class="r5 r">isOnParent</span> = <b>false</b>) {
+ 
+            <span class="c">//Logger.LogLine (&quot;--- UIView Properties ---&quot;);</span>
+ 
+			<b>var</b> <span id="r6 rd" class="r6 r">properties</span> = <b>new</b> [] {
+				<span class="c">// just getters with no params, bools</span>
+				<span class="s">&quot;alpha&quot;</span>,
+				<span class="s">&quot;autoresizesSubviews&quot;</span>,
+				<span class="s">&quot;autoresizingMask&quot;</span>,
+				<span class="s">&quot;backgroundColor&quot;</span>,
+				<span class="s">&quot;bounds&quot;</span>,
+				<span class="s">&quot;center&quot;</span>,
+				<span class="s">&quot;clearsContextBeforeDrawing&quot;</span>,
+				<span class="s">&quot;clipsToBounds&quot;</span>,
+				<span class="s">&quot;contentMode&quot;</span>,
+				<span class="s">&quot;contentScaleFactor&quot;</span>,
+				<span class="s">&quot;exclusiveTouch&quot;</span>,
+				<span class="s">&quot;frame&quot;</span>,
+				<span class="s">&quot;gestureRecognizers&quot;</span>,
+				<span class="s">&quot;hidden&quot;</span>,
+				<span class="s">&quot;layer&quot;</span>,
+				<span class="s">&quot;motionEffects&quot;</span>,
+				<span class="s">&quot;multipleTouchEnabled&quot;</span>,
+				<span class="s">&quot;opaque&quot;</span>,
+				<span class="s">&quot;restorationIdentifier&quot;</span>,
+				<span class="s">&quot;subviews&quot;</span>,
+				<span class="s">&quot;superview&quot;</span>,
+				<span class="s">&quot;tag&quot;</span>,
+				<span class="s">&quot;tintAdjustmentMode&quot;</span>,
+				<span class="s">&quot;tintColor&quot;</span>,
+				<span class="s">&quot;transform&quot;</span>,
+				<span class="s">&quot;userInteractionEnabled&quot;</span>,
+				<span class="s">&quot;window&quot;</span>
+			};
+ 
+			<b>if</b> (<span class="r5 r">isOnParent</span>)
+				<span class="r4 r">query</span> = <span class="r4 r">query</span> + <span class="s">&quot; parent * index:0&quot;</span>;
+ 
+			<b>foreach</b> (<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r7 rd" class="r7 r">property</span> <b>in</b> <span class="r6 r">properties</span>) {
+				<b>object</b> <span id="r8 rd" class="r8 r">prop</span>;
+				<b>bool</b> <span id="r9 rd" class="r9 r">found</span> = 
+					<a href="#230c195d9ec20cfe" class="i method">MaybeGetProperty</a>&lt;<b>string</b>&gt; (<span class="r3 r">app</span>, <span class="r4 r">query</span>, <span class="r7 r">property</span>, <b>out</b> <span class="r8 r">prop</span>) || 
+					<a href="#230c195d9ec20cfe" class="i method">MaybeGetProperty</a>&lt;<b>int</b>&gt;    (<span class="r3 r">app</span>, <span class="r4 r">query</span>, <span class="r7 r">property</span>, <b>out</b> <span class="r8 r">prop</span>) || 
+					<a href="#230c195d9ec20cfe" class="i method">MaybeGetProperty</a>&lt;<b>float</b>&gt;  (<span class="r3 r">app</span>, <span class="r4 r">query</span>, <span class="r7 r">property</span>, <b>out</b> <span class="r8 r">prop</span>) ||
+					<a href="#230c195d9ec20cfe" class="i method">MaybeGetProperty</a>&lt;<b>bool</b>&gt;   (<span class="r3 r">app</span>, <span class="r4 r">query</span>, <span class="r7 r">property</span>, <b>out</b> <span class="r8 r">prop</span>);
+ 
+                <b>if</b> (<span class="r9 r">found</span>)
+                    <b>continue</b>;
+				<span class="c">//	Logger.LogLine (string.Format (&quot;{0,-30}: {1}&quot;, property, prop));</span>
+			}
+ 
+            <span class="c">//Logger.LogLine();</span>
+ 
+		}
+ 
+		<b>static void</b> <a id="c0069197a2abd6a1" href="R/../../0000000000.html" target="n" data-glyph="224,1" class="i method">LogPropertiesForCALayer</a>(<b>this</b> <span class="i">IApp</span> <span id="r10 rd" class="r10 r">app</span>, <b>string</b> <span id="r11 rd" class="r11 r">query</span>, <b>bool</b> <span id="r12 rd" class="r12 r">isOnParent</span> = <b>false</b>)
+        {
+           <span class="c">// Logger.LogLine (&quot;--- UIView.Layer Properties ---&quot;);</span>
+ 
+            <b>var</b> <span id="r13 rd" class="r13 r">properties</span> = <b>new</b>[] {
+				<span class="s">&quot;actions&quot;</span>, 
+				<span class="s">&quot;anchorPoint&quot;</span>,
+				<span class="s">&quot;anchorPointZ&quot;</span>,
+				<span class="s">&quot;backgroundColor&quot;</span>,
+				<span class="s">&quot;backgroundFilters&quot;</span>,
+				<span class="s">&quot;borderColor&quot;</span>,
+				<span class="s">&quot;borderWidth&quot;</span>,
+				<span class="s">&quot;bounds&quot;</span>,
+				<span class="s">&quot;compositingFilter&quot;</span>,
+				<span class="s">&quot;contents&quot;</span>,
+				<span class="s">&quot;contentsCenter&quot;</span>,
+				<span class="s">&quot;contentsGravity&quot;</span>,
+				<span class="s">&quot;contentsRect&quot;</span>,
+				<span class="s">&quot;contentsScale&quot;</span>,
+				<span class="s">&quot;cornerRadius&quot;</span>,
+				<span class="s">&quot;delegate&quot;</span>,
+				<span class="s">&quot;doubleSided&quot;</span>,
+				<span class="s">&quot;drawsAsynchronously&quot;</span>,
+				<span class="s">&quot;edgeAntialiasingMask&quot;</span>,
+				<span class="s">&quot;filters&quot;</span>,
+				<span class="s">&quot;frame&quot;</span>,
+				<span class="s">&quot;geometryFlipped&quot;</span>,
+				<span class="s">&quot;hidden&quot;</span>,
+				<span class="s">&quot;magnificationFilter&quot;</span>,
+				<span class="s">&quot;mask&quot;</span>,
+				<span class="s">&quot;masksToBounds&quot;</span>,
+				<span class="s">&quot;minificationFilter&quot;</span>,
+				<span class="s">&quot;minificationFilterBias&quot;</span>,
+				<span class="s">&quot;name&quot;</span>,
+				<span class="s">&quot;needsDisplayOnBoundsChange&quot;</span>,
+				<span class="s">&quot;opacity&quot;</span>,
+				<span class="s">&quot;opaque&quot;</span>,
+				<span class="s">&quot;position&quot;</span>,
+				<span class="s">&quot;rasterizationScale&quot;</span>,
+				<span class="s">&quot;shadowColor&quot;</span>,
+				<span class="s">&quot;shadowOffset&quot;</span>,
+				<span class="s">&quot;shadowOpacity&quot;</span>,
+				<span class="s">&quot;shadowPath&quot;</span>,
+				<span class="s">&quot;shadowRadius&quot;</span>,
+				<span class="s">&quot;shouldRasterize&quot;</span>,
+				<span class="s">&quot;style&quot;</span>,
+				<span class="s">&quot;sublayers&quot;</span>,
+				<span class="s">&quot;sublayerTransform&quot;</span>,
+				<span class="s">&quot;superlayer&quot;</span>,
+				<span class="s">&quot;transform&quot;</span>,
+				<span class="s">&quot;visibleRect&quot;</span>,
+				<span class="s">&quot;zPosition&quot;</span>
+			};
+ 
+            <b>if</b> (<span class="r12 r">isOnParent</span>)
+                <span class="r11 r">query</span> = <span class="r11 r">query</span> + <span class="s">&quot; parent * index:0&quot;</span>;
+ 
+            <b>foreach</b> (<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r14 rd" class="r14 r">property</span> <b>in</b> <span class="r13 r">properties</span>)
+            {
+                <b>object</b> <span id="r15 rd" class="r15 r">prop</span>;
+                <b>bool</b> <span id="r16 rd" class="r16 r">found</span> =
+                    <a href="#33dc6e9869e5a027" class="i method">MaybeGetLayerProperty</a>&lt;<b>string</b>&gt;(<span class="r10 r">app</span>, <span class="r11 r">query</span>, <span class="r14 r">property</span>, <b>out</b> <span class="r15 r">prop</span>) ||
+                    <a href="#33dc6e9869e5a027" class="i method">MaybeGetLayerProperty</a>&lt;<b>int</b>&gt;(<span class="r10 r">app</span>, <span class="r11 r">query</span>, <span class="r14 r">property</span>, <b>out</b> <span class="r15 r">prop</span>) ||
+                    <a href="#33dc6e9869e5a027" class="i method">MaybeGetLayerProperty</a>&lt;<b>bool</b>&gt;(<span class="r10 r">app</span>, <span class="r11 r">query</span>, <span class="r14 r">property</span>, <b>out</b> <span class="r15 r">prop</span>);
+ 
+                <b>if</b> (<span class="r16 r">found</span>)
+                    <b>continue</b>;
+				<span class="c">//if (found)</span>
+				<span class="c">//	Logger.LogLine(string.Format(&quot;{0,-30}: {1}&quot;, property, prop));</span>
+            }
+ 
+            <span class="c">//Logger.LogLine();</span>
+ 
+        }
+ 
+		<b>static void</b> <a id="9f0fe3d4bd3093bd" href="R/../../0000000000.html" target="n" data-glyph="224,1" class="i method">LogPropertiesForAndroidView</a> (<b>this</b> <span class="i">IApp</span> <span id="r17 rd" class="r17 r">app</span>, <b>string</b> <span id="r18 rd" class="r18 r">query</span>, <b>bool</b> <span id="r19 rd" class="r19 r">isOnParent</span> = <b>false</b>)
+		{
+           <span class="c">// Logger.LogLine( &quot;--- Android View Properties ---&quot;);</span>
+ 
+			<b>var</b> <span id="r20 rd" class="r20 r">properties</span> = <b>new</b> [] {
+				<span class="c">// just getters with no params, bools</span>
+				<span class="c">//&quot;getAccessibilityLiveRegion&quot;,</span>
+				<span class="c">//&quot;getAccessibilbityNodeProvider&quot;,</span>
+				<span class="c">//&quot;getAlpha&quot;,</span>
+				<span class="c">//&quot;getAnimation&quot;,</span>
+				<span class="c">//&quot;getApplicationWindowToken&quot;,</span>
+				<span class="c">//&quot;getBackground&quot;,</span>
+				<span class="c">//&quot;getBaseline&quot;,</span>
+				<span class="c">//&quot;getBottom&quot;,</span>
+				<span class="c">//&quot;getCameraDistance&quot;,</span>
+				<span class="c">//&quot;getClipBounds&quot;,</span>
+				<span class="c">//&quot;getContentDescription&quot;,</span>
+				<span class="c">//&quot;getContext&quot;,</span>
+				<span class="c">//&quot;getDefaultSize&quot;,</span>
+				<span class="c">//&quot;getDisplay&quot;,</span>
+				<span class="c">//&quot;getDrawableState&quot;,</span>
+				<span class="c">//&quot;getDrawingCache&quot;,</span>
+				<span class="c">//&quot;getDrawingCacheBackgroundColor&quot;,</span>
+				<span class="c">//&quot;getDrawingRect&quot;,</span>
+				<span class="c">//&quot;getDrawingTime&quot;,</span>
+				<span class="c">//&quot;getFilterTouchesWhenObscurred&quot;,</span>
+				<span class="c">//&quot;getFitsSystemWindows&quot;,</span>
+				<span class="c">//&quot;getFocusables&quot;,</span>
+				<span class="c">//&quot;getHandler&quot;,</span>
+				<span class="c">//&quot;getHeight&quot;,</span>
+				<span class="c">//&quot;getHitRect&quot;,</span>
+				<span class="c">//&quot;getHorizontalFadingEdgeLength&quot;,</span>
+				<span class="c">//&quot;getId&quot;,</span>
+				<span class="c">//&quot;getImportantForAccessibility&quot;,</span>
+				<span class="c">//&quot;getKeepScreenOn&quot;,</span>
+				<span class="c">//&quot;getKeyDispatcherState&quot;,</span>
+				<span class="c">//&quot;getLabelFor&quot;,</span>
+				<span class="c">//&quot;getLayerType&quot;,</span>
+				<span class="c">//&quot;getLayoutDirection&quot;,</span>
+				<span class="c">//&quot;getLayourParams&quot;,</span>
+				<span class="c">//&quot;getLeft&quot;,</span>
+				<span class="s">&quot;getMatrix&quot;</span>,
+				<span class="c">//&quot;getMeasuredHeight&quot;,</span>
+				<span class="c">//&quot;getMeasuredHeightAndState&quot;,</span>
+				<span class="c">//&quot;getMeasuredState&quot;,</span>
+				<span class="c">//&quot;getMeasuredWidth&quot;,</span>
+				<span class="c">//&quot;getMeasuredWidthAndState&quot;,</span>
+				<span class="c">//&quot;getMinimumHeight&quot;,</span>
+				<span class="c">//&quot;getMinimumWidth&quot;,</span>
+				<span class="c">//&quot;getNextFocusDownId&quot;,</span>
+				<span class="c">//&quot;getNextFocusForwardId&quot;,</span>
+				<span class="c">//&quot;getNextFocusLeftId&quot;,</span>
+				<span class="c">//&quot;getNextFocusRightId&quot;,</span>
+				<span class="c">//&quot;getNextFocusUpId&quot;,</span>
+				<span class="c">//&quot;getOnFocusChangedListener&quot;,</span>
+				<span class="c">//&quot;getOverScrollMethod&quot;,</span>
+				<span class="c">//&quot;getOverlay&quot;,</span>
+				<span class="c">//&quot;getPaddingBottom&quot;,</span>
+				<span class="c">//&quot;getPaddingEnd&quot;,</span>
+				<span class="c">//&quot;getPaddingLeft&quot;,</span>
+				<span class="c">//&quot;getPaddingRight&quot;,</span>
+				<span class="c">//&quot;getPaddingStart&quot;,</span>
+				<span class="c">//&quot;getPaddingTop&quot;,</span>
+				<span class="c">//&quot;getParent&quot;,</span>
+				<span class="c">//&quot;getParentForAccessibility&quot;,</span>
+				<span class="c">//&quot;getPivotX&quot;,</span>
+				<span class="c">//&quot;getPivotY&quot;,</span>
+				<span class="c">//&quot;getResources&quot;,</span>
+				<span class="c">//&quot;getRight&quot;,</span>
+				<span class="c">//&quot;getRootView&quot;,</span>
+				<span class="c">//&quot;getRotation&quot;,</span>
+				<span class="c">//&quot;getRotationX&quot;,</span>
+				<span class="c">//&quot;getRotationY&quot;,</span>
+				<span class="s">&quot;getScaleX&quot;</span>,
+				<span class="s">&quot;getScaleY&quot;</span>,
+				<span class="c">//&quot;getScrollBarDefaultDelayBeforeFade&quot;,</span>
+				<span class="c">//&quot;getScrollBarFadeDuration&quot;,</span>
+				<span class="c">//&quot;getScrollBarSize&quot;,</span>
+				<span class="c">//&quot;getScrollBarStyle&quot;,</span>
+				<span class="c">//&quot;getScrollX&quot;,</span>
+				<span class="c">//&quot;getScrollY&quot;,</span>
+				<span class="c">//&quot;getSolidColor&quot;,</span>
+				<span class="c">//&quot;getSystemUiVisibility&quot;,</span>
+				<span class="c">//&quot;getTag&quot;,</span>
+				<span class="c">//&quot;getTextAlignment&quot;,</span>
+				<span class="c">//&quot;getTextDirection&quot;,</span>
+				<span class="c">//&quot;getTop&quot;,</span>
+				<span class="c">//&quot;getTouchDelegate&quot;,</span>
+				<span class="c">//&quot;getTouchables&quot;,</span>
+				<span class="c">//&quot;getTranslationX&quot;,</span>
+				<span class="c">//&quot;getTranslationY&quot;,</span>
+				<span class="c">//&quot;getVerticalFadingEdgeLength&quot;,</span>
+				<span class="c">//&quot;getVerticalScrollbarPosition&quot;,</span>
+				<span class="c">//&quot;getVerticalScrollbarWidth&quot;,</span>
+				<span class="c">//&quot;getViewTreeObserver&quot;,</span>
+				<span class="c">//&quot;getVisibility&quot;,</span>
+				<span class="c">//&quot;getWidth&quot;,</span>
+				<span class="c">//&quot;getWindowId&quot;,</span>
+				<span class="c">//&quot;getWindowSystemUiVisbility&quot;,</span>
+				<span class="c">//&quot;getWindowToken&quot;,</span>
+				<span class="c">//&quot;getWindowVisibility&quot;,</span>
+				<span class="c">//&quot;getX&quot;,</span>
+				<span class="c">//&quot;getY&quot;,</span>
+				<span class="c">//&quot;hasFocus&quot;,</span>
+				<span class="c">//&quot;hasFocusable&quot;,</span>
+				<span class="c">//&quot;hasOnClickListener&quot;,</span>
+				<span class="c">//&quot;hasOverlappingRendering&quot;,</span>
+				<span class="c">//&quot;hasTransientState&quot;,</span>
+				<span class="c">//&quot;hasWindowFocus&quot;,</span>
+				<span class="c">//&quot;isActivated&quot;,</span>
+				<span class="c">//&quot;isAttachedToWindow&quot;,</span>
+				<span class="c">//&quot;isClickable&quot;,</span>
+				<span class="c">//&quot;isDirty&quot;,</span>
+				<span class="c">//&quot;isDrawingCacheEnabled&quot;,</span>
+				<span class="c">//&quot;isDuplicateParentStateEnabled&quot;,</span>
+				<span class="c">//&quot;isEnabled&quot;,</span>
+				<span class="c">//&quot;isFocusable&quot;,</span>
+				<span class="c">//&quot;isFocusableInTouchWindow&quot;,</span>
+				<span class="c">//&quot;isFocused&quot;,</span>
+				<span class="c">//&quot;isHapticFeedbackEnabled&quot;,</span>
+				<span class="c">//&quot;isHardwareAccelerated&quot;,</span>
+				<span class="c">//&quot;isHorizontalFadingEdgeEnabled&quot;,</span>
+				<span class="c">//&quot;isHovered&quot;,</span>
+				<span class="c">//&quot;idInEditMode&quot;,</span>
+				<span class="c">//&quot;isInLayout&quot;,</span>
+				<span class="c">//&quot;isInTouchMode&quot;,</span>
+				<span class="c">//&quot;isLaidOut&quot;,</span>
+				<span class="c">//&quot;isLayoutDirectionResolved&quot;,</span>
+				<span class="c">//&quot;isLayoutRequested&quot;,</span>
+				<span class="c">//&quot;isLongClickable&quot;,</span>
+				<span class="c">//&quot;isOpaque&quot;,</span>
+				<span class="c">//&quot;isPaddingRelative&quot;,</span>
+				<span class="c">//&quot;isPressed&quot;,</span>
+				<span class="c">//&quot;isSaveEnabled&quot;,</span>
+				<span class="c">//&quot;isSaveFromParentEnabled&quot;,</span>
+				<span class="c">//&quot;isScrollContainer&quot;,</span>
+				<span class="c">//&quot;isScrollBarFadingEnabled&quot;,</span>
+				<span class="c">//&quot;isSelected&quot;,</span>
+				<span class="c">//&quot;isShown&quot;,</span>
+				<span class="c">//&quot;isSoundEffectsEnabled&quot;,</span>
+				<span class="c">//&quot;isTextAlignmentResolved&quot;,</span>
+				<span class="c">//&quot;isTextDirectionResolved&quot;,</span>
+				<span class="c">//&quot;isVerticalFadingEdgeEnabled&quot;,</span>
+				<span class="c">//&quot;isVerticalScrollBarEnabled&quot;</span>
+			};
+ 
+			<b>if</b> (<span class="r19 r">isOnParent</span>)
+				<span class="r18 r">query</span> = <span class="r18 r">query</span> + <span class="s">&quot; parent * index:0&quot;</span>;
+ 
+			<b>foreach</b> (<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r21 rd" class="r21 r">property</span> <b>in</b> <span class="r20 r">properties</span>) {
+				<b>object</b> <span id="r22 rd" class="r22 r">prop</span>;
+				<b>bool</b> <span id="r23 rd" class="r23 r">found</span> = 
+					<a href="#230c195d9ec20cfe" class="i method">MaybeGetProperty</a>&lt;<b>string</b>&gt; (<span class="r17 r">app</span>, <span class="r18 r">query</span>, <span class="r21 r">property</span>, <b>out</b> <span class="r22 r">prop</span>) || 
+					<span class="c">//MaybeGetProperty&lt;int&gt;    (app, query, property, out prop) || </span>
+					<a href="#230c195d9ec20cfe" class="i method">MaybeGetProperty</a>&lt;<b>float</b>&gt;  (<span class="r17 r">app</span>, <span class="r18 r">query</span>, <span class="r21 r">property</span>, <b>out</b> <span class="r22 r">prop</span>) ||
+					<a href="#230c195d9ec20cfe" class="i method">MaybeGetProperty</a>&lt;<b>bool</b>&gt;   (<span class="r17 r">app</span>, <span class="r18 r">query</span>, <span class="r21 r">property</span>, <b>out</b> <span class="r22 r">prop</span>);
+ 
+                <b>if</b> (<span class="r23 r">found</span>)
+                    <b>continue</b>;
+				<span class="c">//if (found)</span>
+				<span class="c">//	Logger.LogLine (string.Format (&quot;{0,-30}: {1}&quot;, property, prop));</span>
+			}
+ 
+            <span class="c">//Logger.LogLine();</span>
+ 
+		}
+ 
+		<b>static bool</b> <a id="33dc6e9869e5a027" href="R/33dc6e9869e5a027.html" target="n" data-glyph="76,1" class="i method">MaybeGetLayerProperty</a>&lt;<span id="r24 rd t" class="r24 r t">T</span>&gt; (<span class="i">IApp</span> <span id="r25 rd" class="r25 r">app</span>, <b>string</b> <span id="r26 rd" class="r26 r">query</span>, <b>string</b> <span id="r27 rd" class="r27 r">property</span>, <b>out object</b> <span id="r28 rd" class="r28 r">result</span>)
+		{
+ 
+			<b>try</b> {
+				<span class="r28 r">result</span> = <span class="r25 r">app</span>.<span class="i">Query</span> (<span id="r29 rd" class="r29 r">q</span> =&gt; <span class="r29 r">q</span>.<span class="i">Raw</span> (<span class="r26 r">query</span>).<span class="i">Invoke</span> (<span class="s">&quot;layer&quot;</span>).<span class="i">Invoke</span> (<span class="r27 r">property</span>).<span class="i">Value</span>&lt;<span class="r24 r t">T</span>&gt; ()).<span class="i">First</span> ();
+			} <b>catch</b> {
+				<span class="r28 r">result</span> = <b>null</b>;
+				<b>return false</b>;
+			}
+ 
+			<b>return true</b>;
+		}
+ 
+		<b>static bool</b> <a id="230c195d9ec20cfe" href="R/230c195d9ec20cfe.html" target="n" data-glyph="76,1" class="i method">MaybeGetProperty</a>&lt;<span id="r30 rd t" class="r30 r t">T</span>&gt; (<span class="i">IApp</span> <span id="r31 rd" class="r31 r">app</span>, <b>string</b> <span id="r32 rd" class="r32 r">query</span>, <b>string</b> <span id="r33 rd" class="r33 r">property</span>, <b>out object</b> <span id="r34 rd" class="r34 r">result</span>)
+		{
+ 
+			<b>try</b> {
+				<span class="r34 r">result</span> = <span class="r31 r">app</span>.<span class="i">Query</span> (<span id="r35 rd" class="r35 r">q</span> =&gt; <span class="r35 r">q</span>.<span class="i">Raw</span> (<span class="r32 r">query</span>).<span class="i">Invoke</span> (<span class="r33 r">property</span>).<span class="i">Value</span>&lt;<span class="r30 r t">T</span>&gt; ()).<span class="i">First</span> ();
+			} <b>catch</b> {
+				<span class="r34 r">result</span> = <b>null</b>;
+				<b>return false</b>;
+			}
+ 
+			<b>return true</b>;
+		}
+	}
+}
+ 
+</pre></td></tr></table></div></body></html>

@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+<html><head><title>TypeConversionExtensions.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(216);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/Xaml/TypeConversionExtensions.cs" target="_top">Xaml\TypeConversionExtensions.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<span class="c">//</span>
+<span class="c">// TypeConversionExtensions.cs</span>
+<span class="c">//</span>
+<span class="c">// Author:</span>
+<span class="c">//       Stephane Delcroix &lt;stephane@mi8.be&gt;</span>
+<span class="c">//</span>
+<span class="c">// Copyright (c) 2013 Mobile Inception</span>
+<span class="c">// Copyright (c) 2014 Xamarin, Inc.</span>
+<span class="c">//</span>
+<span class="c">// Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c">// of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c">// in the Software without restriction, including without limitation the rights</span>
+<span class="c">// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c">// copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c">// furnished to do so, subject to the following conditions:</span>
+<span class="c">//</span>
+<span class="c">// The above copyright notice and this permission notice shall be included in</span>
+<span class="c">// all copies or substantial portions of the Software.</span>
+<span class="c">//</span>
+<span class="c">// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c">// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c">// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c">// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c">// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c">// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span class="c">// THE SOFTWARE.</span>
+ 
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Globalization</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>
+{
+	<b>static class</b> <a id="6b64866daa8d708f" href="../R/../../0000000000.html" target="n" data-glyph="2,0" class="t t">TypeConversionExtensions</a>
+	{
+		<b>internal static object</b> <a id="3b9fa9018b616600" href="../R/3b9fa9018b616600.html" target="n" data-glyph="221,1" class="i method">ConvertTo</a>(<b>this</b> <b>object</b> <span id="r0 rd" class="r0 r">value</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r1 rd" class="r1 r">toType</span>, <a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<span class="t t">ParameterInfo</span>&gt; <span id="r2 rd" class="r2 r">pinfoRetriever</span>,
+			<span class="t t">IServiceProvider</span> <span id="r3 rd" class="r3 r">serviceProvider</span>)
+		{
+			<a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<a href="../TypeConverter.cs.html#07b618880a109e92" class="t t">TypeConverter</a>&gt; <span id="r4 rd" class="r4 r">getConverter</span> = () =&gt;
+			{
+				<span class="t t">ParameterInfo</span> <span id="r5 rd" class="r5 r">pInfo</span>;
+				<b>if</b> (<span class="r2 r">pinfoRetriever</span> == <b>null</b> || (<span class="r5 r">pInfo</span> = <span class="r2 r">pinfoRetriever</span>()) == <b>null</b>)
+					<b>return null</b>;
+ 
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r6 rd" class="r6 r">converterTypeName</span> = <span class="r5 r">pInfo</span>.<span class="i property">CustomAttributes</span>.<a href="#69b3b362a34a4e66" class="i method">GetTypeConverterTypeName</a>();
+				<b>if</b> (<span class="r6 r">converterTypeName</span> == <b>null</b>)
+					<b>return null</b>;
+				<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r7 rd" class="r7 r">convertertype</span> = <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>.<a href="@1@System.Runtime/A.html#ba8d29b0ddf9aaa0" class="i method">GetType</a>(<span class="r6 r">converterTypeName</span>);
+				<b>return</b> (<a href="../TypeConverter.cs.html#07b618880a109e92" class="t t">TypeConverter</a>)<a href="@1@System.Runtime/A.html#955a7437554c8efc" class="t t">Activator</a>.<a href="@1@System.Runtime/A.html#4c7b92371a93f246" class="i method">CreateInstance</a>(<span class="r7 r">convertertype</span>);
+			};
+ 
+			<b>return</b> <a href="#6dd8d100a436d8ba" class="i method">ConvertTo</a>(<span class="r0 r">value</span>, <span class="r1 r">toType</span>, <span class="r4 r">getConverter</span>, <span class="r3 r">serviceProvider</span>);
+		}
+ 
+		<b>internal static object</b> <a id="85616d28c3af8095" href="../R/85616d28c3af8095.html" target="n" data-glyph="221,1" class="i method">ConvertTo</a>(<b>this</b> <b>object</b> <span id="r8 rd" class="r8 r">value</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r9 rd" class="r9 r">toType</span>, <a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<span class="t t">MemberInfo</span>&gt; <span id="r10 rd" class="r10 r">minfoRetriever</span>,
+			<span class="t t">IServiceProvider</span> <span id="r11 rd" class="r11 r">serviceProvider</span>)
+		{
+			<a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>object</b>&gt; <span id="r12 rd" class="r12 r">getConverter</span> = () =&gt;
+			{
+				<span class="t t">MemberInfo</span> <span id="r13 rd" class="r13 r">memberInfo</span>;
+ 
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r14 rd" class="r14 r">converterTypeName</span> = <span class="r9 r">toType</span>.<span class="i method">GetTypeInfo</span>().<span class="i property">CustomAttributes</span>.<a href="#69b3b362a34a4e66" class="i method">GetTypeConverterTypeName</a>();
+				<b>if</b> (<span class="r10 r">minfoRetriever</span> != <b>null</b> &amp;&amp; (<span class="r13 r">memberInfo</span> = <span class="r10 r">minfoRetriever</span>()) != <b>null</b>)
+					<span class="r14 r">converterTypeName</span> = <span class="r13 r">memberInfo</span>.<span class="i property">CustomAttributes</span>.<a href="#69b3b362a34a4e66" class="i method">GetTypeConverterTypeName</a>() ?? <span class="r14 r">converterTypeName</span>;
+				<b>if</b> (<span class="r14 r">converterTypeName</span> == <b>null</b>)
+					<b>return null</b>;
+ 
+				<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r15 rd" class="r15 r">convertertype</span> = <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>.<a href="@1@System.Runtime/A.html#ba8d29b0ddf9aaa0" class="i method">GetType</a>(<span class="r14 r">converterTypeName</span>);
+				<b>return</b> <a href="@1@System.Runtime/A.html#955a7437554c8efc" class="t t">Activator</a>.<a href="@1@System.Runtime/A.html#4c7b92371a93f246" class="i method">CreateInstance</a>(<span class="r15 r">convertertype</span>);
+			};
+ 
+			<b>return</b> <a href="#6dd8d100a436d8ba" class="i method">ConvertTo</a>(<span class="r8 r">value</span>, <span class="r9 r">toType</span>, <span class="r12 r">getConverter</span>, <span class="r11 r">serviceProvider</span>);
+		}
+ 
+		<b>static string</b> <a id="69b3b362a34a4e66" href="../R/69b3b362a34a4e66.html" target="n" data-glyph="224,1" class="i method">GetTypeConverterTypeName</a>(<b>this</b> <a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="t t">CustomAttributeData</span>&gt; <span id="r16 rd" class="r16 r">attributes</span>)
+		{
+			<b>var</b> <span id="r17 rd" class="r17 r">converterAttribute</span> =
+				<span class="r16 r">attributes</span>.<span class="i method">FirstOrDefault</span>(<span id="r18 rd" class="r18 r">cad</span> =&gt; <a href="../TypeConverterAttribute.cs.html#214107ffee4f0359" class="t t">TypeConverterAttribute</a>.<a href="../TypeConverterAttribute.cs.html#042fa2175542ffdd" class="i field">TypeConvertersType</a>.<span class="i method">Contains</span>(<span class="r18 r">cad</span>.<span class="i property">AttributeType</span>.<a href="@1@System.Runtime/A.html#976443bb39dc37cd" class="i property">FullName</a>));
+			<b>if</b> (<span class="r17 r">converterAttribute</span> == <b>null</b>)
+				<b>return null</b>;
+			<b>if</b> (<span class="r17 r">converterAttribute</span>.<span class="i property">ConstructorArguments</span>[0].<span class="i property">ArgumentType</span> == <b>typeof</b> (<b>string</b>))
+				<b>return</b> (<b>string</b>)<span class="r17 r">converterAttribute</span>.<span class="i property">ConstructorArguments</span>[0].<span class="i property">Value</span>;
+			<b>if</b> (<span class="r17 r">converterAttribute</span>.<span class="i property">ConstructorArguments</span>[0].<span class="i property">ArgumentType</span> == <b>typeof</b> (<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>))
+				<b>return</b> ((<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a>)<span class="r17 r">converterAttribute</span>.<span class="i property">ConstructorArguments</span>[0].<span class="i property">Value</span>).<a href="@1@System.Runtime/A.html#760775dbd11fb354" class="i property">AssemblyQualifiedName</a>;
+			<b>return null</b>;
+		}
+ 
+		<span class="c">//Don&#39;t change the name or the signature of this, it&#39;s used by XamlC</span>
+		<b>public static object</b> <a id="17115f1338d1eee7" href="../R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">ConvertTo</a>(<b>this</b> <b>object</b> <span id="r19 rd" class="r19 r">value</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r20 rd" class="r20 r">toType</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r21 rd" class="r21 r">convertertype</span>, <span class="t t">IServiceProvider</span> <span id="r22 rd" class="r22 r">serviceProvider</span>)
+		{
+			<b>if</b> (<span class="r21 r">convertertype</span> == <b>null</b>)
+				<b>return</b> <span class="r19 r">value</span>.<a href="#6dd8d100a436d8ba" class="i method">ConvertTo</a>(<span class="r20 r">toType</span>, (<a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>object</b>&gt;)<b>null</b>, <span class="r22 r">serviceProvider</span>);
+			<a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>object</b>&gt; <span id="r23 rd" class="r23 r">getConverter</span> = () =&gt; <a href="@1@System.Runtime/A.html#955a7437554c8efc" class="t t">Activator</a>.<a href="@1@System.Runtime/A.html#4c7b92371a93f246" class="i method">CreateInstance</a>(<span class="r21 r">convertertype</span>);
+			;
+			<b>return</b> <span class="r19 r">value</span>.<a href="#6dd8d100a436d8ba" class="i method">ConvertTo</a>(<span class="r20 r">toType</span>, <span class="r23 r">getConverter</span>, <span class="r22 r">serviceProvider</span>);
+		}
+ 
+		<b>internal static object</b> <a id="6dd8d100a436d8ba" href="../R/6dd8d100a436d8ba.html" target="n" data-glyph="221,1" class="i method">ConvertTo</a>(<b>this</b> <b>object</b> <span id="r24 rd" class="r24 r">value</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r25 rd" class="r25 r">toType</span>, <a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>object</b>&gt; <span id="r26 rd" class="r26 r">getConverter</span>,
+			<span class="t t">IServiceProvider</span> <span id="r27 rd" class="r27 r">serviceProvider</span>)
+		{
+			<b>if</b> (<span class="r24 r">value</span> == <b>null</b>)
+				<b>return null</b>;
+ 
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r28 rd" class="r28 r">str</span> = <span class="r24 r">value</span> <b>as string</b>;
+			<b>if</b> (<span class="r28 r">str</span> != <b>null</b>)
+			{
+				<span class="c">//If there&#39;s a [TypeConverter], use it</span>
+				<b>object</b> <span id="r29 rd" class="r29 r">converter</span> = <span class="r26 r">getConverter</span>?.<a href="@1@System.Runtime/A.html#a7843bf4f3b2d594" class="i method">Invoke</a>();
+				<a href="../TypeConverter.cs.html#07b618880a109e92" class="k">var</a> <span id="r30 rd" class="r30 r">xfTypeConverter</span> = <span class="r29 r">converter</span> <b>as</b> <a href="../TypeConverter.cs.html#07b618880a109e92" class="t t">TypeConverter</a>;
+				<a href="../IExtendedTypeConverter.cs.html#bbb7fd1931680a0e" class="k">var</a> <span id="r31 rd" class="r31 r">xfExtendedTypeConverter</span> = <span class="r30 r">xfTypeConverter</span> <b>as</b> <a href="../IExtendedTypeConverter.cs.html#bbb7fd1931680a0e" class="t t">IExtendedTypeConverter</a>;
+				<b>if</b> (<span class="r31 r">xfExtendedTypeConverter</span> != <b>null</b>)
+					<b>return</b> <span class="r24 r">value</span> = <span class="r31 r">xfExtendedTypeConverter</span>.<a href="../IExtendedTypeConverter.cs.html#7fde9e679a0edec5" class="i method">ConvertFromInvariantString</a>(<span class="r28 r">str</span>, <span class="r27 r">serviceProvider</span>);
+				<b>if</b> (<span class="r30 r">xfTypeConverter</span> != <b>null</b>)
+					<b>return</b> <span class="r24 r">value</span> = <span class="r30 r">xfTypeConverter</span>.<a href="../TypeConverter.cs.html#1bdd406e099a54c3" class="i method">ConvertFromInvariantString</a>(<span class="r28 r">str</span>);
+				<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="k">var</a> <span id="r32 rd" class="r32 r">converterType</span> = <span class="r29 r">converter</span>?.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>();
+				<b>if</b> (<span class="r32 r">converterType</span> != <b>null</b>)
+				{
+					<b>var</b> <span id="r33 rd" class="r33 r">convertFromStringInvariant</span> = <span class="r32 r">converterType</span>.<span class="i method">GetRuntimeMethod</span>(<span class="s">&quot;ConvertFromInvariantString&quot;</span>,
+						<b>new</b>[] { <b>typeof</b> (<b>string</b>) });
+					<b>if</b> (<span class="r33 r">convertFromStringInvariant</span> != <b>null</b>)
+						<b>return</b> <span class="r24 r">value</span> = <span class="r33 r">convertFromStringInvariant</span>.<span class="i method">Invoke</span>(<span class="r29 r">converter</span>, <b>new</b> <b>object</b>[] { <span class="r28 r">str</span> });
+				}
+ 
+				<span class="c">//If the type is nullable, as the value is not null, it&#39;s safe to assume we want the built-in conversion</span>
+				<b>if</b> (<span class="r25 r">toType</span>.<span class="i method">GetTypeInfo</span>().<span class="i property">IsGenericType</span> &amp;&amp; <span class="r25 r">toType</span>.<a href="@1@System.Runtime/A.html#7179022318447358" class="i method">GetGenericTypeDefinition</a>() == <b>typeof</b> (<a href="@1@System.Runtime/A.html#ffebe438fd9cbf0e" class="t t">Nullable</a>&lt;&gt;))
+					<span class="r25 r">toType</span> = <a href="@1@System.Runtime/A.html#c9505a785f9fd8c5" class="t t">Nullable</a>.<a href="@1@System.Runtime/A.html#ae2ae0d65dd71ecb" class="i method">GetUnderlyingType</a>(<span class="r25 r">toType</span>);
+ 
+				<span class="c">//Obvious Built-in conversions</span>
+				<b>if</b> (<span class="r25 r">toType</span>.<span class="i method">GetTypeInfo</span>().<span class="i property">IsEnum</span>)
+					<b>return</b> <a href="@1@System.Runtime/A.html#36729210e317a805" class="t t">Enum</a>.<a href="@1@System.Runtime/A.html#6c84f29508754e27" class="i method">Parse</a>(<span class="r25 r">toType</span>, <span class="r28 r">str</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b>(<a href="@1@System.Runtime/A.html#85a269e3de1e7b9d" class="t t">SByte</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#85a269e3de1e7b9d" class="t t">SByte</a>.<a href="@1@System.Runtime/A.html#2709323a0b8f862a" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b>(<a href="@1@System.Runtime/A.html#4f2f28ae4cd2bc79" class="t t">Int16</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#4f2f28ae4cd2bc79" class="t t">Int16</a>.<a href="@1@System.Runtime/A.html#871ff18a7d88070a" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b>(<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="t t">Int32</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="t t">Int32</a>.<a href="@1@System.Runtime/A.html#78ffbe1e274ca0bb" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b>(<a href="@1@System.Runtime/A.html#e566178cce890c36" class="t t">Int64</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#e566178cce890c36" class="t t">Int64</a>.<a href="@1@System.Runtime/A.html#aa76bf9458630289" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b>(<a href="@1@System.Runtime/A.html#3933aebb80415ce0" class="t t">Byte</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#3933aebb80415ce0" class="t t">Byte</a>.<a href="@1@System.Runtime/A.html#05640f56fcbe1390" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b>(<a href="@1@System.Runtime/A.html#fb226f61047a07ff" class="t t">UInt16</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#fb226f61047a07ff" class="t t">UInt16</a>.<a href="@1@System.Runtime/A.html#963ac58f346809a2" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b>(<a href="@1@System.Runtime/A.html#0cd3c987eff5ef85" class="t t">UInt32</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#0cd3c987eff5ef85" class="t t">UInt32</a>.<a href="@1@System.Runtime/A.html#3a6bee0596002787" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b>(<a href="@1@System.Runtime/A.html#4c2dfeca03143bfd" class="t t">UInt64</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#4c2dfeca03143bfd" class="t t">UInt64</a>.<a href="@1@System.Runtime/A.html#58dd43530169b4c4" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b> (<a href="@1@System.Runtime/A.html#dda909df0f8d2fd0" class="t t">Single</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#dda909df0f8d2fd0" class="t t">Single</a>.<a href="@1@System.Runtime/A.html#021a8ef574be38a2" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b> (<a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="t t">Double</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#1a65cbdb09544ba1" class="t t">Double</a>.<a href="@1@System.Runtime/A.html#73cc31e0b47fd637" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b> (<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="t t">Boolean</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="t t">Boolean</a>.<a href="@1@System.Runtime/A.html#e2a8f2e50ecf93c0" class="i method">Parse</a>(<span class="r28 r">str</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b> (<a href="@1@System.Runtime/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>.<a href="@1@System.Runtime/A.html#55df39e3fee10a08" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b> (<a href="@1@System.Runtime/A.html#df6b1eba7461813b" class="t t">DateTime</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#df6b1eba7461813b" class="t t">DateTime</a>.<a href="@1@System.Runtime/A.html#3dcde4b72349960c" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b>(<a href="@1@System.Runtime/A.html#02f2b1a33b09362d" class="t t">Char</a>)) {
+					<b>char</b> <span id="r34 rd" class="r34 r">c</span> = <span class="s">&#39;\0&#39;</span>;
+					<a href="@1@System.Runtime/A.html#02f2b1a33b09362d" class="t t">Char</a>.<a href="@1@System.Runtime/A.html#67bc62de6869d77b" class="i method">TryParse</a>(<span class="r28 r">str</span>, <b>out</b> <span class="r34 r">c</span>);
+					<b>return</b> <span class="r34 r">c</span>;
+				}
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b> (<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="t t">String</a>) &amp;&amp; <span class="r28 r">str</span>.<a href="@1@System.Runtime/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;{}&quot;</span>, <a href="@1@System.Runtime/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@1@System.Runtime/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+					<b>return</b> <span class="r28 r">str</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(2);
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b> (<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="t t">String</a>))
+					<b>return</b> <span class="r24 r">value</span>;
+				<b>if</b> (<span class="r25 r">toType</span> == <b>typeof</b>(<a href="@1@System.Runtime/A.html#1b2858baf311cbf9" class="t t">Decimal</a>))
+					<b>return</b> <a href="@1@System.Runtime/A.html#1b2858baf311cbf9" class="t t">Decimal</a>.<a href="@1@System.Runtime/A.html#3c8be4ea6302d5a4" class="i method">Parse</a>(<span class="r28 r">str</span>, <span class="t t">CultureInfo</span>.<span class="i property">InvariantCulture</span>);
+			}
+ 
+			<span class="c">//if there&#39;s an implicit conversion, convert</span>
+			<b>if</b> (<span class="r24 r">value</span> != <b>null</b>) {
+				<span class="t t">MethodInfo</span> <span id="r35 rd" class="r35 r">opImplicit</span> = <b>null</b>;
+				<b>foreach</b> (<b>var</b> <span id="r36 rd" class="r36 r">mi</span> <b>in</b> <span class="r24 r">value</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetRuntimeMethods</span>()) {
+					<b>if</b> (!<span class="r36 r">mi</span>.<span class="i property">IsSpecialName</span>) <b>continue</b>;
+					<b>if</b> (<span class="r36 r">mi</span>.<span class="i property">Name</span> != <span class="s">&quot;op_Implicit&quot;</span>) <b>continue</b>;
+					<b>if</b> (!<span class="r36 r">mi</span>.<span class="i property">IsPublic</span>) <b>continue</b>;
+					<b>if</b> (!<span class="r25 r">toType</span>.<a href="../ReflectionExtensions.cs.html#4aeb7fed02b54bd2" class="i method">IsAssignableFrom</a>(<span class="r36 r">mi</span>.<span class="i property">ReturnType</span>)) <b>continue</b>;
+					<b>var</b> <span id="r37 rd" class="r37 r">parameters</span> = <span class="r36 r">mi</span>.<span class="i method">GetParameters</span>();
+					<b>if</b> (<span class="r37 r">parameters</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> != 1) <b>continue</b>;
+					<b>if</b> (<span class="r37 r">parameters</span>[0].<span class="i property">ParameterType</span> != <span class="r24 r">value</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>()) <b>continue</b>;
+					<span class="r35 r">opImplicit</span> = <span class="r36 r">mi</span>;
+					<b>break</b>;
+				}
+				<b>if</b> (<span class="r35 r">opImplicit</span> == <b>null</b>) {
+					<b>foreach</b> (<b>var</b> <span id="r38 rd" class="r38 r">mi</span> <b>in</b> <span class="r25 r">toType</span>.<span class="i method">GetRuntimeMethods</span>()) {
+						<b>if</b> (!<span class="r38 r">mi</span>.<span class="i property">IsSpecialName</span>) <b>continue</b>;
+						<b>if</b> (<span class="r38 r">mi</span>.<span class="i property">Name</span> != <span class="s">&quot;op_Implicit&quot;</span>) <b>continue</b>;
+						<b>if</b> (!<span class="r38 r">mi</span>.<span class="i property">IsPublic</span>) <b>continue</b>;
+						<b>if</b> (!<span class="r25 r">toType</span>.<a href="../ReflectionExtensions.cs.html#4aeb7fed02b54bd2" class="i method">IsAssignableFrom</a>(<span class="r38 r">mi</span>.<span class="i property">ReturnType</span>)) <b>continue</b>;
+						<b>var</b> <span id="r39 rd" class="r39 r">parameters</span> = <span class="r38 r">mi</span>.<span class="i method">GetParameters</span>();
+						<b>if</b> (<span class="r39 r">parameters</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> != 1) <b>continue</b>;
+						<b>if</b> (<span class="r39 r">parameters</span>[0].<span class="i property">ParameterType</span> != <span class="r24 r">value</span>.<a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>()) <b>continue</b>;
+						<span class="r35 r">opImplicit</span> = <span class="r38 r">mi</span>;
+						<b>break</b>;
+					}
+				}
+				<b>if</b> (<span class="r35 r">opImplicit</span> != <b>null</b>) {
+					<span class="r24 r">value</span> = <span class="r35 r">opImplicit</span>.<span class="i method">Invoke</span>(<b>null</b>, <b>new</b>[] { <span class="r24 r">value</span> });
+					<b>return</b> <span class="r24 r">value</span>;
+				}
+			}
+ 
+			<a href="../INativeValueConverterService.cs.html#feb9c29f4ddfc22e" class="k">var</a> <span id="r40 rd" class="r40 r">nativeValueConverterService</span> = <a href="../DependencyService.cs.html#8d311a81ee952ba4" class="t t">DependencyService</a>.<a href="../DependencyService.cs.html#ac938f0fb30da4e5" class="i method">Get</a>&lt;<a href="../INativeValueConverterService.cs.html#feb9c29f4ddfc22e" class="t t">INativeValueConverterService</a>&gt;();
+ 
+			<b>object</b> <span id="r41 rd" class="r41 r">nativeValue</span> = <b>null</b>;
+			<b>if</b> (<span class="r40 r">nativeValueConverterService</span> != <b>null</b> &amp;&amp; <span class="r40 r">nativeValueConverterService</span>.<a href="../INativeValueConverterService.cs.html#1b833daf718d7563" class="i method">ConvertTo</a>(<span class="r24 r">value</span>, <span class="r25 r">toType</span>, <b>out</b> <span class="r41 r">nativeValue</span>))
+				<b>return</b> <span class="r41 r">nativeValue</span>;
+ 
+			<b>return</b> <span class="r24 r">value</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

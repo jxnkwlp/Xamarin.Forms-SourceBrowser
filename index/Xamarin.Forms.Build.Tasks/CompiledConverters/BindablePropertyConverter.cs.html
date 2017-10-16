@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html><head><title>BindablePropertyConverter.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(75);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/CompiledConverters/BindablePropertyConverter.cs" target="_top">CompiledConverters\BindablePropertyConverter.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Cil</span>;
+ 
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+ 
+<b>using static</b> <span class="i n">System</span>.<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="t t">String</a>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Core</span>.<span class="i n">XamlC</span>
+{
+	<b>class</b> <a id="9ec15054fdc0d084" href="../R/9ec15054fdc0d084.html" target="n" data-glyph="2,0" class="t t"><span id="2d3054d846b0c8c2">BindablePropertyConverter</span></a> : <a href="ICompiledTypeConverter.cs.html#9cd7e0046f235fb3" class="t t">ICompiledTypeConverter</a>
+	{
+		<b>public</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="i">Instruction</span>&gt; <a id="d50fb32fadffb607" href="../R/d50fb32fadffb607.html" target="n" data-glyph="72,1" class="i method">ConvertFromString</a>(<b>string</b> <span id="r0 rd" class="r0 r">value</span>, <span class="i">ModuleDefinition</span> <span id="r1 rd" class="r1 r">module</span>, <a href="/Xamarin.Forms.Xaml/A.html#aee785270197d5f3" class="t t">BaseNode</a> <span id="r2 rd" class="r2 r">node</span>)
+		{
+			<b>if</b> (<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r0 r">value</span>)) {
+				<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldnull</span>);
+				<b>yield break</b>;
+			}
+			<b>var</b> <span id="r3 rd" class="r3 r">bpRef</span> = <a href="#bd0d0f8b353f4c03" class="i method">GetBindablePropertyFieldReference</a>(<span class="r0 r">value</span>, <span class="r1 r">module</span>, <span class="r2 r">node</span>);
+			<b>yield return</b> <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldsfld</span>, <span class="r3 r">bpRef</span>);
+		}
+ 
+		<b>public</b> <span class="i">FieldReference</span> <a id="bd0d0f8b353f4c03" href="../R/bd0d0f8b353f4c03.html" target="n" data-glyph="72,1" class="i method">GetBindablePropertyFieldReference</a>(<b>string</b> <span id="r4 rd" class="r4 r">value</span>, <span class="i">ModuleDefinition</span> <span id="r5 rd" class="r5 r">module</span>, <a href="/Xamarin.Forms.Xaml/A.html#aee785270197d5f3" class="t t">BaseNode</a> <span id="r6 rd" class="r6 r">node</span>)
+		{
+			<span class="i">FieldReference</span> <span id="r7 rd" class="r7 r">bpRef</span> = <b>null</b>;
+			<b>string</b> <span id="r8 rd" class="r8 r">typeName</span> = <b>null</b>, <span id="r9 rd" class="r9 r">propertyName</span> = <b>null</b>;
+ 
+			<b>var</b> <span id="r10 rd" class="r10 r">parts</span> = <span class="r4 r">value</span>.<a href="@0@mscorlib/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;.&#39;</span>);
+			<b>if</b> (<span class="r10 r">parts</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> == 1) {
+				<a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="k">var</a> <span id="r11 rd" class="r11 r">parent</span> = <span class="r6 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#303fc3785008a82d" class="i property">Parent</a>?.<a href="/Xamarin.Forms.Xaml/A.html#aaa082f00606354b" class="i property">Parent</a> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a>;
+				<b>if</b> ((<span class="r6 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#303fc3785008a82d" class="i property">Parent</a> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="t t">ElementNode</a>)?.<a href="/Xamarin.Forms.Xaml/A.html#8505373ce60c6127" class="i property">XmlType</a>.<a href="/Xamarin.Forms.Xaml/A.html#a53254597bc28ecf" class="i property">NamespaceUri</a> == <a href="/Xamarin.Forms.Xaml/A.html#761f9f93317ccb07" class="t t">XamlParser</a>.<a href="/Xamarin.Forms.Xaml/A.html#29e3cbb04e0705b2" class="i field">XFUri</a> &amp;&amp;
+				    ((<span class="r6 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#303fc3785008a82d" class="i property">Parent</a> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="t t">ElementNode</a>)?.<a href="/Xamarin.Forms.Xaml/A.html#8505373ce60c6127" class="i property">XmlType</a>.<a href="/Xamarin.Forms.Xaml/A.html#1561698d7b8a155c" class="i property">Name</a> == <span class="s">&quot;Setter&quot;</span> || (<span class="r6 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#303fc3785008a82d" class="i property">Parent</a> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="t t">ElementNode</a>)?.<a href="/Xamarin.Forms.Xaml/A.html#8505373ce60c6127" class="i property">XmlType</a>.<a href="/Xamarin.Forms.Xaml/A.html#1561698d7b8a155c" class="i property">Name</a> == <span class="s">&quot;PropertyCondition&quot;</span>)) {
+					<b>if</b> (<span class="r11 r">parent</span>.<a href="/Xamarin.Forms.Xaml/A.html#5b65f02b1f79eeaf" class="i property">XmlType</a>.<a href="/Xamarin.Forms.Xaml/A.html#a53254597bc28ecf" class="i property">NamespaceUri</a> == <a href="/Xamarin.Forms.Xaml/A.html#761f9f93317ccb07" class="t t">XamlParser</a>.<a href="/Xamarin.Forms.Xaml/A.html#29e3cbb04e0705b2" class="i field">XFUri</a> &amp;&amp;
+						(<span class="r11 r">parent</span>.<a href="/Xamarin.Forms.Xaml/A.html#5b65f02b1f79eeaf" class="i property">XmlType</a>.<a href="/Xamarin.Forms.Xaml/A.html#1561698d7b8a155c" class="i property">Name</a> == <span class="s">&quot;Trigger&quot;</span> || <span class="r11 r">parent</span>.<a href="/Xamarin.Forms.Xaml/A.html#5b65f02b1f79eeaf" class="i property">XmlType</a>.<a href="/Xamarin.Forms.Xaml/A.html#1561698d7b8a155c" class="i property">Name</a> == <span class="s">&quot;DataTrigger&quot;</span> || <span class="r11 r">parent</span>.<a href="/Xamarin.Forms.Xaml/A.html#5b65f02b1f79eeaf" class="i property">XmlType</a>.<a href="/Xamarin.Forms.Xaml/A.html#1561698d7b8a155c" class="i property">Name</a> == <span class="s">&quot;MultiTrigger&quot;</span> || <span class="r11 r">parent</span>.<a href="/Xamarin.Forms.Xaml/A.html#5b65f02b1f79eeaf" class="i property">XmlType</a>.<a href="/Xamarin.Forms.Xaml/A.html#1561698d7b8a155c" class="i property">Name</a> == <span class="s">&quot;Style&quot;</span>)) {
+						<a href="/Xamarin.Forms.Xaml/A.html#9697de7bafb1de38" class="k">var</a> <span id="r12 rd" class="r12 r">ttnode</span> = (<span class="r11 r">parent</span> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="t t">ElementNode</a>).<a href="/Xamarin.Forms.Xaml/A.html#5ee5fe5a808d6839" class="i property">Properties</a> [<b>new</b> <a href="/Xamarin.Forms.Xaml/A.html#655d78af446a108a" class="t constructor">XmlName</a>(<span class="s">&quot;&quot;</span>, <span class="s">&quot;TargetType&quot;</span>)];
+						<b>if</b> (<span class="r12 r">ttnode</span> <b>is</b> <a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a>)
+							<span class="r8 r">typeName</span> = (<span class="r12 r">ttnode</span> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a>).<a href="/Xamarin.Forms.Xaml/A.html#5fa72a93b49782e1" class="i property">Value</a> <b>as string</b>;
+						<b>else if</b> (<span class="r12 r">ttnode</span> <b>is</b> <a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a>)
+							<span class="r8 r">typeName</span> = ((<span class="r12 r">ttnode</span> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a>).<a href="/Xamarin.Forms.Xaml/A.html#fb3a9fc1d07f233b" class="i property">CollectionItems</a>.<a href="@0@System.Core/A.html#8087366974af11d2" class="i method">FirstOrDefault</a>() <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a>)?.<a href="/Xamarin.Forms.Xaml/A.html#5fa72a93b49782e1" class="i property">Value</a> <b>as string</b> ?? ((<span class="r12 r">ttnode</span> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#0395ca46ae80839a" class="t t">IElementNode</a>).<a href="/Xamarin.Forms.Xaml/A.html#ca11b3b288ccdec1" class="i property">Properties</a> [<b>new</b> <a href="/Xamarin.Forms.Xaml/A.html#655d78af446a108a" class="t constructor">XmlName</a>(<span class="s">&quot;&quot;</span>, <span class="s">&quot;TypeName&quot;</span>)] <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a>)?.<a href="/Xamarin.Forms.Xaml/A.html#5fa72a93b49782e1" class="i property">Value</a> <b>as string</b>;
+					}
+				} <b>else if</b> ((<span class="r6 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#303fc3785008a82d" class="i property">Parent</a> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="t t">ElementNode</a>)?.<a href="/Xamarin.Forms.Xaml/A.html#8505373ce60c6127" class="i property">XmlType</a>.<a href="/Xamarin.Forms.Xaml/A.html#a53254597bc28ecf" class="i property">NamespaceUri</a> == <a href="/Xamarin.Forms.Xaml/A.html#761f9f93317ccb07" class="t t">XamlParser</a>.<a href="/Xamarin.Forms.Xaml/A.html#29e3cbb04e0705b2" class="i field">XFUri</a> &amp;&amp; (<span class="r6 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#303fc3785008a82d" class="i property">Parent</a> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="t t">ElementNode</a>)?.<a href="/Xamarin.Forms.Xaml/A.html#8505373ce60c6127" class="i property">XmlType</a>.<a href="/Xamarin.Forms.Xaml/A.html#1561698d7b8a155c" class="i property">Name</a> == <span class="s">&quot;Trigger&quot;</span>)
+					<span class="r8 r">typeName</span> = ((<span class="r6 r">node</span>.<a href="/Xamarin.Forms.Xaml/A.html#303fc3785008a82d" class="i property">Parent</a> <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#6162566191bf011a" class="t t">ElementNode</a>).<a href="/Xamarin.Forms.Xaml/A.html#5ee5fe5a808d6839" class="i property">Properties</a> [<b>new</b> <a href="/Xamarin.Forms.Xaml/A.html#655d78af446a108a" class="t constructor">XmlName</a>(<span class="s">&quot;&quot;</span>, <span class="s">&quot;TargetType&quot;</span>)] <b>as</b> <a href="/Xamarin.Forms.Xaml/A.html#8154936e25abda05" class="t t">ValueNode</a>).<a href="/Xamarin.Forms.Xaml/A.html#5fa72a93b49782e1" class="i property">Value</a> <b>as string</b>;
+				<span class="r9 r">propertyName</span> = <span class="r10 r">parts</span> [0];
+			} <b>else if</b> (<span class="r10 r">parts</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> == 2) {
+				<span class="r8 r">typeName</span> = <span class="r10 r">parts</span> [0];
+				<span class="r9 r">propertyName</span> = <span class="r10 r">parts</span> [1];
+			} <b>else
+				throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r4 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a>)}<span class="s">&quot;</span>, <span class="r6 r">node</span>);
+ 
+			<b>if</b> (<span class="r8 r">typeName</span> == <b>null</b> || <span class="r9 r">propertyName</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Cannot convert \&quot;</span>{<span class="r4 r">value</span>}<span class="s">\&quot; into </span>{<b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a>)}<span class="s">&quot;</span>, <span class="r6 r">node</span>);
+ 
+			<b>var</b> <span id="r13 rd" class="r13 r">typeRef</span> = <a href="../XmlTypeExtensions.cs.html#d50d0b1c4b47975e" class="t t">XmlTypeExtensions</a>.<a href="../XmlTypeExtensions.cs.html#10ff340c0cc405a1" class="i method">GetTypeReference</a>(<span class="r8 r">typeName</span>, <span class="r5 r">module</span>, <span class="r6 r">node</span>);
+			<b>if</b> (<span class="r13 r">typeRef</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Can&#39;t resolve </span>{<span class="r8 r">typeName</span>}<span class="s">&quot;</span>, <span class="r6 r">node</span>);
+			<span class="r7 r">bpRef</span> = <a href="#f05efc104ff6f0d0" class="i method">GetBindablePropertyFieldReference</a>(<span class="r13 r">typeRef</span>, <span class="r9 r">propertyName</span>, <span class="r5 r">module</span>);
+			<b>if</b> (<span class="r7 r">bpRef</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">Can&#39;t resolve </span>{<span class="r9 r">propertyName</span>}<span class="s"> on </span>{<span class="r13 r">typeRef</span>.<span class="i">Name</span>}<span class="s">&quot;</span>, <span class="r6 r">node</span>);
+			<b>return</b> <span class="r7 r">bpRef</span>;
+		}
+ 
+		<b>public static</b> <span class="i">FieldReference</span> <a id="f05efc104ff6f0d0" href="../R/f05efc104ff6f0d0.html" target="n" data-glyph="72,1" class="i method">GetBindablePropertyFieldReference</a>(<span class="i">TypeReference</span> <span id="r14 rd" class="r14 r">typeRef</span>, <b>string</b> <span id="r15 rd" class="r15 r">propertyName</span>, <span class="i">ModuleDefinition</span> <span id="r16 rd" class="r16 r">module</span>)
+		{
+			<span class="i">TypeReference</span> <span id="r17 rd" class="r17 r">declaringTypeReference</span>;
+			<span class="i">FieldReference</span> <span id="r18 rd" class="r18 r">bpRef</span> = <span class="r14 r">typeRef</span>.<a href="../TypeReferenceExtensions.cs.html#518b7c963b5f049d" class="i method">GetField</a>(<span id="r19 rd" class="r19 r">fd</span> =&gt; <span class="r19 r">fd</span>.<span class="i">Name</span> == <span class="s">$&quot;</span>{<span class="r15 r">propertyName</span>}<span class="s">Property</span><span class="s">&quot;</span> &amp;&amp; <span class="r19 r">fd</span>.<span class="i">IsStatic</span> &amp;&amp; <span class="r19 r">fd</span>.<span class="i">IsPublic</span>, <b>out</b> <span class="r17 r">declaringTypeReference</span>);
+			<b>if</b> (<span class="r18 r">bpRef</span> != <b>null</b>) {
+				<span class="r18 r">bpRef</span> = <span class="r16 r">module</span>.<span class="i">ImportReference</span>(<span class="r18 r">bpRef</span>.<a href="../FieldReferenceExtensions.cs.html#0fc6dac808991c5c" class="i method">ResolveGenericParameters</a>(<span class="r17 r">declaringTypeReference</span>));
+				<span class="r18 r">bpRef</span>.<span class="i">FieldType</span> = <span class="r16 r">module</span>.<span class="i">ImportReference</span>(<span class="r18 r">bpRef</span>.<span class="i">FieldType</span>);
+			}
+			<b>return</b> <span class="r18 r">bpRef</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html><head><title>Ticker.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(99);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/Internals/Ticker.cs" target="_top">Internals\Ticker.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>
+{
+	[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+	<b>public abstract class</b> <a id="9ac4e7c1113aeac4" href="../R/9ac4e7c1113aeac4.html" target="n" data-glyph="0,0" class="t t">Ticker</a>
+	{
+		<b>static</b> <a href="#9ac4e7c1113aeac4" class="t t">Ticker</a> <a id="b3dced679240fd28" href="../R/b3dced679240fd28.html" target="n" data-glyph="46,1" class="i field">s_ticker</a>;
+		<b>readonly</b> <span class="t t">Stopwatch</span> <a id="294be72aca774c20" href="../R/294be72aca774c20.html" target="n" data-glyph="46,1" class="i field">_stopwatch</a>;
+		<b>readonly</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="@1@System.Runtime/A.html#1806cf6634f5a371" class="t t">Tuple</a>&lt;<b>int</b>, <a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>long</b>, <b>bool</b>&gt;&gt;&gt; <a id="fbdaeab5c24cc567" href="../R/fbdaeab5c24cc567.html" target="n" data-glyph="46,1" class="i field">_timeouts</a>;
+ 
+		<b>int</b> <a id="a2577e40bd8ed422" href="../R/a2577e40bd8ed422.html" target="n" data-glyph="46,1" class="i field">_count</a>;
+		<b>bool</b> <a id="38e51350c28a9974" href="../R/38e51350c28a9974.html" target="n" data-glyph="46,1" class="i field">_enabled</a>;
+ 
+		<b>protected</b> <a id="1b7e46edd96ce547" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">Ticker</a>()
+		{
+			<a href="#a2577e40bd8ed422" class="i field">_count</a> = 0;
+			<a href="#fbdaeab5c24cc567" class="i field">_timeouts</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="@1@System.Runtime/A.html#1806cf6634f5a371" class="t t">Tuple</a>&lt;<b>int</b>, <a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>long</b>, <b>bool</b>&gt;&gt;&gt;();
+ 
+			<a href="#294be72aca774c20" class="i field">_stopwatch</a> = <b>new</b> <span class="t constructor">Stopwatch</span>();
+		}
+ 
+		<b>public static void</b> <a id="4d751b8c7bf85421" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SetDefault</a>(<a href="#9ac4e7c1113aeac4" class="t t">Ticker</a> <span id="r0 rd" class="r0 r">ticker</span>) =&gt; <a href="#daa22f70b75e15e1" class="i property">Default</a> = <span class="r0 r">ticker</span>;
+		<b>public static</b> <a href="#9ac4e7c1113aeac4" class="t t">Ticker</a> <a id="daa22f70b75e15e1" href="../R/daa22f70b75e15e1.html" target="n" data-glyph="102,1" class="i property">Default</a>
+		{
+			<b>internal set</b> { <a href="#b3dced679240fd28" class="i field">s_ticker</a> = <b>value</b>; }
+			<b>get</b> { <b>return</b> <a href="#b3dced679240fd28" class="i field">s_ticker</a> ?? (<a href="#b3dced679240fd28" class="i field">s_ticker</a> =  <a href="../Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="../Device.cs.html#4b16d4a43172fca6" class="i property">PlatformServices</a>.<a href="../IPlatformServices.cs.html#ab94a1c53276a6ef" class="i method">CreateTicker</a>()); }
+		}
+ 
+		<b>public virtual int</b> <a id="dfe30d5e31a44261" href="../R/dfe30d5e31a44261.html" target="n" data-glyph="72,1" class="i method">Insert</a>(<a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>long</b>, <b>bool</b>&gt; <span id="r1 rd" class="r1 r">timeout</span>)
+		{
+			<a href="#a2577e40bd8ed422" class="i field">_count</a>++;
+			<a href="#fbdaeab5c24cc567" class="i field">_timeouts</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<b>new</b> <a href="@1@System.Runtime/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<b>int</b>, <a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>long</b>, <b>bool</b>&gt;&gt;(<a href="#a2577e40bd8ed422" class="i field">_count</a>, <span class="r1 r">timeout</span>));
+ 
+			<b>if</b> (!<a href="#38e51350c28a9974" class="i field">_enabled</a>)
+			{
+				<a href="#38e51350c28a9974" class="i field">_enabled</a> = <b>true</b>;
+				<a href="#c8f64165b2637513" class="i method">Enable</a>();
+			}
+ 
+			<b>return</b> <a href="#a2577e40bd8ed422" class="i field">_count</a>;
+		}
+ 
+		<b>public virtual void</b> <a id="eeb3d52c462593a8" href="../R/eeb3d52c462593a8.html" target="n" data-glyph="72,1" class="i method">Remove</a>(<b>int</b> <span id="r2 rd" class="r2 r">handle</span>)
+		{
+			<a href="../Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="../Device.cs.html#c01f48f642e0b305" class="i method">BeginInvokeOnMainThread</a>(() =&gt;
+			{
+				<a href="#fbdaeab5c24cc567" class="i field">_timeouts</a>.<a href="@1@System.Collections/A.html#82567b42bbfc416e" class="i method">RemoveAll</a>(<span id="r3 rd" class="r3 r">t</span> =&gt; <span class="r3 r">t</span>.<a href="@1@System.Runtime/A.html#d1922db1cf9dcd03" class="i property">Item1</a> == <span class="r2 r">handle</span>);
+ 
+				<b>if</b> (!<a href="#fbdaeab5c24cc567" class="i field">_timeouts</a>.<span class="i method">Any</span>())
+				{
+					<a href="#38e51350c28a9974" class="i field">_enabled</a> = <b>false</b>;
+					<a href="#81d3733cafee491a" class="i method">Disable</a>();
+				}
+			});
+		}
+ 
+		<b>protected abstract void</b> <a id="e2052ed662736e5c" href="../R/e2052ed662736e5c.html" target="n" data-glyph="75,1" class="i method">DisableTimer</a>();
+ 
+		<b>protected abstract void</b> <a id="b84ec3d36c04bec1" href="../R/b84ec3d36c04bec1.html" target="n" data-glyph="75,1" class="i method">EnableTimer</a>();
+		
+		<b>protected void</b> <a id="fd7b6a4307c0b904" href="../R/fd7b6a4307c0b904.html" target="n" data-glyph="75,1" class="i method">SendSignals</a>(<b>int</b> <span id="r4 rd" class="r4 r">timestep</span> = -1)
+		{
+			<b>long</b> <span id="r5 rd" class="r5 r">step</span> = <span class="r4 r">timestep</span> &gt;= 0 ? <span class="r4 r">timestep</span> : <a href="#294be72aca774c20" class="i field">_stopwatch</a>.<span class="i property">ElapsedMilliseconds</span>;
+			<a href="#294be72aca774c20" class="i field">_stopwatch</a>.<span class="i method">Reset</span>();
+			<a href="#294be72aca774c20" class="i field">_stopwatch</a>.<span class="i method">Start</span>();
+ 
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r6 rd" class="r6 r">localCopy</span> = <b>new</b> <a href="@1@System.Collections/A.html#d2ac2c19c9cf1d44" class="t constructor">List</a>&lt;<a href="@1@System.Runtime/A.html#1806cf6634f5a371" class="t t">Tuple</a>&lt;<b>int</b>, <a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>long</b>, <b>bool</b>&gt;&gt;&gt;(<a href="#fbdaeab5c24cc567" class="i field">_timeouts</a>);
+			<b>foreach</b> (<a href="@1@System.Runtime/A.html#1806cf6634f5a371" class="t t">Tuple</a>&lt;<b>int</b>, <a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<b>long</b>, <b>bool</b>&gt;&gt; <span id="r7 rd" class="r7 r">timeout</span> <b>in</b> <span class="r6 r">localCopy</span>)
+			{
+				<b>bool</b> <span id="r8 rd" class="r8 r">remove</span> = !<span class="r7 r">timeout</span>.<a href="@1@System.Runtime/A.html#85ddc983cace902c" class="i property">Item2</a>(<span class="r5 r">step</span>);
+				<b>if</b> (<span class="r8 r">remove</span>)
+					<a href="#fbdaeab5c24cc567" class="i field">_timeouts</a>.<a href="@1@System.Collections/A.html#82567b42bbfc416e" class="i method">RemoveAll</a>(<span id="r9 rd" class="r9 r">t</span> =&gt; <span class="r9 r">t</span>.<a href="@1@System.Runtime/A.html#d1922db1cf9dcd03" class="i property">Item1</a> == <span class="r7 r">timeout</span>.<a href="@1@System.Runtime/A.html#d1922db1cf9dcd03" class="i property">Item1</a>);
+			}
+ 
+			<b>if</b> (!<a href="#fbdaeab5c24cc567" class="i field">_timeouts</a>.<span class="i method">Any</span>())
+			{
+				<a href="#38e51350c28a9974" class="i field">_enabled</a> = <b>false</b>;
+				<a href="#81d3733cafee491a" class="i method">Disable</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="81d3733cafee491a" href="../R/81d3733cafee491a.html" target="n" data-glyph="76,1" class="i method">Disable</a>()
+		{
+			<a href="#294be72aca774c20" class="i field">_stopwatch</a>.<span class="i method">Reset</span>();
+			<a href="#e2052ed662736e5c" class="i method">DisableTimer</a>();
+		}
+ 
+		<b>void</b> <a id="c8f64165b2637513" href="../R/c8f64165b2637513.html" target="n" data-glyph="76,1" class="i method">Enable</a>()
+		{
+			<a href="#294be72aca774c20" class="i field">_stopwatch</a>.<span class="i method">Start</span>();
+			<a href="#b84ec3d36c04bec1" class="i method">EnableTimer</a>();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

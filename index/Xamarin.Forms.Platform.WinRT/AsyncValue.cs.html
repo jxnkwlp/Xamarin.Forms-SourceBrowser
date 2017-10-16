@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html><head><title>AsyncValue.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(95);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.WinRT/AsyncValue.cs" target="_top">AsyncValue.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.WinRT" target="_top">Xamarin.Forms.Platform.WinRT\Xamarin.Forms.Platform.WinRT.csproj</a> (Xamarin.Forms.Platform.WinRT)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<span class="c">//</span>
+<span class="c">// AsyncValue.cs</span>
+<span class="c">//</span>
+<span class="c">// Author:</span>
+<span class="c">//   Eric Maupin &lt;me@ermau.com&gt;</span>
+<span class="c">//</span>
+<span class="c">// Copyright (c) 2013-2014 Xamarin, Inc.</span>
+<span class="c">//</span>
+<span class="c">// Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c">// of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c">// in the Software without restriction, including without limitation the rights</span>
+<span class="c">// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c">// copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c">// furnished to do so, subject to the following conditions:</span>
+<span class="c">//</span>
+<span class="c">// The above copyright notice and this permission notice shall be included in</span>
+<span class="c">// all copies or substantial portions of the Software.</span>
+<span class="c">//</span>
+<span class="c">// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c">// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c">// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c">// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c">// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c">// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span class="c">// THE SOFTWARE.</span>
+ 
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Runtime</span>.<span class="i n">CompilerServices</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal sealed class</b> <a id="5c0b4cbd4ef63c8b" href="R/5c0b4cbd4ef63c8b.html" target="n" data-glyph="2,0" class="t t">AsyncValue</a>&lt;<span id="r0 rd t" class="r0 r t">T</span>&gt; : <span class="t t">INotifyPropertyChanged</span>
+	{
+		<b>readonly</b> <span class="r0 r t">T</span> <a id="dc06384bc992ac97" href="R/dc06384bc992ac97.html" target="n" data-glyph="46,1" class="i field">_defaultValue</a>;
+		<b>readonly</b> <span class="t t">Task</span>&lt;<span class="r0 r t">T</span>&gt; <a id="8ed2f7393feb34d9" href="R/8ed2f7393feb34d9.html" target="n" data-glyph="46,1" class="i field">_valueTask</a>;
+		<b>bool</b> <a id="f3628edb0e92a7e9" href="R/f3628edb0e92a7e9.html" target="n" data-glyph="46,1" class="i field">_isRunning</a> = <b>true</b>;
+ 
+		<b>public</b> <a id="920750466a052774" href="R/920750466a052774.html" target="n" data-glyph="72,1" class="i constructor">AsyncValue</a>(<span class="t t">Task</span>&lt;<span class="r0 r t">T</span>&gt; <span id="r1 rd" class="r1 r">valueTask</span>, <span class="r0 r t">T</span> <span id="r2 rd" class="r2 r">defaultValue</span>)
+		{
+			<b>if</b> (<span class="r1 r">valueTask</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;valueTask&quot;</span>);
+ 
+			<a href="#8ed2f7393feb34d9" class="i field">_valueTask</a> = <span class="r1 r">valueTask</span>;
+			<a href="#dc06384bc992ac97" class="i field">_defaultValue</a> = <span class="r2 r">defaultValue</span>;
+ 
+			<span class="t t">TaskScheduler</span> <span id="r3 rd" class="r3 r">scheduler</span> = <span class="t t">TaskScheduler</span>.<span class="i method">FromCurrentSynchronizationContext</span>();
+ 
+			<a href="#8ed2f7393feb34d9" class="i field">_valueTask</a>.<span class="i method">ContinueWith</span>(<span id="r4 rd" class="r4 r">t</span> =&gt; { <a href="#2b906abb3d127315" class="i property">IsRunning</a> = <b>false</b>; }, <span class="r3 r">scheduler</span>);
+ 
+			<a href="#8ed2f7393feb34d9" class="i field">_valueTask</a>.<span class="i method">ContinueWith</span>(<span id="r5 rd" class="r5 r">t</span> =&gt; { <a href="#6fbaa2d1d89435f1" class="i method">OnPropertyChanged</a>(<span class="s">&quot;Value&quot;</span>); }, <span class="t t">CancellationToken</span>.<span class="i property">None</span>, <span class="t t">TaskContinuationOptions</span>.<span class="i field">OnlyOnRanToCompletion</span>, <span class="r3 r">scheduler</span>);
+		}
+ 
+		<b>public bool</b> <a id="2b906abb3d127315" href="R/2b906abb3d127315.html" target="n" data-glyph="102,1" class="i property">IsRunning</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#f3628edb0e92a7e9" class="i field">_isRunning</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#f3628edb0e92a7e9" class="i field">_isRunning</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<a href="#f3628edb0e92a7e9" class="i field">_isRunning</a> = <b>value</b>;
+				<a href="#6fbaa2d1d89435f1" class="i method">OnPropertyChanged</a>();
+			}
+		}
+ 
+		<b>public</b> <span class="r0 r t">T</span> <a id="c21818196460b556" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Value</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<a href="#8ed2f7393feb34d9" class="i field">_valueTask</a>.<span class="i property">Status</span> != <span class="t t">TaskStatus</span>.<span class="i field">RanToCompletion</span>)
+					<b>return</b> <a href="#dc06384bc992ac97" class="i field">_defaultValue</a>;
+ 
+				<b>return</b> <a href="#8ed2f7393feb34d9" class="i field">_valueTask</a>.<span class="i property">Result</span>;
+			}
+		}
+ 
+		<b>public event</b> <span class="t t">PropertyChangedEventHandler</span> <a id="e02de80b0f9e02cf" href="R/e02de80b0f9e02cf.html" target="n" data-glyph="30,1" class="i">PropertyChanged</a>;
+ 
+		<b>void</b> <a id="6fbaa2d1d89435f1" href="R/6fbaa2d1d89435f1.html" target="n" data-glyph="76,1" class="i method">OnPropertyChanged</a>([<a href="@1@System.Runtime/A.html#3b59f8cb5102fd8b" class="t constructor">CallerMemberName</a>] <b>string</b> <span id="r6 rd" class="r6 r">propertyName</span> = <b>null</b>)
+		{
+			<span class="t t">PropertyChangedEventHandler</span> <span id="r7 rd" class="r7 r">handler</span> = <a href="#e02de80b0f9e02cf" class="i">PropertyChanged</a>;
+			<b>if</b> (<span class="r7 r">handler</span> != <b>null</b>)
+				<span class="r7 r">handler</span>(<a href="#5c0b4cbd4ef63c8b" class="k">this</a>, <b>new</b> <span class="t constructor">PropertyChangedEventArgs</span>(<span class="r6 r">propertyName</span>));
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,244 @@
+﻿<!DOCTYPE html>
+<html><head><title>NavigationProxy.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(235);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/NavigationProxy.cs" target="_top">NavigationProxy.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>
+{
+	[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+	<b>public class</b> <a id="14ea7c20425cc165" href="R/14ea7c20425cc165.html" target="n" data-glyph="0,0" class="t t"><span id="66fb8a547055e781">NavigationProxy</span></a> : <a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a>
+	{
+		<a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a> <a id="2b377e145ca63411" href="R/2b377e145ca63411.html" target="n" data-glyph="46,1" class="i field">_inner</a>;
+		<a href="@1@System.Runtime/A.html#8b99c1f377873554" class="t t">Lazy</a>&lt;<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;&gt; <a id="032503c667d08bc3" href="R/032503c667d08bc3.html" target="n" data-glyph="46,1" class="i field">_modalStack</a> = <b>new</b> <a href="@1@System.Runtime/A.html#c0f7b98bacad370a" class="t constructor">Lazy</a>&lt;<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;&gt;(() =&gt; <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;());
+ 
+		<a href="@1@System.Runtime/A.html#8b99c1f377873554" class="t t">Lazy</a>&lt;<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;&gt; <a id="cc25cd5960232651" href="R/cc25cd5960232651.html" target="n" data-glyph="46,1" class="i field">_pushStack</a> = <b>new</b> <a href="@1@System.Runtime/A.html#c0f7b98bacad370a" class="t constructor">Lazy</a>&lt;<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;&gt;(() =&gt; <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;());
+ 
+		<b>public</b> <a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a> <a id="966ec1f37c6459e8" href="R/966ec1f37c6459e8.html" target="n" data-glyph="102,1" class="i property">Inner</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#2b377e145ca63411" class="i field">_inner</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#2b377e145ca63411" class="i field">_inner</a> == <b>value</b>)
+					<b>return</b>;
+				<a href="#2b377e145ca63411" class="i field">_inner</a> = <b>value</b>;
+				<span class="c">// reverse so that things go into the new stack in the same order</span>
+				<span class="c">// null out to release memory that will likely never be needed again</span>
+ 
+				<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<a href="#2b377e145ca63411" class="i field">_inner</a>, <b>null</b>))
+				{
+					<a href="#cc25cd5960232651" class="i field">_pushStack</a> = <b>new</b> <a href="@1@System.Runtime/A.html#c0f7b98bacad370a" class="t constructor">Lazy</a>&lt;<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;&gt;(() =&gt; <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;());
+					<a href="#032503c667d08bc3" class="i field">_modalStack</a> = <b>new</b> <a href="@1@System.Runtime/A.html#c0f7b98bacad370a" class="t constructor">Lazy</a>&lt;<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;&gt;(() =&gt; <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;());
+				}
+				<b>else</b>
+				{
+					<b>if</b> (<a href="#cc25cd5960232651" class="i field">_pushStack</a> != <b>null</b> &amp;&amp; <a href="#cc25cd5960232651" class="i field">_pushStack</a>.<a href="@1@System.Runtime/A.html#700e19f7e161ae1f" class="i property">IsValueCreated</a>)
+					{
+						<b>foreach</b> (<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r0 rd" class="r0 r">page</span> <b>in</b> <a href="#cc25cd5960232651" class="i field">_pushStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>)
+						{
+							<a href="#2b377e145ca63411" class="i field">_inner</a>.<a href="INavigation.cs.html#3ff757e3b604805a" class="i method">PushAsync</a>(<span class="r0 r">page</span>);
+						}
+					}
+ 
+					<b>if</b> (<a href="#032503c667d08bc3" class="i field">_modalStack</a> != <b>null</b> &amp;&amp; <a href="#032503c667d08bc3" class="i field">_modalStack</a>.<a href="@1@System.Runtime/A.html#700e19f7e161ae1f" class="i property">IsValueCreated</a>)
+					{
+						<b>foreach</b> (<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r1 rd" class="r1 r">page</span> <b>in</b> <a href="#032503c667d08bc3" class="i field">_modalStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>)
+						{
+							<a href="#2b377e145ca63411" class="i field">_inner</a>.<a href="INavigation.cs.html#3f48fdc491617e3a" class="i method">PushModalAsync</a>(<span class="r1 r">page</span>);
+						}
+					}
+ 
+					<a href="#cc25cd5960232651" class="i field">_pushStack</a> = <b>null</b>;
+					<a href="#032503c667d08bc3" class="i field">_modalStack</a> = <b>null</b>;
+				}
+			}
+		}
+ 
+		<b>public void</b> <a id="8674508e2cac64ab" href="R/8674508e2cac64ab.html" target="n" data-glyph="72,1" class="i method">InsertPageBefore</a>(<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r2 rd" class="r2 r">page</span>, <a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r3 rd" class="r3 r">before</span>)
+		{
+			<a href="#86bf903252edd0d3" class="i method">OnInsertPageBefore</a>(<span class="r2 r">page</span>, <span class="r3 r">before</span>);
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="a221507794e265af" href="R/a221507794e265af.html" target="n" data-glyph="102,1" class="i property">ModalStack</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#9cbe5b4b8f65cb63" class="i method">GetModalStack</a>(); }
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="3ea41212ddd07de9" href="R/3ea41212ddd07de9.html" target="n" data-glyph="102,1" class="i property">NavigationStack</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#a69e31450bada49f" class="i method">GetNavigationStack</a>(); }
+		}
+ 
+		<b>public</b> <span class="t t">Task</span>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="713e2421728c64ca" href="R/713e2421728c64ca.html" target="n" data-glyph="72,1" class="i method">PopAsync</a>()
+		{
+			<b>return</b> <a href="#34924c75f18c699d" class="i method">OnPopAsync</a>(<b>true</b>);
+		}
+ 
+		<b>public</b> <span class="t t">Task</span>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="2e28f384001fef30" href="R/2e28f384001fef30.html" target="n" data-glyph="72,1" class="i method">PopAsync</a>(<b>bool</b> <span id="r4 rd" class="r4 r">animated</span>)
+		{
+			<b>return</b> <a href="#34924c75f18c699d" class="i method">OnPopAsync</a>(<span class="r4 r">animated</span>);
+		}
+ 
+		<b>public</b> <span class="t t">Task</span>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="a06f6f5acfe093b3" href="R/a06f6f5acfe093b3.html" target="n" data-glyph="72,1" class="i method">PopModalAsync</a>()
+		{
+			<b>return</b> <a href="#dbeb0e9425400e76" class="i method">OnPopModal</a>(<b>true</b>);
+		}
+ 
+		<b>public</b> <span class="t t">Task</span>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="9a84f75d1c45658c" href="R/9a84f75d1c45658c.html" target="n" data-glyph="72,1" class="i method">PopModalAsync</a>(<b>bool</b> <span id="r5 rd" class="r5 r">animated</span>)
+		{
+			<b>return</b> <a href="#dbeb0e9425400e76" class="i method">OnPopModal</a>(<span class="r5 r">animated</span>);
+		}
+ 
+		<b>public</b> <span class="t t">Task</span> <a id="a7c1abaf04a61d65" href="R/a7c1abaf04a61d65.html" target="n" data-glyph="72,1" class="i method">PopToRootAsync</a>()
+		{
+			<b>return</b> <a href="#0c072f84bcfff980" class="i method">OnPopToRootAsync</a>(<b>true</b>);
+		}
+ 
+		<b>public</b> <span class="t t">Task</span> <a id="82532fc60c43e290" href="R/82532fc60c43e290.html" target="n" data-glyph="72,1" class="i method">PopToRootAsync</a>(<b>bool</b> <span id="r6 rd" class="r6 r">animated</span>)
+		{
+			<b>return</b> <a href="#0c072f84bcfff980" class="i method">OnPopToRootAsync</a>(<span class="r6 r">animated</span>);
+		}
+ 
+		<b>public</b> <span class="t t">Task</span> <a id="0894961c13e4eb32" href="R/0894961c13e4eb32.html" target="n" data-glyph="72,1" class="i method">PushAsync</a>(<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r7 rd" class="r7 r">root</span>)
+		{
+			<b>return</b> <a href="#502aaa8a201880da" class="i method">PushAsync</a>(<span class="r7 r">root</span>, <b>true</b>);
+		}
+ 
+		<b>public</b> <span class="t t">Task</span> <a id="502aaa8a201880da" href="R/502aaa8a201880da.html" target="n" data-glyph="72,1" class="i method">PushAsync</a>(<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r8 rd" class="r8 r">root</span>, <b>bool</b> <span id="r9 rd" class="r9 r">animated</span>)
+		{
+			<b>if</b> (<span class="r8 r">root</span>.<a href="Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a> != <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;Page must not already have a parent.&quot;</span>);
+			<b>return</b> <a href="#c614f4e499835c15" class="i method">OnPushAsync</a>(<span class="r8 r">root</span>, <span class="r9 r">animated</span>);
+		}
+ 
+		<b>public</b> <span class="t t">Task</span> <a id="2e44f81af3702aae" href="R/2e44f81af3702aae.html" target="n" data-glyph="72,1" class="i method">PushModalAsync</a>(<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r10 rd" class="r10 r">modal</span>)
+		{
+			<b>return</b> <a href="#c66d40ed52363ba2" class="i method">PushModalAsync</a>(<span class="r10 r">modal</span>, <b>true</b>);
+		}
+ 
+		<b>public</b> <span class="t t">Task</span> <a id="c66d40ed52363ba2" href="R/c66d40ed52363ba2.html" target="n" data-glyph="72,1" class="i method">PushModalAsync</a>(<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r11 rd" class="r11 r">modal</span>, <b>bool</b> <span id="r12 rd" class="r12 r">animated</span>)
+		{
+			<b>if</b> (<span class="r11 r">modal</span>.<a href="Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a> != <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;Page must not already have a parent.&quot;</span>);
+			<b>return</b> <a href="#69133fc341eabf40" class="i method">OnPushModal</a>(<span class="r11 r">modal</span>, <span class="r12 r">animated</span>);
+		}
+ 
+		<b>public void</b> <a id="b172717edb88d741" href="R/b172717edb88d741.html" target="n" data-glyph="72,1" class="i method">RemovePage</a>(<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r13 rd" class="r13 r">page</span>)
+		{
+			<a href="#6f75a73f974e580f" class="i method">OnRemovePage</a>(<span class="r13 r">page</span>);
+		}
+ 
+		<b>protected virtual</b> <a href="@1@System.Runtime/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="9cbe5b4b8f65cb63" href="R/9cbe5b4b8f65cb63.html" target="n" data-glyph="75,1" class="i method">GetModalStack</a>()
+		{
+			<a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a> <span id="r14 rd" class="r14 r">currentInner</span> = <a href="#966ec1f37c6459e8" class="i property">Inner</a>;
+			<b>return</b> <span class="r14 r">currentInner</span> == <b>null</b> ? <a href="#032503c667d08bc3" class="i field">_modalStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a> : <span class="r14 r">currentInner</span>.<a href="INavigation.cs.html#3e5a8c6c67a380a0" class="i property">ModalStack</a>;
+		}
+ 
+		<b>protected virtual</b> <a href="@1@System.Runtime/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="a69e31450bada49f" href="R/a69e31450bada49f.html" target="n" data-glyph="75,1" class="i method">GetNavigationStack</a>()
+		{
+			<a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a> <span id="r15 rd" class="r15 r">currentInner</span> = <a href="#966ec1f37c6459e8" class="i property">Inner</a>;
+			<b>return</b> <span class="r15 r">currentInner</span> == <b>null</b> ? <a href="#cc25cd5960232651" class="i field">_pushStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a> : <span class="r15 r">currentInner</span>.<a href="INavigation.cs.html#483e2a08ed160ea4" class="i property">NavigationStack</a>;
+		}
+ 
+		<b>protected virtual void</b> <a id="86bf903252edd0d3" href="R/86bf903252edd0d3.html" target="n" data-glyph="75,1" class="i method">OnInsertPageBefore</a>(<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r16 rd" class="r16 r">page</span>, <a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r17 rd" class="r17 r">before</span>)
+		{
+			<a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a> <span id="r18 rd" class="r18 r">currentInner</span> = <a href="#966ec1f37c6459e8" class="i property">Inner</a>;
+			<b>if</b> (<span class="r18 r">currentInner</span> == <b>null</b>)
+			{
+				<b>int</b> <span id="r19 rd" class="r19 r">index</span> = <a href="#cc25cd5960232651" class="i field">_pushStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>.<a href="@1@System.Collections/A.html#242756beb6e8749e" class="i method">IndexOf</a>(<span class="r17 r">before</span>);
+				<b>if</b> (<span class="r19 r">index</span> == -1)
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;before must be in the pushed stack of the current context&quot;</span>);
+				<a href="#cc25cd5960232651" class="i field">_pushStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>.<a href="@1@System.Collections/A.html#49c519bce0cdbd82" class="i method">Insert</a>(<span class="r19 r">index</span>, <span class="r16 r">page</span>);
+			}
+			<b>else</b>
+			{
+				<span class="r18 r">currentInner</span>.<a href="INavigation.cs.html#99c68b2ac14d01cb" class="i method">InsertPageBefore</a>(<span class="r16 r">page</span>, <span class="r17 r">before</span>);
+			}
+		}
+ 
+		<b>protected virtual</b> <span class="t t">Task</span>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="34924c75f18c699d" href="R/34924c75f18c699d.html" target="n" data-glyph="75,1" class="i method">OnPopAsync</a>(<b>bool</b> <span id="r20 rd" class="r20 r">animated</span>)
+		{
+			<a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a> <span id="r21 rd" class="r21 r">inner</span> = <a href="#966ec1f37c6459e8" class="i property">Inner</a>;
+			<b>return</b> <span class="r21 r">inner</span> == <b>null</b> ? <span class="t t">Task</span>.<span class="i method">FromResult</span>(<a href="#1c34bdb39d60d537" class="i method">Pop</a>()) : <span class="r21 r">inner</span>.<a href="INavigation.cs.html#48b56fede7673ebc" class="i method">PopAsync</a>(<span class="r20 r">animated</span>);
+		}
+ 
+		<b>protected virtual</b> <span class="t t">Task</span>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="dbeb0e9425400e76" href="R/dbeb0e9425400e76.html" target="n" data-glyph="75,1" class="i method">OnPopModal</a>(<b>bool</b> <span id="r22 rd" class="r22 r">animated</span>)
+		{
+			<a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a> <span id="r23 rd" class="r23 r">innerNav</span> = <a href="#966ec1f37c6459e8" class="i property">Inner</a>;
+			<b>return</b> <span class="r23 r">innerNav</span> == <b>null</b> ? <span class="t t">Task</span>.<span class="i method">FromResult</span>(<a href="#552a5c06f2753937" class="i method">PopModal</a>()) : <span class="r23 r">innerNav</span>.<a href="INavigation.cs.html#a65602b6718c6628" class="i method">PopModalAsync</a>(<span class="r22 r">animated</span>);
+		}
+ 
+		<b>protected virtual</b> <span class="t t">Task</span> <a id="0c072f84bcfff980" href="R/0c072f84bcfff980.html" target="n" data-glyph="75,1" class="i method">OnPopToRootAsync</a>(<b>bool</b> <span id="r24 rd" class="r24 r">animated</span>)
+		{
+			<a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a> <span id="r25 rd" class="r25 r">currentInner</span> = <a href="#966ec1f37c6459e8" class="i property">Inner</a>;
+			<b>if</b> (<span class="r25 r">currentInner</span> == <b>null</b>)
+			{
+				<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r26 rd" class="r26 r">root</span> = <a href="#cc25cd5960232651" class="i field">_pushStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>.<span class="i method">Last</span>();
+				<a href="#cc25cd5960232651" class="i field">_pushStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>.<a href="@1@System.Collections/A.html#ca7bce81a50b0aeb" class="i method">Clear</a>();
+				<a href="#cc25cd5960232651" class="i field">_pushStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r26 r">root</span>);
+				<b>return</b> <span class="t t">Task</span>.<span class="i method">FromResult</span>(<span class="r26 r">root</span>);
+			}
+			<b>return</b> <span class="r25 r">currentInner</span>.<a href="INavigation.cs.html#5d4fd60ad27d2dc4" class="i method">PopToRootAsync</a>(<span class="r24 r">animated</span>);
+		}
+ 
+		<b>protected virtual</b> <span class="t t">Task</span> <a id="c614f4e499835c15" href="R/c614f4e499835c15.html" target="n" data-glyph="75,1" class="i method">OnPushAsync</a>(<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r27 rd" class="r27 r">page</span>, <b>bool</b> <span id="r28 rd" class="r28 r">animated</span>)
+		{
+			<a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a> <span id="r29 rd" class="r29 r">currentInner</span> = <a href="#966ec1f37c6459e8" class="i property">Inner</a>;
+			<b>if</b> (<span class="r29 r">currentInner</span> == <b>null</b>)
+			{
+				<a href="#cc25cd5960232651" class="i field">_pushStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r27 r">page</span>);
+				<b>return</b> <span class="t t">Task</span>.<span class="i method">FromResult</span>(<span class="r27 r">page</span>);
+			}
+			<b>return</b> <span class="r29 r">currentInner</span>.<a href="INavigation.cs.html#1eb30f2e904b2eb7" class="i method">PushAsync</a>(<span class="r27 r">page</span>, <span class="r28 r">animated</span>);
+		}
+ 
+		<b>protected virtual</b> <span class="t t">Task</span> <a id="69133fc341eabf40" href="R/69133fc341eabf40.html" target="n" data-glyph="75,1" class="i method">OnPushModal</a>(<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r30 rd" class="r30 r">modal</span>, <b>bool</b> <span id="r31 rd" class="r31 r">animated</span>)
+		{
+			<a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a> <span id="r32 rd" class="r32 r">currentInner</span> = <a href="#966ec1f37c6459e8" class="i property">Inner</a>;
+			<b>if</b> (<span class="r32 r">currentInner</span> == <b>null</b>)
+			{
+				<a href="#032503c667d08bc3" class="i field">_modalStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r30 r">modal</span>);
+				<b>return</b> <span class="t t">Task</span>.<span class="i method">FromResult</span>&lt;<b>object</b>&gt;(<b>null</b>);
+			}
+			<b>return</b> <span class="r32 r">currentInner</span>.<a href="INavigation.cs.html#09199fa99b1ad9c1" class="i method">PushModalAsync</a>(<span class="r30 r">modal</span>, <span class="r31 r">animated</span>);
+		}
+ 
+		<b>protected virtual void</b> <a id="6f75a73f974e580f" href="R/6f75a73f974e580f.html" target="n" data-glyph="75,1" class="i method">OnRemovePage</a>(<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r33 rd" class="r33 r">page</span>)
+		{
+			<a href="INavigation.cs.html#e1264a5a1d22c3f2" class="t t">INavigation</a> <span id="r34 rd" class="r34 r">currentInner</span> = <a href="#966ec1f37c6459e8" class="i property">Inner</a>;
+			<b>if</b> (<span class="r34 r">currentInner</span> == <b>null</b>)
+			{
+				<a href="#cc25cd5960232651" class="i field">_pushStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>.<a href="@1@System.Collections/A.html#db8cdd552a0bb10c" class="i method">Remove</a>(<span class="r33 r">page</span>);
+			}
+			<b>else</b>
+			{
+				<span class="r34 r">currentInner</span>.<a href="INavigation.cs.html#cdfb103e18d2447a" class="i method">RemovePage</a>(<span class="r33 r">page</span>);
+			}
+		}
+ 
+		<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <a id="1c34bdb39d60d537" href="R/1c34bdb39d60d537.html" target="n" data-glyph="76,1" class="i method">Pop</a>()
+		{
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <span id="r35 rd" class="r35 r">list</span> = <a href="#cc25cd5960232651" class="i field">_pushStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>;
+			<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r36 rd" class="r36 r">result</span> = <span class="r35 r">list</span><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r35 r">list</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> - 1];
+			<span class="r35 r">list</span>.<a href="@1@System.Collections/A.html#3d46113cc199059a" class="i method">RemoveAt</a>(<span class="r35 r">list</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> - 1);
+			<b>return</b> <span class="r36 r">result</span>;
+		}
+ 
+		<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <a id="552a5c06f2753937" href="R/552a5c06f2753937.html" target="n" data-glyph="76,1" class="i method">PopModal</a>()
+		{
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <span id="r37 rd" class="r37 r">list</span> = <a href="#032503c667d08bc3" class="i field">_modalStack</a>.<a href="@1@System.Runtime/A.html#606a17645b0dc0ff" class="i property">Value</a>;
+			<a href="Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r38 rd" class="r38 r">result</span> = <span class="r37 r">list</span><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r37 r">list</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> - 1];
+			<span class="r37 r">list</span>.<a href="@1@System.Collections/A.html#3d46113cc199059a" class="i method">RemoveAt</a>(<span class="r37 r">list</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a> - 1);
+			<b>return</b> <span class="r38 r">result</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

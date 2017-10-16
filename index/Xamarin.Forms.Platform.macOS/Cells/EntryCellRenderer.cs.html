@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html>
+<html><head><title>EntryCellRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(144);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/Cells/EntryCellRenderer.cs" target="_top">Cells\EntryCellRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="i n">CoreGraphics</span>;
+<b>using</b> <span class="i n">Foundation</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>public class</b> <a id="22d0538a1b366e58" href="../R/22d0538a1b366e58.html" target="n" data-glyph="0,0" class="t t"><span id="ba409dec2e550586">EntryCellRenderer</span></a> : <a href="CellRenderer.cs.html#100d1d44491992e8" class="t t">CellRenderer</a>
+	{
+		<b>static readonly</b> <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <a id="1e16978e064b8541" href="../R/1e16978e064b8541.html" target="n" data-glyph="46,1" class="i field">s_defaultTextColor</a> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#b01bc48c41fb87c1" class="i field">Black</a>;
+ 
+		<b>public override</b> <span class="t t">NSView</span> <a id="580635121abfeac6" href="../R/580635121abfeac6.html" target="n" data-glyph="72,1" class="i method">GetCell</a>(<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r0 rd" class="r0 r">item</span>, <span class="t t">NSView</span> <span id="r1 rd" class="r1 r">reusableView</span>, <span class="t t">NSTableView</span> <span id="r2 rd" class="r2 r">tv</span>)
+		{
+			<span class="t t">NSTextField</span> <span id="r3 rd" class="r3 r">nsEntry</span> = <b>null</b>;
+			<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="k">var</a> <span id="r4 rd" class="r4 r">tvc</span> = <span class="r1 r">reusableView</span> <b>as</b> <a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a>;
+			<b>if</b> (<span class="r4 r">tvc</span> == <b>null</b>)
+				<span class="r4 r">tvc</span> = <b>new</b> <a href="CellNSView.cs.html#c437de7c46cf6e7e" class="t constructor">CellNSView</a>(<a href="NSTableViewCellStyle.cs.html#f11dacabaf9733c7" class="t t">NSTableViewCellStyle</a>.<a href="NSTableViewCellStyle.cs.html#432413fd6ae74602" class="i field">Value2</a>);
+			<b>else</b>
+			{
+				<span class="r4 r">tvc</span>.<a href="CellNSView.cs.html#9b4c217f53265b65" class="i property">Cell</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#c8ca61d6561cda73" class="i method">OnCellPropertyChanged</a>;
+ 
+				<span class="r3 r">nsEntry</span> = <span class="r4 r">tvc</span>.<a href="CellNSView.cs.html#cea8071e6f5bfa24" class="i property">AccessoryView</a>.<span class="i property">Subviews</span>[0] <b>as</b> <span class="t t">NSTextField</span>;
+				<b>if</b> (<span class="r3 r">nsEntry</span> != <b>null</b>)
+				{
+					<span class="r3 r">nsEntry</span>.<span class="i method">RemoveFromSuperview</span>();
+					<span class="r3 r">nsEntry</span>.<span class="i">Changed</span> -= <a href="#934a483826f7f853" class="i method">OnTextFieldTextChanged</a>;
+				}
+			}
+ 
+			<a href="CellRenderer.cs.html#87c290e96667704f" class="i method">SetRealCell</a>(<span class="r0 r">item</span>, <span class="r4 r">tvc</span>);
+ 
+			<b>if</b> (<span class="r3 r">nsEntry</span> == <b>null</b>)
+				<span class="r4 r">tvc</span>.<a href="CellNSView.cs.html#cea8071e6f5bfa24" class="i property">AccessoryView</a>.<span class="i method">AddSubview</span>(<span class="r3 r">nsEntry</span> = <b>new</b> <span class="t constructor">NSTextField</span>());
+ 
+			<a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="k">var</a> <span id="r5 rd" class="r5 r">entryCell</span> = (<a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a>)<span class="r0 r">item</span>;
+ 
+			<span class="r4 r">tvc</span>.<a href="CellNSView.cs.html#9b4c217f53265b65" class="i property">Cell</a> = <span class="r0 r">item</span>;
+			<span class="r4 r">tvc</span>.<a href="CellNSView.cs.html#9b4c217f53265b65" class="i property">Cell</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#c8ca61d6561cda73" class="i method">OnCellPropertyChanged</a>;
+			<span class="r3 r">nsEntry</span>.<span class="i">Changed</span> += <a href="#934a483826f7f853" class="i method">OnTextFieldTextChanged</a>;
+ 
+			<a href="CellRenderer.cs.html#18c5b21ec678d3a5" class="i method">WireUpForceUpdateSizeRequested</a>(<span class="r0 r">item</span>, <span class="r4 r">tvc</span>, <span class="r2 r">tv</span>);
+ 
+			<a href="CellRenderer.cs.html#2dd0af4f8b375c21" class="i method">UpdateBackground</a>(<span class="r4 r">tvc</span>, <span class="r5 r">entryCell</span>);
+			<a href="#cb32686d0fe411e1" class="i method">UpdateLabel</a>(<span class="r4 r">tvc</span>, <span class="r5 r">entryCell</span>);
+			<a href="#7cf312eb5804e9ec" class="i method">UpdateText</a>(<span class="r4 r">tvc</span>, <span class="r5 r">entryCell</span>);
+			<a href="#670532bb006da972" class="i method">UpdatePlaceholder</a>(<span class="r4 r">tvc</span>, <span class="r5 r">entryCell</span>);
+			<a href="#21c08607281ec58c" class="i method">UpdateLabelColor</a>(<span class="r4 r">tvc</span>, <span class="r5 r">entryCell</span>);
+			<a href="#7cfb0f2f4809e574" class="i method">UpdateHorizontalTextAlignment</a>(<span class="r4 r">tvc</span>, <span class="r5 r">entryCell</span>);
+			<a href="#51acd259255fbc33" class="i method">UpdateIsEnabled</a>(<span class="r4 r">tvc</span>, <span class="r5 r">entryCell</span>);
+ 
+			<b>return</b> <span class="r4 r">tvc</span>;
+		}
+ 
+		<b>internal override void</b> <a id="b91d7e69a88c193c" href="../R/b91d7e69a88c193c.html" target="n" data-glyph="74,1" class="i method">UpdateBackgroundChild</a>(<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r6 rd" class="r6 r">cell</span>, <span class="t t">NSColor</span> <span id="r7 rd" class="r7 r">backgroundColor</span>)
+		{
+			<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="k">var</a> <span id="r8 rd" class="r8 r">realCell</span> = (<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a>)<a href="CellRenderer.cs.html#0d932850fc394fab" class="i method">GetRealCell</a>(<span class="r6 r">cell</span>);
+ 
+			<b>var</b> <span id="r9 rd" class="r9 r">nsTextField</span> = <span class="r8 r">realCell</span>.<a href="CellNSView.cs.html#cea8071e6f5bfa24" class="i property">AccessoryView</a>.<span class="i property">Subviews</span>[0] <b>as</b> <span class="t t">NSTextField</span>;
+			<b>if</b> (<span class="r9 r">nsTextField</span> != <b>null</b>)
+				<span class="r9 r">nsTextField</span>.<span class="i property">BackgroundColor</span> = <span class="r7 r">backgroundColor</span>;
+ 
+			<a href="CellRenderer.cs.html#100d1d44491992e8" class="k">base</a>.<a href="CellRenderer.cs.html#82e550c684d04cff" class="i method">UpdateBackgroundChild</a>(<span class="r6 r">cell</span>, <span class="r7 r">backgroundColor</span>);
+		}
+ 
+		<b>static void</b> <a id="c8ca61d6561cda73" href="../R/c8ca61d6561cda73.html" target="n" data-glyph="76,1" class="i method">OnCellPropertyChanged</a>(<b>object</b> <span id="r10 rd" class="r10 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r11 rd" class="r11 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="k">var</a> <span id="r12 rd" class="r12 r">entryCell</span> = (<a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a>)<span class="r10 r">sender</span>;
+			<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="k">var</a> <span id="r13 rd" class="r13 r">realCell</span> = (<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a>)<a href="CellRenderer.cs.html#0d932850fc394fab" class="i method">GetRealCell</a>(<span class="r12 r">entryCell</span>);
+ 
+			<b>if</b> (<span class="r11 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a>.<a href="/Xamarin.Forms.Core/A.html#ebbd358489dd3b8d" class="i field">LabelProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#cb32686d0fe411e1" class="i method">UpdateLabel</a>(<span class="r13 r">realCell</span>, <span class="r12 r">entryCell</span>);
+			<b>else if</b> (<span class="r11 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a>.<a href="/Xamarin.Forms.Core/A.html#9943bf2098eb87f5" class="i field">TextProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#7cf312eb5804e9ec" class="i method">UpdateText</a>(<span class="r13 r">realCell</span>, <span class="r12 r">entryCell</span>);
+			<b>else if</b> (<span class="r11 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a>.<a href="/Xamarin.Forms.Core/A.html#53f87e95e9518f44" class="i field">PlaceholderProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#670532bb006da972" class="i method">UpdatePlaceholder</a>(<span class="r13 r">realCell</span>, <span class="r12 r">entryCell</span>);
+			<b>else if</b> (<span class="r11 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a>.<a href="/Xamarin.Forms.Core/A.html#07ac121ef109da11" class="i field">LabelColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#21c08607281ec58c" class="i method">UpdateLabelColor</a>(<span class="r13 r">realCell</span>, <span class="r12 r">entryCell</span>);
+			<b>else if</b> (<span class="r11 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a>.<a href="/Xamarin.Forms.Core/A.html#829abf96d9c707da" class="i field">HorizontalTextAlignmentProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#7cfb0f2f4809e574" class="i method">UpdateHorizontalTextAlignment</a>(<span class="r13 r">realCell</span>, <span class="r12 r">entryCell</span>);
+			<b>else if</b> (<span class="r11 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>.<a href="/Xamarin.Forms.Core/A.html#e3706ad0430ea431" class="i field">IsEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#51acd259255fbc33" class="i method">UpdateIsEnabled</a>(<span class="r13 r">realCell</span>, <span class="r12 r">entryCell</span>);
+		}
+ 
+		<b>static void</b> <a id="934a483826f7f853" href="../R/934a483826f7f853.html" target="n" data-glyph="76,1" class="i method">OnTextFieldTextChanged</a>(<b>object</b> <span id="r14 rd" class="r14 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r15 rd" class="r15 r">eventArgs</span>)
+		{
+			<b>var</b> <span id="r16 rd" class="r16 r">notification</span> = (<span class="t t">NSNotification</span>)<span class="r14 r">sender</span>;
+			<b>var</b> <span id="r17 rd" class="r17 r">view</span> = (<span class="t t">NSView</span>)<span class="r16 r">notification</span>.<span class="i property">Object</span>;
+			<b>var</b> <span id="r18 rd" class="r18 r">field</span> = (<span class="t t">NSTextField</span>)<span class="r17 r">view</span>;
+ 
+			<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a> <span id="r19 rd" class="r19 r">realCell</span> = <b>null</b>;
+			<b>while</b> (<span class="r17 r">view</span>.<span class="i property">Superview</span> != <b>null</b> &amp;&amp; <span class="r19 r">realCell</span> == <b>null</b>)
+			{
+				<span class="r17 r">view</span> = <span class="r17 r">view</span>.<span class="i property">Superview</span>;
+				<span class="r19 r">realCell</span> = <span class="r17 r">view</span> <b>as</b> <a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a>;
+			}
+ 
+			<b>if</b> (<span class="r19 r">realCell</span> != <b>null</b>)
+				((<a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a>)<span class="r19 r">realCell</span>.<a href="CellNSView.cs.html#9b4c217f53265b65" class="i property">Cell</a>).<a href="/Xamarin.Forms.Core/A.html#34f0861cd2f1f6c9" class="i property">Text</a> = <span class="r18 r">field</span>.<span class="i property">StringValue</span>;
+		}
+ 
+		<b>static void</b> <a id="7cfb0f2f4809e574" href="../R/7cfb0f2f4809e574.html" target="n" data-glyph="76,1" class="i method">UpdateHorizontalTextAlignment</a>(<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a> <span id="r20 rd" class="r20 r">cell</span>, <a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a> <span id="r21 rd" class="r21 r">entryCell</span>)
+		{
+			<b>var</b> <span id="r22 rd" class="r22 r">nsTextField</span> = <span class="r20 r">cell</span>.<a href="CellNSView.cs.html#cea8071e6f5bfa24" class="i property">AccessoryView</a>.<span class="i property">Subviews</span>[0] <b>as</b> <span class="t t">NSTextField</span>;
+			<b>if</b> (<span class="r22 r">nsTextField</span> != <b>null</b>)
+				<span class="r22 r">nsTextField</span>.<span class="i property">Alignment</span> = <span class="r21 r">entryCell</span>.<a href="/Xamarin.Forms.Core/A.html#08b6ea426572d265" class="i property">HorizontalTextAlignment</a>.<a href="../Extensions/AlignmentExtensions.cs.html#7812eeadba30f51a" class="i method">ToNativeTextAlignment</a>();
+		}
+ 
+		<b>static void</b> <a id="51acd259255fbc33" href="../R/51acd259255fbc33.html" target="n" data-glyph="76,1" class="i method">UpdateIsEnabled</a>(<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a> <span id="r23 rd" class="r23 r">cell</span>, <a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a> <span id="r24 rd" class="r24 r">entryCell</span>)
+		{
+			<span class="r23 r">cell</span>.<a href="CellNSView.cs.html#298890d5d0acd967" class="i property">TextLabel</a>.<span class="i property">Enabled</span> = <span class="r24 r">entryCell</span>.<a href="/Xamarin.Forms.Core/A.html#b8771aed49c9b0ce" class="i property">IsEnabled</a>;
+			<b>var</b> <span id="r25 rd" class="r25 r">nsTextField</span> = <span class="r23 r">cell</span>.<a href="CellNSView.cs.html#cea8071e6f5bfa24" class="i property">AccessoryView</a>.<span class="i property">Subviews</span>[0] <b>as</b> <span class="t t">NSTextField</span>;
+			<b>if</b> (<span class="r25 r">nsTextField</span> != <b>null</b>)
+				<span class="r25 r">nsTextField</span>.<span class="i property">Enabled</span> = <span class="r24 r">entryCell</span>.<a href="/Xamarin.Forms.Core/A.html#b8771aed49c9b0ce" class="i property">IsEnabled</a>;
+		}
+ 
+		<b>static void</b> <a id="cb32686d0fe411e1" href="../R/cb32686d0fe411e1.html" target="n" data-glyph="76,1" class="i method">UpdateLabel</a>(<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a> <span id="r26 rd" class="r26 r">cell</span>, <a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a> <span id="r27 rd" class="r27 r">entryCell</span>)
+		{
+			<span class="r26 r">cell</span>.<a href="CellNSView.cs.html#298890d5d0acd967" class="i property">TextLabel</a>.<span class="i property">StringValue</span> = <span class="r27 r">entryCell</span>.<a href="/Xamarin.Forms.Core/A.html#ca6d143bd2ad915f" class="i property">Label</a> ?? <span class="s">&quot;&quot;</span>;
+		}
+ 
+		<b>static void</b> <a id="21c08607281ec58c" href="../R/21c08607281ec58c.html" target="n" data-glyph="76,1" class="i method">UpdateLabelColor</a>(<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a> <span id="r28 rd" class="r28 r">cell</span>, <a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a> <span id="r29 rd" class="r29 r">entryCell</span>)
+		{
+			<span class="r28 r">cell</span>.<a href="CellNSView.cs.html#298890d5d0acd967" class="i property">TextLabel</a>.<span class="i property">TextColor</span> = <span class="r29 r">entryCell</span>.<a href="/Xamarin.Forms.Core/A.html#6723ee785b2b9fd4" class="i property">LabelColor</a>.<a href="../Extensions/ColorExtensions.cs.html#e146430382cad11e" class="i method">ToNSColor</a>(<a href="#1e16978e064b8541" class="i field">s_defaultTextColor</a>);
+		}
+ 
+		<b>static void</b> <a id="670532bb006da972" href="../R/670532bb006da972.html" target="n" data-glyph="76,1" class="i method">UpdatePlaceholder</a>(<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a> <span id="r30 rd" class="r30 r">cell</span>, <a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a> <span id="r31 rd" class="r31 r">entryCell</span>)
+		{
+			<b>var</b> <span id="r32 rd" class="r32 r">nsTextField</span> = <span class="r30 r">cell</span>.<a href="CellNSView.cs.html#cea8071e6f5bfa24" class="i property">AccessoryView</a>.<span class="i property">Subviews</span>[0] <b>as</b> <span class="t t">NSTextField</span>;
+			<b>if</b> (<span class="r32 r">nsTextField</span> != <b>null</b>)
+				<span class="r32 r">nsTextField</span>.<span class="i property">PlaceholderString</span> = <span class="r31 r">entryCell</span>.<a href="/Xamarin.Forms.Core/A.html#0a727cbfe697614a" class="i property">Placeholder</a> ?? <span class="s">&quot;&quot;</span>;
+		}
+ 
+		<b>static void</b> <a id="7cf312eb5804e9ec" href="../R/7cf312eb5804e9ec.html" target="n" data-glyph="76,1" class="i method">UpdateText</a>(<a href="CellNSView.cs.html#6881c9dd68ad7a1e" class="t t">CellNSView</a> <span id="r33 rd" class="r33 r">cell</span>, <a href="/Xamarin.Forms.Core/A.html#962c361d05b6e0d6" class="t t">EntryCell</a> <span id="r34 rd" class="r34 r">entryCell</span>)
+		{
+			<b>var</b> <span id="r35 rd" class="r35 r">nsTextField</span> = <span class="r33 r">cell</span>.<a href="CellNSView.cs.html#cea8071e6f5bfa24" class="i property">AccessoryView</a>.<span class="i property">Subviews</span>[0] <b>as</b> <span class="t t">NSTextField</span>;
+			<b>if</b> (<span class="r35 r">nsTextField</span> != <b>null</b> &amp;&amp; <span class="r35 r">nsTextField</span>.<span class="i property">StringValue</span> == <span class="r34 r">entryCell</span>.<a href="/Xamarin.Forms.Core/A.html#34f0861cd2f1f6c9" class="i property">Text</a>)
+				<b>return</b>;
+ 
+			<b>if</b> (<span class="r35 r">nsTextField</span> != <b>null</b>)
+				<span class="r35 r">nsTextField</span>.<span class="i property">StringValue</span> = <span class="r34 r">entryCell</span>.<a href="/Xamarin.Forms.Core/A.html#34f0861cd2f1f6c9" class="i property">Text</a> ?? <span class="s">&quot;&quot;</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html><head><title>LockableObservableListWrapper.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(132);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/LockableObservableListWrapper.cs" target="_top">LockableObservableListWrapper.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Runtime</span>.<span class="i n">CompilerServices</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>
+{
+	[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+	<b>public class</b> <a id="65ffcf6ba2170a72" href="R/65ffcf6ba2170a72.html" target="n" data-glyph="0,0" class="t t"><span id="2bd3b01f8147fcb4">LockableObservableListWrapper</span></a> : <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<b>string</b>&gt;, <a href="@1@System.Runtime/A.html#a9bf1395d3addc77" class="t t">ICollection</a>&lt;<b>string</b>&gt;, <span class="t t">INotifyCollectionChanged</span>, <span class="t t">INotifyPropertyChanged</span>, <a href="@1@System.Runtime/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<b>string</b>&gt;, <a href="@1@System.Runtime/A.html#7103bd3a82c9f352" class="t t">IReadOnlyCollection</a>&lt;<b>string</b>&gt;, <a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<b>string</b>&gt;, <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>
+	{
+		<b>public readonly</b> <span class="t t">ObservableCollection</span>&lt;<b>string</b>&gt; <a id="5672a1b5df5bb4be" href="R/5672a1b5df5bb4be.html" target="n" data-glyph="42,1" class="i field">_list</a> = <b>new</b> <span class="t constructor">ObservableCollection</span>&lt;<b>string</b>&gt;();
+ 
+		<b>event</b> <span class="t t">NotifyCollectionChangedEventHandler</span> <span class="t t">INotifyCollectionChanged</span>.<span class="i">CollectionChanged</span>
+		{
+			<b>add</b> { ((<span class="t t">INotifyCollectionChanged</span>)<a href="#5672a1b5df5bb4be" class="i field">_list</a>).<span class="i">CollectionChanged</span> += <b>value</b>; }
+			<b>remove</b> { ((<span class="t t">INotifyCollectionChanged</span>)<a href="#5672a1b5df5bb4be" class="i field">_list</a>).<span class="i">CollectionChanged</span> -= <b>value</b>; }
+		}
+ 
+		<b>event</b> <span class="t t">PropertyChangedEventHandler</span> <span class="t t">INotifyPropertyChanged</span>.<span class="i">PropertyChanged</span> {
+			<b>add</b> { ((<span class="t t">INotifyPropertyChanged</span>)<a href="#5672a1b5df5bb4be" class="i field">_list</a>).<span class="i">PropertyChanged</span> += <b>value</b>; }
+			<b>remove</b> { ((<span class="t t">INotifyPropertyChanged</span>)<a href="#5672a1b5df5bb4be" class="i field">_list</a>).<span class="i">PropertyChanged</span> -= <b>value</b>; }
+		}
+ 
+		<b>public bool</b> <a id="b269b021a98a1c83" href="R/b269b021a98a1c83.html" target="n" data-glyph="102,1" class="i property">IsLocked</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>void</b> <a id="827f57271a0b2ea0" href="R/827f57271a0b2ea0.html" target="n" data-glyph="76,1" class="i method">ThrowOnLocked</a>()
+		{
+			<b>if</b> (<a href="#b269b021a98a1c83" class="i property">IsLocked</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;The Items list can not be manipulated if the ItemsSource property is set&quot;</span>);
+		}
+ 
+		<b>public string</b> <a id="961afc45982f37a5" href="R/961afc45982f37a5.html" target="n" data-glyph="102,1" class="k">this</a> [<b>int</b> <span id="r0 rd" class="r0 r">index</span>] {
+			<b>get</b> { <b>return</b> <a href="#5672a1b5df5bb4be" class="i field">_list</a> [<span class="r0 r">index</span>]; }
+			<b>set</b> {
+				<a href="#827f57271a0b2ea0" class="i method">ThrowOnLocked</a>();
+				<a href="#5672a1b5df5bb4be" class="i field">_list</a> [<span class="r0 r">index</span>] = <b>value</b>; }
+		}
+ 
+		<b>public int</b> <a id="4a25023c1c98f782" href="R/4a25023c1c98f782.html" target="n" data-glyph="102,1" class="i property">Count</a> {
+			<b>get</b> { <b>return</b> <a href="#5672a1b5df5bb4be" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#f2419069e9890f5d" class="i property">Count</a>; }
+		}
+ 
+		<b>public bool</b> <a id="b1215bd90f6e2e89" href="R/b1215bd90f6e2e89.html" target="n" data-glyph="102,1" class="i property">IsReadOnly</a> {
+			<b>get</b> { <b>return</b> ((<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<b>string</b>&gt;)<a href="#5672a1b5df5bb4be" class="i field">_list</a>).<a href="@1@System.Runtime/A.html#30768a81e456ea74" class="i property">IsReadOnly</a>; }
+		}
+ 
+		<b>public void</b> <a id="f635241093f6909a" href="R/f635241093f6909a.html" target="n" data-glyph="72,1" class="i method">InternalAdd</a>(<b>string</b> <span id="r1 rd" class="r1 r">item</span>)
+		{
+			<a href="#5672a1b5df5bb4be" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#5c61cc24de82f7e7" class="i method">Add</a>(<span class="r1 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="d98f499804f7721f" href="R/d98f499804f7721f.html" target="n" data-glyph="72,1" class="i method">Add</a>(<b>string</b> <span id="r2 rd" class="r2 r">item</span>)
+		{
+			<a href="#827f57271a0b2ea0" class="i method">ThrowOnLocked</a>();
+			<a href="#f635241093f6909a" class="i method">InternalAdd</a>(<span class="r2 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="be015ae6c8200526" href="R/be015ae6c8200526.html" target="n" data-glyph="72,1" class="i method">InternalClear</a>()
+		{ 
+			<a href="#5672a1b5df5bb4be" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#1c7184c9f3526d9d" class="i method">Clear</a>();
+		}
+ 
+		<b>public void</b> <a id="fcd256f5726b97ed" href="R/fcd256f5726b97ed.html" target="n" data-glyph="72,1" class="i method">Clear</a>()
+		{
+			<a href="#827f57271a0b2ea0" class="i method">ThrowOnLocked</a>();
+			<a href="#be015ae6c8200526" class="i method">InternalClear</a>();
+		}
+ 
+		<b>public bool</b> <a id="6ccddcd0db198616" href="R/6ccddcd0db198616.html" target="n" data-glyph="72,1" class="i method">Contains</a>(<b>string</b> <span id="r3 rd" class="r3 r">item</span>)
+		{
+			<b>return</b> <a href="#5672a1b5df5bb4be" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#bdb5717f62176a67" class="i method">Contains</a>(<span class="r3 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="4b6847b23830b830" href="R/4b6847b23830b830.html" target="n" data-glyph="72,1" class="i method">CopyTo</a>(<b>string</b> [] <span id="r4 rd" class="r4 r">array</span>, <b>int</b> <span id="r5 rd" class="r5 r">arrayIndex</span>)
+		{
+			<a href="#5672a1b5df5bb4be" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#e2420da49e04cfa3" class="i method">CopyTo</a>(<span class="r4 r">array</span>, <span class="r5 r">arrayIndex</span>);
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#893e8cdebffde2da" class="t t">IEnumerator</a>&lt;<b>string</b>&gt; <a id="8295934ec49f9fb0" href="R/8295934ec49f9fb0.html" target="n" data-glyph="72,1" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <a href="#5672a1b5df5bb4be" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#fb2967718be9a2cd" class="i method">GetEnumerator</a>();
+		}
+ 
+		<b>public int</b> <a id="00f130a138dc63d8" href="R/00f130a138dc63d8.html" target="n" data-glyph="72,1" class="i method">IndexOf</a>(<b>string</b> <span id="r6 rd" class="r6 r">item</span>)
+		{
+			<b>return</b> <a href="#5672a1b5df5bb4be" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#5f1520f6f0d504ad" class="i method">IndexOf</a>(<span class="r6 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="497ca6f7318a2254" href="R/497ca6f7318a2254.html" target="n" data-glyph="72,1" class="i method">InternalInsert</a>(<b>int</b> <span id="r7 rd" class="r7 r">index</span>, <b>string</b> <span id="r8 rd" class="r8 r">item</span>)
+		{
+			<a href="#5672a1b5df5bb4be" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#7b364e9b63700c41" class="i method">Insert</a>(<span class="r7 r">index</span>, <span class="r8 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="59d3131bd8d4a0d9" href="R/59d3131bd8d4a0d9.html" target="n" data-glyph="72,1" class="i method">Insert</a>(<b>int</b> <span id="r9 rd" class="r9 r">index</span>, <b>string</b> <span id="r10 rd" class="r10 r">item</span>)
+		{
+			<a href="#827f57271a0b2ea0" class="i method">ThrowOnLocked</a>();
+			<a href="#497ca6f7318a2254" class="i method">InternalInsert</a>(<span class="r9 r">index</span>, <span class="r10 r">item</span>);
+		}
+ 
+		<b>public bool</b> <a id="3b21b6098d8c172f" href="R/3b21b6098d8c172f.html" target="n" data-glyph="72,1" class="i method">InternalRemove</a>(<b>string</b> <span id="r11 rd" class="r11 r">item</span>)
+		{
+			<b>return</b> <a href="#5672a1b5df5bb4be" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#7ea53c2fa96a1c7d" class="i method">Remove</a>(<span class="r11 r">item</span>);
+		}
+ 
+		<b>public bool</b> <a id="bf7bfb5bb99b957d" href="R/bf7bfb5bb99b957d.html" target="n" data-glyph="72,1" class="i method">Remove</a>(<b>string</b> <span id="r12 rd" class="r12 r">item</span>)
+		{
+			<a href="#827f57271a0b2ea0" class="i method">ThrowOnLocked</a>();
+			<b>return</b> <a href="#3b21b6098d8c172f" class="i method">InternalRemove</a>(<span class="r12 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="ad6a0526c4c2804a" href="R/ad6a0526c4c2804a.html" target="n" data-glyph="72,1" class="i method">InternalRemoveAt</a>(<b>int</b> <span id="r13 rd" class="r13 r">index</span>)
+		{
+			<a href="#5672a1b5df5bb4be" class="i field">_list</a>.<a href="@1@System.Runtime/A.html#f854d078ff701b74" class="i method">RemoveAt</a>(<span class="r13 r">index</span>);
+		}
+ 
+		<b>public void</b> <a id="5ffb5a43639ccffc" href="R/5ffb5a43639ccffc.html" target="n" data-glyph="72,1" class="i method">RemoveAt</a>(<b>int</b> <span id="r14 rd" class="r14 r">index</span>)
+		{
+			<a href="#827f57271a0b2ea0" class="i method">ThrowOnLocked</a>();
+			<a href="#ad6a0526c4c2804a" class="i method">InternalRemoveAt</a>(<span class="r14 r">index</span>);
+		}
+ 
+		<a href="@1@System.Runtime/A.html#6624f38cb955bfe0" class="t t">IEnumerator</a> <a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>.<a href="@1@System.Runtime/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> ((<a href="@1@System.Runtime/A.html#9be451ac13d86a97" class="t t">IEnumerable</a>)<a href="#5672a1b5df5bb4be" class="i field">_list</a>).<a href="@1@System.Runtime/A.html#02a44b09e26b964f" class="i method">GetEnumerator</a>();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

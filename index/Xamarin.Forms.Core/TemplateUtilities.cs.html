@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html><head><title>TemplateUtilities.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(130);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/TemplateUtilities.cs" target="_top">TemplateUtilities.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>internal static class</b> <a id="f281fada826f1555" href="R/f281fada826f1555.html" target="n" data-glyph="2,0" class="t t">TemplateUtilities</a>
+	{
+		<b>public static async</b> <span class="t t">Task</span>&lt;<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>&gt; <a id="59bdf74e9563ca7c" href="R/59bdf74e9563ca7c.html" target="n" data-glyph="72,1" class="i method">FindTemplatedParentAsync</a>(<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a> <span id="r0 rd" class="r0 r">element</span>)
+		{
+			<b>if</b> (<span class="r0 r">element</span>.<a href="Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a> <b>is</b> <a href="Application.cs.html#05ea728f56cd3ad5" class="t t">Application</a>)
+				<b>return null</b>;
+ 
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r1 rd" class="r1 r">skipCount</span> = 0;
+			<span class="r0 r">element</span> = <b>await</b> <a href="#8b622dacd0f8de70" class="i method">GetRealParentAsync</a>(<span class="r0 r">element</span>);
+			<b>while</b> (!<a href="Application.cs.html#05ea728f56cd3ad5" class="t t">Application</a>.<a href="Application.cs.html#e26aa0c59e1ae3bf" class="i method">IsApplicationOrNull</a>(<span class="r0 r">element</span>))
+			{
+				<a href="IControlTemplated.cs.html#4f1a9b64a0eb6aaf" class="k">var</a> <span id="r2 rd" class="r2 r">controlTemplated</span> = <span class="r0 r">element</span> <b>as</b> <a href="IControlTemplated.cs.html#4f1a9b64a0eb6aaf" class="t t">IControlTemplated</a>;
+				<b>if</b> (<span class="r2 r">controlTemplated</span>?.<a href="IControlTemplated.cs.html#61560fad639dd62e" class="i property">ControlTemplate</a> != <b>null</b>)
+				{
+					<b>if</b> (<span class="r1 r">skipCount</span> == 0)
+						<b>return</b> <span class="r0 r">element</span>;
+					<span class="r1 r">skipCount</span>--;
+				}
+				<b>if</b> (<span class="r0 r">element</span> <b>is</b> <a href="ContentPresenter.cs.html#5097ef192177704f" class="t t">ContentPresenter</a>)
+					<span class="r1 r">skipCount</span>++;
+				<span class="r0 r">element</span> = <b>await</b> <a href="#8b622dacd0f8de70" class="i method">GetRealParentAsync</a>(<span class="r0 r">element</span>);
+			}
+ 
+			<b>return null</b>;
+		}
+ 
+		<b>public static</b> <span class="t t">Task</span>&lt;<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>&gt; <a id="8b622dacd0f8de70" href="R/8b622dacd0f8de70.html" target="n" data-glyph="72,1" class="i method">GetRealParentAsync</a>(<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a> <span id="r3 rd" class="r3 r">element</span>)
+		{
+			<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a> <span id="r4 rd" class="r4 r">parent</span> = <span class="r3 r">element</span>.<a href="Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a>;
+			<b>if</b> (<span class="r4 r">parent</span> <b>is</b> <a href="Application.cs.html#05ea728f56cd3ad5" class="t t">Application</a>)
+				<b>return</b> <span class="t t">Task</span>.<span class="i method">FromResult</span>&lt;<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>&gt;(<b>null</b>);
+ 
+			<b>if</b> (<span class="r4 r">parent</span> != <b>null</b>)
+				<b>return</b> <span class="t t">Task</span>.<span class="i method">FromResult</span>(<span class="r4 r">parent</span>);
+ 
+			<b>var</b> <span id="r5 rd" class="r5 r">tcs</span> = <b>new</b> <span class="t constructor">TaskCompletionSource</span>&lt;<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>&gt;();
+			<a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <span id="r6 rd" class="r6 r">handler</span> = <b>null</b>;
+			<span class="r6 r">handler</span> = (<span id="r7 rd" class="r7 r">sender</span>, <span id="r8 rd" class="r8 r">args</span>) =&gt;
+			{
+				<span class="r5 r">tcs</span>.<span class="i method">TrySetResult</span>(<span class="r3 r">element</span>.<a href="Element.cs.html#3a1e78d030ef9bf3" class="i property">RealParent</a>);
+				<span class="r3 r">element</span>.<a href="Element.cs.html#4513bb55b55e0a61" class="i">ParentSet</a> -= <span class="r6 r">handler</span>;
+			};
+			<span class="r3 r">element</span>.<a href="Element.cs.html#4513bb55b55e0a61" class="i">ParentSet</a> += <span class="r6 r">handler</span>;
+ 
+			<b>return</b> <span class="r5 r">tcs</span>.<span class="i property">Task</span>;
+		}
+ 
+		<b>public static void</b> <a id="7fcc9a00302b81fd" href="R/7fcc9a00302b81fd.html" target="n" data-glyph="72,1" class="i method">OnContentChanged</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r9 rd" class="r9 r">bindable</span>, <b>object</b> <span id="r10 rd" class="r10 r">oldValue</span>, <b>object</b> <span id="r11 rd" class="r11 r">newValue</span>)
+		{
+			<a href="IControlTemplated.cs.html#4f1a9b64a0eb6aaf" class="k">var</a> <span id="r12 rd" class="r12 r">self</span> = (<a href="IControlTemplated.cs.html#4f1a9b64a0eb6aaf" class="t t">IControlTemplated</a>)<span class="r9 r">bindable</span>;
+			<a href="Element.cs.html#76098df8350c0484" class="k">var</a> <span id="r13 rd" class="r13 r">newElement</span> = (<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>)<span class="r11 r">newValue</span>;
+			<b>if</b> (<span class="r12 r">self</span>.<a href="IControlTemplated.cs.html#61560fad639dd62e" class="i property">ControlTemplate</a> == <b>null</b>)
+			{
+				<b>while</b> (<span class="r12 r">self</span>.<a href="IControlTemplated.cs.html#66f060e6b1511c59" class="i property">InternalChildren</a>.<a href="@1@System.Runtime/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> &gt; 0)
+				{
+					<span class="r12 r">self</span>.<a href="IControlTemplated.cs.html#66f060e6b1511c59" class="i property">InternalChildren</a>.<a href="@1@System.Runtime/A.html#3d7a8bddfaa22596" class="i method">RemoveAt</a>(<span class="r12 r">self</span>.<a href="IControlTemplated.cs.html#66f060e6b1511c59" class="i property">InternalChildren</a>.<a href="@1@System.Runtime/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> - 1);
+				}
+ 
+				<b>if</b> (<span class="r11 r">newValue</span> != <b>null</b>)
+					<span class="r12 r">self</span>.<a href="IControlTemplated.cs.html#66f060e6b1511c59" class="i property">InternalChildren</a>.<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r13 r">newElement</span>);
+			}
+			<b>else</b>
+			{
+				<b>if</b> (<span class="r13 r">newElement</span> != <b>null</b>)
+				{
+					<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a>.<a href="BindableObject.cs.html#530fa4630449540e" class="i method">SetInheritedBindingContext</a>(<span class="r13 r">newElement</span>, <span class="r9 r">bindable</span>.<a href="BindableObject.cs.html#ec31b23be1ce91d4" class="i property">BindingContext</a>);
+				}
+			}
+		}
+ 
+		<b>public static void</b> <a id="2a9bc75b0b8cfa17" href="R/2a9bc75b0b8cfa17.html" target="n" data-glyph="72,1" class="i method">OnControlTemplateChanged</a>(<a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r14 rd" class="r14 r">bindable</span>, <b>object</b> <span id="r15 rd" class="r15 r">oldValue</span>, <b>object</b> <span id="r16 rd" class="r16 r">newValue</span>)
+		{
+			<a href="IControlTemplated.cs.html#4f1a9b64a0eb6aaf" class="k">var</a> <span id="r17 rd" class="r17 r">self</span> = (<a href="IControlTemplated.cs.html#4f1a9b64a0eb6aaf" class="t t">IControlTemplated</a>)<span class="r14 r">bindable</span>;
+ 
+			<span class="c">// First make sure any old ContentPresenters are no longer bound up. This MUST be</span>
+			<span class="c">// done before we attempt to make the new template.</span>
+			<b>if</b> (<span class="r15 r">oldValue</span> != <b>null</b>)
+			{
+				<a href="@1@System.Collections/A.html#aa3beab99b2e0db2" class="k">var</a> <span id="r18 rd" class="r18 r">queue</span> = <b>new</b> <a href="@1@System.Collections/A.html#58bbd750f3390054" class="t constructor">Queue</a>&lt;<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>&gt;(16);
+				<span class="r18 r">queue</span>.<a href="@1@System.Collections/A.html#14c3cc45ceaf1566" class="i method">Enqueue</a>((<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>)<span class="r17 r">self</span>);
+ 
+				<b>while</b> (<span class="r18 r">queue</span>.<a href="@1@System.Collections/A.html#2d2504e4ca700843" class="i property">Count</a> &gt; 0)
+				{
+					<a href="@1@System.Runtime/A.html#aafef79f3fced6c2" class="t t">ReadOnlyCollection</a>&lt;<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>&gt; <span id="r19 rd" class="r19 r">children</span> = <span class="r18 r">queue</span>.<a href="@1@System.Collections/A.html#e68caf2d91344411" class="i method">Dequeue</a>().<a href="Element.cs.html#353642943124466e" class="i property">LogicalChildrenInternal</a>;
+					<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r20 rd" class="r20 r">i</span> = 0; <span class="r20 r">i</span> &lt; <span class="r19 r">children</span>.<a href="@1@System.Runtime/A.html#7e2071514968aca1" class="i property">Count</a>; <span class="r20 r">i</span>++)
+					{
+						<a href="Element.cs.html#76098df8350c0484" class="t t">Element</a> <span id="r21 rd" class="r21 r">child</span> = <span class="r19 r">children</span><a href="@1@System.Runtime/A.html#6c5b571f8784e13b">[</a><span class="r20 r">i</span>];
+						<a href="IControlTemplated.cs.html#4f1a9b64a0eb6aaf" class="k">var</a> <span id="r22 rd" class="r22 r">controlTemplated</span> = <span class="r21 r">child</span> <b>as</b> <a href="IControlTemplated.cs.html#4f1a9b64a0eb6aaf" class="t t">IControlTemplated</a>;
+ 
+						<a href="ContentPresenter.cs.html#5097ef192177704f" class="k">var</a> <span id="r23 rd" class="r23 r">presenter</span> = <span class="r21 r">child</span> <b>as</b> <a href="ContentPresenter.cs.html#5097ef192177704f" class="t t">ContentPresenter</a>;
+						<b>if</b> (<span class="r23 r">presenter</span> != <b>null</b>)
+							<span class="r23 r">presenter</span>.<a href="ContentPresenter.cs.html#dc7a93ea04de9fe0" class="i method">Clear</a>();
+						<b>else if</b> (<span class="r22 r">controlTemplated</span> == <b>null</b> || <span class="r22 r">controlTemplated</span>.<a href="IControlTemplated.cs.html#61560fad639dd62e" class="i property">ControlTemplate</a> == <b>null</b>)
+							<span class="r18 r">queue</span>.<a href="@1@System.Collections/A.html#14c3cc45ceaf1566" class="i method">Enqueue</a>(<span class="r21 r">child</span>);
+					}
+				}
+			}
+ 
+			<span class="c">// Now remove all remnants of any other children just to be sure</span>
+			<b>while</b> (<span class="r17 r">self</span>.<a href="IControlTemplated.cs.html#66f060e6b1511c59" class="i property">InternalChildren</a>.<a href="@1@System.Runtime/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> &gt; 0)
+			{
+				<span class="r17 r">self</span>.<a href="IControlTemplated.cs.html#66f060e6b1511c59" class="i property">InternalChildren</a>.<a href="@1@System.Runtime/A.html#3d7a8bddfaa22596" class="i method">RemoveAt</a>(<span class="r17 r">self</span>.<a href="IControlTemplated.cs.html#66f060e6b1511c59" class="i property">InternalChildren</a>.<a href="@1@System.Runtime/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> - 1);
+			}
+ 
+			<a href="ControlTemplate.cs.html#3b9f9a1ffdbc2fe0" class="t t">ControlTemplate</a> <span id="r24 rd" class="r24 r">template</span> = <span class="r17 r">self</span>.<a href="IControlTemplated.cs.html#61560fad639dd62e" class="i property">ControlTemplate</a>;
+			<b>if</b> (<span class="r24 r">template</span> == <b>null</b>)
+			{
+				<span class="c">// do nothing for now</span>
+			}
+			<b>else</b>
+			{
+				<a href="View.cs.html#60f54d5b73cefedd" class="k">var</a> <span id="r25 rd" class="r25 r">content</span> = <span class="r24 r">template</span>.<a href="ElementTemplate.cs.html#cd48b351b7f758f5" class="i method">CreateContent</a>() <b>as</b> <a href="View.cs.html#60f54d5b73cefedd" class="t t">View</a>;
+				<b>if</b> (<span class="r25 r">content</span> == <b>null</b>)
+				{
+					<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#3d3c2c03118be4f8" class="t constructor">NotSupportedException</a>(<span class="s">&quot;ControlTemplate must return a type derived from View.&quot;</span>);
+				}
+ 
+				<span class="r17 r">self</span>.<a href="IControlTemplated.cs.html#66f060e6b1511c59" class="i property">InternalChildren</a>.<a href="@1@System.Runtime/A.html#a9319db8c62ae453" class="i method">Add</a>(<span class="r25 r">content</span>);
+				((<a href="IControlTemplated.cs.html#4f1a9b64a0eb6aaf" class="t t">IControlTemplated</a>)<span class="r14 r">bindable</span>).<a href="IControlTemplated.cs.html#56058641d22f081f" class="i method">OnControlTemplateChanged</a>((<a href="ControlTemplate.cs.html#3b9f9a1ffdbc2fe0" class="t t">ControlTemplate</a>)<span class="r15 r">oldValue</span>, (<a href="ControlTemplate.cs.html#3b9f9a1ffdbc2fe0" class="t t">ControlTemplate</a>)<span class="r16 r">newValue</span>);
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html><head><title>ModalPageTracker.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(131);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/ModalPageTracker.cs" target="_top">ModalPageTracker.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>internal class</b> <a id="1121f02fa85b3a70" href="R/1121f02fa85b3a70.html" target="n" data-glyph="2,0" class="t t">ModalPageTracker</a> : <a href="@0@mscorlib/A.html#1f55292c3174123d" class="t t">IDisposable</a>
+	{
+		<span class="t t">NSViewController</span> <a id="90fe2ad4eaa024db" href="R/90fe2ad4eaa024db.html" target="n" data-glyph="46,1" class="i field">_renderer</a>;
+		<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="90a2272c6edd7ea5" href="R/90a2272c6edd7ea5.html" target="n" data-glyph="46,1" class="i field">_modals</a>;
+		<b>bool</b> <a id="36953dfa82520476" href="R/36953dfa82520476.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<b>public</b> <a id="0e0fc3910977e2db" href="R/0e0fc3910977e2db.html" target="n" data-glyph="72,1" class="i constructor">ModalPageTracker</a>(<span class="t t">NSViewController</span> <span id="r0 rd" class="r0 r">mainRenderer</span>)
+		{
+			<b>if</b> (<span class="r0 r">mainRenderer</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r0 r">mainRenderer</span>));
+			<a href="#90fe2ad4eaa024db" class="i field">_renderer</a> = <span class="r0 r">mainRenderer</span>;
+			<a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i property">View</span>.<span class="i property">WantsLayer</span> = <b>true</b>;
+			<a href="#90a2272c6edd7ea5" class="i field">_modals</a> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt;();
+		}
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="372d526e6d5008ba" href="R/372d526e6d5008ba.html" target="n" data-glyph="102,1" class="i property">ModalStack</a> =&gt; <a href="#90a2272c6edd7ea5" class="i field">_modals</a>;
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a> <a id="f12108c9b6ff60e5" href="R/f12108c9b6ff60e5.html" target="n" data-glyph="72,1" class="i method">PushAsync</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r1 rd" class="r1 r">modal</span>, <b>bool</b> <span id="r2 rd" class="r2 r">animated</span>)
+		{
+			<a href="#90a2272c6edd7ea5" class="i field">_modals</a>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r1 r">modal</span>);
+			<span class="r1 r">modal</span>.<a href="/Xamarin.Forms.Core/A.html#3fba70896794895d" class="i">DescendantRemoved</a> += <a href="#6aa3be30a57e7862" class="i method">HandleChildRemoved</a>;
+			<a href="Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="Platform.cs.html#a1025b32c6f18426" class="i field">NativeToolbarTracker</a>.<a href="NativeToolbarTracker.cs.html#b2b326ee5c7e2013" class="i method">TryHide</a>(<span class="r1 r">modal</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>);
+			<b>return</b> <a href="#cb45b3d7fef15e09" class="i method">PresentModalAsync</a>(<span class="r1 r">modal</span>, <span class="r2 r">animated</span>);
+		}
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="c1b0459d0037bc11" href="R/c1b0459d0037bc11.html" target="n" data-glyph="72,1" class="i method">PopAsync</a>(<b>bool</b> <span id="r3 rd" class="r3 r">animated</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="k">var</a> <span id="r4 rd" class="r4 r">modal</span> = <a href="#90a2272c6edd7ea5" class="i field">_modals</a>.<a href="@0@System.Core/A.html#981cccb3b4b716eb" class="i method">LastOrDefault</a>();
+			<b>if</b> (<span class="r4 r">modal</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">&quot;No Modal pages found in the stack, make sure you pushed a modal page&quot;</span>);
+			<a href="#90a2272c6edd7ea5" class="i field">_modals</a>.<a href="@0@mscorlib/A.html#db8cdd552a0bb10c" class="i method">Remove</a>(<span class="r4 r">modal</span>);
+			<span class="r4 r">modal</span>.<a href="/Xamarin.Forms.Core/A.html#3fba70896794895d" class="i">DescendantRemoved</a> -= <a href="#6aa3be30a57e7862" class="i method">HandleChildRemoved</a>;
+			<b>return</b> <a href="#a2de312cc5ca8d89" class="i method">HideModalAsync</a>(<span class="r4 r">modal</span>, <span class="r3 r">animated</span>);
+		}
+ 
+		<b>internal void</b> <a id="e31dc038ecd8115d" href="R/e31dc038ecd8115d.html" target="n" data-glyph="74,1" class="i method">LayoutSubviews</a>()
+		{
+			<b>if</b> (<a href="#90fe2ad4eaa024db" class="i field">_renderer</a> == <b>null</b> || <a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i property">View</span> == <b>null</b>)
+				<b>return</b>;
+			
+			<b>foreach</b>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="k">var</a> <span id="r5 rd" class="r5 r">modal</span> <b>in</b> <a href="#90a2272c6edd7ea5" class="i field">_modals</a>)
+			{
+				<a href="IVisualElementRenderer.cs.html#06d80d1922189ea9" class="k">var</a> <span id="r6 rd" class="r6 r">modalRenderer</span> = <a href="Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="Platform.cs.html#4ab37f9d1be4bc41" class="i method">GetRenderer</a>(<span class="r5 r">modal</span>);
+				<b>if</b>(<span class="r6 r">modalRenderer</span> != <b>null</b>)
+					<span class="r6 r">modalRenderer</span>.<a href="IVisualElementRenderer.cs.html#5b787b09e84bf839" class="i method">SetElementSize</a>(<b>new</b> <a href="/Xamarin.Forms.Core/A.html#1727209bca650e71" class="t constructor">Size</a>(<a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i property">View</span>.<span class="i property">Bounds</span>.<span class="i property">Width</span>, <a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i property">View</span>.<span class="i property">Bounds</span>.<span class="i property">Height</span>));
+			}
+		}
+ 
+		<b>public void</b> <a id="1a688b99edd533c4" href="R/1a688b99edd533c4.html" target="n" data-glyph="72,1" class="i method">Dispose</a>()
+		{
+			<a href="#5e128fa13973caaa" class="i method">Dispose</a>(<b>true</b>);
+		}
+ 
+		<b>protected virtual void</b> <a id="5e128fa13973caaa" href="R/5e128fa13973caaa.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r7 rd" class="r7 r">disposing</span>)
+		{
+			<b>if</b> (!<a href="#36953dfa82520476" class="i field">_disposed</a>)
+			{
+				<b>if</b> (<span class="r7 r">disposing</span>)
+				{
+					<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="k">var</a> <span id="r8 rd" class="r8 r">modal</span> <b>in</b> <a href="#90a2272c6edd7ea5" class="i field">_modals</a>)
+						<a href="Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="Platform.cs.html#0029c28006e0bcc1" class="i method">DisposeModelAndChildrenRenderers</a>(<span class="r8 r">modal</span>);
+					<a href="#90fe2ad4eaa024db" class="i field">_renderer</a> = <b>null</b>;
+				}
+				<a href="#36953dfa82520476" class="i field">_disposed</a> = <b>true</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="6aa3be30a57e7862" href="R/6aa3be30a57e7862.html" target="n" data-glyph="76,1" class="i method">HandleChildRemoved</a>(<b>object</b> <span id="r9 rd" class="r9 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#2f1ac1d6a4d190ba" class="t t">ElementEventArgs</a> <span id="r10 rd" class="r10 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#76098df8350c0484" class="k">var</a> <span id="r11 rd" class="r11 r">view</span> = <span class="r10 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#bd424cf4a66020d2" class="i property">Element</a>;
+			<a href="Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="Platform.cs.html#0029c28006e0bcc1" class="i method">DisposeModelAndChildrenRenderers</a>(<span class="r11 r">view</span>);
+		}
+ 
+		<a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a> <a id="cb45b3d7fef15e09" href="R/cb45b3d7fef15e09.html" target="n" data-glyph="76,1" class="i method">PresentModalAsync</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r12 rd" class="r12 r">modal</span>, <b>bool</b> <span id="r13 rd" class="r13 r">animated</span>)
+		{
+			<a href="IVisualElementRenderer.cs.html#06d80d1922189ea9" class="k">var</a> <span id="r14 rd" class="r14 r">modalRenderer</span> = <a href="Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="Platform.cs.html#4ab37f9d1be4bc41" class="i method">GetRenderer</a>(<span class="r12 r">modal</span>);
+			<b>if</b> (<span class="r14 r">modalRenderer</span> == <b>null</b>)
+			{
+				<span class="r14 r">modalRenderer</span> = <a href="Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="Platform.cs.html#bd37e2314b2cee5c" class="i method">CreateRenderer</a>(<span class="r12 r">modal</span>);
+				<a href="Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="Platform.cs.html#7bbb46ae9aa0c447" class="i method">SetRenderer</a>(<span class="r12 r">modal</span>, <span class="r14 r">modalRenderer</span>);
+				<span class="r14 r">modalRenderer</span>.<a href="IVisualElementRenderer.cs.html#5b787b09e84bf839" class="i method">SetElementSize</a>(<b>new</b> <a href="/Xamarin.Forms.Core/A.html#1727209bca650e71" class="t constructor">Size</a>(<a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i property">View</span>.<span class="i property">Bounds</span>.<span class="i property">Width</span>, <a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i property">View</span>.<span class="i property">Bounds</span>.<span class="i property">Height</span>));
+			}
+ 
+			<b>var</b> <span id="r15 rd" class="r15 r">toViewController</span> = <span class="r14 r">modalRenderer</span> <b>as</b> <span class="t t">NSViewController</span>;
+ 
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r16 rd" class="r16 r">i</span> = <a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#80ff956e9ca8e414" class="i method">Max</a>(0, <a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i property">ChildViewControllers</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> - 1);
+			<b>var</b> <span id="r17 rd" class="r17 r">fromViewController</span> = <a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i property">ChildViewControllers</span>[<span class="r16 r">i</span>];
+ 
+			<a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i method">AddChildViewController</span>(<span class="r15 r">toViewController</span>);
+ 
+			<span class="t t">NSViewControllerTransitionOptions</span> <span id="r18 rd" class="r18 r">option</span> = <span class="r13 r">animated</span>
+				? <span class="t t">NSViewControllerTransitionOptions</span>.<span class="i field">SlideUp</span>
+				: <span class="t t">NSViewControllerTransitionOptions</span>.<span class="i field">None</span>;
+ 
+			<a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="k">var</a> <span id="r19 rd" class="r19 r">task</span> = <a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<a href="Extensions/NSViewControllerExtensions.cs.html#803be914f6a469be" class="i method">HandleAsyncAnimation</a>(<span class="r17 r">fromViewController</span>, <span class="r15 r">toViewController</span>, <span class="r18 r">option</span>,
+				() =&gt;
+				{
+					<span class="c">//Hack: adjust if needed</span>
+					<span class="r15 r">toViewController</span>.<span class="i property">View</span>.<span class="i property">Frame</span> = <a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i property">View</span>.<span class="i property">Bounds</span>;
+					<span class="r17 r">fromViewController</span>.<span class="i property">View</span>.<span class="i property">Layer</span>.<span class="i property">Hidden</span> = <b>true</b>;
+				}, <b>true</b>);
+			<b>return</b> <span class="r19 r">task</span>;
+		}
+ 
+		<a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="a2de312cc5ca8d89" href="R/a2de312cc5ca8d89.html" target="n" data-glyph="76,1" class="i method">HideModalAsync</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r20 rd" class="r20 r">modal</span>, <b>bool</b> <span id="r21 rd" class="r21 r">animated</span>)
+		{
+			<b>var</b> <span id="r22 rd" class="r22 r">controller</span> = <a href="Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="Platform.cs.html#4ab37f9d1be4bc41" class="i method">GetRenderer</a>(<span class="r20 r">modal</span>) <b>as</b> <span class="t t">NSViewController</span>;
+ 
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r23 rd" class="r23 r">i</span> = <a href="@0@mscorlib/A.html#a4407e67b9a5afad" class="t t">Math</a>.<a href="@0@mscorlib/A.html#80ff956e9ca8e414" class="i method">Max</a>(0, <a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i property">ChildViewControllers</span>.<a href="@0@mscorlib/A.html#42e9b7616956cf94" class="i property">Length</a> - 2);
+			<b>var</b> <span id="r24 rd" class="r24 r">toViewController</span> = <a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<span class="i property">ChildViewControllers</span>[<span class="r23 r">i</span>];
+ 
+			<span class="r24 r">toViewController</span>.<span class="i property">View</span>.<span class="i property">Layer</span>.<span class="i property">Hidden</span> = <b>false</b>;
+ 
+			<span class="t t">NSViewControllerTransitionOptions</span> <span id="r25 rd" class="r25 r">option</span> = <span class="r21 r">animated</span>
+							? <span class="t t">NSViewControllerTransitionOptions</span>.<span class="i field">SlideDown</span>
+							: <span class="t t">NSViewControllerTransitionOptions</span>.<span class="i field">None</span>;
+ 
+			<a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="k">var</a> <span id="r26 rd" class="r26 r">task</span> = <a href="#90fe2ad4eaa024db" class="i field">_renderer</a>.<a href="Extensions/NSViewControllerExtensions.cs.html#803be914f6a469be" class="i method">HandleAsyncAnimation</a>(<span class="r22 r">controller</span>, <span class="r24 r">toViewController</span>, <span class="r25 r">option</span>,
+				() =&gt; <a href="Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="Platform.cs.html#0029c28006e0bcc1" class="i method">DisposeModelAndChildrenRenderers</a>(<span class="r20 r">modal</span>), <span class="r20 r">modal</span>);
+			<b>return</b> <span class="r26 r">task</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

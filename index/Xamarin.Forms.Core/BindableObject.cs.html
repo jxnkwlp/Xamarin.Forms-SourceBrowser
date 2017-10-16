@@ -1,0 +1,673 @@
+﻿<!DOCTYPE html>
+<html><head><title>BindableObject.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(664);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/BindableObject.cs" target="_top">BindableObject.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Runtime</span>.<span class="i n">CompilerServices</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>public abstract class</b> <a id="804aed41f6e6b7c8" href="R/804aed41f6e6b7c8.html" target="n" data-glyph="0,0" class="t t"><span id="a63c27671863e865">BindableObject</span></a> : <span class="t t">INotifyPropertyChanged</span>, <a href="Internals/IDynamicResourceHandler.cs.html#370a45bf222ddf41" class="t t">IDynamicResourceHandler</a>
+	{
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="af7033c3288388d7" href="R/af7033c3288388d7.html" target="n" data-glyph="42,1" class="i field">BindingContextProperty</a> =
+			<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#8d373e489118277e" class="i method">Create</a>(<span class="s">&quot;BindingContext&quot;</span>, <b>typeof</b>(<b>object</b>), <b>typeof</b>(<a href="#804aed41f6e6b7c8" class="t t">BindableObject</a>), <b>default</b>(<b>object</b>),
+									<a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a>, <b>null</b>, <a href="#2002d3a384a28d53" class="i method">BindingContextPropertyChanged</a>, <b>null</b>, <b>null</b>, <a href="#9becba62a1665b85" class="i method">BindingContextPropertyBindingChanging</a>);
+ 
+		<b>readonly</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a>&gt; <a id="2f82dd843474a424" href="R/2f82dd843474a424.html" target="n" data-glyph="46,1" class="i field">_properties</a> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a>&gt;(4);
+ 
+		<b>bool</b> <a id="87809c0cfaaa21b6" href="R/87809c0cfaaa21b6.html" target="n" data-glyph="46,1" class="i field">_applying</a>;
+		<b>object</b> <a id="b931581aa934d6cd" href="R/b931581aa934d6cd.html" target="n" data-glyph="46,1" class="i field">_inheritedContext</a>;
+ 
+		<b>public object</b> <a id="ec31b23be1ce91d4" href="R/ec31b23be1ce91d4.html" target="n" data-glyph="102,1" class="i property">BindingContext</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#b931581aa934d6cd" class="i field">_inheritedContext</a> ?? <a href="#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#af7033c3288388d7" class="i field">BindingContextProperty</a>); }
+			<b>set</b> { <a href="#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#af7033c3288388d7" class="i field">BindingContextProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>void</b> <a href="Internals/IDynamicResourceHandler.cs.html#370a45bf222ddf41" class="t t">IDynamicResourceHandler</a>.<a href="Internals/IDynamicResourceHandler.cs.html#8d088c375c2a0a02" class="i method">SetDynamicResource</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r0 rd" class="r0 r">property</span>, <b>string</b> <span id="r1 rd" class="r1 r">key</span>)
+		{
+			<a href="#0f6cdd3294e283d1" class="i method">SetDynamicResource</a>(<span class="r0 r">property</span>, <span class="r1 r">key</span>, <b>false</b>);
+		}
+ 
+		<b>public event</b> <span class="t t">PropertyChangedEventHandler</span> <a id="72c3e722cf6fa9ba" href="R/72c3e722cf6fa9ba.html" target="n" data-glyph="30,1" class="i">PropertyChanged</a>;
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="2d1bd2d02bbe38fd" href="R/2d1bd2d02bbe38fd.html" target="n" data-glyph="30,1" class="i">BindingContextChanged</a>;
+ 
+		<b>public void</b> <a id="4b4f85fcc1a48118" href="R/4b4f85fcc1a48118.html" target="n" data-glyph="72,1" class="i method">ClearValue</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r2 rd" class="r2 r">property</span>)
+		{
+			<a href="#9caee3235ee11ecf" class="i method">ClearValue</a>(<span class="r2 r">property</span>, <b>true</b>);
+		}
+ 
+		<b>public void</b> <a id="2f1b5248a885f689" href="R/2f1b5248a885f689.html" target="n" data-glyph="72,1" class="i method">ClearValue</a>(<a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <span id="r3 rd" class="r3 r">propertyKey</span>)
+		{
+			<b>if</b> (<span class="r3 r">propertyKey</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;propertyKey&quot;</span>);
+ 
+			<a href="#9caee3235ee11ecf" class="i method">ClearValue</a>(<span class="r3 r">propertyKey</span>.<a href="BindablePropertyKey.cs.html#80ee7a7d9c6b4d14" class="i property">BindableProperty</a>, <b>false</b>);
+		}
+ 
+		<b>public object</b> <a id="00e81fee0b400c43" href="R/00e81fee0b400c43.html" target="n" data-glyph="72,1" class="i method">GetValue</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r4 rd" class="r4 r">property</span>)
+		{
+			<b>if</b> (<span class="r4 r">property</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;property&quot;</span>);
+ 
+			<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r5 rd" class="r5 r">context</span> = <span class="r4 r">property</span>.<a href="BindableProperty.cs.html#b59f6352e415afa9" class="i property">DefaultValueCreator</a> != <b>null</b> ? <a href="#539b2f4093d1eff9" class="i method">GetOrCreateContext</a>(<span class="r4 r">property</span>) : <a href="#270ce27953e1255a" class="i method">GetContext</a>(<span class="r4 r">property</span>);
+ 
+			<b>if</b> (<span class="r5 r">context</span> == <b>null</b>)
+				<b>return</b> <span class="r4 r">property</span>.<a href="BindableProperty.cs.html#b20da29b32c9aaff" class="i property">DefaultValue</a>;
+ 
+			<b>return</b> <span class="r5 r">context</span>.<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+		}
+ 
+		<b>public event</b> <a href="PropertyChangingEventHandler.cs.html#83619ae4687aa3ba" class="t t">PropertyChangingEventHandler</a> <a id="5da2d9db45bb399f" href="R/5da2d9db45bb399f.html" target="n" data-glyph="30,1" class="i">PropertyChanging</a>;
+ 
+		<b>public void</b> <a id="1f014ce36501516f" href="R/1f014ce36501516f.html" target="n" data-glyph="72,1" class="i method">RemoveBinding</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r6 rd" class="r6 r">property</span>)
+		{
+			<b>if</b> (<span class="r6 r">property</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;property&quot;</span>);
+ 
+			<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r7 rd" class="r7 r">context</span> = <a href="#270ce27953e1255a" class="i method">GetContext</a>(<span class="r6 r">property</span>);
+			<b>if</b> (<span class="r7 r">context</span> == <b>null</b> || <span class="r7 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="#a4e325e7bd0ce184" class="i method">RemoveBinding</a>(<span class="r6 r">property</span>, <span class="r7 r">context</span>);
+		}
+ 
+		<b>public void</b> <a id="d05c3999b6e90555" href="R/d05c3999b6e90555.html" target="n" data-glyph="72,1" class="i method">SetBinding</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r8 rd" class="r8 r">targetProperty</span>, <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r9 rd" class="r9 r">binding</span>)
+		{
+			<a href="#5d68fa3dc0416c87" class="i method">SetBinding</a>(<span class="r8 r">targetProperty</span>, <span class="r9 r">binding</span>, <b>false</b>);
+		}
+ 
+		<b>public void</b> <a id="71f22f51364ed0e1" href="R/71f22f51364ed0e1.html" target="n" data-glyph="72,1" class="i method">SetValue</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r10 rd" class="r10 r">property</span>, <b>object</b> <span id="r11 rd" class="r11 r">value</span>)
+		{
+			<a href="#3f506a94055dec0f" class="i method">SetValue</a>(<span class="r10 r">property</span>, <span class="r11 r">value</span>, <b>false</b>, <b>true</b>);
+		}
+ 
+		<b>public void</b> <a id="da429b392302767c" href="R/da429b392302767c.html" target="n" data-glyph="72,1" class="i method">SetValue</a>(<a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <span id="r12 rd" class="r12 r">propertyKey</span>, <b>object</b> <span id="r13 rd" class="r13 r">value</span>)
+		{
+			<b>if</b> (<span class="r12 r">propertyKey</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;propertyKey&quot;</span>);
+ 
+			<a href="#3f506a94055dec0f" class="i method">SetValue</a>(<span class="r12 r">propertyKey</span>.<a href="BindablePropertyKey.cs.html#80ee7a7d9c6b4d14" class="i property">BindableProperty</a>, <span class="r13 r">value</span>, <b>false</b>, <b>false</b>);
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public static void</b> <a id="530fa4630449540e" href="R/530fa4630449540e.html" target="n" data-glyph="72,1" class="i method">SetInheritedBindingContext</a>(<a href="#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r14 rd" class="r14 r">bindable</span>, <b>object</b> <span id="r15 rd" class="r15 r">value</span>)
+		{
+			<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r16 rd" class="r16 r">bpContext</span> = <span class="r14 r">bindable</span>.<a href="#270ce27953e1255a" class="i method">GetContext</a>(<a href="#af7033c3288388d7" class="i field">BindingContextProperty</a>);
+			<b>if</b> (<span class="r16 r">bpContext</span> != <b>null</b> &amp;&amp; ((<span class="r16 r">bpContext</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp; <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#350b9b1cbe1ab376" class="i field">IsManuallySet</a>) != 0))
+				<b>return</b>;
+ 
+			<b>object</b> <span id="r17 rd" class="r17 r">oldContext</span> = <span class="r14 r">bindable</span>.<a href="#b931581aa934d6cd" class="i field">_inheritedContext</a>;
+ 
+			<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r17 r">oldContext</span>, <span class="r15 r">value</span>))
+				<b>return</b>;
+ 
+			<b>if</b> (<span class="r16 r">bpContext</span> != <b>null</b> &amp;&amp; <span class="r17 r">oldContext</span> == <b>null</b>)
+				<span class="r17 r">oldContext</span> = <span class="r16 r">bpContext</span>.<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+ 
+			<b>if</b> (<span class="r16 r">bpContext</span> != <b>null</b> &amp;&amp; <span class="r16 r">bpContext</span>.<a href="#1c2f84e143159065" class="i field">Binding</a> != <b>null</b>)
+			{
+				<span class="r16 r">bpContext</span>.<a href="#1c2f84e143159065" class="i field">Binding</a>.<a href="BindingBase.cs.html#b71fb453e66ea93b" class="i property">Context</a> = <span class="r15 r">value</span>;
+				<span class="r14 r">bindable</span>.<a href="#b931581aa934d6cd" class="i field">_inheritedContext</a> = <b>null</b>;
+			}
+			<b>else</b>
+			{
+				<span class="r14 r">bindable</span>.<a href="#b931581aa934d6cd" class="i field">_inheritedContext</a> = <span class="r15 r">value</span>;
+			}
+ 
+			<span class="r14 r">bindable</span>.<a href="#2bac8bf99c33ad74" class="i method">ApplyBindings</a>();
+			<span class="r14 r">bindable</span>.<a href="#afe58feb173371d1" class="i method">OnBindingContextChanged</a>();
+		}
+ 
+		<b>protected void</b> <a id="2bac8bf99c33ad74" href="R/2bac8bf99c33ad74.html" target="n" data-glyph="75,1" class="i method">ApplyBindings</a>()
+		{
+			<a href="#86d3ceb2227daba0" class="i method">ApplyBindings</a>(<b>false</b>);
+		}
+ 
+		<b>protected virtual void</b> <a id="afe58feb173371d1" href="R/afe58feb173371d1.html" target="n" data-glyph="75,1" class="i method">OnBindingContextChanged</a>()
+		{
+			<a href="#2d1bd2d02bbe38fd" class="i">BindingContextChanged</a>?.<a href="@1@System.Runtime/A.html#aaedcaa3f05a32f9" class="i method">Invoke</a>(<a href="#804aed41f6e6b7c8" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+ 
+		<b>protected virtual void</b> <a id="d700e2f209d59b08" href="R/d700e2f209d59b08.html" target="n" data-glyph="75,1" class="i method">OnPropertyChanged</a>([<a href="@1@System.Runtime/A.html#3b59f8cb5102fd8b" class="t constructor">CallerMemberName</a>] <b>string</b> <span id="r18 rd" class="r18 r">propertyName</span> = <b>null</b>)
+		{
+			<span class="t t">PropertyChangedEventHandler</span> <span id="r19 rd" class="r19 r">handler</span> = <a href="#72c3e722cf6fa9ba" class="i">PropertyChanged</a>;
+			<b>if</b> (<span class="r19 r">handler</span> != <b>null</b>)
+				<span class="r19 r">handler</span>(<a href="#804aed41f6e6b7c8" class="k">this</a>, <b>new</b> <span class="t constructor">PropertyChangedEventArgs</span>(<span class="r18 r">propertyName</span>));
+		}
+ 
+		<b>protected virtual void</b> <a id="e5d2d1b731820b1b" href="R/e5d2d1b731820b1b.html" target="n" data-glyph="75,1" class="i method">OnPropertyChanging</a>([<a href="@1@System.Runtime/A.html#3b59f8cb5102fd8b" class="t constructor">CallerMemberName</a>] <b>string</b> <span id="r20 rd" class="r20 r">propertyName</span> = <b>null</b>)
+		{
+			<a href="PropertyChangingEventHandler.cs.html#83619ae4687aa3ba" class="t t">PropertyChangingEventHandler</a> <span id="r21 rd" class="r21 r">changing</span> = <a href="#5da2d9db45bb399f" class="i">PropertyChanging</a>;
+			<b>if</b> (<span class="r21 r">changing</span> != <b>null</b>)
+				<span class="r21 r">changing</span>(<a href="#804aed41f6e6b7c8" class="k">this</a>, <b>new</b> <a href="PropertyChangingEventArgs.cs.html#049a6617b6ddc4c4" class="t constructor">PropertyChangingEventArgs</a>(<span class="r20 r">propertyName</span>));
+		}
+ 
+		<b>protected void</b> <a id="d478c3a5de8613a5" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">UnapplyBindings</a>()
+		{
+			<b>for</b> (<b>int</b> <span id="r22 rd" class="r22 r">i</span> = 0, <span id="r23 rd" class="r23 r">_propertiesCount</span> = <a href="#2f82dd843474a424" class="i field">_properties</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r22 r">i</span> &lt; <span class="r23 r">_propertiesCount</span>; <span class="r22 r">i</span>++) {
+				<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r24 rd" class="r24 r">context</span> = <a href="#2f82dd843474a424" class="i field">_properties</a> [<span class="r22 r">i</span>];
+				<b>if</b> (<span class="r24 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a> == <b>null</b>)
+					<b>continue</b>;
+ 
+				<span class="r24 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a>.<a href="BindingBase.cs.html#39ff00242bdac3e9" class="i method">Unapply</a>();
+			}
+		}
+ 
+		<b>internal bool</b> <a id="181b4477c5a7681c" href="R/181b4477c5a7681c.html" target="n" data-glyph="74,1" class="i method">GetIsBound</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r25 rd" class="r25 r">targetProperty</span>)
+		{
+			<b>if</b> (<span class="r25 r">targetProperty</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;targetProperty&quot;</span>);
+ 
+			<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r26 rd" class="r26 r">bpcontext</span> = <a href="#270ce27953e1255a" class="i method">GetContext</a>(<span class="r25 r">targetProperty</span>);
+			<b>return</b> <span class="r26 r">bpcontext</span> != <b>null</b> &amp;&amp; <span class="r26 r">bpcontext</span>.<a href="#1c2f84e143159065" class="i field">Binding</a> != <b>null</b>;
+		}
+ 
+		<b>internal bool</b> <a id="5b92c19e8f78cdc8" href="R/../../0000000000.html" target="n" data-glyph="74,1" class="i method">GetIsDefault</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r27 rd" class="r27 r">targetProperty</span>)
+		{
+			<b>if</b> (<span class="r27 r">targetProperty</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r27 r">targetProperty</span>));
+ 
+			<b>return</b> <a href="#270ce27953e1255a" class="i method">GetContext</a>(<span class="r27 r">targetProperty</span>) == <b>null</b>;
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public object</b>[] <a id="88a4b2f96ffd6a4c" href="R/88a4b2f96ffd6a4c.html" target="n" data-glyph="72,1" class="i method">GetValues</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r28 rd" class="r28 r">property0</span>, <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r29 rd" class="r29 r">property1</span>)
+		{
+			<b>var</b> <span id="r30 rd" class="r30 r">values</span> = <b>new</b> <b>object</b>[2];
+ 
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r31 rd" class="r31 r">i</span> = 0; <span class="r31 r">i</span> &lt; <a href="#2f82dd843474a424" class="i field">_properties</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r31 r">i</span>++)
+			{
+				<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r32 rd" class="r32 r">context</span> = <a href="#2f82dd843474a424" class="i field">_properties</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r31 r">i</span>];
+ 
+				<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r32 r">context</span>.<a href="#72fa8b9ea94946d0" class="i field">Property</a>, <span class="r28 r">property0</span>))
+				{
+					<span class="r30 r">values</span>[0] = <span class="r32 r">context</span>.<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+					<span class="r28 r">property0</span> = <b>null</b>;
+				}
+				<b>else if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r32 r">context</span>.<a href="#72fa8b9ea94946d0" class="i field">Property</a>, <span class="r29 r">property1</span>))
+				{
+					<span class="r30 r">values</span>[1] = <span class="r32 r">context</span>.<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+					<span class="r29 r">property1</span> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<span class="r28 r">property0</span> == <b>null</b> &amp;&amp; <span class="r29 r">property1</span> == <b>null</b>)
+					<b>return</b> <span class="r30 r">values</span>;
+			}
+ 
+			<b>if</b> (!<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r28 r">property0</span>, <b>null</b>))
+				<span class="r30 r">values</span>[0] = <span class="r28 r">property0</span>.<a href="BindableProperty.cs.html#b59f6352e415afa9" class="i property">DefaultValueCreator</a> == <b>null</b> ? <span class="r28 r">property0</span>.<a href="BindableProperty.cs.html#b20da29b32c9aaff" class="i property">DefaultValue</a> : <a href="#c88adc760bce7daf" class="i method">CreateAndAddContext</a>(<span class="r28 r">property0</span>).<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+			<b>if</b> (!<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r29 r">property1</span>, <b>null</b>))
+				<span class="r30 r">values</span>[1] = <span class="r29 r">property1</span>.<a href="BindableProperty.cs.html#b59f6352e415afa9" class="i property">DefaultValueCreator</a> == <b>null</b> ? <span class="r29 r">property1</span>.<a href="BindableProperty.cs.html#b20da29b32c9aaff" class="i property">DefaultValue</a> : <a href="#c88adc760bce7daf" class="i method">CreateAndAddContext</a>(<span class="r29 r">property1</span>).<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+ 
+			<b>return</b> <span class="r30 r">values</span>;
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public object</b>[] <a id="3919a76206080bec" href="R/3919a76206080bec.html" target="n" data-glyph="72,1" class="i method">GetValues</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r33 rd" class="r33 r">property0</span>, <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r34 rd" class="r34 r">property1</span>, <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r35 rd" class="r35 r">property2</span>)
+		{
+			<b>var</b> <span id="r36 rd" class="r36 r">values</span> = <b>new</b> <b>object</b>[3];
+ 
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r37 rd" class="r37 r">i</span> = 0; <span class="r37 r">i</span> &lt; <a href="#2f82dd843474a424" class="i field">_properties</a>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r37 r">i</span>++)
+			{
+				<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r38 rd" class="r38 r">context</span> = <a href="#2f82dd843474a424" class="i field">_properties</a><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r37 r">i</span>];
+ 
+				<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r38 r">context</span>.<a href="#72fa8b9ea94946d0" class="i field">Property</a>, <span class="r33 r">property0</span>))
+				{
+					<span class="r36 r">values</span>[0] = <span class="r38 r">context</span>.<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+					<span class="r33 r">property0</span> = <b>null</b>;
+				}
+				<b>else if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r38 r">context</span>.<a href="#72fa8b9ea94946d0" class="i field">Property</a>, <span class="r34 r">property1</span>))
+				{
+					<span class="r36 r">values</span>[1] = <span class="r38 r">context</span>.<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+					<span class="r34 r">property1</span> = <b>null</b>;
+				}
+				<b>else if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r38 r">context</span>.<a href="#72fa8b9ea94946d0" class="i field">Property</a>, <span class="r35 r">property2</span>))
+				{
+					<span class="r36 r">values</span>[2] = <span class="r38 r">context</span>.<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+					<span class="r35 r">property2</span> = <b>null</b>;
+				}
+ 
+				<b>if</b> (<span class="r33 r">property0</span> == <b>null</b> &amp;&amp; <span class="r34 r">property1</span> == <b>null</b> &amp;&amp; <span class="r35 r">property2</span> == <b>null</b>)
+					<b>return</b> <span class="r36 r">values</span>;
+			}
+ 
+			<b>if</b> (!<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r33 r">property0</span>, <b>null</b>))
+				<span class="r36 r">values</span>[0] = <span class="r33 r">property0</span>.<a href="BindableProperty.cs.html#b59f6352e415afa9" class="i property">DefaultValueCreator</a> == <b>null</b> ? <span class="r33 r">property0</span>.<a href="BindableProperty.cs.html#b20da29b32c9aaff" class="i property">DefaultValue</a> : <a href="#c88adc760bce7daf" class="i method">CreateAndAddContext</a>(<span class="r33 r">property0</span>).<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+			<b>if</b> (!<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r34 r">property1</span>, <b>null</b>))
+				<span class="r36 r">values</span>[1] = <span class="r34 r">property1</span>.<a href="BindableProperty.cs.html#b59f6352e415afa9" class="i property">DefaultValueCreator</a> == <b>null</b> ? <span class="r34 r">property1</span>.<a href="BindableProperty.cs.html#b20da29b32c9aaff" class="i property">DefaultValue</a> : <a href="#c88adc760bce7daf" class="i method">CreateAndAddContext</a>(<span class="r34 r">property1</span>).<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+			<b>if</b> (!<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r35 r">property2</span>, <b>null</b>))
+				<span class="r36 r">values</span>[2] = <span class="r35 r">property2</span>.<a href="BindableProperty.cs.html#b59f6352e415afa9" class="i property">DefaultValueCreator</a> == <b>null</b> ? <span class="r35 r">property2</span>.<a href="BindableProperty.cs.html#b20da29b32c9aaff" class="i property">DefaultValue</a> : <a href="#c88adc760bce7daf" class="i method">CreateAndAddContext</a>(<span class="r35 r">property2</span>).<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+ 
+			<b>return</b> <span class="r36 r">values</span>;
+		}
+ 
+		<b>internal virtual void</b> <a id="d9850a35b5f74200" href="R/d9850a35b5f74200.html" target="n" data-glyph="74,1" class="i method">OnRemoveDynamicResource</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r39 rd" class="r39 r">property</span>)
+		{
+		}
+ 
+		<b>internal virtual void</b> <a id="861bb71cf1661eb7" href="R/861bb71cf1661eb7.html" target="n" data-glyph="74,1" class="i method">OnSetDynamicResource</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r40 rd" class="r40 r">property</span>, <b>string</b> <span id="r41 rd" class="r41 r">key</span>)
+		{
+		}
+ 
+		<b>internal void</b> <a id="b257b1da066d8103" href="R/b257b1da066d8103.html" target="n" data-glyph="74,1" class="i method">RemoveDynamicResource</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r42 rd" class="r42 r">property</span>)
+		{
+			<b>if</b> (<span class="r42 r">property</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;property&quot;</span>);
+ 
+			<a href="#d9850a35b5f74200" class="i method">OnRemoveDynamicResource</a>(<span class="r42 r">property</span>);
+			<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r43 rd" class="r43 r">context</span> = <a href="#539b2f4093d1eff9" class="i method">GetOrCreateContext</a>(<span class="r42 r">property</span>);
+			<span class="r43 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp;= ~<a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#4262b9af65f257be" class="i field">IsDynamicResource</a>;
+		}
+ 
+		<b>internal void</b> <a id="5d68fa3dc0416c87" href="R/5d68fa3dc0416c87.html" target="n" data-glyph="74,1" class="i method">SetBinding</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r44 rd" class="r44 r">targetProperty</span>, <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r45 rd" class="r45 r">binding</span>, <b>bool</b> <span id="r46 rd" class="r46 r">fromStyle</span>)
+		{
+			<b>if</b> (<span class="r44 r">targetProperty</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;targetProperty&quot;</span>);
+			<b>if</b> (<span class="r45 r">binding</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;binding&quot;</span>);
+ 
+			<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r47 rd" class="r47 r">context</span> = <b>null</b>;
+			<b>if</b> (<span class="r46 r">fromStyle</span> &amp;&amp; (<span class="r47 r">context</span> = <a href="#270ce27953e1255a" class="i method">GetContext</a>(<span class="r44 r">targetProperty</span>)) != <b>null</b> &amp;&amp; (<span class="r47 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp; <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#00076be6212398d6" class="i field">IsDefaultValue</a>) == 0 &amp;&amp;
+				(<span class="r47 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp; <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#f2897eb9620454a2" class="i field">IsSetFromStyle</a>) == 0)
+				<b>return</b>;
+ 
+			<span class="r47 r">context</span> = <span class="r47 r">context</span> ?? <a href="#539b2f4093d1eff9" class="i method">GetOrCreateContext</a>(<span class="r44 r">targetProperty</span>);
+			<b>if</b> (<span class="r46 r">fromStyle</span>)
+				<span class="r47 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> |= <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#f2897eb9620454a2" class="i field">IsSetFromStyle</a>;
+			<b>else</b>
+				<span class="r47 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp;= ~<a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#f2897eb9620454a2" class="i field">IsSetFromStyle</a>;
+ 
+			<b>if</b> (<span class="r47 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a> != <b>null</b>)
+				<span class="r47 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a>.<a href="BindingBase.cs.html#39ff00242bdac3e9" class="i method">Unapply</a>();
+ 
+			<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r48 rd" class="r48 r">oldBinding</span> = <span class="r47 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a>;
+			<span class="r47 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a> = <span class="r45 r">binding</span>;
+ 
+			<b>if</b> (<span class="r44 r">targetProperty</span>.<a href="BindableProperty.cs.html#3ca80ab8ad51fd32" class="i property">BindingChanging</a> != <b>null</b>)
+				<span class="r44 r">targetProperty</span>.<a href="BindableProperty.cs.html#3ca80ab8ad51fd32" class="i property">BindingChanging</a>(<a href="#804aed41f6e6b7c8" class="k">this</a>, <span class="r48 r">oldBinding</span>, <span class="r45 r">binding</span>);
+ 
+			<span class="r45 r">binding</span>.<a href="BindingBase.cs.html#a881d515c9b53e0d" class="i method">Apply</a>(<a href="#ec31b23be1ce91d4" class="i property">BindingContext</a>, <a href="#804aed41f6e6b7c8" class="k">this</a>, <span class="r44 r">targetProperty</span>);
+		}
+ 
+		<b>internal void</b> <a id="de4e393b2a95b6e6" href="R/de4e393b2a95b6e6.html" target="n" data-glyph="74,1" class="i method">SetDynamicResource</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r49 rd" class="r49 r">property</span>, <b>string</b> <span id="r50 rd" class="r50 r">key</span>)
+		{
+			<a href="#0f6cdd3294e283d1" class="i method">SetDynamicResource</a>(<span class="r49 r">property</span>, <span class="r50 r">key</span>, <b>false</b>);
+		}
+ 
+		<b>internal void</b> <a id="0f6cdd3294e283d1" href="R/0f6cdd3294e283d1.html" target="n" data-glyph="74,1" class="i method">SetDynamicResource</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r51 rd" class="r51 r">property</span>, <b>string</b> <span id="r52 rd" class="r52 r">key</span>, <b>bool</b> <span id="r53 rd" class="r53 r">fromStyle</span>)
+		{
+			<b>if</b> (<span class="r51 r">property</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r51 r">property</span>));
+			<b>if</b> (<b>string</b>.<a href="@1@System.Runtime/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r52 r">key</span>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r52 r">key</span>));
+ 
+			<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r54 rd" class="r54 r">context</span> = <b>null</b>;
+			<b>if</b> (<span class="r53 r">fromStyle</span> &amp;&amp; (<span class="r54 r">context</span> = <a href="#270ce27953e1255a" class="i method">GetContext</a>(<span class="r51 r">property</span>)) != <b>null</b> &amp;&amp; (<span class="r54 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp; <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#00076be6212398d6" class="i field">IsDefaultValue</a>) == 0 &amp;&amp;
+				(<span class="r54 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp; <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#f2897eb9620454a2" class="i field">IsSetFromStyle</a>) == 0)
+				<b>return</b>;
+ 
+			<span class="r54 r">context</span> = <span class="r54 r">context</span> ?? <a href="#539b2f4093d1eff9" class="i method">GetOrCreateContext</a>(<span class="r51 r">property</span>);
+ 
+			<span class="r54 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> |= <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#4262b9af65f257be" class="i field">IsDynamicResource</a>;
+			<b>if</b> (<span class="r53 r">fromStyle</span>)
+				<span class="r54 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> |= <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#f2897eb9620454a2" class="i field">IsSetFromStyle</a>;
+			<b>else</b>
+				<span class="r54 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp;= ~<a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#f2897eb9620454a2" class="i field">IsSetFromStyle</a>;
+ 
+			<a href="#861bb71cf1661eb7" class="i method">OnSetDynamicResource</a>(<span class="r51 r">property</span>, <span class="r52 r">key</span>);
+		}
+ 
+		<b>internal void</b> <a id="7d9d0bb7b2d9afd7" href="R/7d9d0bb7b2d9afd7.html" target="n" data-glyph="74,1" class="i method">SetValue</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r55 rd" class="r55 r">property</span>, <b>object</b> <span id="r56 rd" class="r56 r">value</span>, <b>bool</b> <span id="r57 rd" class="r57 r">fromStyle</span>)
+		{
+			<a href="#3f506a94055dec0f" class="i method">SetValue</a>(<span class="r55 r">property</span>, <span class="r56 r">value</span>, <span class="r57 r">fromStyle</span>, <b>true</b>);
+		}
+ 
+		<b>internal void</b> <a id="0735122633b2e556" href="R/0735122633b2e556.html" target="n" data-glyph="74,1" class="i method">SetValueCore</a>(<a href="BindablePropertyKey.cs.html#05e0614cd9e299e1" class="t t">BindablePropertyKey</a> <span id="r58 rd" class="r58 r">propertyKey</span>, <b>object</b> <span id="r59 rd" class="r59 r">value</span>, <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a> <span id="r60 rd" class="r60 r">attributes</span> = <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="#4226771d1f3875f7" class="i field">None</a>)
+		{
+			<a href="#cdda2e5893c76fb1" class="i method">SetValueCore</a>(<span class="r58 r">propertyKey</span>.<a href="BindablePropertyKey.cs.html#80ee7a7d9c6b4d14" class="i property">BindableProperty</a>, <span class="r59 r">value</span>, <span class="r60 r">attributes</span>, <a href="#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="#7de71fe262540968" class="i field">None</a>);
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public void</b> <a id="083b32ea2fad3e6d" href="R/083b32ea2fad3e6d.html" target="n" data-glyph="72,1" class="i method">SetValueCore</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r61 rd" class="r61 r">property</span>, <b>object</b> <span id="r62 rd" class="r62 r">value</span>, <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a> <span id="r63 rd" class="r63 r">attributes</span> = <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="#4226771d1f3875f7" class="i field">None</a>)
+		{
+			<a href="#cdda2e5893c76fb1" class="i method">SetValueCore</a>(<span class="r61 r">property</span>, <span class="r62 r">value</span>, <span class="r63 r">attributes</span>, <a href="#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="#8eb48006e0d48d47" class="i field">Default</a>);
+		}
+ 
+		<b>internal void</b> <a id="cdda2e5893c76fb1" href="R/cdda2e5893c76fb1.html" target="n" data-glyph="74,1" class="i method">SetValueCore</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r64 rd" class="r64 r">property</span>, <b>object</b> <span id="r65 rd" class="r65 r">value</span>, <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a> <span id="r66 rd" class="r66 r">attributes</span>, <a href="#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a> <span id="r67 rd" class="r67 r">privateAttributes</span>)
+		{
+			<b>bool</b> <span id="r68 rd" class="r68 r">checkAccess</span> = (<span class="r67 r">privateAttributes</span> &amp; <a href="#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="#5d1721bbb7d03985" class="i field">CheckAccess</a>) != 0;
+			<b>bool</b> <span id="r69 rd" class="r69 r">manuallySet</span> = (<span class="r67 r">privateAttributes</span> &amp; <a href="#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="#f58d2f565988769b" class="i field">ManuallySet</a>) != 0;
+			<b>bool</b> <span id="r70 rd" class="r70 r">silent</span> = (<span class="r67 r">privateAttributes</span> &amp; <a href="#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="#7a45246480af1c15" class="i field">Silent</a>) != 0;
+			<b>bool</b> <span id="r71 rd" class="r71 r">fromStyle</span> = (<span class="r67 r">privateAttributes</span> &amp; <a href="#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="#207fd4f9549552bc" class="i field">FromStyle</a>) != 0;
+			<b>bool</b> <span id="r72 rd" class="r72 r">converted</span> = (<span class="r67 r">privateAttributes</span> &amp; <a href="#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="#a9b94e4dc44be024" class="i field">Converted</a>) != 0;
+ 
+			<b>if</b> (<span class="r64 r">property</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;property&quot;</span>);
+			<b>if</b> (<span class="r68 r">checkAccess</span> &amp;&amp; <span class="r64 r">property</span>.<a href="BindableProperty.cs.html#da2279a1bffafd1f" class="i property">IsReadOnly</a>)
+			{
+				<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">&quot;Can not set the BindableProperty \&quot;{0}\&quot; because it is readonly.&quot;</span>, <span class="r64 r">property</span>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>);
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (!<span class="r72 r">converted</span> &amp;&amp; !<span class="r64 r">property</span>.<a href="BindableProperty.cs.html#c50e83cb086bedd0" class="i method">TryConvert</a>(<b>ref</b> <span class="r65 r">value</span>))
+			{
+				<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#1776263ebad4afea" class="i method">Warning</a>(<span class="s">&quot;SetValue&quot;</span>, <span class="s">&quot;Can not convert {0} to type &#39;{1}&#39;&quot;</span>, <span class="r65 r">value</span>, <span class="r64 r">property</span>.<a href="BindableProperty.cs.html#3a88e13a70e1553a" class="i property">ReturnType</a>);
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<span class="r64 r">property</span>.<a href="BindableProperty.cs.html#f88c66d2b615d482" class="i property">ValidateValue</a> != <b>null</b> &amp;&amp; !<span class="r64 r">property</span>.<a href="BindableProperty.cs.html#f88c66d2b615d482" class="i property">ValidateValue</a>(<a href="#804aed41f6e6b7c8" class="k">this</a>, <span class="r65 r">value</span>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;Value was an invalid value for &quot;</span> + <span class="r64 r">property</span>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>, <span class="s">&quot;value&quot;</span>);
+ 
+			<b>if</b> (<span class="r64 r">property</span>.<a href="BindableProperty.cs.html#04cc0bc930946ee1" class="i property">CoerceValue</a> != <b>null</b>)
+				<span class="r65 r">value</span> = <span class="r64 r">property</span>.<a href="BindableProperty.cs.html#04cc0bc930946ee1" class="i property">CoerceValue</a>(<a href="#804aed41f6e6b7c8" class="k">this</a>, <span class="r65 r">value</span>);
+ 
+			<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r73 rd" class="r73 r">context</span> = <a href="#539b2f4093d1eff9" class="i method">GetOrCreateContext</a>(<span class="r64 r">property</span>);
+			<b>if</b> (<span class="r69 r">manuallySet</span>) {
+				<span class="r73 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> |= <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#350b9b1cbe1ab376" class="i field">IsManuallySet</a>;
+				<span class="r73 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp;= ~<a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#f2897eb9620454a2" class="i field">IsSetFromStyle</a>;
+			} <b>else</b>
+				<span class="r73 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp;= ~<a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#350b9b1cbe1ab376" class="i field">IsManuallySet</a>;
+ 
+			<b>if</b> (<span class="r71 r">fromStyle</span>)
+				<span class="r73 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> |= <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#f2897eb9620454a2" class="i field">IsSetFromStyle</a>;
+			<span class="c">// else omitted on purpose</span>
+ 
+			<b>bool</b> <span id="r74 rd" class="r74 r">currentlyApplying</span> = <a href="#87809c0cfaaa21b6" class="i field">_applying</a>;
+ 
+			<b>if</b> ((<span class="r73 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp; <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#690262bf5499a344" class="i field">IsBeingSet</a>) != 0)
+			{
+				<a href="@1@System.Collections/A.html#aa3beab99b2e0db2" class="t t">Queue</a>&lt;<a href="#d4edc09c9f9cc421" class="t t">SetValueArgs</a>&gt; <span id="r75 rd" class="r75 r">delayQueue</span> = <span class="r73 r">context</span>.<a href="#72b201516cee2b42" class="i field">DelayedSetters</a>;
+				<b>if</b> (<span class="r75 r">delayQueue</span> == <b>null</b>)
+					<span class="r73 r">context</span>.<a href="#72b201516cee2b42" class="i field">DelayedSetters</a> = <span class="r75 r">delayQueue</span> = <b>new</b> <a href="@1@System.Collections/A.html#a09109def640b7b1" class="t constructor">Queue</a>&lt;<a href="#d4edc09c9f9cc421" class="t t">SetValueArgs</a>&gt;();
+ 
+				<span class="r75 r">delayQueue</span>.<a href="@1@System.Collections/A.html#14c3cc45ceaf1566" class="i method">Enqueue</a>(<b>new</b> <a href="#1e5a8f29653b30b3" class="t constructor">SetValueArgs</a>(<span class="r64 r">property</span>, <span class="r73 r">context</span>, <span class="r65 r">value</span>, <span class="r74 r">currentlyApplying</span>, <span class="r66 r">attributes</span>));
+			}
+			<b>else</b>
+			{
+				<span class="r73 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> |= <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#690262bf5499a344" class="i field">IsBeingSet</a>;
+				<a href="#12295e7f2a8fdbcb" class="i method">SetValueActual</a>(<span class="r64 r">property</span>, <span class="r73 r">context</span>, <span class="r65 r">value</span>, <span class="r74 r">currentlyApplying</span>, <span class="r66 r">attributes</span>, <span class="r70 r">silent</span>);
+ 
+				<a href="@1@System.Collections/A.html#aa3beab99b2e0db2" class="t t">Queue</a>&lt;<a href="#d4edc09c9f9cc421" class="t t">SetValueArgs</a>&gt; <span id="r76 rd" class="r76 r">delayQueue</span> = <span class="r73 r">context</span>.<a href="#72b201516cee2b42" class="i field">DelayedSetters</a>;
+				<b>if</b> (<span class="r76 r">delayQueue</span> != <b>null</b>)
+				{
+					<b>while</b> (<span class="r76 r">delayQueue</span>.<a href="@1@System.Collections/A.html#2d2504e4ca700843" class="i property">Count</a> &gt; 0)
+					{
+						<a href="#d4edc09c9f9cc421" class="t t">SetValueArgs</a> <span id="r77 rd" class="r77 r">s</span> = <span class="r76 r">delayQueue</span>.<a href="@1@System.Collections/A.html#e68caf2d91344411" class="i method">Dequeue</a>();
+						<a href="#12295e7f2a8fdbcb" class="i method">SetValueActual</a>(<span class="r77 r">s</span>.<a href="#2dbb2f1bc32fdc7f" class="i field">Property</a>, <span class="r77 r">s</span>.<a href="#631b8ed1795d2fcd" class="i field">Context</a>, <span class="r77 r">s</span>.<a href="#0c7c20e35bee7736" class="i field">Value</a>, <span class="r77 r">s</span>.<a href="#2d6d6b57c060cb19" class="i field">CurrentlyApplying</a>, <span class="r77 r">s</span>.<a href="#d89c1d6518885e50" class="i field">Attributes</a>);
+					}
+ 
+					<span class="r73 r">context</span>.<a href="#72b201516cee2b42" class="i field">DelayedSetters</a> = <b>null</b>;
+				}
+ 
+				<span class="r73 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp;= ~<a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#690262bf5499a344" class="i field">IsBeingSet</a>;
+			}
+		}
+ 
+		<b>void</b> <a id="86d3ceb2227daba0" href="R/86d3ceb2227daba0.html" target="n" data-glyph="76,1" class="i method">ApplyBindings</a>(<b>bool</b> <span id="r78 rd" class="r78 r">skipBindingContext</span>)
+		{
+			<b>var</b> <span id="r79 rd" class="r79 r">prop</span> = <a href="#2f82dd843474a424" class="i field">_properties</a>.<a href="@1@System.Collections/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+			<b>for</b> (<b>int</b> <span id="r80 rd" class="r80 r">i</span> = 0, <span id="r81 rd" class="r81 r">propLength</span> = <span class="r79 r">prop</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a>; <span class="r80 r">i</span> &lt; <span class="r81 r">propLength</span>; <span class="r80 r">i</span>++) {
+				<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r82 rd" class="r82 r">context</span> = <span class="r79 r">prop</span> [<span class="r80 r">i</span>];
+				<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r83 rd" class="r83 r">binding</span> = <span class="r82 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a>;
+				<b>if</b> (<span class="r83 r">binding</span> == <b>null</b>)
+					<b>continue</b>;
+ 
+				<b>if</b> (<span class="r78 r">skipBindingContext</span> &amp;&amp; <a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r82 r">context</span>.<a href="#72fa8b9ea94946d0" class="i field">Property</a>, <a href="#af7033c3288388d7" class="i field">BindingContextProperty</a>))
+					<b>continue</b>;
+ 
+				<span class="r83 r">binding</span>.<a href="BindingBase.cs.html#39ff00242bdac3e9" class="i method">Unapply</a>();
+				<span class="r83 r">binding</span>.<a href="BindingBase.cs.html#a881d515c9b53e0d" class="i method">Apply</a>(<a href="#ec31b23be1ce91d4" class="i property">BindingContext</a>, <a href="#804aed41f6e6b7c8" class="k">this</a>, <span class="r82 r">context</span>.<a href="#72fa8b9ea94946d0" class="i field">Property</a>);
+			}
+		}
+ 
+		<b>static void</b> <a id="9becba62a1665b85" href="R/9becba62a1665b85.html" target="n" data-glyph="76,1" class="i method">BindingContextPropertyBindingChanging</a>(<a href="#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r84 rd" class="r84 r">bindable</span>, <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r85 rd" class="r85 r">oldBindingBase</span>, <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r86 rd" class="r86 r">newBindingBase</span>)
+		{
+			<b>object</b> <span id="r87 rd" class="r87 r">context</span> = <span class="r84 r">bindable</span>.<a href="#b931581aa934d6cd" class="i field">_inheritedContext</a>;
+			<a href="Binding.cs.html#2dbd2de7439b0217" class="k">var</a> <span id="r88 rd" class="r88 r">oldBinding</span> = <span class="r85 r">oldBindingBase</span> <b>as</b> <a href="Binding.cs.html#2dbd2de7439b0217" class="t t">Binding</a>;
+			<a href="Binding.cs.html#2dbd2de7439b0217" class="k">var</a> <span id="r89 rd" class="r89 r">newBinding</span> = <span class="r86 r">newBindingBase</span> <b>as</b> <a href="Binding.cs.html#2dbd2de7439b0217" class="t t">Binding</a>;
+ 
+			<b>if</b> (<span class="r87 r">context</span> == <b>null</b> &amp;&amp; <span class="r88 r">oldBinding</span> != <b>null</b>)
+				<span class="r87 r">context</span> = <span class="r88 r">oldBinding</span>.<a href="BindingBase.cs.html#b71fb453e66ea93b" class="i property">Context</a>;
+			<b>if</b> (<span class="r87 r">context</span> != <b>null</b> &amp;&amp; <span class="r89 r">newBinding</span> != <b>null</b>)
+				<span class="r89 r">newBinding</span>.<a href="BindingBase.cs.html#b71fb453e66ea93b" class="i property">Context</a> = <span class="r87 r">context</span>;
+		}
+ 
+		<b>static void</b> <a id="2002d3a384a28d53" href="R/2002d3a384a28d53.html" target="n" data-glyph="76,1" class="i method">BindingContextPropertyChanged</a>(<a href="#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r90 rd" class="r90 r">bindable</span>, <b>object</b> <span id="r91 rd" class="r91 r">oldvalue</span>, <b>object</b> <span id="r92 rd" class="r92 r">newvalue</span>)
+		{
+			<span class="r90 r">bindable</span>.<a href="#b931581aa934d6cd" class="i field">_inheritedContext</a> = <b>null</b>;
+			<span class="r90 r">bindable</span>.<a href="#86d3ceb2227daba0" class="i method">ApplyBindings</a>(<b>true</b>);
+			<span class="r90 r">bindable</span>.<a href="#afe58feb173371d1" class="i method">OnBindingContextChanged</a>();
+		}
+ 
+		<b>void</b> <a id="9caee3235ee11ecf" href="R/9caee3235ee11ecf.html" target="n" data-glyph="76,1" class="i method">ClearValue</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r93 rd" class="r93 r">property</span>, <b>bool</b> <span id="r94 rd" class="r94 r">checkaccess</span>)
+		{
+			<b>if</b> (<span class="r93 r">property</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;property&quot;</span>);
+ 
+			<b>if</b> (<span class="r94 r">checkaccess</span> &amp;&amp; <span class="r93 r">property</span>.<a href="BindableProperty.cs.html#da2279a1bffafd1f" class="i property">IsReadOnly</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<b>string</b>.<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;The BindableProperty \&quot;{0}\&quot; is readonly.&quot;</span>, <span class="r93 r">property</span>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>));
+ 
+			<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r95 rd" class="r95 r">bpcontext</span> = <a href="#270ce27953e1255a" class="i method">GetContext</a>(<span class="r93 r">property</span>);
+			<b>if</b> (<span class="r95 r">bpcontext</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>object</b> <span id="r96 rd" class="r96 r">original</span> = <span class="r95 r">bpcontext</span>.<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+ 
+			<b>object</b> <span id="r97 rd" class="r97 r">newValue</span> = <span class="r93 r">property</span>.<a href="BindableProperty.cs.html#d0c9ea63ddd6dda9" class="i method">GetDefaultValue</a>(<a href="#804aed41f6e6b7c8" class="k">this</a>);
+ 
+			<b>bool</b> <span id="r98 rd" class="r98 r">same</span> = <a href="@1@System.Runtime/A.html#f2a579c50b414717" class="i method">Equals</a>(<span class="r96 r">original</span>, <span class="r97 r">newValue</span>);
+			<b>if</b> (!<span class="r98 r">same</span>)
+			{
+				<b>if</b> (<span class="r93 r">property</span>.<a href="BindableProperty.cs.html#f469f9f42df41cfa" class="i property">PropertyChanging</a> != <b>null</b>)
+					<span class="r93 r">property</span>.<a href="BindableProperty.cs.html#f469f9f42df41cfa" class="i property">PropertyChanging</a>(<a href="#804aed41f6e6b7c8" class="k">this</a>, <span class="r96 r">original</span>, <span class="r97 r">newValue</span>);
+ 
+				<a href="#e5d2d1b731820b1b" class="i method">OnPropertyChanging</a>(<span class="r93 r">property</span>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>);
+			}
+ 
+			<span class="r95 r">bpcontext</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp;= ~<a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#350b9b1cbe1ab376" class="i field">IsManuallySet</a>;
+			<span class="r95 r">bpcontext</span>.<a href="#5919dc6344ff2ddb" class="i field">Value</a> = <span class="r97 r">newValue</span>;
+			<span class="r95 r">bpcontext</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> |= <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#00076be6212398d6" class="i field">IsDefaultValue</a>;
+ 
+			<b>if</b> (!<span class="r98 r">same</span>)
+			{
+				<a href="#d700e2f209d59b08" class="i method">OnPropertyChanged</a>(<span class="r93 r">property</span>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>);
+				<b>if</b> (<span class="r93 r">property</span>.<a href="BindableProperty.cs.html#e5f36a54dbacac01" class="i property">PropertyChanged</a> != <b>null</b>)
+					<span class="r93 r">property</span>.<a href="BindableProperty.cs.html#e5f36a54dbacac01" class="i property">PropertyChanged</a>(<a href="#804aed41f6e6b7c8" class="k">this</a>, <span class="r96 r">original</span>, <span class="r97 r">newValue</span>);
+			}
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#b2f5af2558f436d5" class="t constructor">MethodImpl</a>(<a href="@1@System.Runtime/A.html#4159f5c528de6ee8" class="t t">MethodImplOptions</a>.<a href="@1@System.Runtime/A.html#1e79a2c84795aaa0" class="i field">AggressiveInlining</a>)]
+		<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <a id="c88adc760bce7daf" href="R/c88adc760bce7daf.html" target="n" data-glyph="76,1" class="i method">CreateAndAddContext</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r99 rd" class="r99 r">property</span>)
+		{
+			<a href="#b21b7911d76f573c" class="k">var</a> <span id="r100 rd" class="r100 r">context</span> = <b>new</b> <a href="#b21b7911d76f573c" class="t constructor">BindablePropertyContext</a> { <a href="#72fa8b9ea94946d0" class="i field">Property</a> = <span class="r99 r">property</span>, <a href="#5919dc6344ff2ddb" class="i field">Value</a> = <span class="r99 r">property</span>.<a href="BindableProperty.cs.html#b59f6352e415afa9" class="i property">DefaultValueCreator</a> != <b>null</b> ? <span class="r99 r">property</span>.<a href="BindableProperty.cs.html#b59f6352e415afa9" class="i property">DefaultValueCreator</a>(<a href="#804aed41f6e6b7c8" class="k">this</a>) : <span class="r99 r">property</span>.<a href="BindableProperty.cs.html#b20da29b32c9aaff" class="i property">DefaultValue</a> };
+ 
+			<b>if</b> (<span class="r99 r">property</span>.<a href="BindableProperty.cs.html#b59f6352e415afa9" class="i property">DefaultValueCreator</a> != <b>null</b>)
+				<span class="r100 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> = <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#00076be6212398d6" class="i field">IsDefaultValue</a>;
+ 
+			<a href="#2f82dd843474a424" class="i field">_properties</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r100 r">context</span>);
+			<b>return</b> <span class="r100 r">context</span>;
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#b2f5af2558f436d5" class="t constructor">MethodImpl</a>(<a href="@1@System.Runtime/A.html#4159f5c528de6ee8" class="t t">MethodImplOptions</a>.<a href="@1@System.Runtime/A.html#1e79a2c84795aaa0" class="i field">AggressiveInlining</a>)]
+		<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <a id="270ce27953e1255a" href="R/270ce27953e1255a.html" target="n" data-glyph="76,1" class="i method">GetContext</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r101 rd" class="r101 r">property</span>)
+		{
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a>&gt; <span id="r102 rd" class="r102 r">properties</span> = <a href="#2f82dd843474a424" class="i field">_properties</a>;
+ 
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r103 rd" class="r103 r">i</span> = 0; <span class="r103 r">i</span> &lt; <span class="r102 r">properties</span>.<a href="@1@System.Collections/A.html#78a69d857716bc68" class="i property">Count</a>; <span class="r103 r">i</span>++)
+			{
+				<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r104 rd" class="r104 r">context</span> = <span class="r102 r">properties</span><a href="@1@System.Collections/A.html#0c65bec4d3fac21e">[</a><span class="r103 r">i</span>];
+				<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r104 r">context</span>.<a href="#72fa8b9ea94946d0" class="i field">Property</a>, <span class="r101 r">property</span>))
+					<b>return</b> <span class="r104 r">context</span>;
+			}
+ 
+			<b>return null</b>;
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#b2f5af2558f436d5" class="t constructor">MethodImpl</a>(<a href="@1@System.Runtime/A.html#4159f5c528de6ee8" class="t t">MethodImplOptions</a>.<a href="@1@System.Runtime/A.html#1e79a2c84795aaa0" class="i field">AggressiveInlining</a>)]
+		<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <a id="539b2f4093d1eff9" href="R/539b2f4093d1eff9.html" target="n" data-glyph="76,1" class="i method">GetOrCreateContext</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r105 rd" class="r105 r">property</span>)
+		{
+			<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r106 rd" class="r106 r">context</span> = <a href="#270ce27953e1255a" class="i method">GetContext</a>(<span class="r105 r">property</span>);
+			<b>if</b> (<span class="r106 r">context</span> == <b>null</b>)
+			{
+				<span class="r106 r">context</span> = <a href="#c88adc760bce7daf" class="i method">CreateAndAddContext</a>(<span class="r105 r">property</span>);
+			}
+ 
+			<b>return</b> <span class="r106 r">context</span>;
+		}
+ 
+		<b>void</b> <a id="a4e325e7bd0ce184" href="R/a4e325e7bd0ce184.html" target="n" data-glyph="76,1" class="i method">RemoveBinding</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r107 rd" class="r107 r">property</span>, <a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r108 rd" class="r108 r">context</span>)
+		{
+			<span class="r108 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a>.<a href="BindingBase.cs.html#39ff00242bdac3e9" class="i method">Unapply</a>();
+ 
+			<b>if</b> (<span class="r107 r">property</span>.<a href="BindableProperty.cs.html#3ca80ab8ad51fd32" class="i property">BindingChanging</a> != <b>null</b>)
+				<span class="r107 r">property</span>.<a href="BindableProperty.cs.html#3ca80ab8ad51fd32" class="i property">BindingChanging</a>(<a href="#804aed41f6e6b7c8" class="k">this</a>, <span class="r108 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a>, <b>null</b>);
+ 
+			<span class="r108 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a> = <b>null</b>;
+		}
+ 
+		<b>void</b> <a id="3f506a94055dec0f" href="R/3f506a94055dec0f.html" target="n" data-glyph="76,1" class="i method">SetValue</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r109 rd" class="r109 r">property</span>, <b>object</b> <span id="r110 rd" class="r110 r">value</span>, <b>bool</b> <span id="r111 rd" class="r111 r">fromStyle</span>, <b>bool</b> <span id="r112 rd" class="r112 r">checkAccess</span>)
+		{
+			<b>if</b> (<span class="r109 r">property</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;property&quot;</span>);
+ 
+			<b>if</b> (<span class="r112 r">checkAccess</span> &amp;&amp; <span class="r109 r">property</span>.<a href="BindableProperty.cs.html#da2279a1bffafd1f" class="i property">IsReadOnly</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<b>string</b>.<a href="@1@System.Runtime/A.html#ad9f5b0b214ae8f3" class="i method">Format</a>(<span class="s">&quot;The BindableProperty \&quot;{0}\&quot; is readonly.&quot;</span>, <span class="r109 r">property</span>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>));
+ 
+			<a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r113 rd" class="r113 r">context</span> = <b>null</b>;
+			<b>if</b> (<span class="r111 r">fromStyle</span> &amp;&amp; (<span class="r113 r">context</span> = <a href="#270ce27953e1255a" class="i method">GetContext</a>(<span class="r109 r">property</span>)) != <b>null</b> &amp;&amp; (<span class="r113 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp; <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#00076be6212398d6" class="i field">IsDefaultValue</a>) == 0 &amp;&amp;
+				(<span class="r113 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp; <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#f2897eb9620454a2" class="i field">IsSetFromStyle</a>) == 0)
+				<b>return</b>;
+ 
+			<a href="#cdda2e5893c76fb1" class="i method">SetValueCore</a>(<span class="r109 r">property</span>, <span class="r110 r">value</span>, <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="#5d70ae233f0699e2" class="i field">ClearOneWayBindings</a> | <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="#f96104604fccfe26" class="i field">ClearDynamicResource</a>,
+				(<span class="r111 r">fromStyle</span> ? <a href="#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="#207fd4f9549552bc" class="i field">FromStyle</a> : <a href="#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="#f58d2f565988769b" class="i field">ManuallySet</a>) | (<span class="r112 r">checkAccess</span> ? <a href="#b7cf4bc942d04eaa" class="t t">SetValuePrivateFlags</a>.<a href="#5d1721bbb7d03985" class="i field">CheckAccess</a> : 0));
+		}
+ 
+		<b>void</b> <a id="12295e7f2a8fdbcb" href="R/12295e7f2a8fdbcb.html" target="n" data-glyph="76,1" class="i method">SetValueActual</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r114 rd" class="r114 r">property</span>, <a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r115 rd" class="r115 r">context</span>, <b>object</b> <span id="r116 rd" class="r116 r">value</span>, <b>bool</b> <span id="r117 rd" class="r117 r">currentlyApplying</span>, <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a> <span id="r118 rd" class="r118 r">attributes</span>, <b>bool</b> <span id="r119 rd" class="r119 r">silent</span> = <b>false</b>)
+		{
+			<b>object</b> <span id="r120 rd" class="r120 r">original</span> = <span class="r115 r">context</span>.<a href="#5919dc6344ff2ddb" class="i field">Value</a>;
+			<b>bool</b> <span id="r121 rd" class="r121 r">raiseOnEqual</span> = (<span class="r118 r">attributes</span> &amp; <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="#9cc65e74ac0b0390" class="i field">RaiseOnEqual</a>) != 0;
+			<b>bool</b> <span id="r122 rd" class="r122 r">clearDynamicResources</span> = (<span class="r118 r">attributes</span> &amp; <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="#f96104604fccfe26" class="i field">ClearDynamicResource</a>) != 0;
+			<b>bool</b> <span id="r123 rd" class="r123 r">clearOneWayBindings</span> = (<span class="r118 r">attributes</span> &amp; <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="#5d70ae233f0699e2" class="i field">ClearOneWayBindings</a>) != 0;
+			<b>bool</b> <span id="r124 rd" class="r124 r">clearTwoWayBindings</span> = (<span class="r118 r">attributes</span> &amp; <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a>.<a href="#5c29bce81f0a4123" class="i field">ClearTwoWayBindings</a>) != 0;
+ 
+			<b>bool</b> <span id="r125 rd" class="r125 r">same</span> = <a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r115 r">context</span>.<a href="#72fa8b9ea94946d0" class="i field">Property</a>, <a href="#af7033c3288388d7" class="i field">BindingContextProperty</a>) ? <a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r116 r">value</span>, <span class="r120 r">original</span>) : <a href="@1@System.Runtime/A.html#f2a579c50b414717" class="i method">Equals</a>(<span class="r116 r">value</span>, <span class="r120 r">original</span>);
+			<b>if</b> (!<span class="r119 r">silent</span> &amp;&amp; (!<span class="r125 r">same</span> || <span class="r121 r">raiseOnEqual</span>))
+			{
+				<b>if</b> (<span class="r114 r">property</span>.<a href="BindableProperty.cs.html#f469f9f42df41cfa" class="i property">PropertyChanging</a> != <b>null</b>)
+					<span class="r114 r">property</span>.<a href="BindableProperty.cs.html#f469f9f42df41cfa" class="i property">PropertyChanging</a>(<a href="#804aed41f6e6b7c8" class="k">this</a>, <span class="r120 r">original</span>, <span class="r116 r">value</span>);
+ 
+				<a href="#e5d2d1b731820b1b" class="i method">OnPropertyChanging</a>(<span class="r114 r">property</span>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>);
+			}
+ 
+			<b>if</b> (!<span class="r125 r">same</span> || <span class="r121 r">raiseOnEqual</span>)
+			{
+				<span class="r115 r">context</span>.<a href="#5919dc6344ff2ddb" class="i field">Value</a> = <span class="r116 r">value</span>;
+			}
+ 
+			<span class="r115 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp;= ~<a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#00076be6212398d6" class="i field">IsDefaultValue</a>;
+ 
+			<b>if</b> ((<span class="r115 r">context</span>.<a href="#0f1a6749d7bba071" class="i field">Attributes</a> &amp; <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a>.<a href="#4262b9af65f257be" class="i field">IsDynamicResource</a>) != 0 &amp;&amp; <span class="r122 r">clearDynamicResources</span>)
+				<a href="#b257b1da066d8103" class="i method">RemoveDynamicResource</a>(<span class="r114 r">property</span>);
+ 
+			<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <span id="r126 rd" class="r126 r">binding</span> = <span class="r115 r">context</span>.<a href="#1c2f84e143159065" class="i field">Binding</a>;
+			<b>if</b> (<span class="r126 r">binding</span> != <b>null</b>)
+			{
+				<b>if</b> (<span class="r123 r">clearOneWayBindings</span> &amp;&amp; <span class="r126 r">binding</span>.<a href="BindingBaseExtensions.cs.html#a7773b8e58e2cdaa" class="i method">GetRealizedMode</a>(<span class="r114 r">property</span>) == <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#464911f604460d5c" class="i field">OneWay</a> || <span class="r124 r">clearTwoWayBindings</span> &amp;&amp; <span class="r126 r">binding</span>.<a href="BindingBaseExtensions.cs.html#a7773b8e58e2cdaa" class="i method">GetRealizedMode</a>(<span class="r114 r">property</span>) == <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#5b5de329b5adbce9" class="i field">TwoWay</a>)
+				{
+					<a href="#a4e325e7bd0ce184" class="i method">RemoveBinding</a>(<span class="r114 r">property</span>, <span class="r115 r">context</span>);
+					<span class="r126 r">binding</span> = <b>null</b>;
+				}
+			}
+ 
+			<b>if</b> (!<span class="r119 r">silent</span> &amp;&amp; (!<span class="r125 r">same</span> || <span class="r121 r">raiseOnEqual</span>))
+			{
+				<b>if</b> (<span class="r126 r">binding</span> != <b>null</b> &amp;&amp; !<span class="r117 r">currentlyApplying</span>)
+				{
+					<a href="#87809c0cfaaa21b6" class="i field">_applying</a> = <b>true</b>;
+					<span class="r126 r">binding</span>.<a href="BindingBase.cs.html#3e1982c75e1e5fd4" class="i method">Apply</a>(<b>true</b>);
+					<a href="#87809c0cfaaa21b6" class="i field">_applying</a> = <b>false</b>;
+				}
+ 
+				<a href="#d700e2f209d59b08" class="i method">OnPropertyChanged</a>(<span class="r114 r">property</span>.<a href="BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>);
+ 
+				<b>if</b> (<span class="r114 r">property</span>.<a href="BindableProperty.cs.html#e5f36a54dbacac01" class="i property">PropertyChanged</a> != <b>null</b>)
+					<span class="r114 r">property</span>.<a href="BindableProperty.cs.html#e5f36a54dbacac01" class="i property">PropertyChanged</a>(<a href="#804aed41f6e6b7c8" class="k">this</a>, <span class="r120 r">original</span>, <span class="r116 r">value</span>);
+			}
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#5bbb5168ad9d1021" class="t constructor">Flags</a>]
+		<b>enum</b> <a id="92d1f0363ab74484" href="R/92d1f0363ab74484.html" target="n" data-glyph="22,1" class="t t"><span id="5d9ee65349be88ff">BindableContextAttributes</span></a>
+		{
+			<a id="350b9b1cbe1ab376" href="R/350b9b1cbe1ab376.html" target="n" data-glyph="24,2" class="i field">IsManuallySet</a> = 1 &lt;&lt; 0,
+			<a id="690262bf5499a344" href="R/690262bf5499a344.html" target="n" data-glyph="24,2" class="i field">IsBeingSet</a> = 1 &lt;&lt; 1,
+			<a id="4262b9af65f257be" href="R/4262b9af65f257be.html" target="n" data-glyph="24,2" class="i field">IsDynamicResource</a> = 1 &lt;&lt; 2,
+			<a id="f2897eb9620454a2" href="R/f2897eb9620454a2.html" target="n" data-glyph="24,2" class="i field">IsSetFromStyle</a> = 1 &lt;&lt; 3,
+			<a id="00076be6212398d6" href="R/00076be6212398d6.html" target="n" data-glyph="24,2" class="i field">IsDefaultValue</a> = 1 &lt;&lt; 4
+		}
+ 
+		<b>class</b> <a id="b21b7911d76f573c" href="R/b21b7911d76f573c.html" target="n" data-glyph="4,1" class="t t"><span id="0956fd45b5e00265">BindablePropertyContext</span></a>
+		{
+			<b>public</b> <a href="#92d1f0363ab74484" class="t t">BindableContextAttributes</a> <a id="0f1a6749d7bba071" href="R/0f1a6749d7bba071.html" target="n" data-glyph="42,2" class="i field">Attributes</a>;
+			<b>public</b> <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <a id="1c2f84e143159065" href="R/1c2f84e143159065.html" target="n" data-glyph="42,2" class="i field">Binding</a>;
+			<b>public</b> <a href="@1@System.Collections/A.html#aa3beab99b2e0db2" class="t t">Queue</a>&lt;<a href="#d4edc09c9f9cc421" class="t t">SetValueArgs</a>&gt; <a id="72b201516cee2b42" href="R/72b201516cee2b42.html" target="n" data-glyph="42,2" class="i field">DelayedSetters</a>;
+			<b>public</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="72fa8b9ea94946d0" href="R/72fa8b9ea94946d0.html" target="n" data-glyph="42,2" class="i field">Property</a>;
+			<b>public object</b> <a id="5919dc6344ff2ddb" href="R/5919dc6344ff2ddb.html" target="n" data-glyph="42,2" class="i field">Value</a>;
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#5bbb5168ad9d1021" class="t constructor">Flags</a>]
+		<b>internal enum</b> <a id="b7cf4bc942d04eaa" href="R/b7cf4bc942d04eaa.html" target="n" data-glyph="20,1" class="t t"><span id="7d92943cee029701">SetValuePrivateFlags</span></a>
+		{
+			<a id="7de71fe262540968" href="R/7de71fe262540968.html" target="n" data-glyph="24,2" class="i field">None</a> = 0,
+			<a id="5d1721bbb7d03985" href="R/5d1721bbb7d03985.html" target="n" data-glyph="24,2" class="i field">CheckAccess</a> = 1 &lt;&lt; 0,
+			<a id="7a45246480af1c15" href="R/7a45246480af1c15.html" target="n" data-glyph="24,2" class="i field">Silent</a> = 1 &lt;&lt; 1,
+			<a id="f58d2f565988769b" href="R/f58d2f565988769b.html" target="n" data-glyph="24,2" class="i field">ManuallySet</a> = 1 &lt;&lt; 2,
+			<a id="207fd4f9549552bc" href="R/207fd4f9549552bc.html" target="n" data-glyph="24,2" class="i field">FromStyle</a> = 1 &lt;&lt; 3,
+			<a id="a9b94e4dc44be024" href="R/a9b94e4dc44be024.html" target="n" data-glyph="24,2" class="i field">Converted</a> = 1 &lt;&lt; 4,
+			<a id="8eb48006e0d48d47" href="R/8eb48006e0d48d47.html" target="n" data-glyph="24,2" class="i field">Default</a> = <a href="#5d1721bbb7d03985" class="i field">CheckAccess</a>
+		}
+ 
+		<b>class</b> <a id="d4edc09c9f9cc421" href="R/d4edc09c9f9cc421.html" target="n" data-glyph="4,1" class="t t">SetValueArgs</a>
+		{
+			<b>public readonly</b> <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a> <a id="d89c1d6518885e50" href="R/d89c1d6518885e50.html" target="n" data-glyph="42,2" class="i field">Attributes</a>;
+			<b>public readonly</b> <a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <a id="631b8ed1795d2fcd" href="R/631b8ed1795d2fcd.html" target="n" data-glyph="42,2" class="i field">Context</a>;
+			<b>public readonly bool</b> <a id="2d6d6b57c060cb19" href="R/2d6d6b57c060cb19.html" target="n" data-glyph="42,2" class="i field">CurrentlyApplying</a>;
+			<b>public readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="2dbb2f1bc32fdc7f" href="R/2dbb2f1bc32fdc7f.html" target="n" data-glyph="42,2" class="i field">Property</a>;
+			<b>public readonly object</b> <a id="0c7c20e35bee7736" href="R/0c7c20e35bee7736.html" target="n" data-glyph="42,2" class="i field">Value</a>;
+ 
+			<b>public</b> <a id="1e5a8f29653b30b3" href="R/1e5a8f29653b30b3.html" target="n" data-glyph="72,2" class="i constructor">SetValueArgs</a>(<a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r127 rd" class="r127 r">property</span>, <a href="#b21b7911d76f573c" class="t t">BindablePropertyContext</a> <span id="r128 rd" class="r128 r">context</span>, <b>object</b> <span id="r129 rd" class="r129 r">value</span>, <b>bool</b> <span id="r130 rd" class="r130 r">currentlyApplying</span>, <a href="#4e46d9514e6a0d85" class="t t">SetValueFlags</a> <span id="r131 rd" class="r131 r">attributes</span>)
+			{
+				<a href="#2dbb2f1bc32fdc7f" class="i field">Property</a> = <span class="r127 r">property</span>;
+				<a href="#631b8ed1795d2fcd" class="i field">Context</a> = <span class="r128 r">context</span>;
+				<a href="#0c7c20e35bee7736" class="i field">Value</a> = <span class="r129 r">value</span>;
+				<a href="#2d6d6b57c060cb19" class="i field">CurrentlyApplying</a> = <span class="r130 r">currentlyApplying</span>;
+				<a href="#d89c1d6518885e50" class="i field">Attributes</a> = <span class="r131 r">attributes</span>;
+			}
+		}
+	}
+ 
+	<b>namespace</b> <span class="i n">Internals</span>
+	{
+		[<a href="@1@System.Runtime/A.html#5bbb5168ad9d1021" class="t constructor">Flags</a>]
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public enum</b> <a id="4e46d9514e6a0d85" href="R/4e46d9514e6a0d85.html" target="n" data-glyph="18,0" class="t t"><span id="ca2bb0d3c06cf8d5">SetValueFlags</span></a>
+		{
+			<a id="4226771d1f3875f7" href="R/4226771d1f3875f7.html" target="n" data-glyph="24,1" class="i field">None</a> = 0,
+			<a id="5d70ae233f0699e2" href="R/5d70ae233f0699e2.html" target="n" data-glyph="24,1" class="i field">ClearOneWayBindings</a> = 1 &lt;&lt; 0,
+			<a id="5c29bce81f0a4123" href="R/5c29bce81f0a4123.html" target="n" data-glyph="24,1" class="i field">ClearTwoWayBindings</a> = 1 &lt;&lt; 1,
+			<a id="f96104604fccfe26" href="R/f96104604fccfe26.html" target="n" data-glyph="24,1" class="i field">ClearDynamicResource</a> = 1 &lt;&lt; 2,
+			<a id="9cc65e74ac0b0390" href="R/9cc65e74ac0b0390.html" target="n" data-glyph="24,1" class="i field">RaiseOnEqual</a> = 1 &lt;&lt; 3
+		}
+	}
+}</pre></td></tr></table></div></body></html>

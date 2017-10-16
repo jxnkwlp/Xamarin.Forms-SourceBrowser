@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html><head><title>BaseDataSource.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(116);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Pages/BaseDataSource.cs" target="_top">BaseDataSource.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Pages" target="_top">Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj</a> (Xamarin.Forms.Pages)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Specialized</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Runtime</span>.<span class="i">CompilerServices</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Pages</span>
+{
+	<b>public abstract class</b> <a id="be0402394a3896e6" href="R/be0402394a3896e6.html" target="n" data-glyph="0,0" class="t t"><span id="313cbe22766c694f">BaseDataSource</span></a> : <a href="IDataSource.cs.html#6726527658aecb20" class="t t">IDataSource</a>, <span class="i">INotifyPropertyChanged</span>
+	{
+		<b>readonly</b> <a href="DataSourceList.cs.html#4e368e8fd1ca1208" class="t t">DataSourceList</a> <a id="492695a9cbe77597" href="R/492695a9cbe77597.html" target="n" data-glyph="46,1" class="i field">_dataSourceList</a> = <b>new</b> <a href="DataSourceList.cs.html#4e368e8fd1ca1208" class="t constructor">DataSourceList</a>();
+		<b>bool</b> <a id="9b8b3333163efaa3" href="R/9b8b3333163efaa3.html" target="n" data-glyph="46,1" class="i field">_initialized</a>;
+		<b>bool</b> <a id="a61ba7203e01f004" href="R/a61ba7203e01f004.html" target="n" data-glyph="46,1" class="i field">_isLoading</a>;
+ 
+		<b>public</b> <span class="i">IReadOnlyList</span>&lt;<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a>&gt; <a id="f533529560ec8cec" href="R/f533529560ec8cec.html" target="n" data-glyph="102,1" class="i property">Data</a>
+		{
+			<b>get</b>
+			{
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> <span class="i">CS4014</span> <span class="c">// Because this call is not awaited, execution of the current method continues before the call is completed</span>
+				<a href="#d50514ffc6717dcc" class="i method">Initialize</a>();
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> <span class="i">CS4014</span> <span class="c">// Because this call is not awaited, execution of the current method continues before the call is completed</span>
+				<b>return</b> <a href="#492695a9cbe77597" class="i field">_dataSourceList</a>;
+			}
+		}
+ 
+		<b>public bool</b> <a id="c3b4e9610ed06f40" href="R/c3b4e9610ed06f40.html" target="n" data-glyph="102,1" class="i property">IsLoading</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#a61ba7203e01f004" class="i field">_isLoading</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#a61ba7203e01f004" class="i field">_isLoading</a> == <b>value</b>)
+					<b>return</b>;
+				<a href="#a61ba7203e01f004" class="i field">_isLoading</a> = <b>value</b>;
+				<a href="#35381bdb3a7d63a3" class="i method">OnPropertyChanged</a>();
+			}
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> <span class="i">CS4014</span> <span class="c">// Because this call is not awaited, execution of the current method continues before the call is completed</span>
+		<b>public object</b> <a id="4ea374ff65cee696" href="R/4ea374ff65cee696.html" target="n" data-glyph="102,1" class="k">this</a>[<b>string</b> <span id="r0 rd" class="r0 r">key</span>]
+		{
+			<b>get</b>
+			{
+				<a href="#d50514ffc6717dcc" class="i method">Initialize</a>();
+				<b>return</b> <a href="#4aebc0fc35c46185" class="i method">GetValue</a>(<span class="r0 r">key</span>);
+			}
+			<b>set</b>
+			{
+				<a href="#d50514ffc6717dcc" class="i method">Initialize</a>();
+				<b>if</b> (<a href="#81b0c3a6f775215d" class="i method">SetValue</a>(<span class="r0 r">key</span>, <b>value</b>))
+					<a href="#36170746d463460a" class="i method">OnKeyChanged</a>(<span class="r0 r">key</span>);
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> <span class="i">CS4014</span> <span class="c">// Because this call is not awaited, execution of the current method continues before the call is completed</span>
+ 
+		<span class="i">IEnumerable</span>&lt;<b>string</b>&gt; <a href="IDataSource.cs.html#6726527658aecb20" class="t t">IDataSource</a>.<a href="IDataSource.cs.html#46583dc3f28765d4" class="i property">MaskedKeys</a> =&gt; <a href="#492695a9cbe77597" class="i field">_dataSourceList</a>.<a href="DataSourceList.cs.html#32f3a222a0e13f57" class="i property">MaskedKeys</a>;
+ 
+		<b>async void</b> <a href="IDataSource.cs.html#6726527658aecb20" class="t t">IDataSource</a>.<a href="IDataSource.cs.html#0cd44639b91de020" class="i method">MaskKey</a>(<b>string</b> <span id="r1 rd" class="r1 r">key</span>)
+		{
+			<b>await</b> <a href="#d50514ffc6717dcc" class="i method">Initialize</a>();
+			<a href="#492695a9cbe77597" class="i field">_dataSourceList</a>.<a href="DataSourceList.cs.html#512d93d6e08c68b2" class="i method">MaskKey</a>(<span class="r1 r">key</span>);
+		}
+ 
+		<b>async void</b> <a href="IDataSource.cs.html#6726527658aecb20" class="t t">IDataSource</a>.<a href="IDataSource.cs.html#bc8a47d55586ce19" class="i method">UnmaskKey</a>(<b>string</b> <span id="r2 rd" class="r2 r">key</span>)
+		{
+			<b>await</b> <a href="#d50514ffc6717dcc" class="i method">Initialize</a>();
+			<a href="#492695a9cbe77597" class="i field">_dataSourceList</a>.<a href="DataSourceList.cs.html#987c10faa7b779ad" class="i method">UnmaskKey</a>(<span class="r2 r">key</span>);
+		}
+ 
+		<b>event</b> <span class="i">PropertyChangedEventHandler</span> <span class="i">INotifyPropertyChanged</span>.<a id="c329f380da8d318a" href="R/../../0000000000.html" target="n" data-glyph="34,1" class="i">PropertyChanged</a>
+		{
+			<b>add</b> { <a href="#cd6dca92826fa90b" class="i">PropertyChanged</a> += <b>value</b>; }
+			<b>remove</b> { <a href="#cd6dca92826fa90b" class="i">PropertyChanged</a> -= <b>value</b>; }
+		}
+ 
+		<b>protected abstract</b> <span class="i">Task</span>&lt;<span class="i">IList</span>&lt;<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a>&gt;&gt; <a id="59709275e6429e00" href="R/59709275e6429e00.html" target="n" data-glyph="75,1" class="i method">GetRawData</a>();
+ 
+		<b>protected abstract object</b> <a id="4aebc0fc35c46185" href="R/4aebc0fc35c46185.html" target="n" data-glyph="75,1" class="i method">GetValue</a>(<b>string</b> <span id="r3 rd" class="r3 r">key</span>);
+ 
+		<b>protected void</b> <a id="35381bdb3a7d63a3" href="R/35381bdb3a7d63a3.html" target="n" data-glyph="75,1" class="i method">OnPropertyChanged</a>([<span class="i">CallerMemberName</span>] <b>string</b> <span id="r4 rd" class="r4 r">property</span> = <b>null</b>)
+		{
+			<a href="#cd6dca92826fa90b" class="i">PropertyChanged</a>?.<span class="i">Invoke</span>(<a href="#be0402394a3896e6" class="k">this</a>, <b>new</b> <span class="i">PropertyChangedEventArgs</span>(<span class="r4 r">property</span>));
+		}
+ 
+		<b>protected abstract bool</b> <a id="81b0c3a6f775215d" href="R/81b0c3a6f775215d.html" target="n" data-glyph="75,1" class="i method">SetValue</a>(<b>string</b> <span id="r5 rd" class="r5 r">key</span>, <b>object</b> <span id="r6 rd" class="r6 r">value</span>);
+ 
+		<b>async</b> <span class="i">Task</span> <a id="d50514ffc6717dcc" href="R/d50514ffc6717dcc.html" target="n" data-glyph="76,1" class="i method">Initialize</a>()
+		{
+			<span class="c">// Do this lazy because GetRawData is virtual and calling it in the ctor is therefor unfriendly</span>
+			<b>if</b> (<a href="#9b8b3333163efaa3" class="i field">_initialized</a>)
+				<b>return</b>;
+			<a href="#9b8b3333163efaa3" class="i field">_initialized</a> = <b>true</b>;
+			<span class="i">IList</span>&lt;<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a>&gt; <span id="r7 rd" class="r7 r">rawData</span> = <b>await</b> <a href="#59709275e6429e00" class="i method">GetRawData</a>();
+			<b>if</b> (!(<span class="r7 r">rawData</span> <b>is</b> <span class="i">INotifyCollectionChanged</span>))
+			{
+				<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<span class="i">Warning</span>(<span class="s">&quot;Xamarin.Forms.Pages&quot;</span>, <span class="s">&quot;DataSource does not implement INotifyCollectionChanged, updates will not be reflected&quot;</span>);
+				<span class="r7 r">rawData</span> = <span class="r7 r">rawData</span>.<span class="i">ToList</span>(); <span class="c">// Make a copy so we can be sure this list wont change out from under us</span>
+			}
+			<a href="#492695a9cbe77597" class="i field">_dataSourceList</a>.<a href="DataSourceList.cs.html#5735446afeaf4487" class="i property">MainList</a> = <span class="r7 r">rawData</span>;
+ 
+			<span class="c">// Test if INPC(&quot;Item&quot;) is enough to trigger a full reset rather than triggering a new event for each key?</span>
+			<b>foreach</b> (<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r8 rd" class="r8 r">dataItem</span> <b>in</b> <span class="r7 r">rawData</span>)
+			{
+				<a href="#36170746d463460a" class="i method">OnKeyChanged</a>(<span class="r8 r">dataItem</span>.<a href="IDataItem.cs.html#848c9c74d2f68fa3" class="i property">Name</a>);
+			}
+		}
+ 
+		<b>void</b> <a id="36170746d463460a" href="R/36170746d463460a.html" target="n" data-glyph="76,1" class="i method">OnKeyChanged</a>(<b>string</b> <span id="r9 rd" class="r9 r">key</span>)
+		{
+			<a href="#cd6dca92826fa90b" class="i">PropertyChanged</a>?.<span class="i">Invoke</span>(<a href="#be0402394a3896e6" class="k">this</a>, <b>new</b> <span class="i">PropertyChangedEventArgs</span>(<span class="s">$&quot;</span><span class="s">Item[</span>{<span class="r9 r">key</span>}<span class="s">]</span><span class="s">&quot;</span>));
+		}
+ 
+		<b>event</b> <span class="i">PropertyChangedEventHandler</span> <a id="cd6dca92826fa90b" href="R/cd6dca92826fa90b.html" target="n" data-glyph="34,1" class="i">PropertyChanged</a>;
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,264 @@
+﻿<!DOCTYPE html>
+<html><head><title>XamlNode.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(255);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Xaml/XamlNode.cs" target="_top">XamlNode.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Xaml" target="_top">Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj</a> (Xamarin.Forms.Xaml)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>
+{
+	<b>interface</b> <a id="9697de7bafb1de38" href="R/9697de7bafb1de38.html" target="n" data-glyph="50,0" class="t t">INode</a>
+	{
+		<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>string</b>&gt; <a id="158cc6ab855b9565" href="R/158cc6ab855b9565.html" target="n" data-glyph="102,1" class="i property">IgnorablePrefixes</a> { <b>get</b>; <b>set</b>; }
+		<span class="t t">IXmlNamespaceResolver</span> <a id="94ec96934707488c" href="R/94ec96934707488c.html" target="n" data-glyph="102,1" class="i property">NamespaceResolver</a> { <b>get</b>; }
+		<a href="#9697de7bafb1de38" class="t t">INode</a> <a id="aaa082f00606354b" href="R/aaa082f00606354b.html" target="n" data-glyph="102,1" class="i property">Parent</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>void</b> <a id="4ef492041d2c00e5" href="R/4ef492041d2c00e5.html" target="n" data-glyph="72,1" class="i method">Accept</a>(<a href="XamlNodeVisitor.cs.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a> <span id="r0 rd" class="r0 r">visitor</span>, <a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r1 rd" class="r1 r">parentNode</span>);
+		<a href="#9697de7bafb1de38" class="t t">INode</a> <a id="c5bbd74f8856ebd7" href="R/c5bbd74f8856ebd7.html" target="n" data-glyph="72,1" class="i method">Clone</a>();
+	}
+ 
+	<b>interface</b> <a id="9e41a3fac26adfa7" href="R/9e41a3fac26adfa7.html" target="n" data-glyph="50,0" class="t t">IValueNode</a> : <a href="#9697de7bafb1de38" class="t t">INode</a>
+	{
+	}
+ 
+	<b>interface</b> <a id="0395ca46ae80839a" href="R/0395ca46ae80839a.html" target="n" data-glyph="50,0" class="t t">IElementNode</a> : <a href="#9697de7bafb1de38" class="t t">INode</a>, <a href="#98eae0828150b597" class="t t">IListNode</a>
+	{
+		<a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>, <a href="#9697de7bafb1de38" class="t t">INode</a>&gt; <a id="ca11b3b288ccdec1" href="R/ca11b3b288ccdec1.html" target="n" data-glyph="102,1" class="i property">Properties</a> { <b>get</b>; }
+		<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>&gt; <a id="153777a0650db791" href="R/153777a0650db791.html" target="n" data-glyph="102,1" class="i property">SkipProperties</a> { <b>get</b>; }
+		<a href="/Xamarin.Forms.Core/A.html#331b4b9c22ff94f5" class="t t">INameScope</a> <a id="5f3789ec26e817ad" href="R/5f3789ec26e817ad.html" target="n" data-glyph="102,1" class="i property">Namescope</a> { <b>get</b>; }
+		<a href="#944154aac15f45be" class="t t">XmlType</a> <a id="5b65f02b1f79eeaf" href="R/5b65f02b1f79eeaf.html" target="n" data-glyph="102,1" class="i property">XmlType</a> { <b>get</b>; }
+		<b>string</b> <a id="3d69442fa39dc0af" href="R/3d69442fa39dc0af.html" target="n" data-glyph="102,1" class="i property">NamespaceURI</a> { <b>get</b>; }
+	}
+ 
+	<b>interface</b> <a id="98eae0828150b597" href="R/98eae0828150b597.html" target="n" data-glyph="50,0" class="t t">IListNode</a> : <a href="#9697de7bafb1de38" class="t t">INode</a>
+	{
+		<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#9697de7bafb1de38" class="t t">INode</a>&gt; <a id="fb3a9fc1d07f233b" href="R/fb3a9fc1d07f233b.html" target="n" data-glyph="102,1" class="i property">CollectionItems</a> { <b>get</b>; }
+	}
+ 
+	[<span class="t constructor">DebuggerDisplay</span>(<span class="s">&quot;{NamespaceUri}:{Name}&quot;</span>)]
+	<b>class</b> <a id="944154aac15f45be" href="R/944154aac15f45be.html" target="n" data-glyph="2,0" class="t t">XmlType</a>
+	{
+		<b>public</b> <a id="0a1740224b8aaa73" href="R/0a1740224b8aaa73.html" target="n" data-glyph="72,1" class="i constructor">XmlType</a>(<b>string</b> <span id="r2 rd" class="r2 r">namespaceUri</span>, <b>string</b> <span id="r3 rd" class="r3 r">name</span>, <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="#944154aac15f45be" class="t t">XmlType</a>&gt; <span id="r4 rd" class="r4 r">typeArguments</span>)
+		{
+			<a href="#a53254597bc28ecf" class="i property">NamespaceUri</a> = <span class="r2 r">namespaceUri</span>;
+			<a href="#1561698d7b8a155c" class="i property">Name</a> = <span class="r3 r">name</span>;
+			<a href="#ec734db8facb9675" class="i property">TypeArguments</a> = <span class="r4 r">typeArguments</span>;
+		}
+ 
+		<b>public string</b> <a id="a53254597bc28ecf" href="R/a53254597bc28ecf.html" target="n" data-glyph="102,1" class="i property">NamespaceUri</a> { <b>get</b>; }
+		<b>public string</b> <a id="1561698d7b8a155c" href="R/1561698d7b8a155c.html" target="n" data-glyph="102,1" class="i property">Name</a> { <b>get</b>; }
+		<b>public</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="#944154aac15f45be" class="t t">XmlType</a>&gt; <a id="ec734db8facb9675" href="R/ec734db8facb9675.html" target="n" data-glyph="102,1" class="i property">TypeArguments</a> { <b>get</b>; }
+	}
+ 
+	<b>abstract class</b> <a id="aee785270197d5f3" href="R/aee785270197d5f3.html" target="n" data-glyph="2,0" class="t t">BaseNode</a> : <span class="t t">IXmlLineInfo</span>, <a href="#9697de7bafb1de38" class="t t">INode</a>
+	{
+		<b>protected</b> <a id="c6279a324f78d30c" href="R/c6279a324f78d30c.html" target="n" data-glyph="75,1" class="i constructor">BaseNode</a>(<span class="t t">IXmlNamespaceResolver</span> <span id="r5 rd" class="r5 r">namespaceResolver</span>, <b>int</b> <span id="r6 rd" class="r6 r">linenumber</span> = -1, <b>int</b> <span id="r7 rd" class="r7 r">lineposition</span> = -1)
+		{
+			<a href="#4c29fc7211aeb588" class="i property">NamespaceResolver</a> = <span class="r5 r">namespaceResolver</span>;
+			<a href="#09e2f62b5010b5f4" class="i property">LineNumber</a> = <span class="r6 r">linenumber</span>;
+			<a href="#c798608e80a08a55" class="i property">LinePosition</a> = <span class="r7 r">lineposition</span>;
+		}
+ 
+		<b>public</b> <span class="t t">IXmlNamespaceResolver</span> <a id="4c29fc7211aeb588" href="R/4c29fc7211aeb588.html" target="n" data-glyph="102,1" class="i property">NamespaceResolver</a> { <b>get</b>; }
+		<b>public</b> <a href="#9697de7bafb1de38" class="t t">INode</a> <a id="303fc3785008a82d" href="R/303fc3785008a82d.html" target="n" data-glyph="102,1" class="i property">Parent</a> { <b>get</b>; <b>set</b>; }
+		<b>public</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>string</b>&gt; <a id="a41aa8be04b719dd" href="R/a41aa8be04b719dd.html" target="n" data-glyph="102,1" class="i property">IgnorablePrefixes</a> { <b>get</b>; <b>set</b>; }
+		<b>public int</b> <a id="09e2f62b5010b5f4" href="R/09e2f62b5010b5f4.html" target="n" data-glyph="102,1" class="i property">LineNumber</a> { <b>get</b>; <b>set</b>; }
+		<b>public int</b> <a id="c798608e80a08a55" href="R/c798608e80a08a55.html" target="n" data-glyph="102,1" class="i property">LinePosition</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public bool</b> <a id="bb3e94b6dbbf4c1b" href="R/bb3e94b6dbbf4c1b.html" target="n" data-glyph="72,1" class="i method">HasLineInfo</a>() =&gt; <a href="#09e2f62b5010b5f4" class="i property">LineNumber</a> &gt;= 0 &amp;&amp; <a href="#c798608e80a08a55" class="i property">LinePosition</a> &gt;= 0;
+ 
+		<b>public abstract void</b> <a id="4fcfcac3fb300795" href="R/4fcfcac3fb300795.html" target="n" data-glyph="72,1" class="i method">Accept</a>(<a href="XamlNodeVisitor.cs.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a> <span id="r8 rd" class="r8 r">visitor</span>, <a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r9 rd" class="r9 r">parentNode</span>);
+		<b>public abstract</b> <a href="#9697de7bafb1de38" class="t t">INode</a> <a id="bb1e9e9c87b0bd56" href="R/bb1e9e9c87b0bd56.html" target="n" data-glyph="72,1" class="i method">Clone</a>();
+	}
+ 
+	[<span class="t constructor">DebuggerDisplay</span>(<span class="s">&quot;{Value}&quot;</span>)]
+	<b>class</b> <a id="8154936e25abda05" href="R/8154936e25abda05.html" target="n" data-glyph="2,0" class="t t">ValueNode</a> : <a href="#aee785270197d5f3" class="t t">BaseNode</a>, <a href="#9e41a3fac26adfa7" class="t t">IValueNode</a>
+	{
+		<b>public</b> <a id="e2360d8fe4cc7ae5" href="R/e2360d8fe4cc7ae5.html" target="n" data-glyph="72,1" class="i constructor">ValueNode</a>(<b>object</b> <span id="r10 rd" class="r10 r">value</span>, <span class="t t">IXmlNamespaceResolver</span> <span id="r11 rd" class="r11 r">namespaceResolver</span>, <b>int</b> <span id="r12 rd" class="r12 r">linenumber</span> = -1, <b>int</b> <span id="r13 rd" class="r13 r">lineposition</span> = -1)
+			: <a href="#c6279a324f78d30c" class="k">base</a>(<span class="r11 r">namespaceResolver</span>, <span class="r12 r">linenumber</span>, <span class="r13 r">lineposition</span>)
+		{
+			<a href="#5fa72a93b49782e1" class="i property">Value</a> = <span class="r10 r">value</span>;
+		}
+ 
+		<b>public object</b> <a id="5fa72a93b49782e1" href="R/5fa72a93b49782e1.html" target="n" data-glyph="102,1" class="i property">Value</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public override void</b> <a id="e90e571fcb28b190" href="R/e90e571fcb28b190.html" target="n" data-glyph="72,1" class="i method">Accept</a>(<a href="XamlNodeVisitor.cs.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a> <span id="r14 rd" class="r14 r">visitor</span>, <a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r15 rd" class="r15 r">parentNode</span>)
+		{
+			<span class="r14 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#f64befeb2c4208ec" class="i method">Visit</a>(<a href="#8154936e25abda05" class="k">this</a>, <span class="r15 r">parentNode</span>);
+		}
+ 
+		<b>public override</b> <a href="#9697de7bafb1de38" class="t t">INode</a> <a id="d631879ecd29f7a2" href="R/d631879ecd29f7a2.html" target="n" data-glyph="72,1" class="i method">Clone</a>() =&gt; <b>new</b> <a href="#e2360d8fe4cc7ae5" class="t constructor">ValueNode</a>(<a href="#5fa72a93b49782e1" class="i property">Value</a>, <a href="#4c29fc7211aeb588" class="i property">NamespaceResolver</a>, <a href="#09e2f62b5010b5f4" class="i property">LineNumber</a>, <a href="#c798608e80a08a55" class="i property">LinePosition</a>) {
+			<a href="#a41aa8be04b719dd" class="i property">IgnorablePrefixes</a> = <a href="#a41aa8be04b719dd" class="i property">IgnorablePrefixes</a>
+		};
+	}
+ 
+	[<span class="t constructor">DebuggerDisplay</span>(<span class="s">&quot;{MarkupString}&quot;</span>)]
+	<b>class</b> <a id="429a1b2e0cd22849" href="R/429a1b2e0cd22849.html" target="n" data-glyph="2,0" class="t t">MarkupNode</a> : <a href="#aee785270197d5f3" class="t t">BaseNode</a>, <a href="#9e41a3fac26adfa7" class="t t">IValueNode</a>
+	{
+		<b>public</b> <a id="bd04ef0f6d2bac83" href="R/bd04ef0f6d2bac83.html" target="n" data-glyph="72,1" class="i constructor">MarkupNode</a>(<b>string</b> <span id="r16 rd" class="r16 r">markupString</span>, <span class="t t">IXmlNamespaceResolver</span> <span id="r17 rd" class="r17 r">namespaceResolver</span>, <b>int</b> <span id="r18 rd" class="r18 r">linenumber</span> = -1, <b>int</b> <span id="r19 rd" class="r19 r">lineposition</span> = -1)
+			: <a href="#c6279a324f78d30c" class="k">base</a>(<span class="r17 r">namespaceResolver</span>, <span class="r18 r">linenumber</span>, <span class="r19 r">lineposition</span>)
+		{
+			<a href="#974058dab4443b2b" class="i property">MarkupString</a> = <span class="r16 r">markupString</span>;
+		}
+ 
+		<b>public string</b> <a id="974058dab4443b2b" href="R/974058dab4443b2b.html" target="n" data-glyph="102,1" class="i property">MarkupString</a> { <b>get</b>; }
+ 
+		<b>public override void</b> <a id="2c17c404a1de53fd" href="R/2c17c404a1de53fd.html" target="n" data-glyph="72,1" class="i method">Accept</a>(<a href="XamlNodeVisitor.cs.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a> <span id="r20 rd" class="r20 r">visitor</span>, <a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r21 rd" class="r21 r">parentNode</span>)
+		{
+			<span class="r20 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#ab5ed5771fafbb64" class="i method">Visit</a>(<a href="#429a1b2e0cd22849" class="k">this</a>, <span class="r21 r">parentNode</span>);
+		}
+ 
+		<b>public override</b> <a href="#9697de7bafb1de38" class="t t">INode</a> <a id="c7b9ddcd970225bc" href="R/c7b9ddcd970225bc.html" target="n" data-glyph="72,1" class="i method">Clone</a>() =&gt; <b>new</b> <a href="#bd04ef0f6d2bac83" class="t constructor">MarkupNode</a>(<a href="#974058dab4443b2b" class="i property">MarkupString</a>, <a href="#4c29fc7211aeb588" class="i property">NamespaceResolver</a>, <a href="#09e2f62b5010b5f4" class="i property">LineNumber</a>, <a href="#c798608e80a08a55" class="i property">LinePosition</a>) {
+			<a href="#a41aa8be04b719dd" class="i property">IgnorablePrefixes</a> = <a href="#a41aa8be04b719dd" class="i property">IgnorablePrefixes</a>
+		};
+	}
+ 
+	[<span class="t constructor">DebuggerDisplay</span>(<span class="s">&quot;{XmlType.Name}&quot;</span>)]
+	<b>class</b> <a id="6162566191bf011a" href="R/6162566191bf011a.html" target="n" data-glyph="2,0" class="t t">ElementNode</a> : <a href="#aee785270197d5f3" class="t t">BaseNode</a>, <a href="#9e41a3fac26adfa7" class="t t">IValueNode</a>, <a href="#0395ca46ae80839a" class="t t">IElementNode</a>
+	{
+		<b>public</b> <a id="61ae0169eb29388e" href="R/61ae0169eb29388e.html" target="n" data-glyph="72,1" class="i constructor">ElementNode</a>(<a href="#944154aac15f45be" class="t t">XmlType</a> <span id="r22 rd" class="r22 r">type</span>, <b>string</b> <span id="r23 rd" class="r23 r">namespaceURI</span>, <span class="t t">IXmlNamespaceResolver</span> <span id="r24 rd" class="r24 r">namespaceResolver</span>, <b>int</b> <span id="r25 rd" class="r25 r">linenumber</span> = -1,
+			<b>int</b> <span id="r26 rd" class="r26 r">lineposition</span> = -1)
+			: <a href="#c6279a324f78d30c" class="k">base</a>(<span class="r24 r">namespaceResolver</span>, <span class="r25 r">linenumber</span>, <span class="r26 r">lineposition</span>)
+		{
+			<a href="#5ee5fe5a808d6839" class="i property">Properties</a> = <b>new</b> <a href="@1@System.Collections/A.html#bf6849e410b43c4c" class="t constructor">Dictionary</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>, <a href="#9697de7bafb1de38" class="t t">INode</a>&gt;();
+			<a href="#0687fcc07d5cb448" class="i property">SkipProperties</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>&gt;();
+			<a href="#339c6ad4140ad10f" class="i property">CollectionItems</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="#9697de7bafb1de38" class="t t">INode</a>&gt;();
+			<a href="#8505373ce60c6127" class="i property">XmlType</a> = <span class="r22 r">type</span>;
+			<a href="#ee4bcdea4b617de9" class="i property">NamespaceURI</a> = <span class="r23 r">namespaceURI</span>;
+		}
+ 
+		<b>public</b> <a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>, <a href="#9697de7bafb1de38" class="t t">INode</a>&gt; <a id="5ee5fe5a808d6839" href="R/5ee5fe5a808d6839.html" target="n" data-glyph="102,1" class="i property">Properties</a> { <b>get</b>; }
+		<b>public</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>&gt; <a id="0687fcc07d5cb448" href="R/0687fcc07d5cb448.html" target="n" data-glyph="102,1" class="i property">SkipProperties</a> { <b>get</b>; }
+		<b>public</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#9697de7bafb1de38" class="t t">INode</a>&gt; <a id="339c6ad4140ad10f" href="R/339c6ad4140ad10f.html" target="n" data-glyph="102,1" class="i property">CollectionItems</a> { <b>get</b>; }
+		<b>public</b> <a href="#944154aac15f45be" class="t t">XmlType</a> <a id="8505373ce60c6127" href="R/8505373ce60c6127.html" target="n" data-glyph="102,1" class="i property">XmlType</a> { <b>get</b>; }
+		<b>public string</b> <a id="ee4bcdea4b617de9" href="R/ee4bcdea4b617de9.html" target="n" data-glyph="102,1" class="i property">NamespaceURI</a> { <b>get</b>; }
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#331b4b9c22ff94f5" class="t t">INameScope</a> <a id="d69b70d41895fdc3" href="R/d69b70d41895fdc3.html" target="n" data-glyph="102,1" class="i property">Namescope</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public override void</b> <a id="37e536862b9f395f" href="R/37e536862b9f395f.html" target="n" data-glyph="72,1" class="i method">Accept</a>(<a href="XamlNodeVisitor.cs.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a> <span id="r27 rd" class="r27 r">visitor</span>, <a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r28 rd" class="r28 r">parentNode</span>)
+		{
+			<b>if</b> (!<a href="#9f64d4d04051fdb1" class="i method">SkipVisitNode</a>(<span class="r27 r">visitor</span>, <span class="r28 r">parentNode</span>) &amp;&amp; <span class="r27 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#73a6ef0ff6d730b8" class="i property">VisitingMode</a> == <a href="XamlNodeVisitor.cs.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a>.<a href="XamlNodeVisitor.cs.html#1b46e9674a8c0601" class="i field">TopDown</a>)
+				<span class="r27 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#3d03dfdf4d2489cc" class="i method">Visit</a>(<a href="#6162566191bf011a" class="k">this</a>, <span class="r28 r">parentNode</span>);
+ 
+			<b>if</b> (!<a href="#8e2470a95ca4b144" class="i method">SkipChildren</a>(<span class="r27 r">visitor</span>, <span class="r28 r">parentNode</span>)) {
+				<b>foreach</b> (<a href="#9697de7bafb1de38" class="k">var</a> <span id="r29 rd" class="r29 r">node</span> <b>in</b> <a href="#5ee5fe5a808d6839" class="i property">Properties</a>.<a href="@1@System.Collections/A.html#4367dd1e300ae797" class="i property">Values</a>.<span class="i method">ToList</span>())
+					<span class="r29 r">node</span>.<a href="#4ef492041d2c00e5" class="i method">Accept</a>(<span class="r27 r">visitor</span>, <a href="#6162566191bf011a" class="k">this</a>);
+				<b>foreach</b> (<a href="#9697de7bafb1de38" class="k">var</a> <span id="r30 rd" class="r30 r">node</span> <b>in</b> <a href="#339c6ad4140ad10f" class="i property">CollectionItems</a>)
+					<span class="r30 r">node</span>.<a href="#4ef492041d2c00e5" class="i method">Accept</a>(<span class="r27 r">visitor</span>, <a href="#6162566191bf011a" class="k">this</a>);
+			}
+ 
+			<b>if</b> (!<a href="#9f64d4d04051fdb1" class="i method">SkipVisitNode</a>(<span class="r27 r">visitor</span>, <span class="r28 r">parentNode</span>) &amp;&amp; <span class="r27 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#73a6ef0ff6d730b8" class="i property">VisitingMode</a> == <a href="XamlNodeVisitor.cs.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a>.<a href="XamlNodeVisitor.cs.html#0b6fe56bad8bf80b" class="i field">BottomUp</a>)
+				<span class="r27 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#3d03dfdf4d2489cc" class="i method">Visit</a>(<a href="#6162566191bf011a" class="k">this</a>, <span class="r28 r">parentNode</span>);
+ 
+		}
+ 
+		<b>bool</b> <a id="2d560e736b7a5613" href="R/2d560e736b7a5613.html" target="n" data-glyph="76,1" class="i method">IsDataTemplate</a>(<a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r31 rd" class="r31 r">parentNode</span>)
+		{
+			<a href="#0395ca46ae80839a" class="k">var</a> <span id="r32 rd" class="r32 r">parentElement</span> = <span class="r31 r">parentNode</span> <b>as</b> <a href="#0395ca46ae80839a" class="t t">IElementNode</a>;
+			<a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r33 rd" class="r33 r">createContent</span>;
+			<b>if</b> (<span class="r32 r">parentElement</span> != <b>null</b> &amp;&amp;
+				<span class="r32 r">parentElement</span>.<a href="#ca11b3b288ccdec1" class="i property">Properties</a>.<a href="@1@System.Collections/A.html#2e5bc6d8c0f21e67" class="i method">TryGetValue</a>(<a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a>.<a href="XmlName.cs.html#f9fb8fcdb5a2a4db" class="i field">_CreateContent</a>, <b>out</b> <span class="r33 r">createContent</span>) &amp;&amp;
+				<span class="r33 r">createContent</span> == <a href="#6162566191bf011a" class="k">this</a>)
+				<b>return true</b>;
+			<b>return false</b>;
+		}
+ 
+		<b>bool</b> <a id="678889506fc0f4b4" href="R/678889506fc0f4b4.html" target="n" data-glyph="76,1" class="i method">IsResourceDictionary</a>() =&gt; <a href="#8505373ce60c6127" class="i property">XmlType</a>.<a href="#1561698d7b8a155c" class="i property">Name</a> == <span class="s">&quot;ResourceDictionary&quot;</span>;
+ 
+		<b>protected bool</b> <a id="8e2470a95ca4b144" href="R/8e2470a95ca4b144.html" target="n" data-glyph="75,1" class="i method">SkipChildren</a>(<a href="XamlNodeVisitor.cs.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a> <span id="r34 rd" class="r34 r">visitor</span>, <a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r35 rd" class="r35 r">parentNode</span>) =&gt;
+			(<span class="r34 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#9394993a32bd7e3c" class="i property">StopOnDataTemplate</a> &amp;&amp; <a href="#2d560e736b7a5613" class="i method">IsDataTemplate</a>(<span class="r35 r">parentNode</span>)) ||
+			(<span class="r34 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#54ce5e9a40c209f8" class="i property">StopOnResourceDictionary</a> &amp;&amp; <a href="#678889506fc0f4b4" class="i method">IsResourceDictionary</a>());
+ 
+		<b>protected bool</b> <a id="9f64d4d04051fdb1" href="R/9f64d4d04051fdb1.html" target="n" data-glyph="75,1" class="i method">SkipVisitNode</a>(<a href="XamlNodeVisitor.cs.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a> <span id="r36 rd" class="r36 r">visitor</span>, <a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r37 rd" class="r37 r">parentNode</span>) =&gt;
+			!<span class="r36 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#11f49a26cbca9103" class="i property">VisitNodeOnDataTemplate</a> &amp;&amp; <a href="#2d560e736b7a5613" class="i method">IsDataTemplate</a>(<span class="r37 r">parentNode</span>);
+ 
+		<b>public override</b> <a href="#9697de7bafb1de38" class="t t">INode</a> <a id="487ee2403d9143f5" href="R/487ee2403d9143f5.html" target="n" data-glyph="72,1" class="i method">Clone</a>()
+		{
+			<a href="#6162566191bf011a" class="k">var</a> <span id="r38 rd" class="r38 r">clone</span> = <b>new</b> <a href="#61ae0169eb29388e" class="t constructor">ElementNode</a>(<a href="#8505373ce60c6127" class="i property">XmlType</a>, <a href="#ee4bcdea4b617de9" class="i property">NamespaceURI</a>, <a href="#4c29fc7211aeb588" class="i property">NamespaceResolver</a>, <a href="#09e2f62b5010b5f4" class="i property">LineNumber</a>, <a href="#c798608e80a08a55" class="i property">LinePosition</a>) {
+				<a href="#a41aa8be04b719dd" class="i property">IgnorablePrefixes</a> = <a href="#a41aa8be04b719dd" class="i property">IgnorablePrefixes</a>
+			};
+			<b>foreach</b> (<a href="@1@System.Runtime/A.html#8585965bb176a426" class="k">var</a> <span id="r39 rd" class="r39 r">kvp</span> <b>in</b> <a href="#5ee5fe5a808d6839" class="i property">Properties</a>)
+				<span class="r38 r">clone</span>.<a href="#5ee5fe5a808d6839" class="i property">Properties</a>.<a href="@1@System.Collections/A.html#a7861da7aaa500fe" class="i method">Add</a>(<span class="r39 r">kvp</span>.<a href="@1@System.Runtime/A.html#f9d1c04feb1af032" class="i property">Key</a>, <span class="r39 r">kvp</span>.<a href="@1@System.Runtime/A.html#38c0e86cc4b30170" class="i property">Value</a>.<a href="#c5bbd74f8856ebd7" class="i method">Clone</a>());
+			<b>foreach</b> (<a href="XmlName.cs.html#78eee6e8b684a76e" class="k">var</a> <span id="r40 rd" class="r40 r">p</span> <b>in</b> <a href="#0687fcc07d5cb448" class="i property">SkipProperties</a>)
+				<span class="r38 r">clone</span>.<a href="#0687fcc07d5cb448" class="i property">SkipProperties</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r40 r">p</span>);
+			<b>foreach</b> (<a href="#9697de7bafb1de38" class="k">var</a> <span id="r41 rd" class="r41 r">p</span> <b>in</b> <a href="#339c6ad4140ad10f" class="i property">CollectionItems</a>)
+				<span class="r38 r">clone</span>.<a href="#339c6ad4140ad10f" class="i property">CollectionItems</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r41 r">p</span>.<a href="#c5bbd74f8856ebd7" class="i method">Clone</a>());
+			<b>return</b> <span class="r38 r">clone</span>;
+		}
+	}
+ 
+	<b>abstract class</b> <a id="539c4bdaedfa22a3" href="R/539c4bdaedfa22a3.html" target="n" data-glyph="2,0" class="t t">RootNode</a> : <a href="#6162566191bf011a" class="t t">ElementNode</a>
+	{
+		<b>protected</b> <a id="0eceb1694ab1be5d" href="R/0eceb1694ab1be5d.html" target="n" data-glyph="75,1" class="i constructor">RootNode</a>(<a href="#944154aac15f45be" class="t t">XmlType</a> <span id="r42 rd" class="r42 r">xmlType</span>, <span class="t t">IXmlNamespaceResolver</span> <span id="r43 rd" class="r43 r">nsResolver</span>) : <a href="#61ae0169eb29388e" class="k">base</a>(<span class="r42 r">xmlType</span>, <span class="r42 r">xmlType</span>.<a href="#a53254597bc28ecf" class="i property">NamespaceUri</a>, <span class="r43 r">nsResolver</span>)
+		{
+		}
+ 
+		<b>public override void</b> <a id="0217a7327e7006f0" href="R/0217a7327e7006f0.html" target="n" data-glyph="72,1" class="i method">Accept</a>(<a href="XamlNodeVisitor.cs.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a> <span id="r44 rd" class="r44 r">visitor</span>, <a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r45 rd" class="r45 r">parentNode</span>)
+		{
+			<b>if</b> (!<a href="#9f64d4d04051fdb1" class="i method">SkipVisitNode</a>(<span class="r44 r">visitor</span>, <span class="r45 r">parentNode</span>) &amp;&amp; <span class="r44 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#73a6ef0ff6d730b8" class="i property">VisitingMode</a> == <a href="XamlNodeVisitor.cs.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a>.<a href="XamlNodeVisitor.cs.html#1b46e9674a8c0601" class="i field">TopDown</a>)
+				<span class="r44 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#a622ad51a6d04a40" class="i method">Visit</a>(<a href="#539c4bdaedfa22a3" class="k">this</a>, <span class="r45 r">parentNode</span>);
+ 
+			<b>if</b> (!<a href="#8e2470a95ca4b144" class="i method">SkipChildren</a>(<span class="r44 r">visitor</span>, <span class="r45 r">parentNode</span>)) {
+				<b>foreach</b> (<a href="#9697de7bafb1de38" class="k">var</a> <span id="r46 rd" class="r46 r">node</span> <b>in</b> <a href="#5ee5fe5a808d6839" class="i property">Properties</a>.<a href="@1@System.Collections/A.html#4367dd1e300ae797" class="i property">Values</a>.<span class="i method">ToList</span>())
+					<span class="r46 r">node</span>.<a href="#4ef492041d2c00e5" class="i method">Accept</a>(<span class="r44 r">visitor</span>, <a href="#539c4bdaedfa22a3" class="k">this</a>);
+				<b>foreach</b> (<a href="#9697de7bafb1de38" class="k">var</a> <span id="r47 rd" class="r47 r">node</span> <b>in</b> <a href="#339c6ad4140ad10f" class="i property">CollectionItems</a>)
+					<span class="r47 r">node</span>.<a href="#4ef492041d2c00e5" class="i method">Accept</a>(<span class="r44 r">visitor</span>, <a href="#539c4bdaedfa22a3" class="k">this</a>);
+			}
+ 
+			<b>if</b> (!<a href="#9f64d4d04051fdb1" class="i method">SkipVisitNode</a>(<span class="r44 r">visitor</span>, <span class="r45 r">parentNode</span>) &amp;&amp; <span class="r44 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#73a6ef0ff6d730b8" class="i property">VisitingMode</a> == <a href="XamlNodeVisitor.cs.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a>.<a href="XamlNodeVisitor.cs.html#0b6fe56bad8bf80b" class="i field">BottomUp</a>)
+				<span class="r44 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#a622ad51a6d04a40" class="i method">Visit</a>(<a href="#539c4bdaedfa22a3" class="k">this</a>, <span class="r45 r">parentNode</span>);
+		}
+	}
+ 
+	<b>class</b> <a id="0a483d0bd41cadb6" href="R/0a483d0bd41cadb6.html" target="n" data-glyph="2,0" class="t t">ListNode</a> : <a href="#aee785270197d5f3" class="t t">BaseNode</a>, <a href="#98eae0828150b597" class="t t">IListNode</a>, <a href="#9e41a3fac26adfa7" class="t t">IValueNode</a>
+	{
+		<b>public</b> <a id="72ce661ac3a770b0" href="R/72ce661ac3a770b0.html" target="n" data-glyph="72,1" class="i constructor">ListNode</a>(<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="#9697de7bafb1de38" class="t t">INode</a>&gt; <span id="r48 rd" class="r48 r">nodes</span>, <span class="t t">IXmlNamespaceResolver</span> <span id="r49 rd" class="r49 r">namespaceResolver</span>, <b>int</b> <span id="r50 rd" class="r50 r">linenumber</span> = -1, <b>int</b> <span id="r51 rd" class="r51 r">lineposition</span> = -1)
+			: <a href="#c6279a324f78d30c" class="k">base</a>(<span class="r49 r">namespaceResolver</span>, <span class="r50 r">linenumber</span>, <span class="r51 r">lineposition</span>)
+		{
+			<a href="#15655416e007c334" class="i property">CollectionItems</a> = <span class="r48 r">nodes</span>.<span class="i method">ToList</span>();
+		}
+ 
+		<b>public</b> <a href="XmlName.cs.html#78eee6e8b684a76e" class="t t">XmlName</a> <a id="a635d7a84b783b78" href="R/a635d7a84b783b78.html" target="n" data-glyph="102,1" class="i property">XmlName</a> { <b>get</b>; <b>set</b>; }
+		<b>public</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#9697de7bafb1de38" class="t t">INode</a>&gt; <a id="15655416e007c334" href="R/15655416e007c334.html" target="n" data-glyph="102,1" class="i property">CollectionItems</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public override void</b> <a id="84f0673b589b8eef" href="R/84f0673b589b8eef.html" target="n" data-glyph="72,1" class="i method">Accept</a>(<a href="XamlNodeVisitor.cs.html#b541306a207eb42e" class="t t">IXamlNodeVisitor</a> <span id="r52 rd" class="r52 r">visitor</span>, <a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r53 rd" class="r53 r">parentNode</span>)
+		{
+			<b>if</b> (<span class="r52 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#73a6ef0ff6d730b8" class="i property">VisitingMode</a> == <a href="XamlNodeVisitor.cs.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a>.<a href="XamlNodeVisitor.cs.html#1b46e9674a8c0601" class="i field">TopDown</a>)
+				<span class="r52 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#42dc77572611113f" class="i method">Visit</a>(<a href="#0a483d0bd41cadb6" class="k">this</a>, <span class="r53 r">parentNode</span>);
+			<b>foreach</b> (<a href="#9697de7bafb1de38" class="k">var</a> <span id="r54 rd" class="r54 r">node</span> <b>in</b> <a href="#15655416e007c334" class="i property">CollectionItems</a>)
+				<span class="r54 r">node</span>.<a href="#4ef492041d2c00e5" class="i method">Accept</a>(<span class="r52 r">visitor</span>, <a href="#0a483d0bd41cadb6" class="k">this</a>);
+			<b>if</b> (<span class="r52 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#73a6ef0ff6d730b8" class="i property">VisitingMode</a> == <a href="XamlNodeVisitor.cs.html#9d9e9e5a3534fb33" class="t t">TreeVisitingMode</a>.<a href="XamlNodeVisitor.cs.html#0b6fe56bad8bf80b" class="i field">BottomUp</a>)
+				<span class="r52 r">visitor</span>.<a href="XamlNodeVisitor.cs.html#42dc77572611113f" class="i method">Visit</a>(<a href="#0a483d0bd41cadb6" class="k">this</a>, <span class="r53 r">parentNode</span>);
+		}
+ 
+		<b>public override</b> <a href="#9697de7bafb1de38" class="t t">INode</a> <a id="7cd538ea149967c3" href="R/7cd538ea149967c3.html" target="n" data-glyph="72,1" class="i method">Clone</a>()
+		{
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r55 rd" class="r55 r">items</span> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="#9697de7bafb1de38" class="t t">INode</a>&gt;();
+			<b>foreach</b> (<a href="#9697de7bafb1de38" class="k">var</a> <span id="r56 rd" class="r56 r">p</span> <b>in</b> <a href="#15655416e007c334" class="i property">CollectionItems</a>)
+				<span class="r55 r">items</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r56 r">p</span>.<a href="#c5bbd74f8856ebd7" class="i method">Clone</a>());
+			<b>return</b> <b>new</b> <a href="#72ce661ac3a770b0" class="t constructor">ListNode</a>(<span class="r55 r">items</span>, <a href="#4c29fc7211aeb588" class="i property">NamespaceResolver</a>, <a href="#09e2f62b5010b5f4" class="i property">LineNumber</a>, <a href="#c798608e80a08a55" class="i property">LinePosition</a>) {
+				<a href="#a41aa8be04b719dd" class="i property">IgnorablePrefixes</a> = <a href="#a41aa8be04b719dd" class="i property">IgnorablePrefixes</a>
+			};
+		}
+	}
+ 
+	<b>static class</b> <a id="5427e71160da9f69" href="R/../../0000000000.html" target="n" data-glyph="2,0" class="t t">INodeExtensions</a>
+	{
+		<b>public static bool</b> <a id="5ec6a68d3c098f20" href="R/5ec6a68d3c098f20.html" target="n" data-glyph="220,1" class="i method">SkipPrefix</a>(<b>this</b> <a href="#9697de7bafb1de38" class="t t">INode</a> <span id="r57 rd" class="r57 r">node</span>, <b>string</b> <span id="r58 rd" class="r58 r">prefix</span>)
+		{
+			<b>do</b> {
+				<b>if</b> (<span class="r57 r">node</span>.<a href="#158cc6ab855b9565" class="i property">IgnorablePrefixes</a> != <b>null</b> &amp;&amp; <span class="r57 r">node</span>.<a href="#158cc6ab855b9565" class="i property">IgnorablePrefixes</a>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r58 r">prefix</span>))
+					<b>return true</b>;
+				<span class="r57 r">node</span> = <span class="r57 r">node</span>.<a href="#aaa082f00606354b" class="i property">Parent</a>;
+			} <b>while</b> (<span class="r57 r">node</span> != <b>null</b>);
+			<b>return false</b>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html><head><title>DataSourceList.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(233);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Pages/DataSourceList.cs" target="_top">DataSourceList.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Pages" target="_top">Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj</a> (Xamarin.Forms.Pages)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Specialized</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Pages</span>
+{
+	<b>internal class</b> <a id="4e368e8fd1ca1208" href="R/4e368e8fd1ca1208.html" target="n" data-glyph="2,0" class="t t"><span id="398874d2aeae9484">DataSourceList</span></a> : <span class="i">IList</span>&lt;<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a>&gt;, <span class="i">IReadOnlyList</span>&lt;<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a>&gt;, <span class="i">INotifyCollectionChanged</span>
+	{
+		<b>readonly</b> <span class="i">List</span>&lt;<b>int</b>&gt; <a id="beec0b98cfdb9a9c" href="R/beec0b98cfdb9a9c.html" target="n" data-glyph="46,1" class="i field">_maskedIndexes</a> = <b>new</b> <span class="i">List</span>&lt;<b>int</b>&gt;(); <span class="c">// Indices  </span>
+		<b>readonly</b> <span class="i">HashSet</span>&lt;<b>string</b>&gt; <a id="21330997fe6a0b39" href="R/21330997fe6a0b39.html" target="n" data-glyph="46,1" class="i field">_maskedKeys</a> = <b>new</b> <span class="i">HashSet</span>&lt;<b>string</b>&gt;();
+		<span class="i">IList</span>&lt;<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a>&gt; <a id="0d000c7e32852d1d" href="R/0d000c7e32852d1d.html" target="n" data-glyph="46,1" class="i field">_mainList</a>;
+ 
+		<b>public</b> <span class="i">IList</span>&lt;<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a>&gt; <a id="5735446afeaf4487" href="R/5735446afeaf4487.html" target="n" data-glyph="102,1" class="i property">MainList</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#0d000c7e32852d1d" class="i field">_mainList</a>; }
+			<b>set</b>
+			{
+				<b>var</b> <span id="r0 rd" class="r0 r">observable</span> = <a href="#0d000c7e32852d1d" class="i field">_mainList</a> <b>as</b> <span class="i">INotifyCollectionChanged</span>;
+				<b>if</b> (<span class="r0 r">observable</span> != <b>null</b>)
+					<span class="r0 r">observable</span>.<span class="i">CollectionChanged</span> -= <span class="i">OnMainCollectionChanged</span>;
+				<a href="#0d000c7e32852d1d" class="i field">_mainList</a> = <b>value</b>;
+				<span class="r0 r">observable</span> = <a href="#0d000c7e32852d1d" class="i field">_mainList</a> <b>as</b> <span class="i">INotifyCollectionChanged</span>;
+				<b>if</b> (<span class="r0 r">observable</span> != <b>null</b>)
+					<span class="r0 r">observable</span>.<span class="i">CollectionChanged</span> += <span class="i">OnMainCollectionChanged</span>;
+				<a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>.<span class="i">Clear</span>();
+				<b>for</b> (<b>var</b> <span id="r1 rd" class="r1 r">i</span> = 0; <span class="r1 r">i</span> &lt; <a href="#0d000c7e32852d1d" class="i field">_mainList</a>.<span class="i">Count</span>; <span class="r1 r">i</span>++)
+				{
+					<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r2 rd" class="r2 r">data</span> = <a href="#0d000c7e32852d1d" class="i field">_mainList</a>[<span class="r1 r">i</span>];
+					<b>if</b> (<a href="#21330997fe6a0b39" class="i field">_maskedKeys</a>.<span class="i">Contains</span>(<span class="r2 r">data</span>.<a href="IDataItem.cs.html#848c9c74d2f68fa3" class="i property">Name</a>))
+						<a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>.<span class="i">Add</span>(<span class="r1 r">i</span>);
+				}
+				<a href="#521d0f82bc966197" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>));
+			}
+		}
+ 
+		<b>public</b> <span class="i">IEnumerable</span>&lt;<b>string</b>&gt; <a id="32f3a222a0e13f57" href="R/32f3a222a0e13f57.html" target="n" data-glyph="102,1" class="i property">MaskedKeys</a> =&gt; <a href="#21330997fe6a0b39" class="i field">_maskedKeys</a>;
+ 
+		<b>public void</b> <a id="1903f84a136b2ef4" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Add</a>(<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r3 rd" class="r3 r">item</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<b>public void</b> <a id="f0b3788ef8f4b490" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Clear</a>()
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<b>public bool</b> <a id="d39a5e366d5c19b2" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Contains</a>(<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r4 rd" class="r4 r">item</span>)
+		{
+			<b>return</b> <a href="#5735446afeaf4487" class="i property">MainList</a> != <b>null</b> &amp;&amp; !<a href="#21330997fe6a0b39" class="i field">_maskedKeys</a>.<span class="i">Contains</span>(<span class="r4 r">item</span>.<a href="IDataItem.cs.html#848c9c74d2f68fa3" class="i property">Name</a>) &amp;&amp; <a href="#5735446afeaf4487" class="i property">MainList</a>.<span class="i">Contains</span>(<span class="r4 r">item</span>);
+		}
+ 
+		<b>public void</b> <a id="d8e3080b0e1dad57" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">CopyTo</a>(<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a>[] <span id="r5 rd" class="r5 r">array</span>, <b>int</b> <span id="r6 rd" class="r6 r">arrayIndex</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<b>public int</b> <a id="ac92eb25f1213b0b" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Count</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<a href="#5735446afeaf4487" class="i property">MainList</a> == <b>null</b>)
+					<b>return</b> 0;
+				<b>var</b> <span id="r7 rd" class="r7 r">result</span> = 0;
+				<span class="r7 r">result</span> += <a href="#5735446afeaf4487" class="i property">MainList</a>.<span class="i">Count</span>;
+				<span class="r7 r">result</span> -= <a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>.<span class="i">Count</span>;
+				<b>return</b> <span class="r7 r">result</span>;
+			}
+		}
+ 
+		<b>public bool</b> <a id="8bdca53f45a528a4" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">IsReadOnly</a> =&gt; <b>true</b>;
+ 
+		<b>public bool</b> <a id="9d16d67d5cae7815" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Remove</a>(<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r8 rd" class="r8 r">item</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<span class="i">IEnumerator</span> <span class="i">IEnumerable</span>.<a id="67a1975507dcb57f" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">GetEnumerator</a>()
+		{
+			<b>return</b> <a href="#1df217a706a4c152" class="i method">GetEnumerator</a>();
+		}
+ 
+		<b>public</b> <span class="i">IEnumerator</span>&lt;<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a>&gt; <a id="1df217a706a4c152" href="R/1df217a706a4c152.html" target="n" data-glyph="72,1" class="i method">GetEnumerator</a>()
+		{
+			<b>var</b> <span id="r9 rd" class="r9 r">index</span> = 0;
+			<b>if</b> (<a href="#5735446afeaf4487" class="i property">MainList</a> == <b>null</b>)
+				<b>yield break</b>;
+			<b>foreach</b> (<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r10 rd" class="r10 r">item</span> <b>in</b> <a href="#5735446afeaf4487" class="i property">MainList</a>)
+			{
+				<b>if</b> (!<a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>.<span class="i">Contains</span>(<span class="r9 r">index</span>))
+					<b>yield return</b> <span class="r10 r">item</span>;
+				<span class="r9 r">index</span>++;
+			}
+		}
+ 
+		<b>public int</b> <a id="e01fba080c88fb65" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">IndexOf</a>(<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r11 rd" class="r11 r">item</span>)
+		{
+			<b>if</b> (<a href="#21330997fe6a0b39" class="i field">_maskedKeys</a>.<span class="i">Contains</span>(<span class="r11 r">item</span>.<a href="IDataItem.cs.html#848c9c74d2f68fa3" class="i property">Name</a>))
+				<b>return</b> -1;
+ 
+			<b>if</b> (<a href="#5735446afeaf4487" class="i property">MainList</a> != <b>null</b>)
+			{
+				<b>int</b> <span id="r12 rd" class="r12 r">result</span> = <a href="#5735446afeaf4487" class="i property">MainList</a>.<span class="i">IndexOf</span>(<span class="r11 r">item</span>);
+				<b>if</b> (<span class="r12 r">result</span> &gt;= 0)
+					<b>return</b> <a href="#95b0f354f039e511" class="i method">PublicIndexFromMainIndex</a>(<span class="r12 r">result</span>);
+			}
+			<b>return</b> -1;
+		}
+ 
+		<b>public void</b> <a id="63b582d18e63b56f" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Insert</a>(<b>int</b> <span id="r13 rd" class="r13 r">index</span>, <a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r14 rd" class="r14 r">item</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<b>public</b> <a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a> <a id="bceada7ea02c02bb" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="k">this</a>[<b>int</b> <span id="r15 rd" class="r15 r">index</span>]
+		{
+			<b>get</b>
+			{
+				<b>foreach</b> (<b>int</b> <span id="r16 rd" class="r16 r">i</span> <b>in</b> <a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>)
+				{
+					<b>if</b> (<span class="r16 r">i</span> &lt;= <span class="r15 r">index</span>)
+						<span class="r15 r">index</span>++;
+				}
+				<b>if</b> (<a href="#0d000c7e32852d1d" class="i field">_mainList</a> == <b>null</b>)
+					<b>throw</b> <b>new</b> <span class="i">IndexOutOfRangeException</span>();
+				<b>return</b> <a href="#0d000c7e32852d1d" class="i field">_mainList</a>[<span class="r15 r">index</span>];
+			}
+			<b>set</b> { <b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>(); }
+		}
+ 
+		<b>public void</b> <a id="a26738c2d80f511a" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">RemoveAt</a>(<b>int</b> <span id="r17 rd" class="r17 r">index</span>)
+		{
+			<b>throw</b> <b>new</b> <span class="i">NotSupportedException</span>();
+		}
+ 
+		<b>public event</b> <span class="i">NotifyCollectionChangedEventHandler</span> <a id="a5a84a9405d536bf" href="R/a5a84a9405d536bf.html" target="n" data-glyph="30,1" class="i">CollectionChanged</a>;
+ 
+		<b>public void</b> <a id="512d93d6e08c68b2" href="R/512d93d6e08c68b2.html" target="n" data-glyph="72,1" class="i method">MaskKey</a>(<b>string</b> <span id="r18 rd" class="r18 r">key</span>)
+		{
+			<b>if</b> (<a href="#21330997fe6a0b39" class="i field">_maskedKeys</a>.<span class="i">Contains</span>(<span class="r18 r">key</span>) || <a href="#0d000c7e32852d1d" class="i field">_mainList</a> == <b>null</b>)
+				<b>return</b>;
+			<a href="#21330997fe6a0b39" class="i field">_maskedKeys</a>.<span class="i">Add</span>(<span class="r18 r">key</span>);
+			<b>var</b> <span id="r19 rd" class="r19 r">index</span> = 0;
+			<b>foreach</b> (<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r20 rd" class="r20 r">item</span> <b>in</b> <a href="#0d000c7e32852d1d" class="i field">_mainList</a>)
+			{
+				<b>if</b> (<span class="r20 r">item</span>.<a href="IDataItem.cs.html#848c9c74d2f68fa3" class="i property">Name</a> == <span class="r18 r">key</span>)
+				{
+					<span class="c">// We need to keep our indexes list sorted, so we insert everything pre-sorted</span>
+					<b>var</b> <span id="r21 rd" class="r21 r">added</span> = <b>false</b>;
+					<b>for</b> (<b>var</b> <span id="r22 rd" class="r22 r">i</span> = 0; <span class="r22 r">i</span> &lt; <a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>.<span class="i">Count</span>; <span class="r22 r">i</span>++)
+					{
+						<b>if</b> (<a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>[<span class="r22 r">i</span>] &gt; <span class="r19 r">index</span>)
+						{
+							<a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>.<span class="i">Insert</span>(<span class="r22 r">i</span>, <span class="r19 r">index</span>);
+							<span class="r21 r">added</span> = <b>true</b>;
+							<b>break</b>;
+						}
+					}
+					<b>if</b> (!<span class="r21 r">added</span>)
+						<a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>.<span class="i">Add</span>(<span class="r19 r">index</span>);
+					<a href="#521d0f82bc966197" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Remove</span>, <span class="r20 r">item</span>, <a href="#95b0f354f039e511" class="i method">PublicIndexFromMainIndex</a>(<span class="r19 r">index</span>)));
+					<b>break</b>;
+				}
+				<span class="r19 r">index</span>++;
+			}
+		}
+ 
+		<b>public void</b> <a id="987c10faa7b779ad" href="R/987c10faa7b779ad.html" target="n" data-glyph="72,1" class="i method">UnmaskKey</a>(<b>string</b> <span id="r23 rd" class="r23 r">key</span>)
+		{
+			<a href="#21330997fe6a0b39" class="i field">_maskedKeys</a>.<span class="i">Remove</span>(<span class="r23 r">key</span>);
+			<b>if</b> (<a href="#0d000c7e32852d1d" class="i field">_mainList</a> == <b>null</b>)
+				<b>return</b>;
+			<b>var</b> <span id="r24 rd" class="r24 r">index</span> = 0;
+			<b>foreach</b> (<a href="IDataItem.cs.html#6562e03746e7c406" class="t t">IDataItem</a> <span id="r25 rd" class="r25 r">item</span> <b>in</b> <a href="#0d000c7e32852d1d" class="i field">_mainList</a>)
+			{
+				<b>if</b> (<span class="r25 r">item</span>.<a href="IDataItem.cs.html#848c9c74d2f68fa3" class="i property">Name</a> == <span class="r23 r">key</span>)
+				{
+					<b>bool</b> <span id="r26 rd" class="r26 r">removed</span> = <a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>.<span class="i">Remove</span>(<span class="r24 r">index</span>);
+					<b>if</b> (<span class="r26 r">removed</span>)
+					{
+						<a href="#521d0f82bc966197" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Add</span>, <span class="r25 r">item</span>, <a href="#95b0f354f039e511" class="i method">PublicIndexFromMainIndex</a>(<span class="r24 r">index</span>)));
+					}
+					<b>break</b>;
+				}
+				<span class="r24 r">index</span>++;
+			}
+		}
+ 
+		<b>protected void</b> <a id="521d0f82bc966197" href="R/521d0f82bc966197.html" target="n" data-glyph="75,1" class="i method">OnCollectionChanged</a>(<span class="i">NotifyCollectionChangedEventArgs</span> <span id="r27 rd" class="r27 r">args</span>)
+		{
+			<a href="#a5a84a9405d536bf" class="i">CollectionChanged</a>?.<span class="i">Invoke</span>(<a href="#4e368e8fd1ca1208" class="k">this</a>, <span class="r27 r">args</span>);
+		}
+ 
+		<b>void</b> <a id="b6d0a3f36d137ba9" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnMainCollectionChanged</a>(<b>object</b> <span id="r28 rd" class="r28 r">sender</span>, <span class="i">NotifyCollectionChangedEventArgs</span> <span id="r29 rd" class="r29 r">args</span>)
+		{
+			<span class="c">// much complexity to be had here</span>
+			<b>switch</b> (<span class="r29 r">args</span>.<span class="i">Action</span>)
+			{
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Add</span>:
+					<a href="#521d0f82bc966197" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Add</span>, <span class="r29 r">args</span>.<span class="i">NewItems</span>, <span class="i">PublicIndexFromMainIndex</span>(<span class="r29 r">args</span>.<span class="i">NewStartingIndex</span>)));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Move</span>:
+					<a href="#521d0f82bc966197" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Move</span>, <span class="r29 r">args</span>.<span class="i">OldItems</span>, <span class="i">PublicIndexFromMainIndex</span>(<span class="r29 r">args</span>.<span class="i">NewStartingIndex</span>),
+						<span class="i">PublicIndexFromMainIndex</span>(<span class="r29 r">args</span>.<span class="i">OldStartingIndex</span>)));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Remove</span>:
+					<a href="#521d0f82bc966197" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Remove</span>, <span class="r29 r">args</span>.<span class="i">OldItems</span>, <span class="i">PublicIndexFromMainIndex</span>(<span class="r29 r">args</span>.<span class="i">OldStartingIndex</span>)));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Replace</span>:
+					<a href="#521d0f82bc966197" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Replace</span>, <span class="r29 r">args</span>.<span class="i">NewItems</span>, <span class="r29 r">args</span>.<span class="i">OldItems</span>, <span class="i">PublicIndexFromMainIndex</span>(<span class="r29 r">args</span>.<span class="i">OldStartingIndex</span>)));
+					<b>break</b>;
+				<b>case</b> <span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>:
+					<a href="#521d0f82bc966197" class="i method">OnCollectionChanged</a>(<b>new</b> <span class="i">NotifyCollectionChangedEventArgs</span>(<span class="i">NotifyCollectionChangedAction</span>.<span class="i">Reset</span>));
+					<b>break</b>;
+				<b>default</b>:
+					<b>throw</b> <b>new</b> <span class="i">ArgumentOutOfRangeException</span>();
+			}
+		}
+ 
+		<b>int</b> <a id="95b0f354f039e511" href="R/95b0f354f039e511.html" target="n" data-glyph="76,1" class="i method">PublicIndexFromMainIndex</a>(<b>int</b> <span id="r30 rd" class="r30 r">index</span>)
+		{
+			<b>var</b> <span id="r31 rd" class="r31 r">count</span> = 0;
+			<b>for</b> (<b>var</b> <span id="r32 rd" class="r32 r">x</span> = 0; <span class="r32 r">x</span> &lt; <a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>.<span class="i">Count</span>; <span class="r32 r">x</span>++)
+			{
+				<b>int</b> <span id="r33 rd" class="r33 r">i</span> = <a href="#beec0b98cfdb9a9c" class="i field">_maskedIndexes</a>[<span class="r32 r">x</span>];
+				<b>if</b> (<span class="r33 r">i</span> &lt; <span class="r30 r">index</span>)
+					<span class="r31 r">count</span>++;
+			}
+			<b>return</b> <span class="r30 r">index</span> - <span class="r31 r">count</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

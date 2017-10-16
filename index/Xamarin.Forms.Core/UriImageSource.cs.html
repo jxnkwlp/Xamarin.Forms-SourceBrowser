@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html><head><title>UriImageSource.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(233);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/UriImageSource.cs" target="_top">UriImageSource.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>public sealed class</b> <a id="077fcd65674b5b78" href="R/077fcd65674b5b78.html" target="n" data-glyph="0,0" class="t t"><span id="560e0cb5d047675e">UriImageSource</span></a> : <a href="ImageSource.cs.html#bc9d2c0cce52238b" class="t t">ImageSource</a>
+	{
+		<b>internal const string</b> <a id="d4ff749a339a46db" href="R/d4ff749a339a46db.html" target="n" data-glyph="8,1" class="i field">CacheName</a> = <span class="s">&quot;ImageLoaderCache&quot;</span>;
+ 
+		<b>public static readonly</b> <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="b2ff54e99297bfac" href="R/b2ff54e99297bfac.html" target="n" data-glyph="42,1" class="i field">UriProperty</a> = <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<a href="BindableProperty.cs.html#d20d5764687c67bb" class="i method">Create</a>(<span class="s">&quot;Uri&quot;</span>, <b>typeof</b>(<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a>), <b>typeof</b>(<a href="#077fcd65674b5b78" class="t t">UriImageSource</a>), <b>default</b>(<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a>),
+			<span class="r0 r">propertyChanged</span>: (<span id="r1 rd" class="r1 r">bindable</span>, <span id="r2 rd" class="r2 r">oldvalue</span>, <span id="r3 rd" class="r3 r">newvalue</span>) =&gt; ((<a href="#077fcd65674b5b78" class="t t">UriImageSource</a>)<span class="r1 r">bindable</span>).<a href="#8d6badc28d27656f" class="i method">OnUriChanged</a>(), <span class="r4 r">validateValue</span>: (<span id="r5 rd" class="r5 r">bindable</span>, <span id="r6 rd" class="r6 r">value</span>) =&gt; <span class="r6 r">value</span> == <b>null</b> || ((<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a>)<span class="r6 r">value</span>).<a href="@1@System.Runtime/A.html#2e1f2f7671a40125" class="i property">IsAbsoluteUri</a>);
+ 
+		<b>static readonly</b> <a href="IIsolatedStorageFile.cs.html#04ea35780c7f35ff" class="t t">IIsolatedStorageFile</a> <a id="37c2c97e1bb183a2" href="R/37c2c97e1bb183a2.html" target="n" data-glyph="46,1" class="i field">Store</a> = <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#4b16d4a43172fca6" class="i property">PlatformServices</a>.<a href="IPlatformServices.cs.html#d165d9d83cb7ff5d" class="i method">GetUserStoreForApplication</a>();
+ 
+		<b>static readonly object</b> <a id="aaece214437e233f" href="R/aaece214437e233f.html" target="n" data-glyph="46,1" class="i field">s_syncHandle</a> = <b>new</b> <b>object</b>();
+		<b>static readonly</b> <a href="@1@System.Collections/A.html#d3599058f8d79be0" class="t t">Dictionary</a>&lt;<b>string</b>, <a href="LockingSemaphore.cs.html#c7e05fd214778380" class="t t">LockingSemaphore</a>&gt; <a id="c13c6bc9e94e033c" href="R/c13c6bc9e94e033c.html" target="n" data-glyph="46,1" class="i field">s_semaphores</a> = <b>new</b> <a href="@1@System.Collections/A.html#bf6849e410b43c4c" class="t constructor">Dictionary</a>&lt;<b>string</b>, <a href="LockingSemaphore.cs.html#c7e05fd214778380" class="t t">LockingSemaphore</a>&gt;();
+ 
+		<a href="@1@System.Runtime/A.html#865ef7b89f41b632" class="t t">TimeSpan</a> <a id="8ed82d96a8fccd8b" href="R/8ed82d96a8fccd8b.html" target="n" data-glyph="46,1" class="i field">_cacheValidity</a> = <a href="@1@System.Runtime/A.html#865ef7b89f41b632" class="t t">TimeSpan</a>.<a href="@1@System.Runtime/A.html#e7c4baa19fa38e8e" class="i method">FromDays</a>(1);
+ 
+		<b>bool</b> <a id="1f7b77ab26371683" href="R/1f7b77ab26371683.html" target="n" data-glyph="46,1" class="i field">_cachingEnabled</a> = <b>true</b>;
+ 
+		<b>static</b> <a id="afcefcbf69b40bc4" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">UriImageSource</a>()
+		{
+			<b>if</b> (!<a href="#37c2c97e1bb183a2" class="i field">Store</a>.<a href="IIsolatedStorageFile.cs.html#bc64c27cfc3d2336" class="i method">GetDirectoryExistsAsync</a>(<a href="#d4ff749a339a46db" class="i field">CacheName</a>).<span class="i property">Result</span>)
+				<a href="#37c2c97e1bb183a2" class="i field">Store</a>.<a href="IIsolatedStorageFile.cs.html#2a3f501c652a9102" class="i method">CreateDirectoryAsync</a>(<a href="#d4ff749a339a46db" class="i field">CacheName</a>).<span class="i method">Wait</span>();
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#865ef7b89f41b632" class="t t">TimeSpan</a> <a id="208d543cee00aaa9" href="R/208d543cee00aaa9.html" target="n" data-glyph="102,1" class="i property">CacheValidity</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#8ed82d96a8fccd8b" class="i field">_cacheValidity</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#8ed82d96a8fccd8b" class="i field">_cacheValidity</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<a href="BindableObject.cs.html#e5d2d1b731820b1b" class="i method">OnPropertyChanging</a>();
+				<a href="#8ed82d96a8fccd8b" class="i field">_cacheValidity</a> = <b>value</b>;
+				<a href="Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>();
+			}
+		}
+ 
+		<b>public bool</b> <a id="fb6b9024c21b6cef" href="R/fb6b9024c21b6cef.html" target="n" data-glyph="102,1" class="i property">CachingEnabled</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#1f7b77ab26371683" class="i field">_cachingEnabled</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#1f7b77ab26371683" class="i field">_cachingEnabled</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<a href="BindableObject.cs.html#e5d2d1b731820b1b" class="i method">OnPropertyChanging</a>();
+				<a href="#1f7b77ab26371683" class="i field">_cachingEnabled</a> = <b>value</b>;
+				<a href="Element.cs.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>();
+			}
+		}
+ 
+		[<a href="TypeConverterAttribute.cs.html#ba9bf382c7a66e7b" class="t constructor">TypeConverter</a>(<b>typeof</b>(<a href="UriTypeConverter.cs.html#8ddda47869d91bcf" class="t t">UriTypeConverter</a>))]
+		<b>public</b> <a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <a id="081f21e8d9c61f56" href="R/081f21e8d9c61f56.html" target="n" data-glyph="102,1" class="i property">Uri</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a>)<a href="BindableObject.cs.html#00e81fee0b400c43" class="i method">GetValue</a>(<a href="#b2ff54e99297bfac" class="i field">UriProperty</a>); }
+			<b>set</b> { <a href="BindableObject.cs.html#71f22f51364ed0e1" class="i method">SetValue</a>(<a href="#b2ff54e99297bfac" class="i field">UriProperty</a>, <b>value</b>); }
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public async</b> <span class="t t">Task</span>&lt;<span class="t t">Stream</span>&gt; <a id="6753618618a01e98" href="R/6753618618a01e98.html" target="n" data-glyph="72,1" class="i method">GetStreamAsync</a>(<span class="t t">CancellationToken</span> <span id="r7 rd" class="r7 r">userToken</span> = <b>default</b>(<span class="t t">CancellationToken</span>))
+		{
+			<a href="ImageSource.cs.html#ec595aa4a3f2e118" class="i method">OnLoadingStarted</a>();
+			<span class="r7 r">userToken</span>.<span class="i method">Register</span>(<a href="ImageSource.cs.html#dd5b0b895d1e5670" class="i property">CancellationTokenSource</a>.<span class="i method">Cancel</span>);
+			<span class="t t">Stream</span> <span id="r8 rd" class="r8 r">stream</span>;
+ 
+			<b>try</b>
+			{
+				<span class="r8 r">stream</span> = <b>await</b> <a href="#9be94dc805e44551" class="i method">GetStreamAsync</a>(<a href="#081f21e8d9c61f56" class="i property">Uri</a>, <a href="ImageSource.cs.html#dd5b0b895d1e5670" class="i property">CancellationTokenSource</a>.<span class="i property">Token</span>);
+				<a href="ImageSource.cs.html#55944823222cf3d5" class="i method">OnLoadingCompleted</a>(<b>false</b>);
+			}
+			<b>catch</b> (<span class="t t">OperationCanceledException</span>)
+			{
+				<a href="ImageSource.cs.html#55944823222cf3d5" class="i method">OnLoadingCompleted</a>(<b>true</b>);
+				<b>throw</b>;
+			}
+			<b>catch</b> (<a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r9 rd" class="r9 r">ex</span>)
+			{
+				<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;Image Loading&quot;</span>, <span class="s">$&quot;</span><span class="s">Error getting stream for </span>{<a href="#081f21e8d9c61f56" class="i property">Uri</a>}<span class="s">: </span>{<span class="r9 r">ex</span>}<span class="s">&quot;</span>);
+				<b>throw</b>;
+			}
+ 
+			<b>return</b> <span class="r8 r">stream</span>;
+		}
+ 
+		<b>public override string</b> <a id="b574699d042e6fb2" href="R/b574699d042e6fb2.html" target="n" data-glyph="72,1" class="i method">ToString</a>()
+		{
+			<b>return</b> <span class="s">$&quot;</span><span class="s">Uri: </span>{<a href="#081f21e8d9c61f56" class="i property">Uri</a>}<span class="s">&quot;</span>;
+		}
+ 
+		<b>static string</b> <a id="db5af74a0fe44696" href="R/db5af74a0fe44696.html" target="n" data-glyph="76,1" class="i method">GetCacheKey</a>(<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r10 rd" class="r10 r">uri</span>)
+		{
+			<b>return</b> <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#4b16d4a43172fca6" class="i property">PlatformServices</a>.<a href="IPlatformServices.cs.html#8467f50562b17b52" class="i method">GetMD5Hash</a>(<span class="r10 r">uri</span>.<a href="@1@System.Runtime/A.html#e335fec0022465e6" class="i property">AbsoluteUri</a>);
+		}
+ 
+		<b>async</b> <span class="t t">Task</span>&lt;<b>bool</b>&gt; <a id="5751788d3e3e2f4b" href="R/5751788d3e3e2f4b.html" target="n" data-glyph="76,1" class="i method">GetHasLocallyCachedCopyAsync</a>(<b>string</b> <span id="r11 rd" class="r11 r">key</span>, <b>bool</b> <span id="r12 rd" class="r12 r">checkValidity</span> = <b>true</b>)
+		{
+			<a href="@1@System.Runtime/A.html#df6b1eba7461813b" class="t t">DateTime</a> <span id="r13 rd" class="r13 r">now</span> = <a href="@1@System.Runtime/A.html#df6b1eba7461813b" class="t t">DateTime</a>.<a href="@1@System.Runtime/A.html#b0d5e4c9a8d4ddac" class="i property">UtcNow</a>;
+			<a href="@1@System.Runtime/A.html#df6b1eba7461813b" class="t t">DateTime</a>? <span id="r14 rd" class="r14 r">lastWriteTime</span> = <b>await</b> <a href="#0420fefda373be8b" class="i method">GetLastWriteTimeUtcAsync</a>(<span class="r11 r">key</span>).<span class="i method">ConfigureAwait</span>(<b>false</b>);
+			<b>return</b> <span class="r14 r">lastWriteTime</span>.<a href="@1@System.Runtime/A.html#7bbe60e33e857298" class="i property">HasValue</a> &amp;&amp; <span class="r13 r">now</span> - <span class="r14 r">lastWriteTime</span>.<a href="@1@System.Runtime/A.html#7b38d1fa76071c95" class="i property">Value</a> &lt; <a href="#208d543cee00aaa9" class="i property">CacheValidity</a>;
+		}
+ 
+		<b>static async</b> <span class="t t">Task</span>&lt;<a href="@1@System.Runtime/A.html#df6b1eba7461813b" class="t t">DateTime</a>?&gt; <a id="0420fefda373be8b" href="R/0420fefda373be8b.html" target="n" data-glyph="76,1" class="i method">GetLastWriteTimeUtcAsync</a>(<b>string</b> <span id="r15 rd" class="r15 r">key</span>)
+		{
+			<b>string</b> <span id="r16 rd" class="r16 r">path</span> = <span class="t t">Path</span>.<span class="i method">Combine</span>(<a href="#d4ff749a339a46db" class="i field">CacheName</a>, <span class="r15 r">key</span>);
+			<b>if</b> (!<b>await</b> <a href="#37c2c97e1bb183a2" class="i field">Store</a>.<a href="IIsolatedStorageFile.cs.html#2ae201de3c11c1c0" class="i method">GetFileExistsAsync</a>(<span class="r16 r">path</span>).<span class="i method">ConfigureAwait</span>(<b>false</b>))
+				<b>return null</b>;
+ 
+			<b>return</b> (<b>await</b> <a href="#37c2c97e1bb183a2" class="i field">Store</a>.<a href="IIsolatedStorageFile.cs.html#ff4aac72e2092dc8" class="i method">GetLastWriteTimeAsync</a>(<span class="r16 r">path</span>).<span class="i method">ConfigureAwait</span>(<b>false</b>)).<a href="@1@System.Runtime/A.html#ae3e62dcd82c2422" class="i property">UtcDateTime</a>;
+		}
+ 
+		<b>async</b> <span class="t t">Task</span>&lt;<span class="t t">Stream</span>&gt; <a id="9be94dc805e44551" href="R/9be94dc805e44551.html" target="n" data-glyph="76,1" class="i method">GetStreamAsync</a>(<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r17 rd" class="r17 r">uri</span>, <span class="t t">CancellationToken</span> <span id="r18 rd" class="r18 r">cancellationToken</span> = <b>default</b>(<span class="t t">CancellationToken</span>))
+		{
+			<span class="r18 r">cancellationToken</span>.<span class="i method">ThrowIfCancellationRequested</span>();
+ 
+			<span class="t t">Stream</span> <span id="r19 rd" class="r19 r">stream</span>;
+			<b>if</b> (!<a href="#fb6b9024c21b6cef" class="i property">CachingEnabled</a>)
+			{
+				<b>try</b>
+				{
+					<span class="r19 r">stream</span> = <b>await</b> <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#ef8bf64effddd65a" class="i method">GetStreamAsync</a>(<span class="r17 r">uri</span>, <span class="r18 r">cancellationToken</span>).<span class="i method">ConfigureAwait</span>(<b>false</b>);
+				}
+				<b>catch</b> (<a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r20 rd" class="r20 r">ex</span>) 
+				{
+					<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;Image Loading&quot;</span>, <span class="s">$&quot;</span><span class="s">Error getting stream for </span>{<a href="#081f21e8d9c61f56" class="i property">Uri</a>}<span class="s">: </span>{<span class="r20 r">ex</span>}<span class="s">&quot;</span>);
+					<span class="r19 r">stream</span> = <b>null</b>;
+				}
+			}
+			<b>else</b>
+				<span class="r19 r">stream</span> = <b>await</b> <a href="#044111d3b8395013" class="i method">GetStreamFromCacheAsync</a>(<span class="r17 r">uri</span>, <span class="r18 r">cancellationToken</span>).<span class="i method">ConfigureAwait</span>(<b>false</b>);
+			<b>return</b> <span class="r19 r">stream</span>;
+		}
+ 
+		<b>async</b> <span class="t t">Task</span>&lt;<span class="t t">Stream</span>&gt; <a id="44743bf814a180cf" href="R/44743bf814a180cf.html" target="n" data-glyph="76,1" class="i method">GetStreamAsyncUnchecked</a>(<b>string</b> <span id="r21 rd" class="r21 r">key</span>, <a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r22 rd" class="r22 r">uri</span>, <span class="t t">CancellationToken</span> <span id="r23 rd" class="r23 r">cancellationToken</span>)
+		{
+			<b>if</b> (<b>await</b> <a href="#5751788d3e3e2f4b" class="i method">GetHasLocallyCachedCopyAsync</a>(<span class="r21 r">key</span>).<span class="i method">ConfigureAwait</span>(<b>false</b>))
+			{
+				<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r24 rd" class="r24 r">retry</span> = 5;
+				<b>while</b> (<span class="r24 r">retry</span> &gt;= 0)
+				{
+					<b>int</b> <span id="r25 rd" class="r25 r">backoff</span>;
+					<b>try</b>
+					{
+						<span class="t t">Stream</span> <span id="r26 rd" class="r26 r">result</span> = <b>await</b> <a href="#37c2c97e1bb183a2" class="i field">Store</a>.<a href="IIsolatedStorageFile.cs.html#49aa6051289d24b1" class="i method">OpenFileAsync</a>(<span class="t t">Path</span>.<span class="i method">Combine</span>(<a href="#d4ff749a339a46db" class="i field">CacheName</a>, <span class="r21 r">key</span>), <a href="FileMode.cs.html#246e3bb317b89af3" class="t t">FileMode</a>.<a href="FileMode.cs.html#57f74d74c7e0485e" class="i field">Open</a>, <a href="FileAccess.cs.html#254bf02e30755ba7" class="t t">FileAccess</a>.<a href="FileAccess.cs.html#22b7a19635238d0a" class="i field">Read</a>).<span class="i method">ConfigureAwait</span>(<b>false</b>);
+						<b>return</b> <span class="r26 r">result</span>;
+					}
+					<b>catch</b> (<span class="t t">IOException</span>)
+					{
+						<span class="c">// iOS seems to not like 2 readers opening the file at the exact same time, back off for random amount of time</span>
+						<span class="r25 r">backoff</span> = <b>new</b> <span class="t constructor">Random</span>().<span class="i method">Next</span>(1, 5);
+						<span class="r24 r">retry</span>--;
+					}
+ 
+					<b>if</b> (<span class="r25 r">backoff</span> &gt; 0)
+					{
+						<b>await</b> <span class="t t">Task</span>.<span class="i method">Delay</span>(<span class="r25 r">backoff</span>);
+					}
+				}
+				<b>return null</b>;
+			}
+ 
+			<span class="t t">Stream</span> <span id="r27 rd" class="r27 r">stream</span>;
+			<b>try</b>
+			{
+				<span class="r27 r">stream</span> = <b>await</b> <a href="Device.cs.html#4809323d42d3030a" class="t t">Device</a>.<a href="Device.cs.html#ef8bf64effddd65a" class="i method">GetStreamAsync</a>(<span class="r22 r">uri</span>, <span class="r23 r">cancellationToken</span>).<span class="i method">ConfigureAwait</span>(<b>false</b>);
+				<b>if</b> (<span class="r27 r">stream</span> == <b>null</b>)
+					<b>return null</b>;
+			}
+			<b>catch</b> (<a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r28 rd" class="r28 r">ex</span>)
+			{
+				<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;Image Loading&quot;</span>, <span class="s">$&quot;</span><span class="s">Error getting stream for </span>{<a href="#081f21e8d9c61f56" class="i property">Uri</a>}<span class="s">: </span>{<span class="r28 r">ex</span>}<span class="s">&quot;</span>);
+				<b>return null</b>;
+			}
+ 
+			<span class="t t">Stream</span> <span id="r29 rd" class="r29 r">writeStream</span> = <b>await</b> <a href="#37c2c97e1bb183a2" class="i field">Store</a>.<a href="IIsolatedStorageFile.cs.html#49aa6051289d24b1" class="i method">OpenFileAsync</a>(<span class="t t">Path</span>.<span class="i method">Combine</span>(<a href="#d4ff749a339a46db" class="i field">CacheName</a>, <span class="r21 r">key</span>), <a href="FileMode.cs.html#246e3bb317b89af3" class="t t">FileMode</a>.<a href="FileMode.cs.html#1bbc170d66d118fd" class="i field">Create</a>, <a href="FileAccess.cs.html#254bf02e30755ba7" class="t t">FileAccess</a>.<a href="FileAccess.cs.html#f5f8fc5b30b033ca" class="i field">Write</a>).<span class="i method">ConfigureAwait</span>(<b>false</b>);
+			<b>await</b> <span class="r27 r">stream</span>.<span class="i method">CopyToAsync</span>(<span class="r29 r">writeStream</span>, 16384, <span class="r23 r">cancellationToken</span>).<span class="i method">ConfigureAwait</span>(<b>false</b>);
+			<b>if</b> (<span class="r29 r">writeStream</span> != <b>null</b>)
+				<span class="r29 r">writeStream</span>.<span class="i method">Dispose</span>();
+ 
+			<span class="r27 r">stream</span>.<span class="i method">Dispose</span>();
+ 
+			<b>return await</b> <a href="#37c2c97e1bb183a2" class="i field">Store</a>.<a href="IIsolatedStorageFile.cs.html#49aa6051289d24b1" class="i method">OpenFileAsync</a>(<span class="t t">Path</span>.<span class="i method">Combine</span>(<a href="#d4ff749a339a46db" class="i field">CacheName</a>, <span class="r21 r">key</span>), <a href="FileMode.cs.html#246e3bb317b89af3" class="t t">FileMode</a>.<a href="FileMode.cs.html#57f74d74c7e0485e" class="i field">Open</a>, <a href="FileAccess.cs.html#254bf02e30755ba7" class="t t">FileAccess</a>.<a href="FileAccess.cs.html#22b7a19635238d0a" class="i field">Read</a>).<span class="i method">ConfigureAwait</span>(<b>false</b>);
+		}
+ 
+		<b>async</b> <span class="t t">Task</span>&lt;<span class="t t">Stream</span>&gt; <a id="044111d3b8395013" href="R/044111d3b8395013.html" target="n" data-glyph="76,1" class="i method">GetStreamFromCacheAsync</a>(<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r30 rd" class="r30 r">uri</span>, <span class="t t">CancellationToken</span> <span id="r31 rd" class="r31 r">cancellationToken</span>)
+		{
+			<b>string</b> <span id="r32 rd" class="r32 r">key</span> = <a href="#db5af74a0fe44696" class="i method">GetCacheKey</a>(<span class="r30 r">uri</span>);
+			<a href="LockingSemaphore.cs.html#c7e05fd214778380" class="t t">LockingSemaphore</a> <span id="r33 rd" class="r33 r">sem</span>;
+			<b>lock</b> (<a href="#aaece214437e233f" class="i field">s_syncHandle</a>)
+			{
+				<b>if</b> (<a href="#c13c6bc9e94e033c" class="i field">s_semaphores</a>.<a href="@1@System.Collections/A.html#22fd7cd7408aed6e" class="i method">ContainsKey</a>(<span class="r32 r">key</span>))
+					<span class="r33 r">sem</span> = <a href="#c13c6bc9e94e033c" class="i field">s_semaphores</a><a href="@1@System.Collections/A.html#49962975508e2d83">[</a><span class="r32 r">key</span>];
+				<b>else</b>
+					<a href="#c13c6bc9e94e033c" class="i field">s_semaphores</a>.<a href="@1@System.Collections/A.html#a7861da7aaa500fe" class="i method">Add</a>(<span class="r32 r">key</span>, <span class="r33 r">sem</span> = <b>new</b> <a href="LockingSemaphore.cs.html#53109fa3c6976f33" class="t constructor">LockingSemaphore</a>(1));
+			}
+ 
+			<b>try</b>
+			{
+				<b>await</b> <span class="r33 r">sem</span>.<a href="LockingSemaphore.cs.html#78d2f7baa06deca8" class="i method">WaitAsync</a>(<span class="r31 r">cancellationToken</span>);
+				<span class="t t">Stream</span> <span id="r34 rd" class="r34 r">stream</span> = <b>await</b> <a href="#44743bf814a180cf" class="i method">GetStreamAsyncUnchecked</a>(<span class="r32 r">key</span>, <span class="r30 r">uri</span>, <span class="r31 r">cancellationToken</span>);
+				<b>if</b> (<span class="r34 r">stream</span> == <b>null</b>)
+				{
+					<span class="r33 r">sem</span>.<a href="LockingSemaphore.cs.html#1b7a1b42e11321d7" class="i method">Release</a>();
+					<b>return null</b>;
+				}
+				<a href="StreamWrapper.cs.html#fe9feb5f09369f3d" class="k">var</a> <span id="r35 rd" class="r35 r">wrapped</span> = <b>new</b> <a href="StreamWrapper.cs.html#58f891ef9e46e569" class="t constructor">StreamWrapper</a>(<span class="r34 r">stream</span>);
+				<span class="r35 r">wrapped</span>.<a href="StreamWrapper.cs.html#91d923758662446c" class="i">Disposed</a> += (<span id="r36 rd" class="r36 r">o</span>, <span id="r37 rd" class="r37 r">e</span>) =&gt; <span class="r33 r">sem</span>.<a href="LockingSemaphore.cs.html#1b7a1b42e11321d7" class="i method">Release</a>();
+				<b>return</b> <span class="r35 r">wrapped</span>;
+			}
+			<b>catch</b> (<span class="t t">OperationCanceledException</span>)
+			{
+				<span class="r33 r">sem</span>.<a href="LockingSemaphore.cs.html#1b7a1b42e11321d7" class="i method">Release</a>();
+				<b>throw</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="8d6badc28d27656f" href="R/8d6badc28d27656f.html" target="n" data-glyph="76,1" class="i method">OnUriChanged</a>()
+		{
+			<b>if</b> (<a href="ImageSource.cs.html#dd5b0b895d1e5670" class="i property">CancellationTokenSource</a> != <b>null</b>)
+				<a href="ImageSource.cs.html#dd5b0b895d1e5670" class="i property">CancellationTokenSource</a>.<span class="i method">Cancel</span>();
+			<a href="ImageSource.cs.html#5cd5e153480258f7" class="i method">OnSourceChanged</a>();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

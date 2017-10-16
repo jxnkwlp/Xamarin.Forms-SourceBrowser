@@ -1,0 +1,352 @@
+﻿<!DOCTYPE html>
+<html><head><title>ListViewRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(343);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/Renderers/ListViewRenderer.cs" target="_top">Renderers\ListViewRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="i n">Foundation</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>public class</b> <a id="849b2360edac918f" href="../R/849b2360edac918f.html" target="n" data-glyph="0,0" class="t t"><span id="17219fe1d409edde">ListViewRenderer</span></a> : <a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>, <span class="t t">NSView</span>&gt;
+	{
+		<b>bool</b> <a id="9b25e56c2e92b3c8" href="../R/9b25e56c2e92b3c8.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+		<span class="t t">NSTableView</span> <a id="50ebfa0b167f6c0e" href="../R/50ebfa0b167f6c0e.html" target="n" data-glyph="46,1" class="i field">_table</a>;
+		<a href="ListViewDataSource.cs.html#79a49c80f9255fc0" class="t t">ListViewDataSource</a> <a id="e6dd22245dc869ef" href="../R/e6dd22245dc869ef.html" target="n" data-glyph="46,1" class="i field">_dataSource</a>;
+		<a href="../IVisualElementRenderer.cs.html#06d80d1922189ea9" class="t t">IVisualElementRenderer</a> <a id="c6270ff4f2545a11" href="../R/c6270ff4f2545a11.html" target="n" data-glyph="46,1" class="i field">_headerRenderer</a>;
+		<a href="../IVisualElementRenderer.cs.html#06d80d1922189ea9" class="t t">IVisualElementRenderer</a> <a id="8267a7864396adf1" href="../R/8267a7864396adf1.html" target="n" data-glyph="46,1" class="i field">_footerRenderer</a>;
+ 
+		<a href="/Xamarin.Forms.Core/A.html#7d7c0ddfee2f7ca3" class="t t">ITemplatedItemsView</a>&lt;<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>&gt; <a id="955b56bf4906bf41" href="../R/955b56bf4906bf41.html" target="n" data-glyph="106,1" class="i property">TemplatedItemsView</a> =&gt; <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>;
+ 
+		<b>public const int</b> <a id="e5df13bd8ea49428" href="../R/e5df13bd8ea49428.html" target="n" data-glyph="6,1" class="i field">DefaultRowHeight</a> = 44;
+ 
+		<b>public</b> <span class="t t">NSTableView</span> <a id="997a3c9357762b93" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">NativeTableView</a> =&gt; <a href="#50ebfa0b167f6c0e" class="i field">_table</a>;
+ 
+		<b>public override void</b> <a id="f84e17e50053d644" href="../R/f84e17e50053d644.html" target="n" data-glyph="72,1" class="i method">ViewWillDraw</a>()
+		{
+			<a href="#d2598708bdcc0790" class="i method">UpdateHeader</a>();
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<span class="i method">ViewWillDraw</span>();
+		}
+ 
+		<b>protected virtual</b> <span class="t t">NSTableView</span> <a id="9302fad0a5e72380" href="../R/9302fad0a5e72380.html" target="n" data-glyph="75,1" class="i method">CreateNSTableView</a>(<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a> <span id="r0 rd" class="r0 r">list</span>)
+		{
+			<span class="t t">NSTableView</span> <span id="r1 rd" class="r1 r">table</span> = <b>new</b> <a href="#b4cc146714ece299" class="t constructor">FormsNSTableView</a>().<a href="../Extensions/NSTableViewExtensions.cs.html#e6d7fb92a2b950e3" class="i method">AsListViewLook</a>();
+			<span class="r1 r">table</span>.<span class="i property">Source</span> = <a href="#e6dd22245dc869ef" class="i field">_dataSource</a> = <b>new</b> <a href="ListViewDataSource.cs.html#918a712a9a266466" class="t constructor">ListViewDataSource</a>(<span class="r0 r">list</span>, <span class="r1 r">table</span>);
+			<b>return</b> <span class="r1 r">table</span>;
+		}
+ 
+		<b>protected override void</b> <a id="5fe0e36b9f8649b2" href="../R/5fe0e36b9f8649b2.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r2 rd" class="r2 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r2 r">disposing</span> &amp;&amp; !<a href="#9b25e56c2e92b3c8" class="i field">_disposed</a>)
+			{
+				<a href="#9b25e56c2e92b3c8" class="i field">_disposed</a> = <b>true</b>;
+ 
+				<a href="@0@System/A.html#c5371bef044c6ab6" class="k">var</a> <span id="r3 rd" class="r3 r">viewsToLookAt</span> = <b>new</b> <a href="@0@System/A.html#7957313c94528be3" class="t constructor">Stack</a>&lt;<span class="t t">NSView</span>&gt;(<span class="i property">Subviews</span>);
+				<b>while</b> (<span class="r3 r">viewsToLookAt</span>.<a href="@0@System/A.html#47350acaee6be7b6" class="i property">Count</a> &gt; 0)
+				{
+					<b>var</b> <span id="r4 rd" class="r4 r">view</span> = <span class="r3 r">viewsToLookAt</span>.<a href="@0@System/A.html#fd86d7436e55c84b" class="i method">Pop</a>();
+					<a href="../Cells/ViewCellNSView.cs.html#d90a74a43063ba5e" class="k">var</a> <span id="r5 rd" class="r5 r">viewCellRenderer</span> = <span class="r4 r">view</span> <b>as</b> <a href="../Cells/ViewCellNSView.cs.html#d90a74a43063ba5e" class="t t">ViewCellNSView</a>;
+					<b>if</b> (<span class="r5 r">viewCellRenderer</span> != <b>null</b>)
+						<span class="r5 r">viewCellRenderer</span>.<span class="i method">Dispose</span>();
+					<b>else</b>
+					{
+						<b>foreach</b> (<b>var</b> <span id="r6 rd" class="r6 r">child</span> <b>in</b> <span class="r4 r">view</span>.<span class="i property">Subviews</span>)
+							<span class="r3 r">viewsToLookAt</span>.<a href="@0@System/A.html#83b1a3864aaa7198" class="i method">Push</a>(<span class="r6 r">child</span>);
+					}
+				}
+ 
+				<b>if</b> (<a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a> != <b>null</b>)
+				{
+					<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r7 rd" class="r7 r">templatedItems</span> = <a href="#955b56bf4906bf41" class="i property">TemplatedItemsView</a>.<a href="/Xamarin.Forms.Core/A.html#5c03fae343562417" class="i property">TemplatedItems</a>;
+					<span class="r7 r">templatedItems</span>.<a href="@0@System/A.html#26300c777385ef7c" class="i">CollectionChanged</a> -= <a href="#27b4034b4af7554e" class="i method">OnCollectionChanged</a>;
+					<span class="r7 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#8b023baeda1bdf2a" class="i">GroupedCollectionChanged</a> -= <a href="#d526ae762b66d980" class="i method">OnGroupedCollectionChanged</a>;
+				}
+			}
+ 
+			<b>if</b> (<span class="r2 r">disposing</span>)
+			{
+				<a href="#67efe95f07f3115d" class="i method">ClearHeader</a>();
+				<b>if</b> (<a href="#8267a7864396adf1" class="i field">_footerRenderer</a> != <b>null</b>)
+				{
+					<a href="../Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="../Platform.cs.html#0029c28006e0bcc1" class="i method">DisposeModelAndChildrenRenderers</a>(<a href="#8267a7864396adf1" class="i field">_footerRenderer</a>.<a href="../IVisualElementRenderer.cs.html#7d0d13bd54221563" class="i property">Element</a>);
+					<a href="#8267a7864396adf1" class="i field">_footerRenderer</a> = <b>null</b>;
+				}
+			}
+ 
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#3cb6ec73595daa35" class="i method">Dispose</a>(<span class="r2 r">disposing</span>);
+		}
+ 
+		<b>protected override void</b> <a id="62da58195406432d" href="../R/62da58195406432d.html" target="n" data-glyph="75,1" class="i method">SetBackgroundColor</a>(<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r8 rd" class="r8 r">color</span>)
+		{
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#9a76fd6e39aac1f6" class="i method">SetBackgroundColor</a>(<span class="r8 r">color</span>);
+			<b>if</b> (<a href="#50ebfa0b167f6c0e" class="i field">_table</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i property">BackgroundColor</span> = <span class="r8 r">color</span>.<a href="../Extensions/ColorExtensions.cs.html#e3930274ab5bad8f" class="i method">ToNSColor</a>(<span class="t t">NSColor</span>.<span class="i property">White</span>);
+		}
+ 
+		<b>protected override void</b> <a id="41a30ba82a993b07" href="../R/41a30ba82a993b07.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#62949d367d44776c" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>&gt; <span id="r9 rd" class="r9 r">e</span>)
+		{
+			<b>if</b> (<span class="r9 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#69c68dbc9f4fbe33" class="i property">OldElement</a> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="k">var</a> <span id="r10 rd" class="r10 r">listView</span> = <span class="r9 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#69c68dbc9f4fbe33" class="i property">OldElement</a>;
+				<span class="r10 r">listView</span>.<a href="/Xamarin.Forms.Core/A.html#55534a7ecbfa5f31" class="i">ScrollToRequested</a> -= <a href="#dd9b85d28d9d674d" class="i method">OnScrollToRequested</a>;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r11 rd" class="r11 r">templatedItems</span> = ((<a href="/Xamarin.Forms.Core/A.html#7d7c0ddfee2f7ca3" class="t t">ITemplatedItemsView</a>&lt;<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>&gt;)<span class="r9 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#69c68dbc9f4fbe33" class="i property">OldElement</a>).<a href="/Xamarin.Forms.Core/A.html#5c03fae343562417" class="i property">TemplatedItems</a>;
+				<span class="r11 r">templatedItems</span>.<a href="@0@System/A.html#26300c777385ef7c" class="i">CollectionChanged</a> -= <a href="#27b4034b4af7554e" class="i method">OnCollectionChanged</a>;
+				<span class="r11 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#8b023baeda1bdf2a" class="i">GroupedCollectionChanged</a> -= <a href="#d526ae762b66d980" class="i method">OnGroupedCollectionChanged</a>;
+			}
+ 
+			<b>if</b> (<span class="r9 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#40dbdea99da1d4c0" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<b>if</b> (<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> == <b>null</b>)
+				{
+					<b>var</b> <span id="r12 rd" class="r12 r">scroller</span> = <b>new</b> <span class="t constructor">NSScrollView</span>
+					{
+						<span class="i property">AutoresizingMask</span> = <span class="t t">NSViewResizingMask</span>.<span class="i field">HeightSizable</span> | <span class="t t">NSViewResizingMask</span>.<span class="i field">WidthSizable</span>,
+						<span class="i property">DocumentView</span> = <a href="#50ebfa0b167f6c0e" class="i field">_table</a> = <a href="#9302fad0a5e72380" class="i method">CreateNSTableView</a>(<span class="r9 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#40dbdea99da1d4c0" class="i property">NewElement</a>),
+						<span class="i property">HasVerticalScroller</span> = <b>true</b>
+					};
+					<a href="../ViewRenderer.cs.html#de42360b129a5181" class="i method">SetNativeControl</a>(<span class="r12 r">scroller</span>);
+				}
+ 
+				<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="k">var</a> <span id="r13 rd" class="r13 r">listView</span> = <span class="r9 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#40dbdea99da1d4c0" class="i property">NewElement</a>;
+				<span class="r13 r">listView</span>.<a href="/Xamarin.Forms.Core/A.html#55534a7ecbfa5f31" class="i">ScrollToRequested</a> += <a href="#dd9b85d28d9d674d" class="i method">OnScrollToRequested</a>;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r14 rd" class="r14 r">templatedItems</span> = ((<a href="/Xamarin.Forms.Core/A.html#7d7c0ddfee2f7ca3" class="t t">ITemplatedItemsView</a>&lt;<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>&gt;)<span class="r9 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#40dbdea99da1d4c0" class="i property">NewElement</a>).<a href="/Xamarin.Forms.Core/A.html#5c03fae343562417" class="i property">TemplatedItems</a>;
+				<span class="r14 r">templatedItems</span>.<a href="@0@System/A.html#26300c777385ef7c" class="i">CollectionChanged</a> += <a href="#27b4034b4af7554e" class="i method">OnCollectionChanged</a>;
+				<span class="r14 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#8b023baeda1bdf2a" class="i">GroupedCollectionChanged</a> += <a href="#d526ae762b66d980" class="i method">OnGroupedCollectionChanged</a>;
+ 
+				<a href="#43c2a068a537ce2e" class="i method">UpdateRowHeight</a>();
+				<a href="#d2598708bdcc0790" class="i method">UpdateHeader</a>();
+				<a href="#9c21dfa766c62cfa" class="i method">UpdateFooter</a>();
+				<a href="#e8ce29d32408f3f4" class="i method">UpdatePullToRefreshEnabled</a>();
+				<a href="#5229371b362f15b8" class="i method">UpdateIsRefreshing</a>();
+				<a href="#df82eb1789fe89fb" class="i method">UpdateSeparatorColor</a>();
+				<a href="#d3e27194d13866b2" class="i method">UpdateSeparatorVisibility</a>();
+ 
+				<a href="@0@mscorlib/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r15 rd" class="r15 r">selected</span> = <span class="r9 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#40dbdea99da1d4c0" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#dfce6372456ec083" class="i property">SelectedItem</a>;
+				<b>if</b> (<span class="r15 r">selected</span> != <b>null</b>)
+					<a href="#e6dd22245dc869ef" class="i field">_dataSource</a>.<a href="ListViewDataSource.cs.html#e239714a6a76b23f" class="i method">OnItemSelected</a>(<b>null</b>, <b>new</b> <a href="/Xamarin.Forms.Core/A.html#f75588b084f6aa45" class="t constructor">SelectedItemChangedEventArgs</a>(<span class="r15 r">selected</span>));
+			}
+ 
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#90cd799abe64b9ad" class="i method">OnElementChanged</a>(<span class="r9 r">e</span>);
+		}
+ 
+		<b>protected override void</b> <a id="6b921e72631d0006" href="../R/6b921e72631d0006.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r16 rd" class="r16 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r17 rd" class="r17 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="../ViewRenderer.cs.html#97a635fbd9f5d4cd" class="i method">OnElementPropertyChanged</a>(<span class="r16 r">sender</span>, <span class="r17 r">e</span>);
+			<b>if</b> (<span class="r17 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#96072a718638095e" class="i field">RowHeightProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#43c2a068a537ce2e" class="i method">UpdateRowHeight</a>();
+			<b>else if</b> (<span class="r17 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#036cd02de28b0419" class="i field">IsGroupingEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+					(<span class="r17 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#ba5f9bb59f0aeffc" class="i field">HasUnevenRowsProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>))
+				<a href="#e6dd22245dc869ef" class="i field">_dataSource</a>.<a href="ListViewDataSource.cs.html#cfb1a14b37a5280d" class="i method">Update</a>();
+			<b>else if</b> (<span class="r17 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#b54e2569acd8ac17" class="i field">IsPullToRefreshEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#e8ce29d32408f3f4" class="i method">UpdatePullToRefreshEnabled</a>();
+			<b>else if</b> (<span class="r17 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#537695c2dff1da16" class="i field">IsRefreshingProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#5229371b362f15b8" class="i method">UpdateIsRefreshing</a>();
+			<b>else if</b> (<span class="r17 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#036a38ee3d0699e3" class="i field">SeparatorColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#df82eb1789fe89fb" class="i method">UpdateSeparatorColor</a>();
+			<b>else if</b> (<span class="r17 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#5e95022dbc52611a" class="i field">SeparatorVisibilityProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#d3e27194d13866b2" class="i method">UpdateSeparatorVisibility</a>();
+			<b>else if</b> (<span class="r17 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <span class="s">&quot;HeaderElement&quot;</span>)
+				<a href="#d2598708bdcc0790" class="i method">UpdateHeader</a>();
+			<b>else if</b> (<span class="r17 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <span class="s">&quot;FooterElement&quot;</span>)
+				<a href="#9c21dfa766c62cfa" class="i method">UpdateFooter</a>();
+			<b>else if</b> (<span class="r17 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <span class="s">&quot;RefreshAllowed&quot;</span>)
+				<a href="#e8ce29d32408f3f4" class="i method">UpdatePullToRefreshEnabled</a>();
+		}
+ 
+		<b>void</b> <a id="27b4034b4af7554e" href="../R/27b4034b4af7554e.html" target="n" data-glyph="76,1" class="i method">OnCollectionChanged</a>(<b>object</b> <span id="r18 rd" class="r18 r">sender</span>, <a href="@0@System/A.html#f5d7031313cab4ab" class="t t">NotifyCollectionChangedEventArgs</a> <span id="r19 rd" class="r19 r">e</span>)
+		{
+			<a href="#7129fdd70a13585f" class="i method">UpdateItems</a>(<span class="r19 r">e</span>, 0, <b>true</b>);
+		}
+ 
+		<b>void</b> <a id="d526ae762b66d980" href="../R/d526ae762b66d980.html" target="n" data-glyph="76,1" class="i method">OnGroupedCollectionChanged</a>(<b>object</b> <span id="r20 rd" class="r20 r">sender</span>, <a href="@0@System/A.html#f5d7031313cab4ab" class="t t">NotifyCollectionChangedEventArgs</a> <span id="r21 rd" class="r21 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#1bbf66e01c80bd54" class="k">var</a> <span id="r22 rd" class="r22 r">til</span> = (<a href="/Xamarin.Forms.Core/A.html#1bbf66e01c80bd54" class="t t">TemplatedItemsList</a>&lt;<a href="/Xamarin.Forms.Core/A.html#e6e9068bbee42f54" class="t t">ItemsView</a>&lt;<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>&gt;, <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>&gt;)<span class="r20 r">sender</span>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r23 rd" class="r23 r">templatedItems</span> = <a href="#955b56bf4906bf41" class="i property">TemplatedItemsView</a>.<a href="/Xamarin.Forms.Core/A.html#5c03fae343562417" class="i property">TemplatedItems</a>;
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r24 rd" class="r24 r">groupIndex</span> = <span class="r23 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#5abc6d236ff3dea9" class="i method">IndexOf</a>(<span class="r22 r">til</span>.<a href="/Xamarin.Forms.Core/A.html#2f539e9ba4cca042" class="i property">HeaderContent</a>);
+			<a href="#7129fdd70a13585f" class="i method">UpdateItems</a>(<span class="r21 r">e</span>, <span class="r24 r">groupIndex</span>, <b>false</b>);
+		}
+ 
+		<b>void</b> <a id="d2598708bdcc0790" href="../R/d2598708bdcc0790.html" target="n" data-glyph="76,1" class="i method">UpdateHeader</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#76098df8350c0484" class="k">var</a> <span id="r25 rd" class="r25 r">header</span> = <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#7ca6df286ce3f9a6" class="i property">HeaderElement</a>;
+			<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="k">var</a> <span id="r26 rd" class="r26 r">headerView</span> = (<a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a>)<span class="r25 r">header</span>;
+ 
+			<b>if</b> (<span class="r26 r">headerView</span> != <b>null</b>)
+			{
+				<span class="c">//Header reuse is not working for now , problem with size of something that is not inside a layout</span>
+				<span class="c">//if (_headerRenderer != null)</span>
+				<span class="c">//{</span>
+				<span class="c">//	var reflectableType = _headerRenderer as System.Reflection.IReflectableType;</span>
+				<span class="c">//	var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _headerRenderer.GetType();</span>
+				<span class="c">//	if (header != null &amp;&amp; rendererType == Registrar.Registered.GetHandlerTypeForObject(header))</span>
+				<span class="c">//	{</span>
+				<span class="c">//		_headerRenderer.SetElement(headerView);</span>
+				<span class="c">//		_table.HeaderView = new CustomNSTableHeaderView(Bounds.Width, _headerRenderer);</span>
+				<span class="c">//		//	Layout();</span>
+				<span class="c">//		//var customNSTableHeaderView = _table.HeaderView as CustomNSTableHeaderView;</span>
+				<span class="c">//		//customNSTableHeaderView?.Update(Bounds.Width, _headerRenderer);</span>
+				<span class="c">//		//NativeView.Layout();</span>
+				<span class="c">//		//NativeView.SetNeedsDisplayInRect(NativeView.Bounds);</span>
+				<span class="c">//		//NativeView.LayoutSubtreeIfNeeded();</span>
+				<span class="c">//		//_table.LayoutSubtreeIfNeeded();</span>
+				<span class="c">//		//_table.NeedsDisplay = true;</span>
+				<span class="c">//		//NativeView.NeedsDisplay = true;</span>
+				<span class="c">//		return;</span>
+				<span class="c">//	}</span>
+				<a href="#67efe95f07f3115d" class="i method">ClearHeader</a>();
+				<span class="c">//}</span>
+ 
+				<a href="#c6270ff4f2545a11" class="i field">_headerRenderer</a> = <a href="../Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="../Platform.cs.html#bd37e2314b2cee5c" class="i method">CreateRenderer</a>(<span class="r26 r">headerView</span>);
+				<a href="../Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="../Platform.cs.html#7bbb46ae9aa0c447" class="i method">SetRenderer</a>(<span class="r26 r">headerView</span>, <a href="#c6270ff4f2545a11" class="i field">_headerRenderer</a>);
+				<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i property">HeaderView</span> = <b>new</b> <a href="CustomNSTableHeaderView.cs.html#a434d141371fae55" class="t constructor">CustomNSTableHeaderView</a>(<span class="i property">Bounds</span>.<span class="i property">Width</span>, <a href="#c6270ff4f2545a11" class="i field">_headerRenderer</a>);
+ 
+				<span class="c">//We need this since the NSSCrollView doesn&#39;t know of the new size of our header</span>
+				<span class="c">//TODO: Find a better solution </span>
+				(<a href="../ViewRenderer.cs.html#6ac65d1b95974b16" class="i property">Control</a> <b>as</b> <span class="t t">NSScrollView</span>)?.<span class="i property">ContentView</span>.<span class="i method">ScrollToPoint</span>(<b>new</b> <span class="i n">CoreGraphics</span>.<span class="t constructor">CGPoint</span>(0, -<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i property">HeaderView</span>.<span class="i property">Frame</span>.<span class="i property">Height</span>));
+			}
+			<b>else if</b> (<a href="#c6270ff4f2545a11" class="i field">_headerRenderer</a> != <b>null</b>)
+			{
+				<a href="#67efe95f07f3115d" class="i method">ClearHeader</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="67efe95f07f3115d" href="../R/67efe95f07f3115d.html" target="n" data-glyph="76,1" class="i method">ClearHeader</a>()
+		{
+			<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i property">HeaderView</span> = <b>null</b>;
+			<b>if</b> (<a href="#c6270ff4f2545a11" class="i field">_headerRenderer</a> == <b>null</b>)
+				<b>return</b>;
+			<a href="../Platform.cs.html#be5a9b7035992ac3" class="t t">Platform</a>.<a href="../Platform.cs.html#0029c28006e0bcc1" class="i method">DisposeModelAndChildrenRenderers</a>(<a href="#c6270ff4f2545a11" class="i field">_headerRenderer</a>.<a href="../IVisualElementRenderer.cs.html#7d0d13bd54221563" class="i property">Element</a>);
+			<a href="#c6270ff4f2545a11" class="i field">_headerRenderer</a> = <b>null</b>;
+		}
+ 
+		<b>void</b> <a id="7129fdd70a13585f" href="../R/7129fdd70a13585f.html" target="n" data-glyph="76,1" class="i method">UpdateItems</a>(<a href="@0@System/A.html#f5d7031313cab4ab" class="t t">NotifyCollectionChangedEventArgs</a> <span id="r27 rd" class="r27 r">e</span>, <b>int</b> <span id="r28 rd" class="r28 r">section</span>, <b>bool</b> <span id="r29 rd" class="r29 r">resetWhenGrouped</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#c54a9836638205b1" class="k">var</a> <span id="r30 rd" class="r30 r">exArgs</span> = <span class="r27 r">e</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#c54a9836638205b1" class="t t">NotifyCollectionChangedEventArgsEx</a>;
+			<b>if</b> (<span class="r30 r">exArgs</span> != <b>null</b>)
+				<a href="#e6dd22245dc869ef" class="i field">_dataSource</a>.<a href="ListViewDataSource.cs.html#77d06e85853fa650" class="i property">Counts</a><a href="@0@mscorlib/A.html#49962975508e2d83">[</a><span class="r28 r">section</span>] = <span class="r30 r">exArgs</span>.<a href="/Xamarin.Forms.Core/A.html#8d7e56391014106a" class="i property">Count</a>;
+ 
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r31 rd" class="r31 r">groupReset</span> = <span class="r29 r">resetWhenGrouped</span> &amp;&amp; <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#0b780b61bce76534" class="i property">IsGroupingEnabled</a>;
+ 
+			<b>switch</b> (<span class="r27 r">e</span>.<a href="@0@System/A.html#15d9dc6d0ce211ef" class="i property">Action</a>)
+			{
+				<b>case</b> <a href="@0@System/A.html#5cce4343d1536ac7" class="t t">NotifyCollectionChangedAction</a>.<a href="@0@System/A.html#88ebb74b8f8efbc4" class="i field">Add</a>:
+					<b>if</b> (<span class="r27 r">e</span>.<a href="@0@System/A.html#d8f399a780e06cce" class="i property">NewStartingIndex</a> == -1 || <span class="r31 r">groupReset</span>)
+						<b>goto case</b> <a href="@0@System/A.html#5cce4343d1536ac7" class="t t">NotifyCollectionChangedAction</a>.<a href="@0@System/A.html#9f765bcaf89c2cbe" class="i field">Reset</a>;
+ 
+					<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i method">BeginUpdates</span>();
+					<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i method">InsertRows</span>(<span class="t t">NSIndexSet</span>.<span class="i method">FromArray</span>(<a href="@0@System.Core/A.html#577032c8811e20d3" class="t t">Enumerable</a>.<a href="@0@System.Core/A.html#fda9d378095a6464" class="i method">Range</a>(<span class="r27 r">e</span>.<a href="@0@System/A.html#d8f399a780e06cce" class="i property">NewStartingIndex</a>, <span class="r27 r">e</span>.<a href="@0@System/A.html#722a7e5cc5805066" class="i property">NewItems</a>.<a href="@0@mscorlib/A.html#e961aba0053db107" class="i property">Count</a>).<a href="@0@System.Core/A.html#783a052330e7d48d" class="i method">ToArray</a>()),
+						<span class="t t">NSTableViewAnimation</span>.<span class="i field">SlideUp</span>);
+					<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i method">EndUpdates</span>();
+ 
+					<b>break</b>;
+ 
+				<b>case</b> <a href="@0@System/A.html#5cce4343d1536ac7" class="t t">NotifyCollectionChangedAction</a>.<a href="@0@System/A.html#23d01c629bee7ad3" class="i field">Remove</a>:
+					<b>if</b> (<span class="r27 r">e</span>.<a href="@0@System/A.html#623c27e1c4bab0a9" class="i property">OldStartingIndex</a> == -1 || <span class="r31 r">groupReset</span>)
+						<b>goto case</b> <a href="@0@System/A.html#5cce4343d1536ac7" class="t t">NotifyCollectionChangedAction</a>.<a href="@0@System/A.html#9f765bcaf89c2cbe" class="i field">Reset</a>;
+ 
+					<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i method">BeginUpdates</span>();
+					<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i method">RemoveRows</span>(<span class="t t">NSIndexSet</span>.<span class="i method">FromArray</span>(<a href="@0@System.Core/A.html#577032c8811e20d3" class="t t">Enumerable</a>.<a href="@0@System.Core/A.html#fda9d378095a6464" class="i method">Range</a>(<span class="r27 r">e</span>.<a href="@0@System/A.html#623c27e1c4bab0a9" class="i property">OldStartingIndex</a>, <span class="r27 r">e</span>.<a href="@0@System/A.html#603468e507aeaa14" class="i property">OldItems</a>.<a href="@0@mscorlib/A.html#e961aba0053db107" class="i property">Count</a>).<a href="@0@System.Core/A.html#783a052330e7d48d" class="i method">ToArray</a>()),
+						<span class="t t">NSTableViewAnimation</span>.<span class="i field">SlideDown</span>);
+					<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i method">EndUpdates</span>();
+ 
+					<b>break</b>;
+ 
+				<b>case</b> <a href="@0@System/A.html#5cce4343d1536ac7" class="t t">NotifyCollectionChangedAction</a>.<a href="@0@System/A.html#c394c49be4a151e9" class="i field">Move</a>:
+					<b>if</b> (<span class="r27 r">e</span>.<a href="@0@System/A.html#623c27e1c4bab0a9" class="i property">OldStartingIndex</a> == -1 || <span class="r27 r">e</span>.<a href="@0@System/A.html#d8f399a780e06cce" class="i property">NewStartingIndex</a> == -1 || <span class="r31 r">groupReset</span>)
+						<b>goto case</b> <a href="@0@System/A.html#5cce4343d1536ac7" class="t t">NotifyCollectionChangedAction</a>.<a href="@0@System/A.html#9f765bcaf89c2cbe" class="i field">Reset</a>;
+					<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i method">BeginUpdates</span>();
+					<b>for</b> (<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r32 rd" class="r32 r">i</span> = 0; <span class="r32 r">i</span> &lt; <span class="r27 r">e</span>.<a href="@0@System/A.html#603468e507aeaa14" class="i property">OldItems</a>.<a href="@0@mscorlib/A.html#e961aba0053db107" class="i property">Count</a>; <span class="r32 r">i</span>++)
+					{
+						<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r33 rd" class="r33 r">oldi</span> = <span class="r27 r">e</span>.<a href="@0@System/A.html#623c27e1c4bab0a9" class="i property">OldStartingIndex</a>;
+						<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r34 rd" class="r34 r">newi</span> = <span class="r27 r">e</span>.<a href="@0@System/A.html#d8f399a780e06cce" class="i property">NewStartingIndex</a>;
+ 
+						<b>if</b> (<span class="r27 r">e</span>.<a href="@0@System/A.html#d8f399a780e06cce" class="i property">NewStartingIndex</a> &lt; <span class="r27 r">e</span>.<a href="@0@System/A.html#623c27e1c4bab0a9" class="i property">OldStartingIndex</a>)
+						{
+							<span class="r33 r">oldi</span> += <span class="r32 r">i</span>;
+							<span class="r34 r">newi</span> += <span class="r32 r">i</span>;
+						}
+ 
+						<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i method">MoveRow</span>(<span class="r33 r">oldi</span>, <span class="r34 r">newi</span>);
+					}
+					<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i method">EndUpdates</span>();
+ 
+					<b>break</b>;
+ 
+				<b>case</b> <a href="@0@System/A.html#5cce4343d1536ac7" class="t t">NotifyCollectionChangedAction</a>.<a href="@0@System/A.html#cd5043261ecba982" class="i field">Replace</a>:
+				<b>case</b> <a href="@0@System/A.html#5cce4343d1536ac7" class="t t">NotifyCollectionChangedAction</a>.<a href="@0@System/A.html#9f765bcaf89c2cbe" class="i field">Reset</a>:
+					<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i method">ReloadData</span>();
+					<b>return</b>;
+			}
+		}
+ 
+		<b>void</b> <a id="43c2a068a537ce2e" href="../R/43c2a068a537ce2e.html" target="n" data-glyph="76,1" class="i method">UpdateRowHeight</a>()
+		{
+			<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r35 rd" class="r35 r">rowHeight</span> = <a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#873f0e107de1f075" class="i property">RowHeight</a>;
+			<b>if</b> (<a href="../VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#7d4655a3bc00be9b" class="i property">HasUnevenRows</a> &amp;&amp; <span class="r35 r">rowHeight</span> == -1)
+			{
+				<span class="c">//	_table.RowHeight = NoIntrinsicMetric;</span>
+			}
+			<b>else</b>
+				<a href="#50ebfa0b167f6c0e" class="i field">_table</a>.<span class="i property">RowHeight</span> = <span class="r35 r">rowHeight</span> &lt;= 0 ? <a href="#e5df13bd8ea49428" class="i field">DefaultRowHeight</a> : <span class="r35 r">rowHeight</span>;
+		}
+ 
+		<span class="c">//TODO: Implement UpdateIsRefreshing</span>
+		<b>void</b> <a id="5229371b362f15b8" href="../R/5229371b362f15b8.html" target="n" data-glyph="76,1" class="i method">UpdateIsRefreshing</a>()
+		{
+		}
+ 
+		<span class="c">//TODO: Implement PullToRefresh</span>
+		<b>void</b> <a id="e8ce29d32408f3f4" href="../R/e8ce29d32408f3f4.html" target="n" data-glyph="76,1" class="i method">UpdatePullToRefreshEnabled</a>()
+		{
+		}
+ 
+		<span class="c">//TODO: Implement SeparatorColor</span>
+		<b>void</b> <a id="df82eb1789fe89fb" href="../R/df82eb1789fe89fb.html" target="n" data-glyph="76,1" class="i method">UpdateSeparatorColor</a>()
+		{
+		}
+ 
+		<span class="c">//TODO: Implement UpdateSeparatorVisibility</span>
+		<b>void</b> <a id="d3e27194d13866b2" href="../R/d3e27194d13866b2.html" target="n" data-glyph="76,1" class="i method">UpdateSeparatorVisibility</a>()
+		{
+		}
+ 
+		<span class="c">//TODO: Implement ScrollTo</span>
+		<b>void</b> <a id="dd9b85d28d9d674d" href="../R/dd9b85d28d9d674d.html" target="n" data-glyph="76,1" class="i method">OnScrollToRequested</a>(<b>object</b> <span id="r36 rd" class="r36 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#f03c2a98424144b5" class="t t">ScrollToRequestedEventArgs</a> <span id="r37 rd" class="r37 r">e</span>)
+		{
+		}
+ 
+		<span class="c">//TODO: Implement Footer</span>
+		<b>void</b> <a id="9c21dfa766c62cfa" href="../R/9c21dfa766c62cfa.html" target="n" data-glyph="76,1" class="i method">UpdateFooter</a>()
+		{
+		}
+ 
+		<b>class</b> <a id="b4cc146714ece299" href="../R/b4cc146714ece299.html" target="n" data-glyph="4,1" class="t t"><span id="ef73e4e3ee65911b">FormsNSTableView</span></a> : <span class="t t">NSTableView</span>
+		{
+			<span class="c">//NSTableView doesn&#39;t support selection notfications after the items is already selected</span>
+			<span class="c">//so we do it ourselves by hooking mouse down event</span>
+			<b>public override void</b> <a id="b12a6c8834444357" href="../R/b12a6c8834444357.html" target="n" data-glyph="72,2" class="i method">MouseDown</a>(<span class="t t">NSEvent</span> <span id="r38 rd" class="r38 r">theEvent</span>)
+			{
+				<b>var</b> <span id="r39 rd" class="r39 r">clickLocation</span> = <span class="i method">ConvertPointFromView</span>(<span class="r38 r">theEvent</span>.<span class="i property">LocationInWindow</span>, <b>null</b>);
+				<b>var</b> <span id="r40 rd" class="r40 r">clickedRow</span> = <span class="i method">GetRow</span>(<span class="r39 r">clickLocation</span>);
+ 
+				<b>base</b>.<span class="i method">MouseDown</span>(<span class="r38 r">theEvent</span>);
+				<b>if</b> (<span class="r40 r">clickedRow</span> != -1)
+					(<span class="i property">Source</span> <b>as</b> <a href="ListViewDataSource.cs.html#79a49c80f9255fc0" class="t t">ListViewDataSource</a>)?.<a href="ListViewDataSource.cs.html#2479eeadffaef989" class="i method">OnRowClicked</a>();
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

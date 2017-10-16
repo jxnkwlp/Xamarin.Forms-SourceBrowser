@@ -1,0 +1,438 @@
+﻿<!DOCTYPE html>
+<html><head><title>Bugzilla31114.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(429);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core.Windows.UITests/Bugzilla31114.cs" target="_top">Bugzilla31114.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core.Windows.UITests" target="_top">Xamarin.Forms.Core.Windows.UITests\Xamarin.Forms.Core.Windows.UITests.csproj</a> (Xamarin.Forms.Core.Windows.UITests)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">CustomAttributes</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Core</span>.<span class="i n">UITests</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i">UITest</span>.<span class="i">iOS</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i">UITest</span>;
+<b>using</b> <span class="i">NUnit</span>.<span class="i">Framework</span>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>.<span class="i n">Issues</span>
+{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+	[<span class="i">Category</span>(<a href="UITestCategories.cs.html#af5bbebc1eb6d7df" class="t t">UITestCategories</a>.<a href="UITestCategories.cs.html#0df859a2ff870309" class="i field">ListView</a>)]
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+	[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a> (<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+	[<a href="/Xamarin.Forms.CustomAttributes/A.html#ee8e16fdd2ff2815" class="t constructor">Issue</a> (<a href="/Xamarin.Forms.CustomAttributes/A.html#71fbc272a65cfefa" class="t t">IssueTracker</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#4c33f6b873a9476c" class="i field">Bugzilla</a>, 31114, <span class="s">&quot;iOS ContextAction leaves blank line after swiping in ListView&quot;</span>)]
+	<b>public class</b> <a id="c2f90ef3e7014479" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t"><span id="0f94795f896103dc">Bugzilla31114</span></a> : <a href="TestPages.cs.html#68092d82b8b3d7b5" class="t t">TestContentPage</a> 
+	{
+		<a href="@0@System/A.html#f63ea2601f5edbbb" class="t t">ObservableCollection</a>&lt;<a href="#3f502d55c7aad3f9" class="t t">ListItem</a>&gt; <a id="c33ac210f71a3e7e" href="R/c33ac210f71a3e7e.html" target="n" data-glyph="46,1" class="i field">_items</a> = <b>new</b> <a href="@0@System/A.html#a0b7a0640c9feb02" class="t constructor">ObservableCollection</a>&lt;<a href="#3f502d55c7aad3f9" class="t t">ListItem</a>&gt;();
+		<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a> <a id="a0bb98c837d0b198" href="R/a0bb98c837d0b198.html" target="n" data-glyph="46,1" class="i field">_listView</a>;
+		<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a> <a id="88c69c9c3a307a1a" href="R/88c69c9c3a307a1a.html" target="n" data-glyph="46,1" class="i field">_btbLoad</a>;
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#8751d3e015cab881" class="t t">Command</a> <a id="0f30486db91f33fa" href="R/0f30486db91f33fa.html" target="n" data-glyph="42,1" class="i field">RefreshListCommand</a>;
+		<b>bool</b> <a id="f6ce8b7f2dbdc612" href="R/f6ce8b7f2dbdc612.html" target="n" data-glyph="46,1" class="i field">_isBusy</a> = <b>false</b>;
+ 
+		<b>protected override void</b> <a id="014219c06e9176e2" href="R/014219c06e9176e2.html" target="n" data-glyph="75,1" class="i method">Init</a> ()
+		{
+			
+			<a href="#0f30486db91f33fa" class="i field">RefreshListCommand</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#d493a595799ead4c" class="t constructor">Command</a>(<a href="#d41eb923104ea34b" class="i method">LoadItemsFromCommand</a>, <a href="#33c0f90f1bb43bb7" class="i method">CanRefreshList</a>);
+			<a href="#a0bb98c837d0b198" class="i field">_listView</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#6f349a8ce3b4362f" class="t constructor">ListView</a>();
+			<a href="#a0bb98c837d0b198" class="i field">_listView</a>.<a href="/Xamarin.Forms.Core/A.html#5eab030fbef30e59" class="i property">ItemsSource</a> = <a href="#c33ac210f71a3e7e" class="i field">_items</a>;
+			<a href="#a0bb98c837d0b198" class="i field">_listView</a>.<a href="/Xamarin.Forms.Core/A.html#e714497888d14198" class="i property">ItemTemplate</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#63a215190345c160" class="t constructor">DataTemplate</a>(<b>typeof</b>(<a href="#8e4a8a0aa63b3079" class="t t">TaskItemTemplate</a>));
+			<a href="#a0bb98c837d0b198" class="i field">_listView</a>.<a href="/Xamarin.Forms.Core/A.html#873f0e107de1f075" class="i property">RowHeight</a> = 64;
+			<a href="#a0bb98c837d0b198" class="i field">_listView</a>.<a href="/Xamarin.Forms.Core/A.html#e07ccb02d387037b" class="i property">RefreshCommand</a> = <a href="#0f30486db91f33fa" class="i field">RefreshListCommand</a>;
+			<a href="#a0bb98c837d0b198" class="i field">_listView</a>.<a href="/Xamarin.Forms.Core/A.html#2b34e6ba669638df" class="i property">IsPullToRefreshEnabled</a> = <b>true</b>;
+ 
+			<a href="#88c69c9c3a307a1a" class="i field">_btbLoad</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#c9ccc9248166aa0f" class="t constructor">Button</a> { <a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a> = <span class="s">&quot;Load&quot;</span>, <a href="/Xamarin.Forms.Core/A.html#2e7214c2a6b50358" class="i property">AutomationId</a> = <span class="s">&quot;btnLoad&quot;</span>, <a href="/Xamarin.Forms.Core/A.html#e7eff0ffbd8fe128" class="i property">Command</a> = <a href="#0f30486db91f33fa" class="i field">RefreshListCommand</a> };
+			<a href="#8e4a8a0aa63b3079" class="t t">TaskItemTemplate</a>.<a href="#5ce964c4df4afcb0" class="i">RefreshFromQuickComplete</a> += <a href="#4c22890e6d790544" class="i method">TaskListPageRefreshFromQuickComplete</a>;
+ 
+			<a href="#5b182cf60c3148be" class="i method">LoadItems</a>();
+ 
+			<a href="/Xamarin.Forms.Core/A.html#3929eda3f5d3e80d" class="i property">Content</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a> {
+				<a href="/Xamarin.Forms.Core/A.html#8e761ec8c2755065" class="i property">VerticalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#c9facb92cdbf2f53" class="i field">FillAndExpand</a>,
+				<a href="/Xamarin.Forms.Core/A.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#c9facb92cdbf2f53" class="i field">FillAndExpand</a>,
+				<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a> = {
+					<a href="#a0bb98c837d0b198" class="i field">_listView</a>,<a href="#88c69c9c3a307a1a" class="i field">_btbLoad</a>
+				}
+			};
+		}
+ 
+		<b>protected override void</b> <a id="2f132055849a6be5" href="R/2f132055849a6be5.html" target="n" data-glyph="75,1" class="i method">OnDisappearing</a> ()
+		{
+			<a href="#8e4a8a0aa63b3079" class="t t">TaskItemTemplate</a>.<a href="#5ce964c4df4afcb0" class="i">RefreshFromQuickComplete</a> -= <a href="#4c22890e6d790544" class="i method">TaskListPageRefreshFromQuickComplete</a>;
+			<a href="TestPages.cs.html#68092d82b8b3d7b5" class="k">base</a>.<a href="/Xamarin.Forms.Core/A.html#160eda92dcf9bfdd" class="i method">OnDisappearing</a> ();
+		}
+ 
+		<b>bool</b> <a id="33c0f90f1bb43bb7" href="R/33c0f90f1bb43bb7.html" target="n" data-glyph="76,1" class="i method">CanRefreshList</a>()
+		{
+			<b>return</b> !<a href="#0b472279d625db72" class="i property">isBusy</a>;
+		}
+ 
+		<b>void</b> <a id="d41eb923104ea34b" href="R/d41eb923104ea34b.html" target="n" data-glyph="76,1" class="i method">LoadItemsFromCommand</a>()
+		{
+			<a href="#5b182cf60c3148be" class="i method">LoadItems</a>();
+		}
+ 
+		<b>void</b> <a id="4c22890e6d790544" href="R/4c22890e6d790544.html" target="n" data-glyph="76,1" class="i method">TaskListPageRefreshFromQuickComplete</a>(<b>object</b> <span id="r0 rd" class="r0 r">sender</span>, <a href="#6a09e1973798b744" class="t t">ListItemEventArgs</a> <span id="r1 rd" class="r1 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#c01f48f642e0b305" class="i method">BeginInvokeOnMainThread</a>(() =&gt;
+				{
+					<a href="#d41eb923104ea34b" class="i method">LoadItemsFromCommand</a>();
+				});
+		}
+ 
+		<b>void</b> <a id="5b182cf60c3148be" href="R/5b182cf60c3148be.html" target="n" data-glyph="76,1" class="i method">LoadItems</a>()
+		{
+			<a href="#0b472279d625db72" class="i property">isBusy</a> = <b>true</b>; 
+ 
+			<a href="@0@mscorlib/A.html#bb77e610694e64ca" class="t t">Random</a> <span id="r2 rd" class="r2 r">random</span> = <b>new</b> <a href="@0@mscorlib/A.html#92e3cf6e56571d5a" class="t constructor">Random</a>(<a href="@0@mscorlib/A.html#df6b1eba7461813b" class="t t">DateTime</a>.<a href="@0@mscorlib/A.html#1cd5dd408a32124f" class="i property">Now</a>.<a href="@0@mscorlib/A.html#a9659fe13a871614" class="i property">Millisecond</a>);
+ 
+			<b>int</b> <span id="r3 rd" class="r3 r">count</span> = <span class="r2 r">random</span>.<a href="@0@mscorlib/A.html#ddd1e9e09c70bab5" class="i method">Next</a>(20, 30);
+ 
+			<a href="#c33ac210f71a3e7e" class="i field">_items</a>.<a href="@0@mscorlib/A.html#1c7184c9f3526d9d" class="i method">Clear</a>();
+ 
+			<b>for</b> (<b>int</b> <span id="r4 rd" class="r4 r">i</span> = 0; <span class="r4 r">i</span> &lt; <span class="r3 r">count</span> - 1; <span class="r4 r">i</span>++)
+			{
+				<a href="#3f502d55c7aad3f9" class="k">var</a> <span id="r5 rd" class="r5 r">newItem</span> = <b>new</b> <a href="#cb7ea82c7c0ed57b" class="t constructor">ListItem</a>()
+				{
+					<a href="#19b34218cd273071" class="i property">Id</a> = <a href="@0@mscorlib/A.html#b622ef5f6b76c10a" class="t t">Guid</a>.<a href="@0@mscorlib/A.html#b7fae6994c22c22e" class="i method">NewGuid</a>().<a href="@0@mscorlib/A.html#a6547a472def7796" class="i method">ToString</a>(),
+					<a href="#4e13e24a0149d3f5" class="i property">EntityTypeId</a> = 1350,
+					<a href="#d12b6ea1a0e9e1af" class="i property">BackgroundColor</a> = <span class="s">&quot;00aa00&quot;</span>,
+					<a href="#00ae24687eb190fe" class="i property">TextColor</a> = <span class="s">&quot;FFFFFF&quot;</span>,
+					<a href="#1c0931b05d0bcd78" class="i property">PrimaryText</a> = <span class="s">&quot;PIPE #&quot;</span>+(<span class="r4 r">i</span>+1000).<a href="@0@mscorlib/A.html#8d6f2d8bc0589463" class="i method">ToString</a>(),
+					<a href="#ea551a69d68c03c5" class="i property">CircleColor</a> = <span class="s">&quot;0000aa&quot;</span>,
+					<a href="#94d47fc127eabdda" class="i property">Icon</a> = <span class="s">&quot;&quot;</span>,
+					<a href="#c494a9f504c5bdac" class="i property">OtherText</a> = <span class="r2 r">random</span>.<a href="@0@mscorlib/A.html#ddd1e9e09c70bab5" class="i method">Next</a>(100, 200).<a href="@0@mscorlib/A.html#8d6f2d8bc0589463" class="i method">ToString</a>() + <span class="s">&quot; ft&quot;</span>,
+					<a href="#e305f7b849c3544b" class="i property">SecondaryText</a> = <span class="s">&quot;LENGTH &quot;</span> + <span class="r4 r">i</span>.<a href="@0@mscorlib/A.html#8d6f2d8bc0589463" class="i method">ToString</a>(),
+					<a href="#38d1e785103ff2e3" class="i property">SupportsQuickComplete</a> = <b>true</b>,
+				};
+ 
+				<span class="c">//Debug.WriteLine(newItem.PrimaryText);</span>
+ 
+				<a href="#c33ac210f71a3e7e" class="i field">_items</a>.<a href="@0@mscorlib/A.html#5c61cc24de82f7e7" class="i method">Add</a>(<span class="r5 r">newItem</span>);
+			}
+ 
+ 
+			<a href="#0b472279d625db72" class="i property">isBusy</a> = <b>false</b>;
+		}
+ 
+		<b>bool</b> <a id="0b472279d625db72" href="R/0b472279d625db72.html" target="n" data-glyph="106,1" class="i property">isBusy</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#f6ce8b7f2dbdc612" class="i field">_isBusy</a>; }
+			<b>set</b>
+			{
+				<a href="#f6ce8b7f2dbdc612" class="i field">_isBusy</a> = <b>value</b>;
+				<a href="#a0bb98c837d0b198" class="i field">_listView</a>.<a href="/Xamarin.Forms.Core/A.html#d61e6639459dfdf7" class="i property">IsRefreshing</a> = <a href="#f6ce8b7f2dbdc612" class="i field">_isBusy</a>;
+			}
+		}
+ 
+		[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a> (<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+		<b>public class</b> <a id="3f502d55c7aad3f9" href="R/3f502d55c7aad3f9.html" target="n" data-glyph="0,1" class="t t">ListItem</a>
+		{
+			<b>public string</b> <a id="19b34218cd273071" href="R/19b34218cd273071.html" target="n" data-glyph="102,2" class="i property">Id</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public string</b> <a id="1c0931b05d0bcd78" href="R/1c0931b05d0bcd78.html" target="n" data-glyph="102,2" class="i property">PrimaryText</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public string</b> <a id="e305f7b849c3544b" href="R/e305f7b849c3544b.html" target="n" data-glyph="102,2" class="i property">SecondaryText</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public string</b> <a id="0a3c1ec0fd52f344" href="R/../../0000000000.html" target="n" data-glyph="102,2" class="i property">TertiaryText</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public string</b> <a id="c494a9f504c5bdac" href="R/c494a9f504c5bdac.html" target="n" data-glyph="102,2" class="i property">OtherText</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public string</b> <a id="11a89d954cb0e92b" href="R/../../0000000000.html" target="n" data-glyph="102,2" class="i property">ListControl</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public string</b> <a id="94d47fc127eabdda" href="R/94d47fc127eabdda.html" target="n" data-glyph="102,2" class="i property">Icon</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public string</b> <a id="562f8fdfe318a6ce" href="R/../../0000000000.html" target="n" data-glyph="102,2" class="i property">Params</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public string</b> <a id="d12b6ea1a0e9e1af" href="R/d12b6ea1a0e9e1af.html" target="n" data-glyph="102,2" class="i property">BackgroundColor</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public string</b> <a id="00ae24687eb190fe" href="R/00ae24687eb190fe.html" target="n" data-glyph="102,2" class="i property">TextColor</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public string</b> <a id="ea551a69d68c03c5" href="R/ea551a69d68c03c5.html" target="n" data-glyph="102,2" class="i property">CircleColor</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public long</b> <a id="4e13e24a0149d3f5" href="R/4e13e24a0149d3f5.html" target="n" data-glyph="102,2" class="i property">EntityTypeId</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public bool</b> <a id="38d1e785103ff2e3" href="R/38d1e785103ff2e3.html" target="n" data-glyph="102,2" class="i property">SupportsQuickComplete</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public</b> <a id="cb7ea82c7c0ed57b" href="R/cb7ea82c7c0ed57b.html" target="n" data-glyph="72,2" class="i constructor">ListItem</a> ()
+			{
+			}
+ 
+			<b>public string</b> <a id="803bede84e887466" href="R/../../0000000000.html" target="n" data-glyph="102,2" class="i property">BackgroundColorColor</a>
+			{
+				<b>get</b>
+				{
+					<b>return</b> <a href="#d12b6ea1a0e9e1af" class="i property">BackgroundColor</a>;
+				}
+				<b>set</b>
+				{
+					<b>if</b> (<a href="#d12b6ea1a0e9e1af" class="i property">BackgroundColor</a> != <b>value</b>)
+					{
+						<a href="#d12b6ea1a0e9e1af" class="i property">BackgroundColor</a> = <b>value</b>;
+					}
+				}
+			}
+ 
+			<b>public string</b> <a id="a565a70be769ecdb" href="R/../../0000000000.html" target="n" data-glyph="102,2" class="i property">PrimaryLabelText</a>
+			{
+				<b>get</b>
+				{
+					<b>return</b> <a href="#1c0931b05d0bcd78" class="i property">PrimaryText</a>;
+				}
+			}
+ 
+			<b>public string</b> <a id="eb05b9e1d6622032" href="R/../../0000000000.html" target="n" data-glyph="102,2" class="i property">SecondaryLabelText</a>
+			{
+				<b>get</b>
+				{
+					<b>return</b> <a href="#e305f7b849c3544b" class="i property">SecondaryText</a>;
+				}
+			}
+ 
+			<b>public string</b> <a id="a1ca6626ed741dc1" href="R/../../0000000000.html" target="n" data-glyph="102,2" class="i property">OtherLabelText</a>
+			{
+				<b>get</b>
+				{
+					<b>return</b> <a href="#c494a9f504c5bdac" class="i property">OtherText</a>;
+				}
+			}
+		}
+ 
+		<b>public class</b> <a id="6a09e1973798b744" href="R/6a09e1973798b744.html" target="n" data-glyph="0,1" class="t t">ListItemEventArgs</a> : <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a>
+		{
+			<b>public</b> <a href="#3f502d55c7aad3f9" class="t t">ListItem</a> <a id="f187632bf97c2fcc" href="R/f187632bf97c2fcc.html" target="n" data-glyph="102,2" class="i property">ListItem</a> { <b>get</b>; <b>set</b>; }
+ 
+			<b>public</b> <a id="d704b4bedb69bd6e" href="R/d704b4bedb69bd6e.html" target="n" data-glyph="72,2" class="i constructor">ListItemEventArgs</a>(<a href="#3f502d55c7aad3f9" class="t t">ListItem</a> <span id="r6 rd" class="r6 r">item</span>)
+			{
+				<a href="#f187632bf97c2fcc" class="i property">ListItem</a> = <span class="r6 r">item</span>;
+			}
+		}
+ 
+		[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a> (<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+		<b>public class</b> <a id="8e4a8a0aa63b3079" href="R/8e4a8a0aa63b3079.html" target="n" data-glyph="0,1" class="t t">TaskItemTemplate</a> : <a href="/Xamarin.Forms.Core/A.html#080f860d2adf2a57" class="t t">ViewCell</a>
+		{
+			<a href="/Xamarin.Forms.Core/A.html#6abbcf73264fdb4b" class="t t">Image</a> <a id="9381f1ead92e0c7c" href="R/9381f1ead92e0c7c.html" target="n" data-glyph="46,2" class="i field">_photo</a>;
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <a id="86d9ff892f67ada6" href="R/86d9ff892f67ada6.html" target="n" data-glyph="46,2" class="i field">_mainLabel</a>;
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <a id="a0a1d806da245173" href="R/a0a1d806da245173.html" target="n" data-glyph="46,2" class="i field">_secondaryLabel</a>;
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <a id="6991701340461b01" href="R/6991701340461b01.html" target="n" data-glyph="46,2" class="i field">_distanceLabel</a>;
+			<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a> <a id="09ed40ccaa696d21" href="R/09ed40ccaa696d21.html" target="n" data-glyph="46,2" class="i field">_statusCircle</a>;
+			<a href="/Xamarin.Forms.Core/A.html#5c88f1e97bd1f520" class="t t">StackLayout</a> <a id="18c83c9d9bde171e" href="R/18c83c9d9bde171e.html" target="n" data-glyph="46,2" class="i field">_stackLayout</a>;
+			<a href="/Xamarin.Forms.Core/A.html#5c88f1e97bd1f520" class="t t">StackLayout</a> <a id="388a7c4ff11387ae" href="R/388a7c4ff11387ae.html" target="n" data-glyph="46,2" class="i field">_primaryContent</a>;
+			<a href="/Xamarin.Forms.Core/A.html#5c88f1e97bd1f520" class="t t">StackLayout</a> <a id="6972daa8cc62d284" href="R/6972daa8cc62d284.html" target="n" data-glyph="46,2" class="i field">_secondaryContent</a>;
+			<a href="/Xamarin.Forms.Core/A.html#d25a841d641b51c3" class="t t">AbsoluteLayout</a> <a id="7fbe6122a08cbe2a" href="R/7fbe6122a08cbe2a.html" target="n" data-glyph="46,2" class="i field">_masterLayout</a>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#36ded754cef116fb" class="t t">MenuItem</a> <a id="307533e7e3e00ad5" href="R/307533e7e3e00ad5.html" target="n" data-glyph="46,2" class="i field">_quickCompleteMenu</a>;
+ 
+			<b>public static event</b> <a href="@0@mscorlib/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="#6a09e1973798b744" class="t t">ListItemEventArgs</a>&gt; <a id="5ce964c4df4afcb0" href="R/5ce964c4df4afcb0.html" target="n" data-glyph="30,2" class="i">RefreshFromQuickComplete</a>;
+ 
+			<b>public</b> <a id="d7be26814d0d48b8" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i constructor">TaskItemTemplate</a>()
+			{
+				<a href="#026a8a77bd351ea2" class="i method">Init</a>(<b>true</b>);
+			}
+ 
+			<b>public</b> <a id="d7fa94fa588a3785" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i constructor">TaskItemTemplate</a>(<b>bool</b> <span id="r7 rd" class="r7 r">fast</span> = <b>true</b>)
+			{
+				<a href="#026a8a77bd351ea2" class="i method">Init</a>(<span class="r7 r">fast</span>);
+			}
+ 
+			<b>void</b> <a id="026a8a77bd351ea2" href="R/026a8a77bd351ea2.html" target="n" data-glyph="76,2" class="i method">Init</a>(<b>bool</b> <span id="r8 rd" class="r8 r">fast</span>)
+			{
+				<a href="#9381f1ead92e0c7c" class="i field">_photo</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#dfe2f0f30dae6d8e" class="t constructor">Image</a>
+				{
+					<a href="/Xamarin.Forms.Core/A.html#2777b88949804b06" class="i property">HeightRequest</a> = 52,
+					<a href="/Xamarin.Forms.Core/A.html#70921f9ac462553f" class="i property">WidthRequest</a> = 52,                
+				};
+ 
+ 
+				<a href="#86d9ff892f67ada6" class="i field">_mainLabel</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a>() { <a href="/Xamarin.Forms.Core/A.html#2777b88949804b06" class="i property">HeightRequest</a> = 40, <a href="/Xamarin.Forms.Core/A.html#16a4d70a298a161f" class="i property">FontSize</a> = 24, <a href="/Xamarin.Forms.Core/A.html#4f7b15503ebb471e" class="i property">TranslationY</a> = 5, <a href="/Xamarin.Forms.Core/A.html#db1aea97d5bb7d42" class="i property">LineBreakMode</a> = <a href="/Xamarin.Forms.Core/A.html#533bb2e457399853" class="t t">LineBreakMode</a>.<a href="/Xamarin.Forms.Core/A.html#70a9dcbf81de3aa6" class="i field">TailTruncation</a> };
+				<a href="#86d9ff892f67ada6" class="i field">_mainLabel</a>.<a href="/Xamarin.Forms.Core/A.html#6da00f516fa898d7" class="i method">SetBinding</a>(<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#208bde7cd8e27200" class="i field">TextProperty</a>, <span class="s">&quot;PrimaryLabelText&quot;</span>);
+ 
+				<a href="#a0a1d806da245173" class="i field">_secondaryLabel</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a>() { <a href="/Xamarin.Forms.Core/A.html#2777b88949804b06" class="i property">HeightRequest</a> = 40, <a href="/Xamarin.Forms.Core/A.html#16a4d70a298a161f" class="i property">FontSize</a> = 16, <a href="/Xamarin.Forms.Core/A.html#4f7b15503ebb471e" class="i property">TranslationY</a> = -5, <a href="/Xamarin.Forms.Core/A.html#db1aea97d5bb7d42" class="i property">LineBreakMode</a> = <a href="/Xamarin.Forms.Core/A.html#533bb2e457399853" class="t t">LineBreakMode</a>.<a href="/Xamarin.Forms.Core/A.html#70a9dcbf81de3aa6" class="i field">TailTruncation</a> };
+				<a href="#a0a1d806da245173" class="i field">_secondaryLabel</a>.<a href="/Xamarin.Forms.Core/A.html#6da00f516fa898d7" class="i method">SetBinding</a>(<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#208bde7cd8e27200" class="i field">TextProperty</a>, <span class="s">&quot;SecondaryLabelText&quot;</span>);
+ 
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 618
+				<a href="#6991701340461b01" class="i field">_distanceLabel</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a>() { <a href="/Xamarin.Forms.Core/A.html#92c375baa9a0a502" class="i property">XAlign</a> = <a href="/Xamarin.Forms.Core/A.html#86b190539f94489a" class="t t">TextAlignment</a>.<a href="/Xamarin.Forms.Core/A.html#9dcaf4b472301f22" class="i field">End</a>, <a href="/Xamarin.Forms.Core/A.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#8a317a1f7da3a00e" class="i field">EndAndExpand</a>, <a href="/Xamarin.Forms.Core/A.html#16a4d70a298a161f" class="i property">FontSize</a> = 11, <a href="/Xamarin.Forms.Core/A.html#db1aea97d5bb7d42" class="i property">LineBreakMode</a> = <a href="/Xamarin.Forms.Core/A.html#533bb2e457399853" class="t t">LineBreakMode</a>.<a href="/Xamarin.Forms.Core/A.html#18a530355b22d133" class="i field">NoWrap</a> };
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 618
+				<a href="#6991701340461b01" class="i field">_distanceLabel</a>.<a href="/Xamarin.Forms.Core/A.html#6da00f516fa898d7" class="i method">SetBinding</a>(<a href="/Xamarin.Forms.Core/A.html#9467fb795433a9ba" class="t t">Label</a>.<a href="/Xamarin.Forms.Core/A.html#208bde7cd8e27200" class="i field">TextProperty</a>, <span class="s">&quot;OtherLabelText&quot;</span>);
+ 
+				<a href="#09ed40ccaa696d21" class="i field">_statusCircle</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#aa576bf63d926ee6" class="t constructor">Label</a>()
+				{                
+					<a href="/Xamarin.Forms.Core/A.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#8a317a1f7da3a00e" class="i field">EndAndExpand</a>, 
+					<a href="/Xamarin.Forms.Core/A.html#16a4d70a298a161f" class="i property">FontSize</a> = 30,
+					<a href="/Xamarin.Forms.Core/A.html#4f7b15503ebb471e" class="i property">TranslationY</a> = 0,
+				};
+ 
+				<a href="#388a7c4ff11387ae" class="i field">_primaryContent</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a>()
+				{
+					<a href="/Xamarin.Forms.Core/A.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#edf3bdaab2352b98" class="i field">StartAndExpand</a>,
+					<a href="/Xamarin.Forms.Core/A.html#20029466f01d2a39" class="i property">Orientation</a> = <a href="/Xamarin.Forms.Core/A.html#6f196c86fbf52dcc" class="t t">StackOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#b2438cceacb45845" class="i field">Vertical</a>,
+					<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a> =
+					{                            
+						<a href="#86d9ff892f67ada6" class="i field">_mainLabel</a>,
+						<a href="#a0a1d806da245173" class="i field">_secondaryLabel</a>,
+					},                    
+					<a href="/Xamarin.Forms.Core/A.html#7ca8765029e54dfb" class="i property">Padding</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#fb8081f9632acc64" class="t constructor">Thickness</a>(12, 0, 0, 0),
+				};
+ 
+				<a href="#6972daa8cc62d284" class="i field">_secondaryContent</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a>()
+				{
+					<a href="/Xamarin.Forms.Core/A.html#69deb8dcb9d1e34d" class="i property">MinimumWidthRequest</a> = 50, 
+					<a href="/Xamarin.Forms.Core/A.html#f0a998bd8f7ce0dc" class="i property">HorizontalOptions</a> = <a href="/Xamarin.Forms.Core/A.html#633bdae02c57accb" class="t t">LayoutOptions</a>.<a href="/Xamarin.Forms.Core/A.html#8a317a1f7da3a00e" class="i field">EndAndExpand</a>,
+					<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a> =
+					{
+						<a href="#6991701340461b01" class="i field">_distanceLabel</a>,
+						<a href="#09ed40ccaa696d21" class="i field">_statusCircle</a>,
+					},
+					<a href="/Xamarin.Forms.Core/A.html#7ca8765029e54dfb" class="i property">Padding</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#fb8081f9632acc64" class="t constructor">Thickness</a>(0, 5, 5, 0),
+				};
+ 
+				<a href="#18c83c9d9bde171e" class="i field">_stackLayout</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a>
+				{
+					<a href="/Xamarin.Forms.Core/A.html#20029466f01d2a39" class="i property">Orientation</a> = <a href="/Xamarin.Forms.Core/A.html#6f196c86fbf52dcc" class="t t">StackOrientation</a>.<a href="/Xamarin.Forms.Core/A.html#5025c251164b6b85" class="i field">Horizontal</a>,
+					<a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a> =
+					{
+						<a href="#9381f1ead92e0c7c" class="i field">_photo</a>,
+						<a href="#388a7c4ff11387ae" class="i field">_primaryContent</a>,
+						<a href="#6972daa8cc62d284" class="i field">_secondaryContent</a>,
+					},
+					<a href="/Xamarin.Forms.Core/A.html#7ca8765029e54dfb" class="i property">Padding</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#fb8081f9632acc64" class="t constructor">Thickness</a>(5, 0, 0, 0) 
+				};
+ 
+				<b>if</b> (!<span class="r8 r">fast</span>)
+				{
+					<a href="/Xamarin.Forms.Core/A.html#7e0120b037b3522c" class="i property">View</a> = <a href="#18c83c9d9bde171e" class="i field">_stackLayout</a>;
+				}
+				<b>else</b>
+				{
+					<a href="#307533e7e3e00ad5" class="i field">_quickCompleteMenu</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#36ded754cef116fb" class="t constructor">MenuItem</a> { <a href="/Xamarin.Forms.Core/A.html#2e0c5c546b8a8b5b" class="i property">Text</a> = <span class="s">&quot;Complete&quot;</span>, <a href="/Xamarin.Forms.Core/A.html#8aed7bad1663b80d" class="i property">IsDestructive</a> = <b>false</b> };
+					<a href="#307533e7e3e00ad5" class="i field">_quickCompleteMenu</a>.<a href="/Xamarin.Forms.Core/A.html#d05c3999b6e90555" class="i method">SetBinding</a>(<a href="/Xamarin.Forms.Core/A.html#36ded754cef116fb" class="t t">MenuItem</a>.<a href="/Xamarin.Forms.Core/A.html#fa691cd12f5c063d" class="i field">CommandParameterProperty</a>, <b>new</b> <a href="/Xamarin.Forms.Core/A.html#c79f6c91a3606a34" class="t constructor">Binding</a>(<span class="s">&quot;.&quot;</span>));
+ 
+					<span class="c">// Delete context menu action</span>
+					<a href="#307533e7e3e00ad5" class="i field">_quickCompleteMenu</a>.<a href="/Xamarin.Forms.Core/A.html#9da54773bc869ed4" class="i">Clicked</a> += (<span id="r9 rd" class="r9 r">sender</span>, <span id="r10 rd" class="r10 r">e</span>) =&gt;
+					{
+						<a href="#23b913bb53a81c1c" class="i method">FastCompleteForCmd</a>(<span class="r9 r">sender</span>);
+					};
+ 
+					<span class="c">// Add this action to the cell</span>
+					<a href="/Xamarin.Forms.Core/A.html#df6ab09b8d06612c" class="i property">ContextActions</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#307533e7e3e00ad5" class="i field">_quickCompleteMenu</a>);
+ 
+					<a href="#7fbe6122a08cbe2a" class="i field">_masterLayout</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#24abed2ea49081ee" class="t constructor">AbsoluteLayout</a>();
+ 
+					<a href="#7fbe6122a08cbe2a" class="i field">_masterLayout</a>.<a href="/Xamarin.Forms.Core/A.html#6e1441bcfa46805b" class="i property">Children</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<a href="#18c83c9d9bde171e" class="i field">_stackLayout</a>);
+ 
+					<a href="/Xamarin.Forms.Core/A.html#d25a841d641b51c3" class="t t">AbsoluteLayout</a>.<a href="/Xamarin.Forms.Core/A.html#5e644ec982baa342" class="i method">SetLayoutFlags</a>(<a href="#18c83c9d9bde171e" class="i field">_stackLayout</a>, <a href="/Xamarin.Forms.Core/A.html#5dd525ca78c4f683" class="t t">AbsoluteLayoutFlags</a>.<a href="/Xamarin.Forms.Core/A.html#722240f9c6f640f5" class="i field">All</a>);
+					<a href="/Xamarin.Forms.Core/A.html#d25a841d641b51c3" class="t t">AbsoluteLayout</a>.<a href="/Xamarin.Forms.Core/A.html#543d27934b96aaaa" class="i method">SetLayoutBounds</a>(<a href="#18c83c9d9bde171e" class="i field">_stackLayout</a>, <b>new</b> <a href="/Xamarin.Forms.Core/A.html#884b8ad2719b18bf" class="t constructor">Rectangle</a>(0.0, 0.0, 1.0f, 1.0f));
+ 
+					<a href="/Xamarin.Forms.Core/A.html#7e0120b037b3522c" class="i property">View</a> = <a href="#7fbe6122a08cbe2a" class="i field">_masterLayout</a>;
+				}
+			}
+ 
+ 
+			<b>protected override void</b> <a id="bd7dd74618e846aa" href="R/bd7dd74618e846aa.html" target="n" data-glyph="75,2" class="i method">OnPropertyChanged</a>(<b>string</b> <span id="r11 rd" class="r11 r">propertyName</span> = <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#080f860d2adf2a57" class="k">base</a>.<a href="/Xamarin.Forms.Core/A.html#b7c8877e2b9eb23c" class="i method">OnPropertyChanged</a>(<span class="r11 r">propertyName</span>);
+				<b>if</b> (<span class="r11 r">propertyName</span> == <span class="s">&quot;BackgroundColor&quot;</span>)
+				{
+					<a href="#3f502d55c7aad3f9" class="k">var</a> <span id="r12 rd" class="r12 r">item</span> = <a href="/Xamarin.Forms.Core/A.html#ec31b23be1ce91d4" class="i property">BindingContext</a> <b>as</b> <a href="#3f502d55c7aad3f9" class="t t">ListItem</a>;
+					<b>if</b> (<span class="r12 r">item</span> != <b>null</b> &amp;&amp; !<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r12 r">item</span>.<a href="#d12b6ea1a0e9e1af" class="i property">BackgroundColor</a>))
+						<a href="/Xamarin.Forms.Core/A.html#7e0120b037b3522c" class="i property">View</a>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#d0e7c08969926ff6" class="i method">FromHex</a>(<span class="r12 r">item</span>.<a href="#d12b6ea1a0e9e1af" class="i property">BackgroundColor</a>);
+				}
+			}
+ 
+			<b>protected override void</b> <a id="67a8c2db88db3a2e" href="R/67a8c2db88db3a2e.html" target="n" data-glyph="75,2" class="i method">OnBindingContextChanged</a>()
+			{
+				<b>try</b>
+				{
+					<a href="/Xamarin.Forms.Core/A.html#080f860d2adf2a57" class="k">base</a>.<a href="/Xamarin.Forms.Core/A.html#95e298b747436b2f" class="i method">OnBindingContextChanged</a>();
+					<a href="#3f502d55c7aad3f9" class="k">var</a> <span id="r13 rd" class="r13 r">item</span> = <a href="/Xamarin.Forms.Core/A.html#ec31b23be1ce91d4" class="i property">BindingContext</a> <b>as</b> <a href="#3f502d55c7aad3f9" class="t t">ListItem</a>;
+					<b>if</b> (<span class="r13 r">item</span> != <b>null</b>)
+					{
+						<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a> <span id="r14 rd" class="r14 r">transformedColor</span>;
+ 
+						<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(<span class="r13 r">item</span>.<a href="#00ae24687eb190fe" class="i property">TextColor</a>))
+						{
+							<span class="r14 r">transformedColor</span> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#d0e7c08969926ff6" class="i method">FromHex</a>(<span class="r13 r">item</span>.<a href="#00ae24687eb190fe" class="i property">TextColor</a>);
+ 
+							<a href="#86d9ff892f67ada6" class="i field">_mainLabel</a>.<a href="/Xamarin.Forms.Core/A.html#aaad449f55c3186b" class="i property">TextColor</a> = <span class="r14 r">transformedColor</span>;
+							<a href="#a0a1d806da245173" class="i field">_secondaryLabel</a>.<a href="/Xamarin.Forms.Core/A.html#aaad449f55c3186b" class="i property">TextColor</a> = <span class="r14 r">transformedColor</span>;
+							<a href="#6991701340461b01" class="i field">_distanceLabel</a>.<a href="/Xamarin.Forms.Core/A.html#aaad449f55c3186b" class="i property">TextColor</a> = <span class="r14 r">transformedColor</span>;
+						}
+ 
+						<b>if</b> (<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r13 r">item</span>.<a href="#94d47fc127eabdda" class="i property">Icon</a>))
+							<span class="r13 r">item</span>.<a href="#94d47fc127eabdda" class="i property">Icon</a> = <span class="s">&quot;https://beehive.blob.core.windows.net/staticimages/FeatureImages/MutantLizard01.png&quot;</span>;
+ 
+						<a href="#9381f1ead92e0c7c" class="i field">_photo</a>.<a href="/Xamarin.Forms.Core/A.html#1ef99ef4e918aec8" class="i property">Source</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="t constructor">UriImageSource</a>()
+						{
+							<a href="/Xamarin.Forms.Core/A.html#081f21e8d9c61f56" class="i property">Uri</a> = <b>new</b> <a href="@0@System/A.html#9e1bb2fef0d1159b" class="t constructor">Uri</a>(<span class="r13 r">item</span>.<a href="#94d47fc127eabdda" class="i property">Icon</a>),
+							<a href="/Xamarin.Forms.Core/A.html#fb6b9024c21b6cef" class="i property">CachingEnabled</a> = <b>true</b>,
+							<a href="/Xamarin.Forms.Core/A.html#208d543cee00aaa9" class="i property">CacheValidity</a> = <b>new</b> <a href="@0@mscorlib/A.html#cc47d2ab23466909" class="t constructor">TimeSpan</a>(30, 0, 0, 0),
+						};
+ 
+						<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(<span class="r13 r">item</span>.<a href="#d12b6ea1a0e9e1af" class="i property">BackgroundColor</a>))
+						{
+							<span class="r14 r">transformedColor</span> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#d0e7c08969926ff6" class="i method">FromHex</a>(<span class="r13 r">item</span>.<a href="#d12b6ea1a0e9e1af" class="i property">BackgroundColor</a>);
+							<a href="/Xamarin.Forms.Core/A.html#7e0120b037b3522c" class="i property">View</a>.<a href="/Xamarin.Forms.Core/A.html#8c7f2e13366d12d5" class="i property">BackgroundColor</a> = <span class="r14 r">transformedColor</span>;
+						}
+ 
+						<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(<span class="r13 r">item</span>.<a href="#ea551a69d68c03c5" class="i property">CircleColor</a>))
+						{
+							<a href="#09ed40ccaa696d21" class="i field">_statusCircle</a>.<a href="/Xamarin.Forms.Core/A.html#60b82bdc24dcbdf6" class="i property">Text</a> = <span class="s">&quot;\u25CF &quot;</span>; <span class="c">// ascii circle</span>
+							<a href="#09ed40ccaa696d21" class="i field">_statusCircle</a>.<a href="/Xamarin.Forms.Core/A.html#aaad449f55c3186b" class="i property">TextColor</a> = <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#d0e7c08969926ff6" class="i method">FromHex</a>(<span class="r13 r">item</span>.<a href="#ea551a69d68c03c5" class="i property">CircleColor</a>);
+							<a href="#09ed40ccaa696d21" class="i field">_statusCircle</a>.<a href="/Xamarin.Forms.Core/A.html#16a4d70a298a161f" class="i property">FontSize</a> = 30;
+						}
+					}
+				}
+				<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r15 rd" class="r15 r">ex</span>)
+				{
+				}
+			}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 1998 <span class="c">// considered for removal</span>
+			<b>async void</b> <a id="23b913bb53a81c1c" href="R/23b913bb53a81c1c.html" target="n" data-glyph="76,2" class="i method">FastCompleteForCmd</a>(<b>object</b> <span id="r16 rd" class="r16 r">sender</span>)
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 1998
+			{
+				<b>try</b>
+				{
+					{
+						<a href="#3f502d55c7aad3f9" class="k">var</a> <span id="r17 rd" class="r17 r">item</span> = <a href="/Xamarin.Forms.Core/A.html#ec31b23be1ce91d4" class="i property">BindingContext</a> <b>as</b> <a href="#3f502d55c7aad3f9" class="t t">ListItem</a>;
+						<b>bool</b> <span id="r18 rd" class="r18 r">success</span> = <b>true</b>; <span class="c">// await _taskListManager.FastComplete(item);</span>
+ 
+						<b>if</b> (<span class="r18 r">success</span>)
+							<a href="#5ce964c4df4afcb0" class="i">RefreshFromQuickComplete</a>(<a href="#8e4a8a0aa63b3079" class="k">this</a>, <b>new</b> <a href="#d704b4bedb69bd6e" class="t constructor">ListItemEventArgs</a>(<span class="r17 r">item</span>));
+					}
+				}
+				<b>catch</b> (<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a> <span id="r19 rd" class="r19 r">ex</span>)
+				{
+ 
+				}
+			}
+ 
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span> &amp;&amp; <span class="i">__IOS__</span>
+<span class="e">		[Test]
+		[Ignore(&quot;Fails sometimes - needs a better test&quot;)]
+		public void Bugzilla31114Test ()
+		{
+			for (int i = 0; i &lt; 5; i++) {
+				RunningApp.DragCoordinates (10, 300, 10, 10);
+			}
+			RunningApp.Tap (q =&gt; q.Marked (&quot;btnLoad&quot;));
+			RunningApp.DragCoordinates (10, 300, 10, 10);
+			RunningApp.WaitForElement (q =&gt; q.Marked (&quot;PIPE #1007&quot;));
+			RunningApp.WaitForElement (q =&gt; q.Marked (&quot;PIPE #1008&quot;));
+			RunningApp.WaitForElement (q =&gt; q.Marked (&quot;PIPE #1009&quot;));
+			RunningApp.DragCoordinates (10, 300, 10, 10);
+			RunningApp.WaitForElement (q =&gt; q.Marked (&quot;PIPE #1010&quot;));
+			RunningApp.WaitForElement (q =&gt; q.Marked (&quot;PIPE #1011&quot;));
+			RunningApp.WaitForElement (q =&gt; q.Marked (&quot;PIPE #1012&quot;));
+			RunningApp.WaitForElement (q =&gt; q.Marked (&quot;PIPE #1013&quot;));
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+	}
+}
+</pre></td></tr></table></div></body></html>

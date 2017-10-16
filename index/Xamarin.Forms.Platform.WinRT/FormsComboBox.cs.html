@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html><head><title>FormsComboBox.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(68);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.WinRT/FormsComboBox.cs" target="_top">FormsComboBox.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.WinRT" target="_top">Xamarin.Forms.Platform.WinRT\Xamarin.Forms.Platform.WinRT.csproj</a> (Xamarin.Forms.Platform.WinRT)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>.<span class="i n">Animation</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public class</b> <a id="0e29f7d9499f0922" href="R/0e29f7d9499f0922.html" target="n" data-glyph="0,0" class="t t"><span id="42ceac7f38138c27">FormsComboBox</span></a> : <span class="t t">ComboBox</span>
+	{
+		<b>internal bool</b> <a id="185bb48f4db0353a" href="R/185bb48f4db0353a.html" target="n" data-glyph="104,1" class="i property">IsClosingAnimated</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>internal bool</b> <a id="10b45eb01c74ad88" href="R/10b45eb01c74ad88.html" target="n" data-glyph="104,1" class="i property">IsFullScreen</a> =&gt; <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> == <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a> &amp;&amp; <span class="i property">Items</span> != <b>null</b> &amp;&amp; <span class="i property">Items</span>.<a href="@1@System.Runtime/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> &gt; 5;
+ 
+		<b>internal bool</b> <a id="ceedfb65a9e173de" href="R/ceedfb65a9e173de.html" target="n" data-glyph="104,1" class="i property">IsOpeningAnimated</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>protected override void</b> <a id="7a38e56385672985" href="R/7a38e56385672985.html" target="n" data-glyph="75,1" class="i method">OnApplyTemplate</a>()
+		{
+			<b>base</b>.<span class="i method">OnApplyTemplate</span>();
+ 
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> == <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a>)
+			{
+				<span class="c">// If we&#39;re running on the phone, we have to give the PickerRenderer hooks</span>
+				<span class="c">// into the opening and closing animations so it can handle them smoothly</span>
+				<span class="c">// and measure at the appropriate times</span>
+ 
+				<b>var</b> <span id="r0 rd" class="r0 r">openedState</span> = <span class="i method">GetTemplateChild</span>(<span class="s">&quot;Opened&quot;</span>) <b>as</b> <span class="t t">VisualState</span>;
+				<b>if</b> (<span class="r0 r">openedState</span> != <b>null</b>)
+				{
+					<span class="r0 r">openedState</span>.<span class="i property">Storyboard</span>.<span class="i">Completed</span> += (<span id="r1 rd" class="r1 r">sender</span>, <span id="r2 rd" class="r2 r">o</span>) =&gt; <a href="#e312d1f0e38dff06" class="i method">OnOpenAnimationCompleted</a>();
+					<a href="#ceedfb65a9e173de" class="i property">IsOpeningAnimated</a> = <b>true</b>;
+				}
+ 
+				<b>var</b> <span id="r3 rd" class="r3 r">closedState</span> = <span class="i method">GetTemplateChild</span>(<span class="s">&quot;Closed&quot;</span>) <b>as</b> <span class="t t">VisualState</span>;
+ 
+				<span class="c">// On the phone, this is a dummy animation we&#39;ve added to the closed state in the VSM</span>
+				<span class="c">// Since it finishes immediately, we can use its Completed event to signal that the </span>
+				<span class="c">// closing animation has started </span>
+				<b>var</b> <span id="r4 rd" class="r4 r">closedSignalAnimation</span> = <span class="r3 r">closedState</span>?.<span class="i property">Storyboard</span>.<span class="i property">Children</span>[0] <b>as</b> <span class="t t">DoubleAnimation</span>;
+ 
+				<b>if</b> (<span class="r4 r">closedSignalAnimation</span> != <b>null</b>)
+				{
+					<span class="r4 r">closedSignalAnimation</span>.<span class="i">Completed</span> += (<span id="r5 rd" class="r5 r">sender</span>, <span id="r6 rd" class="r6 r">o</span>) =&gt; <a href="#e2215edc5ead7f59" class="i method">OnClosedAnimationStarted</a>();
+					<a href="#185bb48f4db0353a" class="i property">IsClosingAnimated</a> = <b>true</b>;
+				}
+			}
+		}
+ 
+		<b>protected virtual void</b> <a id="e2215edc5ead7f59" href="R/e2215edc5ead7f59.html" target="n" data-glyph="75,1" class="i method">OnClosedAnimationStarted</a>()
+		{
+			<a href="#401067ea861f6dd9" class="i">ClosedAnimationStarted</a>?.<a href="@1@System.Runtime/A.html#48225ee7c18a0e20" class="i method">Invoke</a>(<a href="#0e29f7d9499f0922" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+ 
+		<b>protected virtual void</b> <a id="e312d1f0e38dff06" href="R/e312d1f0e38dff06.html" target="n" data-glyph="75,1" class="i method">OnOpenAnimationCompleted</a>()
+		{
+			<a href="#68e9c3293546cdae" class="i">OpenAnimationCompleted</a>?.<a href="@1@System.Runtime/A.html#48225ee7c18a0e20" class="i method">Invoke</a>(<a href="#0e29f7d9499f0922" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+ 
+		<b>internal event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>&gt; <a id="401067ea861f6dd9" href="R/401067ea861f6dd9.html" target="n" data-glyph="32,1" class="i">ClosedAnimationStarted</a>;
+ 
+		<b>internal event</b> <a href="@1@System.Runtime/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>&gt; <a id="68e9c3293546cdae" href="R/68e9c3293546cdae.html" target="n" data-glyph="32,1" class="i">OpenAnimationCompleted</a>;
+	}
+}</pre></td></tr></table></div></body></html>

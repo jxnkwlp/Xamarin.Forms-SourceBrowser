@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html>
+<html><head><title>DebugXamlCTask.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(162);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/DebugXamlCTask.cs" target="_top">DebugXamlCTask.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+ 
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Cil</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Mdb</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Pdb</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Rocks</span>;
+ 
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>
+{
+	<b>public class</b> <a id="7f91e406034e0a02" href="R/7f91e406034e0a02.html" target="n" data-glyph="0,0" class="t t"><span id="2721a1bcc6f00dbb">DebugXamlCTask</span></a> : <a href="XamlTask.cs.html#4501796fd3dbcfee" class="t t">XamlTask</a>
+	{
+		<b>public override bool</b> <a id="8d42aca4af0047df" href="R/8d42aca4af0047df.html" target="n" data-glyph="72,1" class="i method">Execute</a>(<b>out</b> <a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="@0@mscorlib/A.html#f092fb2b893a0162" class="t t">Exception</a>&gt; <span id="r0 rd" class="r0 r">thrownExceptions</span>)
+		{
+			<span class="r0 r">thrownExceptions</span> = <b>null</b>;
+			<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a> = <a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a> ?? <b>new</b> <a href="Logger.cs.html#65fef16e306d168c" class="t constructor">Logger</a>(<b>null</b>, <a href="XamlTask.cs.html#dbaf0d587ecda2f9" class="i property">Verbosity</a>);
+			<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(1, <span class="s">&quot;Preparing debug code for xamlc&quot;</span>);
+			<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(1, <span class="s">&quot;\nAssembly: {0}&quot;</span>, <a href="XamlTask.cs.html#1e7c2511a03d0b27" class="i property">Assembly</a>);
+ 
+			<b>var</b> <span id="r1 rd" class="r1 r">resolver</span> = <b>new</b> <span class="i">DefaultAssemblyResolver</span>();
+			<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="XamlTask.cs.html#ea129edede9724d7" class="i property">DependencyPaths</a>))
+			{
+				<b>foreach</b> (<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r2 rd" class="r2 r">dep</span> <b>in</b> <a href="XamlTask.cs.html#ea129edede9724d7" class="i property">DependencyPaths</a>.<a href="@0@mscorlib/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;;&#39;</span>))
+				{
+					<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(3, <span class="s">&quot;Adding searchpath {0}&quot;</span>, <span class="r2 r">dep</span>);
+					<span class="r1 r">resolver</span>.<span class="i">AddSearchDirectory</span>(<span class="r2 r">dep</span>);
+				}
+			}
+			<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="XamlTask.cs.html#2cc6240eb835fb3c" class="i property">ReferencePath</a>))
+			{
+				<b>var</b> <span id="r3 rd" class="r3 r">paths</span> = <a href="XamlTask.cs.html#2cc6240eb835fb3c" class="i property">ReferencePath</a>.<a href="@0@mscorlib/A.html#69fc1d0aa6df8a90" class="i method">Replace</a>(<span class="s">&quot;//&quot;</span>, <span class="s">&quot;/&quot;</span>).<a href="@0@mscorlib/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;;&#39;</span>);
+				<b>foreach</b> (<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r4 rd" class="r4 r">p</span> <b>in</b> <span class="r3 r">paths</span>)
+				{
+					<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r5 rd" class="r5 r">searchpath</span> = <a href="@0@mscorlib/A.html#090eca8621a248ee" class="t t">Path</a>.<a href="@0@mscorlib/A.html#f9128b02ffd0d3ea" class="i method">GetDirectoryName</a>(<span class="r4 r">p</span>);
+					<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(3, <span class="s">&quot;Adding searchpath {0}&quot;</span>, <span class="r5 r">searchpath</span>);
+					<span class="r1 r">resolver</span>.<span class="i">AddSearchDirectory</span>(<span class="r5 r">searchpath</span>);
+					<span class="c">//					LogLine (3, &quot;Referencing {0}&quot;, p);</span>
+					<span class="c">//					resolver.AddAssembly (p);</span>
+				}
+			}
+ 
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r6 rd" class="r6 r">debug</span> = <a href="XamlTask.cs.html#05b5cdeafe1503e2" class="i property">DebugSymbols</a> || (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<a href="XamlTask.cs.html#5c437ee20b34b2c9" class="i property">DebugType</a>) &amp;&amp; <a href="XamlTask.cs.html#5c437ee20b34b2c9" class="i property">DebugType</a>.<a href="@0@mscorlib/A.html#2d51c212cb09178e" class="i method">ToLowerInvariant</a>() != <span class="s">&quot;none&quot;</span>);
+ 
+			<b>using</b> (<b>var</b> <span id="r7 rd" class="r7 r">assemblyDefinition</span> = <span class="i">AssemblyDefinition</span>.<span class="i">ReadAssembly</span>(<a href="XamlTask.cs.html#1e7c2511a03d0b27" class="i property">Assembly</a>, <b>new</b> <span class="i">ReaderParameters</span> {
+				<span class="i">ReadWrite</span> = <b>true</b>,
+				<span class="i">ReadSymbols</span> = <span class="r6 r">debug</span>,
+				<span class="i">AssemblyResolver</span> = <span class="r1 r">resolver</span>
+			})) {
+				<b>foreach</b> (<b>var</b> <span id="r8 rd" class="r8 r">module</span> <b>in</b> <span class="r7 r">assemblyDefinition</span>.<span class="i">Modules</span>) {
+					<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogLine</span>(2, <span class="s">&quot; Module: {0}&quot;</span>, <span class="r8 r">module</span>.<span class="i">Name</span>);
+					<b>foreach</b> (<b>var</b> <span id="r9 rd" class="r9 r">resource</span> <b>in</b> <span class="r8 r">module</span>.<span class="i">Resources</span>.<span class="i">OfType</span>&lt;<span class="i">EmbeddedResource</span>&gt;()) {
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogString</span>(2, <span class="s">&quot;  Resource: {0}... &quot;</span>, <span class="r9 r">resource</span>.<span class="i">Name</span>);
+						<b>string</b> <span id="r10 rd" class="r10 r">classname</span>;
+						<b>if</b> (!<span class="r9 r">resource</span>.<span class="i">IsXaml</span>(<b>out</b> <span class="r10 r">classname</span>)) {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;skipped.&quot;</span>);
+							<b>continue</b>;
+						} <b>else</b>
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;&quot;</span>);
+						<span class="i">TypeDefinition</span> <span id="r11 rd" class="r11 r">typeDef</span> = <span class="r8 r">module</span>.<span class="i">GetType</span>(<span class="r10 r">classname</span>);
+						<b>if</b> (<span class="r11 r">typeDef</span> == <b>null</b>) {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;no type found... skipped.&quot;</span>);
+							<b>continue</b>;
+						}
+ 
+						<b>var</b> <span id="r12 rd" class="r12 r">initComp</span> = <span class="r11 r">typeDef</span>.<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(<span id="r13 rd" class="r13 r">md</span> =&gt; <span class="r13 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;InitializeComponent&quot;</span>);
+						<b>if</b> (<span class="r12 r">initComp</span> == <b>null</b>) {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;no InitializeComponent found... skipped.&quot;</span>);
+							<b>continue</b>;
+						}
+						<b>var</b> <span id="r14 rd" class="r14 r">initCompRuntime</span> = <span class="r11 r">typeDef</span>.<span class="i">Methods</span>.<span class="i">FirstOrDefault</span>(<span id="r15 rd" class="r15 r">md</span> =&gt; <span class="r15 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;__InitComponentRuntime&quot;</span>);
+						<b>if</b> (<span class="r14 r">initCompRuntime</span> == <b>null</b>) {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogString</span>(2, <span class="s">&quot;   Creating empty {0}.__InitComponentRuntime ...&quot;</span>, <span class="r11 r">typeDef</span>.<span class="i">Name</span>);
+							<span class="r14 r">initCompRuntime</span> = <b>new</b> <span class="i">MethodDefinition</span>(<span class="s">&quot;__InitComponentRuntime&quot;</span>, <span class="r12 r">initComp</span>.<span class="i">Attributes</span>, <span class="r12 r">initComp</span>.<span class="i">ReturnType</span>);
+							<span class="r14 r">initCompRuntime</span>.<span class="i">Body</span>.<span class="i">InitLocals</span> = <b>true</b>;
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;done.&quot;</span>);
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogString</span>(2, <span class="s">&quot;   Copying body of InitializeComponent to __InitComponentRuntime ...&quot;</span>, <span class="r11 r">typeDef</span>.<span class="i">Name</span>);
+							<span class="r14 r">initCompRuntime</span>.<span class="i">Body</span> = <b>new</b> <span class="i">MethodBody</span>(<span class="r14 r">initCompRuntime</span>);
+							<b>var</b> <span id="r16 rd" class="r16 r">iCRIl</span> = <span class="r14 r">initCompRuntime</span>.<span class="i">Body</span>.<span class="i">GetILProcessor</span>();
+							<b>foreach</b> (<b>var</b> <span id="r17 rd" class="r17 r">instr</span> <b>in</b> <span class="r12 r">initComp</span>.<span class="i">Body</span>.<span class="i">Instructions</span>)
+								<span class="r16 r">iCRIl</span>.<span class="i">Append</span>(<span class="r17 r">instr</span>);
+							<span class="r12 r">initComp</span>.<span class="i">Body</span>.<span class="i">Instructions</span>.<span class="i">Clear</span>();
+							<span class="r12 r">initComp</span>.<span class="i">Body</span>.<span class="i">GetILProcessor</span>().<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ret</span>);
+							<span class="r11 r">typeDef</span>.<span class="i">Methods</span>.<span class="i">Add</span>(<span class="r14 r">initCompRuntime</span>);
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;done.&quot;</span>);
+						}
+ 
+<span class="c">//						IL_0000:  ldarg.0 </span>
+<span class="c">//						IL_0001:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.ContentPage::&#39;.ctor&#39;()</span>
+<span class="c">//</span>
+<span class="c">//						IL_0006:  nop </span>
+<span class="c">//						IL_0007:  ldarg.1 </span>
+<span class="c">//						IL_0008:  brfalse IL_0018</span>
+<span class="c">//</span>
+<span class="c">//						IL_000d:  ldarg.0 </span>
+<span class="c">//						IL_000e:  callvirt instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::InitializeComponent()</span>
+<span class="c">//						IL_0013:  br IL_001e</span>
+<span class="c">//</span>
+<span class="c">//						IL_0018:  ldarg.0 </span>
+<span class="c">//						IL_0019:  callvirt instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::__InitComponentRuntime()</span>
+<span class="c">//						IL_001e:  ret </span>
+ 
+						<b>var</b> <span id="r18 rd" class="r18 r">altCtor</span> =
+							<span class="r11 r">typeDef</span>.<span class="i">Methods</span>.<span class="i">Where</span>(
+								<span id="r19 rd" class="r19 r">md</span> =&gt; <span class="r19 r">md</span>.<span class="i">IsConstructor</span> &amp;&amp; <span class="r19 r">md</span>.<span class="i">Parameters</span>.<span class="i">Count</span> == 1 &amp;&amp; <span class="r19 r">md</span>.<span class="i">Parameters</span>[0].<span class="i">ParameterType</span> == <span class="r8 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Boolean</span>)
+								.<span class="i">FirstOrDefault</span>();
+						<b>if</b> (<span class="r18 r">altCtor</span> != <b>null</b>)
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogString</span>(2, <span class="s">&quot;   Replacing body of {0}.{0} (bool {1}) ... &quot;</span>, <span class="r11 r">typeDef</span>.<span class="i">Name</span>, <span class="r18 r">altCtor</span>.<span class="i">Parameters</span>[0].<span class="i">Name</span>);
+						<b>else</b> {
+							<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<span class="i">LogString</span>(2, <span class="s">&quot;   Adding {0}.{0} (bool useCompiledXaml) ... &quot;</span>, <span class="r11 r">typeDef</span>.<span class="i">Name</span>);
+							<span class="r18 r">altCtor</span> = <b>new</b> <span class="i">MethodDefinition</span>(<span class="s">&quot;.ctor&quot;</span>,
+								<span class="i">MethodAttributes</span>.<span class="i">Public</span> | <span class="i">MethodAttributes</span>.<span class="i">HideBySig</span> | <span class="i">MethodAttributes</span>.<span class="i">SpecialName</span> |
+								<span class="i">MethodAttributes</span>.<span class="i">RTSpecialName</span>, <span class="r8 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Void</span>);
+							<span class="r18 r">altCtor</span>.<span class="i">Parameters</span>.<span class="i">Add</span>(<b>new</b> <span class="i">ParameterDefinition</span>(<span class="s">&quot;useCompiledXaml&quot;</span>, <span class="i">ParameterAttributes</span>.<span class="i">None</span>,
+								<span class="r8 r">module</span>.<span class="i">TypeSystem</span>.<span class="i">Boolean</span>));
+						}
+ 
+						<b>var</b> <span id="r20 rd" class="r20 r">body</span> = <b>new</b> <span class="i">MethodBody</span>(<span class="r18 r">altCtor</span>);
+						<span class="r20 r">body</span>.<span class="i">InitLocals</span> = <b>true</b>;
+						<b>var</b> <span id="r21 rd" class="r21 r">il</span> = <span class="r20 r">body</span>.<span class="i">GetILProcessor</span>();
+						<b>var</b> <span id="r22 rd" class="r22 r">br2</span> = <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ldarg_0</span>);
+						<b>var</b> <span id="r23 rd" class="r23 r">ret</span> = <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Ret</span>);
+						<span class="r21 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldarg_0</span>);
+						<span class="r21 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>,
+							<span class="r8 r">module</span>.<span class="i">ImportReference</span>(<span class="r11 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">Resolve</span>().<span class="i">GetConstructors</span>().<span class="i">First</span>(<span id="r24 rd" class="r24 r">c</span> =&gt; <span class="r24 r">c</span>.<span class="i">HasParameters</span> == <b>false</b>)));
+ 
+						<span class="r21 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Nop</span>);
+						<span class="r21 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldarg_1</span>);
+						<span class="r21 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Brfalse</span>, <span class="r22 r">br2</span>);
+ 
+						<span class="r21 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Ldarg_0</span>);
+						<span class="r21 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r12 r">initComp</span>);
+						<span class="r21 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Br</span>, <span class="r23 r">ret</span>);
+ 
+						<span class="r21 r">il</span>.<span class="i">Append</span>(<span class="r22 r">br2</span>);
+						<span class="r21 r">il</span>.<span class="i">Emit</span>(<span class="i">OpCodes</span>.<span class="i">Callvirt</span>, <span class="r14 r">initCompRuntime</span>);
+						<span class="r21 r">il</span>.<span class="i">Append</span>(<span class="r23 r">ret</span>);
+ 
+						<span class="r18 r">altCtor</span>.<span class="i">Body</span> = <span class="r20 r">body</span>;
+						<b>if</b> (!<span class="r11 r">typeDef</span>.<span class="i">Methods</span>.<span class="i">Contains</span>(<span class="r18 r">altCtor</span>))
+							<span class="r11 r">typeDef</span>.<span class="i">Methods</span>.<span class="i">Add</span>(<span class="r18 r">altCtor</span>);
+						<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;done.&quot;</span>);
+					}
+ 
+					<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(2, <span class="s">&quot;&quot;</span>);
+				}
+				<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#7d5a4c789f2fc209" class="i method">LogString</a>(1, <span class="s">&quot;Writing the assembly... &quot;</span>);
+				<span class="r7 r">assemblyDefinition</span>.<span class="i">Write</span>(<b>new</b> <span class="i">WriterParameters</span> {
+					<span class="i">WriteSymbols</span> = <span class="r6 r">debug</span>
+				});
+			}
+			<a href="XamlTask.cs.html#e25ede20c33748f8" class="i property">Logger</a>.<a href="Logger.cs.html#dea315bae520a3bc" class="i method">LogLine</a>(1, <span class="s">&quot;done.&quot;</span>);
+ 
+			<b>return true</b>;
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html><head><title>InnerScaleListener.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(64);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/InnerScaleListener.cs" target="_top">InnerScaleListener.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Runtime</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>internal class</b> <a id="ee23c23df369832d" href="R/ee23c23df369832d.html" target="n" data-glyph="2,0" class="t t">InnerScaleListener</a> : <span class="i">ScaleGestureDetector</span>.<span class="i">SimpleOnScaleGestureListener</span>
+	{
+		<span class="i">Func</span>&lt;<b>float</b>, <a href="/Xamarin.Forms.Core/A.html#71c2b8add148844d" class="t t">Point</a>, <b>bool</b>&gt; <a id="f934a09c9a68b3fd" href="R/f934a09c9a68b3fd.html" target="n" data-glyph="46,1" class="i field">_pinchDelegate</a>;
+		<span class="i">Action</span> <a id="9187fe1b1ac9ce23" href="R/9187fe1b1ac9ce23.html" target="n" data-glyph="46,1" class="i field">_pinchEndedDelegate</a>;
+		<span class="i">Func</span>&lt;<a href="/Xamarin.Forms.Core/A.html#71c2b8add148844d" class="t t">Point</a>, <b>bool</b>&gt; <a id="16fc7a1202c288e8" href="R/16fc7a1202c288e8.html" target="n" data-glyph="46,1" class="i field">_pinchStartedDelegate</a>;
+ 
+		<b>public</b> <a id="bbe587299374e931" href="R/bbe587299374e931.html" target="n" data-glyph="72,1" class="i constructor">InnerScaleListener</a>(<a href="PinchGestureHandler.cs.html#f709e5885d752fc7" class="t t">PinchGestureHandler</a> <span id="r0 rd" class="r0 r">pinchGestureHandler</span>)
+		{
+			<b>if</b> (<span class="r0 r">pinchGestureHandler</span> == <b>null</b>)
+			{
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<b>nameof</b>(<span class="r0 r">pinchGestureHandler</span>));
+			}
+ 
+			<a href="#f934a09c9a68b3fd" class="i field">_pinchDelegate</a> = <span class="r0 r">pinchGestureHandler</span>.<span class="i">OnPinch</span>;
+			<a href="#16fc7a1202c288e8" class="i field">_pinchStartedDelegate</a> = <span class="r0 r">pinchGestureHandler</span>.<span class="i">OnPinchStarted</span>;
+			<a href="#9187fe1b1ac9ce23" class="i field">_pinchEndedDelegate</a> = <span class="r0 r">pinchGestureHandler</span>.<span class="i">OnPinchEnded</span>;
+		}
+ 
+		<span class="c">// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds</span>
+		<span class="c">// which can result in the need to resurect this object if it has already been disposed. We dispose</span>
+		<span class="c">// eagerly to allow easier garbage collection of the renderer</span>
+		<b>internal</b> <a id="d5523edd252e7f07" href="R/../../0000000000.html" target="n" data-glyph="74,1" class="i constructor">InnerScaleListener</a>(<span class="i">IntPtr</span> <span id="r1 rd" class="r1 r">handle</span>, <span class="i">JniHandleOwnership</span> <span id="r2 rd" class="r2 r">ownership</span>) : <b>base</b>(<span class="r1 r">handle</span>, <span class="r2 r">ownership</span>)
+		{
+		}
+ 
+		<b>public override bool</b> <a id="21bcdfb9aaa8a6db" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnScale</a>(<span class="i">ScaleGestureDetector</span> <span id="r3 rd" class="r3 r">detector</span>)
+		{
+			<b>float</b> <span id="r4 rd" class="r4 r">cur</span> = <span class="r3 r">detector</span>.<span class="i">CurrentSpan</span>;
+			<b>float</b> <span id="r5 rd" class="r5 r">last</span> = <span class="r3 r">detector</span>.<span class="i">PreviousSpan</span>;
+ 
+			<b>if</b> (<span class="i">Math</span>.<span class="i">Abs</span>(<span class="r4 r">cur</span> - <span class="r5 r">last</span>) &lt; 10)
+				<b>return false</b>;
+ 
+			<b>return</b> <span class="i">_pinchDelegate</span>(<span class="r3 r">detector</span>.<span class="i">ScaleFactor</span>, <b>new</b> <span class="t">Point</span>(<a href="Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<span class="i">FromPixels</span>(<span class="r3 r">detector</span>.<span class="i">FocusX</span>), <a href="Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<span class="i">FromPixels</span>(<span class="r3 r">detector</span>.<span class="i">FocusY</span>)));
+		}
+ 
+		<b>public override bool</b> <a id="8fe0d47c351cf044" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnScaleBegin</a>(<span class="i">ScaleGestureDetector</span> <span id="r6 rd" class="r6 r">detector</span>)
+		{
+			<b>return</b> <span class="i">_pinchStartedDelegate</span>(<b>new</b> <span class="t">Point</span>(<a href="Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<span class="i">FromPixels</span>(<span class="r6 r">detector</span>.<span class="i">FocusX</span>), <a href="Forms.cs.html#eb8800bb7e650425" class="t t">Forms</a>.<a href="Forms.cs.html#51008592798f3c52" class="i property">Context</a>.<span class="i">FromPixels</span>(<span class="r6 r">detector</span>.<span class="i">FocusY</span>)));
+		}
+ 
+		<b>public override void</b> <a id="2d70f74be95c0c1d" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnScaleEnd</a>(<span class="i">ScaleGestureDetector</span> <span id="r7 rd" class="r7 r">detector</span>)
+		{
+			<span class="i">_pinchEndedDelegate</span>();
+		}
+ 
+		<b>protected override void</b> <a id="5f4c75c3f0e2d701" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r8 rd" class="r8 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r8 r">disposing</span>)
+			{
+				<a href="#f934a09c9a68b3fd" class="i field">_pinchDelegate</a> = <b>null</b>;
+				<a href="#16fc7a1202c288e8" class="i field">_pinchStartedDelegate</a> = <b>null</b>;
+				<a href="#9187fe1b1ac9ce23" class="i field">_pinchEndedDelegate</a> = <b>null</b>;
+			}
+			<b>base</b>.<span class="i">Dispose</span>(<span class="r8 r">disposing</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

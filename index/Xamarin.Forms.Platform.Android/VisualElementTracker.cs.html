@@ -1,0 +1,420 @@
+﻿<!DOCTYPE html>
+<html><head><title>VisualElementTracker.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(411);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/VisualElementTracker.cs" target="_top">VisualElementTracker.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">OS</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">AView</span> = <span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span>;
+<b>using</b> <span class="i">Object</span> = <span class="i n">Java</span>.<span class="i">Lang</span>.<span class="i">Object</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>public class</b> <a id="d538081d9f94da4d" href="R/d538081d9f94da4d.html" target="n" data-glyph="0,0" class="t t">VisualElementTracker</a> : <span class="i">IDisposable</span>
+	{
+		<b>readonly</b> <span class="i">EventHandler</span>&lt;<a href="/Xamarin.Forms.Core/A.html#e9ec7bae1778a320" class="t t">EventArg</a>&lt;<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>&gt;&gt; <a id="c290dea00bbff8e3" href="R/c290dea00bbff8e3.html" target="n" data-glyph="46,1" class="i field">_batchCommittedHandler</a>;
+		<b>readonly</b> <span class="i">IList</span>&lt;<b>string</b>&gt; <a id="5287c1e3348638d2" href="R/5287c1e3348638d2.html" target="n" data-glyph="46,1" class="i field">_batchedProperties</a> = <b>new</b> <span class="i">List</span>&lt;<b>string</b>&gt;();
+		<b>readonly</b> <span class="i">PropertyChangedEventHandler</span> <a id="f293472aaaf7cc05" href="R/f293472aaaf7cc05.html" target="n" data-glyph="46,1" class="i field">_propertyChangedHandler</a>;
+		<span class="i">Context</span> <a id="84e825d9b5ca640f" href="R/84e825d9b5ca640f.html" target="n" data-glyph="46,1" class="i field">_context</a>;
+ 
+		<b>bool</b> <a id="321c5b0507eb904d" href="R/321c5b0507eb904d.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <a id="50bbc7803380948e" href="R/50bbc7803380948e.html" target="n" data-glyph="46,1" class="i field">_element</a>;
+		<b>bool</b> <a id="0e0c297a9ef4beb8" href="R/0e0c297a9ef4beb8.html" target="n" data-glyph="46,1" class="i field">_initialUpdateNeeded</a> = <b>true</b>;
+		<b>bool</b> <a id="4220627a9f14d23a" href="R/4220627a9f14d23a.html" target="n" data-glyph="46,1" class="i field">_layoutNeeded</a>;
+		<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <a id="60c4363206898821" href="R/60c4363206898821.html" target="n" data-glyph="46,1" class="i field">_renderer</a>;
+ 
+		<b>public</b> <a id="4656ffbcfdf6338a" href="R/4656ffbcfdf6338a.html" target="n" data-glyph="72,1" class="i constructor">VisualElementTracker</a>(<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a> <span id="r0 rd" class="r0 r">renderer</span>)
+		{
+			<b>if</b> (<span class="r0 r">renderer</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<span class="s">&quot;renderer&quot;</span>);
+ 
+			<a href="#c290dea00bbff8e3" class="i field">_batchCommittedHandler</a> = <span class="i">HandleRedrawNeeded</span>;
+			<a href="#f293472aaaf7cc05" class="i field">_propertyChangedHandler</a> = <span class="i">HandlePropertyChanged</span>;
+ 
+			<a href="#60c4363206898821" class="i field">_renderer</a> = <span class="r0 r">renderer</span>;
+			<a href="#84e825d9b5ca640f" class="i field">_context</a> = <span class="r0 r">renderer</span>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">Context</span>;
+			<a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#36dc6c9c251263a6" class="i">ElementChanged</a> += <span class="i">RendererOnElementChanged</span>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r1 rd" class="r1 r">view</span> = <span class="r0 r">renderer</span>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<a href="#2605c2978750ceae" class="i method">SetElement</a>(<b>null</b>, <span class="r1 r">view</span>);
+ 
+			<span class="r0 r">renderer</span>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">SetCameraDistance</span>(3600);
+ 
+			<span class="r0 r">renderer</span>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">AddOnAttachStateChangeListener</span>(<a href="#ca469da3ab814fd6" class="t t">AttachTracker</a>.<a href="#4a5ce4c572141a22" class="i field">Instance</a>);
+		}
+ 
+		<b>public void</b> <a id="10977b30ca8b0186" href="R/10977b30ca8b0186.html" target="n" data-glyph="72,1" class="i method">Dispose</a>()
+		{
+			<a href="#a690682f2319b646" class="i method">Dispose</a>(<b>true</b>);
+			<span class="i">GC</span>.<span class="i">SuppressFinalize</span>(<a href="#d538081d9f94da4d" class="k">this</a>);
+		}
+ 
+		<b>protected virtual void</b> <a id="a690682f2319b646" href="R/a690682f2319b646.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r2 rd" class="r2 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#321c5b0507eb904d" class="i field">_disposed</a>)
+				<b>return</b>;
+ 
+			<a href="#321c5b0507eb904d" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<b>if</b> (<span class="r2 r">disposing</span>)
+			{
+				<a href="#2605c2978750ceae" class="i method">SetElement</a>(<a href="#50bbc7803380948e" class="i field">_element</a>, <b>null</b>);
+ 
+				<b>if</b> (<a href="#60c4363206898821" class="i field">_renderer</a> != <b>null</b>)
+				{
+					<a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#36dc6c9c251263a6" class="i">ElementChanged</a> -= <span class="i">RendererOnElementChanged</span>;
+					<a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">RemoveOnAttachStateChangeListener</span>(<a href="#ca469da3ab814fd6" class="t t">AttachTracker</a>.<a href="#4a5ce4c572141a22" class="i field">Instance</a>);
+					<a href="#60c4363206898821" class="i field">_renderer</a> = <b>null</b>;
+					<a href="#84e825d9b5ca640f" class="i field">_context</a> = <b>null</b>;
+				}
+			}
+		}
+ 
+		<b>public void</b> <a id="0e37e7edf6aa3434" href="R/0e37e7edf6aa3434.html" target="n" data-glyph="72,1" class="i method">UpdateLayout</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>();
+ 
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r3 rd" class="r3 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r4 rd" class="r4 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#71c2b8add148844d" class="k">var</a> <span id="r5 rd" class="r5 r">headlessOffset</span> = <a href="/Xamarin.Forms.Core/A.html#e89c967ef6169b93" class="t t">CompressedLayout</a>.<a href="/Xamarin.Forms.Core/A.html#2a013f032c5f19af" class="i method">GetHeadlessOffset</a>(<span class="r3 r">view</span>);
+			<b>var</b> <span id="r6 rd" class="r6 r">x</span> = (<b>int</b>)<a href="#84e825d9b5ca640f" class="i field">_context</a>.<span class="i">ToPixels</span>(<span class="r3 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#e18ecb86f0d3566d" class="i property">X</a> + <span class="r5 r">headlessOffset</span>.<a href="/Xamarin.Forms.Core/A.html#e872b708b176ccbd" class="i property">X</a>);
+			<b>var</b> <span id="r7 rd" class="r7 r">y</span> = (<b>int</b>)<a href="#84e825d9b5ca640f" class="i field">_context</a>.<span class="i">ToPixels</span>(<span class="r3 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#d889d87a84b3b903" class="i property">Y</a> + <span class="r5 r">headlessOffset</span>.<a href="/Xamarin.Forms.Core/A.html#ed844b5bb67ba407" class="i property">Y</a>);
+			<b>var</b> <span id="r8 rd" class="r8 r">width</span> = <span class="i">Math</span>.<span class="i">Max</span>(0, (<b>int</b>)<a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r3 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#4b4ff8e00e0429d0" class="i property">Width</a>));
+			<b>var</b> <span id="r9 rd" class="r9 r">height</span> = <span class="i">Math</span>.<span class="i">Max</span>(0, (<b>int</b>)<a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r3 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a>));
+ 
+			<a href="/FormsViewGroup/A.html#41552753c015313a" class="k">var</a> <span id="r10 rd" class="r10 r">formsViewGroup</span> = <span class="r4 r">aview</span> <b>as</b> <a href="/FormsViewGroup/A.html#41552753c015313a" class="t t">FormsViewGroup</a>;
+			<b>if</b> (<span class="r10 r">formsViewGroup</span> == <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>(<span class="s">&quot;Measure&quot;</span>);
+				<span class="r4 r">aview</span>.<span class="i">Measure</span>(<a href="MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r8 r">width</span>, <span class="i">MeasureSpecMode</span>.<span class="i">Exactly</span>), <a href="MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r9 r">height</span>, <span class="i">MeasureSpecMode</span>.<span class="i">Exactly</span>));
+				<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>(<span class="s">&quot;Measure&quot;</span>);
+ 
+				<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>(<span class="s">&quot;Layout&quot;</span>);
+				<span class="r4 r">aview</span>.<span class="i">Layout</span>(<span class="r6 r">x</span>, <span class="r7 r">y</span>, <span class="r6 r">x</span> + <span class="r8 r">width</span>, <span class="r7 r">y</span> + <span class="r9 r">height</span>);
+				<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>(<span class="s">&quot;Layout&quot;</span>);
+			}
+			<b>else</b>
+			{
+				<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>(<span class="s">&quot;MeasureAndLayout&quot;</span>);
+				<span class="r10 r">formsViewGroup</span>.<span class="i">MeasureAndLayout</span>(<a href="MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r8 r">width</span>, <span class="i">MeasureSpecMode</span>.<span class="i">Exactly</span>), <a href="MeasureSpecFactory.cs.html#97f047ff5333943b" class="t t">MeasureSpecFactory</a>.<span class="i">MakeMeasureSpec</span>(<span class="r9 r">height</span>, <span class="i">MeasureSpecMode</span>.<span class="i">Exactly</span>), <span class="r6 r">x</span>, <span class="r7 r">y</span>, <span class="r6 r">x</span> + <span class="r8 r">width</span>, <span class="r7 r">y</span> + <span class="r9 r">height</span>);
+				<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>(<span class="s">&quot;MeasureAndLayout&quot;</span>);
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>();
+ 
+			<span class="c">//On Width or Height changes, the anchors needs to be updated</span>
+			<a href="#b1869e56a3fa64d5" class="i method">UpdateAnchorX</a>();
+			<a href="#582f11fcf4363609" class="i method">UpdateAnchorY</a>();
+		}
+ 
+		<b>void</b> <a id="1ec2f7277689ce9f" href="R/1ec2f7277689ce9f.html" target="n" data-glyph="76,1" class="i method">HandlePropertyChanged</a>(<b>object</b> <span id="r11 rd" class="r11 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r12 rd" class="r12 r">e</span>)
+		{
+			<b>if</b> (<a href="#60c4363206898821" class="i field">_renderer</a> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="t t">Layout</a>.<a href="/Xamarin.Forms.Core/A.html#04754be94fee3ad3" class="i field">IsClippedToBoundsProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#e9d039297bf1492a" class="i method">UpdateClipToBounds</a>();
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#585b4979a16bfbb1" class="i property">Batched</a>)
+			{
+				<b>if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#46ccfebde8187f9b" class="i field">XProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#dbd1b0cda0775f3b" class="i field">YProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#da94b849bc513d64" class="i field">WidthProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+					<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#bd8332aab95ecbe7" class="i field">HeightProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+					<a href="#4220627a9f14d23a" class="i field">_layoutNeeded</a> = <b>true</b>;
+				<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#8b4971ff4c0bf69e" class="i field">AnchorXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#c36c1b05b1f88233" class="i field">AnchorYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#7101c14ebc333e1d" class="i field">ScaleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+						 <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#81bca7dd24e8a626" class="i field">RotationProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#212ad62d6a9bf671" class="i field">RotationXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#818973b117d7de1f" class="i field">RotationYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+						 <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#acdb30ca7e3e8994" class="i field">IsVisibleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#b7f80bf625ddd6d6" class="i field">OpacityProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+						 <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#c3af2bf418be5028" class="i field">TranslationXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#753acb521b5e3f04" class="i field">TranslationYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				{
+					<b>if</b> (!<a href="#5287c1e3348638d2" class="i field">_batchedProperties</a>.<span class="i">Contains</span>(<span class="r12 r">e</span>.<span class="i">PropertyName</span>))
+						<a href="#5287c1e3348638d2" class="i field">_batchedProperties</a>.<span class="i">Add</span>(<span class="r12 r">e</span>.<span class="i">PropertyName</span>);
+				}
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#46ccfebde8187f9b" class="i field">XProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#dbd1b0cda0775f3b" class="i field">YProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#da94b849bc513d64" class="i field">WidthProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+				<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#bd8332aab95ecbe7" class="i field">HeightProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#7da36f833ec62818" class="i method">MaybeRequestLayout</a>();
+			<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#8b4971ff4c0bf69e" class="i field">AnchorXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#b1869e56a3fa64d5" class="i method">UpdateAnchorX</a>();
+			<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#c36c1b05b1f88233" class="i field">AnchorYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#582f11fcf4363609" class="i method">UpdateAnchorY</a>();
+			<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#7101c14ebc333e1d" class="i field">ScaleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#311901271c290703" class="i method">UpdateScale</a>();
+			<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#81bca7dd24e8a626" class="i field">RotationProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#16a327b053bbed88" class="i method">UpdateRotation</a>();
+			<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#212ad62d6a9bf671" class="i field">RotationXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#1d87a6e3099f4554" class="i method">UpdateRotationX</a>();
+			<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#818973b117d7de1f" class="i field">RotationYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#3da19f4b9509c2ae" class="i method">UpdateRotationY</a>();
+			<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#acdb30ca7e3e8994" class="i field">IsVisibleProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#6a65815479c59581" class="i method">UpdateIsVisible</a>();
+			<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#b7f80bf625ddd6d6" class="i field">OpacityProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#cf9dabe27194c5c7" class="i method">UpdateOpacity</a>();
+			<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#c3af2bf418be5028" class="i field">TranslationXProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#a95697b419f7d184" class="i method">UpdateTranslationX</a>();
+			<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#753acb521b5e3f04" class="i field">TranslationYProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#169d6830ca790925" class="i method">UpdateTranslationY</a>();
+			<b>else if</b> (<span class="r12 r">e</span>.<span class="i">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#d798cc16e0e87f98" class="i field">IsEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#3861f07ca9130485" class="i method">UpdateIsEnabled</a>();
+		}
+ 
+		<b>void</b> <a id="ee7d31cb8c267f1d" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">HandleRedrawNeeded</a>(<b>object</b> <span id="r13 rd" class="r13 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#e9ec7bae1778a320" class="t t">EventArg</a>&lt;<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>&gt; <span id="r14 rd" class="r14 r">e</span>)
+		{
+			<b>foreach</b> (<b>string</b> <span id="r15 rd" class="r15 r">propertyName</span> <b>in</b> <a href="#5287c1e3348638d2" class="i field">_batchedProperties</a>)
+				<a href="#1ec2f7277689ce9f" class="i method">HandlePropertyChanged</a>(<a href="#d538081d9f94da4d" class="k">this</a>, <b>new</b> <span class="i">PropertyChangedEventArgs</span>(<span class="r15 r">propertyName</span>));
+			<a href="#5287c1e3348638d2" class="i field">_batchedProperties</a>.<span class="i">Clear</span>();
+ 
+			<b>if</b> (<a href="#4220627a9f14d23a" class="i field">_layoutNeeded</a>)
+				<a href="#7da36f833ec62818" class="i method">MaybeRequestLayout</a>();
+			<a href="#4220627a9f14d23a" class="i field">_layoutNeeded</a> = <b>false</b>;
+		}
+ 
+		<b>void</b> <a id="4708bacaeb5b440a" href="R/4708bacaeb5b440a.html" target="n" data-glyph="76,1" class="i method">HandleViewAttachedToWindow</a>()
+		{
+			<b>if</b> (<a href="#0e0c297a9ef4beb8" class="i field">_initialUpdateNeeded</a>)
+			{
+				<span class="i">UpdateNativeView</span>(<a href="#d538081d9f94da4d" class="k">this</a>, <span class="i">EventArgs</span>.<span class="i">Empty</span>);
+				<a href="#0e0c297a9ef4beb8" class="i field">_initialUpdateNeeded</a> = <b>false</b>;
+			}
+ 
+			<a href="#e9d039297bf1492a" class="i method">UpdateClipToBounds</a>();
+		}
+ 
+		<b>void</b> <a id="7da36f833ec62818" href="R/7da36f833ec62818.html" target="n" data-glyph="76,1" class="i method">MaybeRequestLayout</a>()
+		{
+			<b>var</b> <span id="r16 rd" class="r16 r">isInLayout</span> = <b>false</b>;
+			<b>if</b> ((<b>int</b>)<span class="i">Build</span>.<span class="i">VERSION</span>.<span class="i">SdkInt</span> &gt;= 18)
+				<span class="r16 r">isInLayout</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">IsInLayout</span>;
+ 
+			<b>if</b> (!<span class="r16 r">isInLayout</span> &amp;&amp; !<a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">IsLayoutRequested</span>)
+				<a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">RequestLayout</span>();
+		}
+ 
+		<b>void</b> <a id="9a43a153c1167f3c" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">RendererOnElementChanged</a>(<b>object</b> <span id="r17 rd" class="r17 r">sender</span>, <a href="VisualElementChangedEventArgs.cs.html#af6d54330067744b" class="t t">VisualElementChangedEventArgs</a> <span id="r18 rd" class="r18 r">args</span>)
+		{
+			<a href="#2605c2978750ceae" class="i method">SetElement</a>(<span class="r18 r">args</span>.<a href="ElementChangedEventArgs.cs.html#3ce3d81b001baec9" class="i property">OldElement</a>, <span class="r18 r">args</span>.<a href="ElementChangedEventArgs.cs.html#791644a1727a7988" class="i property">NewElement</a>);
+		}
+ 
+		<b>void</b> <a id="2605c2978750ceae" href="R/2605c2978750ceae.html" target="n" data-glyph="76,1" class="i method">SetElement</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r19 rd" class="r19 r">oldElement</span>, <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r20 rd" class="r20 r">newElement</span>)
+		{
+			<b>if</b> (<span class="r19 r">oldElement</span> != <b>null</b>)
+			{
+				<span class="r19 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#7650aa028977a179" class="i">BatchCommitted</a> -= <a href="#c290dea00bbff8e3" class="i field">_batchCommittedHandler</a>;
+				<span class="r19 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#f293472aaaf7cc05" class="i field">_propertyChangedHandler</a>;
+				<a href="#84e825d9b5ca640f" class="i field">_context</a> = <b>null</b>;
+			}
+ 
+			<a href="#50bbc7803380948e" class="i field">_element</a> = <span class="r20 r">newElement</span>;
+			<b>if</b> (<span class="r20 r">newElement</span> != <b>null</b>)
+			{
+				<span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#7650aa028977a179" class="i">BatchCommitted</a> += <a href="#c290dea00bbff8e3" class="i field">_batchCommittedHandler</a>;
+				<span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#f293472aaaf7cc05" class="i field">_propertyChangedHandler</a>;
+				<a href="#84e825d9b5ca640f" class="i field">_context</a> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">Context</span>;
+ 
+				<b>if</b> (<span class="r19 r">oldElement</span> != <b>null</b>)
+				{
+					<span class="i">AView</span> <span id="r21 rd" class="r21 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+					<span class="c">// ReSharper disable CompareOfFloatsByEqualityOperator</span>
+					<b>if</b> (<span class="r19 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#a00998b71a5dcbae" class="i property">AnchorX</a> != <span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#a00998b71a5dcbae" class="i property">AnchorX</a>)
+						<a href="#b1869e56a3fa64d5" class="i method">UpdateAnchorX</a>();
+					<b>if</b> (<span class="r19 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#f6d4e7f8be1952ed" class="i property">AnchorY</a> != <span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#f6d4e7f8be1952ed" class="i property">AnchorY</a>)
+						<a href="#582f11fcf4363609" class="i method">UpdateAnchorY</a>();
+					<b>if</b> (<span class="r19 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#138318a4447c6c41" class="i property">IsVisible</a> != <span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#138318a4447c6c41" class="i property">IsVisible</a>)
+						<a href="#6a65815479c59581" class="i method">UpdateIsVisible</a>();
+					<b>if</b> (<span class="r19 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a> != <span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>)
+						<span class="r21 r">view</span>.<span class="i">Enabled</span> = <span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>;
+					<b>if</b> (<span class="r19 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#564121ba41a80a9d" class="i property">Opacity</a> != <span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#564121ba41a80a9d" class="i property">Opacity</a>)
+						<a href="#cf9dabe27194c5c7" class="i method">UpdateOpacity</a>();
+					<b>if</b> (<span class="r19 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#d77e9855d74702dd" class="i property">Rotation</a> != <span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#d77e9855d74702dd" class="i property">Rotation</a>)
+						<a href="#16a327b053bbed88" class="i method">UpdateRotation</a>();
+					<b>if</b> (<span class="r19 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#ac8ee4ff2947fb8f" class="i property">RotationX</a> != <span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#ac8ee4ff2947fb8f" class="i property">RotationX</a>)
+						<a href="#1d87a6e3099f4554" class="i method">UpdateRotationX</a>();
+					<b>if</b> (<span class="r19 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#dbfc39f79da9ef5e" class="i property">RotationY</a> != <span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#dbfc39f79da9ef5e" class="i property">RotationY</a>)
+						<a href="#3da19f4b9509c2ae" class="i method">UpdateRotationY</a>();
+					<b>if</b> (<span class="r19 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#71fa0e02a53ce494" class="i property">Scale</a> != <span class="r20 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#71fa0e02a53ce494" class="i property">Scale</a>)
+						<a href="#311901271c290703" class="i method">UpdateScale</a>();
+					<span class="c">// ReSharper restore CompareOfFloatsByEqualityOperator</span>
+ 
+					<a href="#0e0c297a9ef4beb8" class="i field">_initialUpdateNeeded</a> = <b>false</b>;
+				}
+			}
+		}
+ 
+		<b>void</b> <a id="b1869e56a3fa64d5" href="R/b1869e56a3fa64d5.html" target="n" data-glyph="76,1" class="i method">UpdateAnchorX</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r22 rd" class="r22 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r23 rd" class="r23 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<b>float</b> <span id="r24 rd" class="r24 r">currentPivot</span> = <span class="r23 r">aview</span>.<span class="i">PivotX</span>;
+			<b>var</b> <span id="r25 rd" class="r25 r">target</span> = (<b>float</b>)(<span class="r22 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#a00998b71a5dcbae" class="i property">AnchorX</a> * <a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r22 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#4b4ff8e00e0429d0" class="i property">Width</a>));
+			<b>if</b> (<span class="r24 r">currentPivot</span> != <span class="r25 r">target</span>)
+				<span class="r23 r">aview</span>.<span class="i">PivotX</span> = <span class="r25 r">target</span>;
+		}
+ 
+		<b>void</b> <a id="582f11fcf4363609" href="R/582f11fcf4363609.html" target="n" data-glyph="76,1" class="i method">UpdateAnchorY</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r26 rd" class="r26 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r27 rd" class="r27 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<b>float</b> <span id="r28 rd" class="r28 r">currentPivot</span> = <span class="r27 r">aview</span>.<span class="i">PivotY</span>;
+			<b>var</b> <span id="r29 rd" class="r29 r">target</span> = (<b>float</b>)(<span class="r26 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#f6d4e7f8be1952ed" class="i property">AnchorY</a> * <a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r26 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a>));
+			<b>if</b> (<span class="r28 r">currentPivot</span> != <span class="r29 r">target</span>)
+				<span class="r27 r">aview</span>.<span class="i">PivotY</span> = <span class="r29 r">target</span>;
+		}
+ 
+		<b>void</b> <a id="e9d039297bf1492a" href="R/e9d039297bf1492a.html" target="n" data-glyph="76,1" class="i method">UpdateClipToBounds</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="k">var</a> <span id="r30 rd" class="r30 r">layout</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#63eb70469ecf4413" class="t t">Layout</a>;
+			<b>var</b> <span id="r31 rd" class="r31 r">parent</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">Parent</span> <b>as</b> <span class="i">ViewGroup</span>;
+ 
+			<b>if</b> (<span class="r31 r">parent</span> == <b>null</b> || <span class="r30 r">layout</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>bool</b> <span id="r32 rd" class="r32 r">shouldClip</span> = <span class="r30 r">layout</span>.<a href="/Xamarin.Forms.Core/A.html#caa4a685520ee9de" class="i property">IsClippedToBounds</a>;
+ 
+			<b>if</b> ((<b>int</b>)<span class="i">Build</span>.<span class="i">VERSION</span>.<span class="i">SdkInt</span> &gt;= 18 &amp;&amp; <span class="r31 r">parent</span>.<span class="i">ClipChildren</span> == <span class="r32 r">shouldClip</span>)
+				<b>return</b>;
+ 
+			<span class="r31 r">parent</span>.<span class="i">SetClipChildren</span>(<span class="r32 r">shouldClip</span>);
+			<span class="r31 r">parent</span>.<span class="i">Invalidate</span>();
+		}
+ 
+		<b>void</b> <a id="6a65815479c59581" href="R/6a65815479c59581.html" target="n" data-glyph="76,1" class="i method">UpdateIsVisible</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r33 rd" class="r33 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r34 rd" class="r34 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<b>if</b> (<span class="r33 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#138318a4447c6c41" class="i property">IsVisible</a> &amp;&amp; <span class="r34 r">aview</span>.<span class="i">Visibility</span> != <span class="i">ViewStates</span>.<span class="i">Visible</span>)
+				<span class="r34 r">aview</span>.<span class="i">Visibility</span> = <span class="i">ViewStates</span>.<span class="i">Visible</span>;
+			<b>if</b> (!<span class="r33 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#138318a4447c6c41" class="i property">IsVisible</a> &amp;&amp; <span class="r34 r">aview</span>.<span class="i">Visibility</span> != <span class="i">ViewStates</span>.<span class="i">Gone</span>)
+				<span class="r34 r">aview</span>.<span class="i">Visibility</span> = <span class="i">ViewStates</span>.<span class="i">Gone</span>;
+		}
+ 
+		<b>void</b> <a id="68e1ed0ddf705237" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">UpdateNativeView</a>(<b>object</b> <span id="r35 rd" class="r35 r">sender</span>, <span class="i">EventArgs</span> <span id="r36 rd" class="r36 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>();
+ 
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r37 rd" class="r37 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r38 rd" class="r38 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<b>if</b> (<span class="r38 r">aview</span> <b>is</b> <a href="/FormsViewGroup/A.html#41552753c015313a" class="t t">FormsViewGroup</a>)
+			{
+				<a href="/FormsViewGroup/A.html#41552753c015313a" class="k">var</a> <span id="r39 rd" class="r39 r">formsViewGroup</span> = (<a href="/FormsViewGroup/A.html#41552753c015313a" class="t t">FormsViewGroup</a>)<span class="r38 r">aview</span>;
+				<span class="r39 r">formsViewGroup</span>.<span class="i">SendBatchUpdate</span>((<b>float</b>)(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#a00998b71a5dcbae" class="i property">AnchorX</a> * <a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#4b4ff8e00e0429d0" class="i property">Width</a>)), (<b>float</b>)(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#f6d4e7f8be1952ed" class="i property">AnchorY</a> * <a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a>)),
+					(<b>int</b>)(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#138318a4447c6c41" class="i property">IsVisible</a> ? <span class="i">ViewStates</span>.<span class="i">Visible</span> : <span class="i">ViewStates</span>.<span class="i">Invisible</span>), <span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>, (<b>float</b>)<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#564121ba41a80a9d" class="i property">Opacity</a>, (<b>float</b>)<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#d77e9855d74702dd" class="i property">Rotation</a>, (<b>float</b>)<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#ac8ee4ff2947fb8f" class="i property">RotationX</a>, (<b>float</b>)<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#dbfc39f79da9ef5e" class="i property">RotationY</a>, (<b>float</b>)<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#71fa0e02a53ce494" class="i property">Scale</a>,
+					<a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#e319cb8ba4509319" class="i property">TranslationX</a>), <a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#4f7b15503ebb471e" class="i property">TranslationY</a>));
+			}
+			<b>else</b>
+			{
+				<a href="/FormsViewGroup/A.html#41552753c015313a" class="t t">FormsViewGroup</a>.<span class="i">SendViewBatchUpdate</span>(<span class="r38 r">aview</span>, (<b>float</b>)(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#a00998b71a5dcbae" class="i property">AnchorX</a> * <a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#4b4ff8e00e0429d0" class="i property">Width</a>)),
+					(<b>float</b>)(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#f6d4e7f8be1952ed" class="i property">AnchorY</a> * <a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#5d4bfa7087771a1d" class="i property">Height</a>)),
+					(<b>int</b>)(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#138318a4447c6c41" class="i property">IsVisible</a> ? <span class="i">ViewStates</span>.<span class="i">Visible</span> : <span class="i">ViewStates</span>.<span class="i">Invisible</span>), <span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>, (<b>float</b>)<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#564121ba41a80a9d" class="i property">Opacity</a>,
+					(<b>float</b>)<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#d77e9855d74702dd" class="i property">Rotation</a>, (<b>float</b>)<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#ac8ee4ff2947fb8f" class="i property">RotationX</a>, (<b>float</b>)<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#dbfc39f79da9ef5e" class="i property">RotationY</a>, (<b>float</b>)<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#71fa0e02a53ce494" class="i property">Scale</a>,
+					<a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#e319cb8ba4509319" class="i property">TranslationX</a>), <a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r37 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#4f7b15503ebb471e" class="i property">TranslationY</a>));
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>();
+		}
+ 
+		<b>void</b> <a id="cf9dabe27194c5c7" href="R/cf9dabe27194c5c7.html" target="n" data-glyph="76,1" class="i method">UpdateOpacity</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>();
+ 
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r40 rd" class="r40 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r41 rd" class="r41 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<span class="r41 r">aview</span>.<span class="i">Alpha</span> = (<b>float</b>)<span class="r40 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#564121ba41a80a9d" class="i property">Opacity</a>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>();
+		}
+ 
+		<b>void</b> <a id="16a327b053bbed88" href="R/16a327b053bbed88.html" target="n" data-glyph="76,1" class="i method">UpdateRotation</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r42 rd" class="r42 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r43 rd" class="r43 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<span class="r43 r">aview</span>.<span class="i">Rotation</span> = (<b>float</b>)<span class="r42 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#d77e9855d74702dd" class="i property">Rotation</a>;
+		}
+ 
+		<b>void</b> <a id="1d87a6e3099f4554" href="R/1d87a6e3099f4554.html" target="n" data-glyph="76,1" class="i method">UpdateRotationX</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r44 rd" class="r44 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r45 rd" class="r45 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<span class="r45 r">aview</span>.<span class="i">RotationX</span> = (<b>float</b>)<span class="r44 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#ac8ee4ff2947fb8f" class="i property">RotationX</a>;
+		}
+ 
+		<b>void</b> <a id="3da19f4b9509c2ae" href="R/3da19f4b9509c2ae.html" target="n" data-glyph="76,1" class="i method">UpdateRotationY</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r46 rd" class="r46 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r47 rd" class="r47 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<span class="r47 r">aview</span>.<span class="i">RotationY</span> = (<b>float</b>)<span class="r46 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#dbfc39f79da9ef5e" class="i property">RotationY</a>;
+		}
+ 
+		<b>void</b> <a id="311901271c290703" href="R/311901271c290703.html" target="n" data-glyph="76,1" class="i method">UpdateScale</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r48 rd" class="r48 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r49 rd" class="r49 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<span class="r49 r">aview</span>.<span class="i">ScaleX</span> = (<b>float</b>)<span class="r48 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#71fa0e02a53ce494" class="i property">Scale</a>;
+			<span class="r49 r">aview</span>.<span class="i">ScaleY</span> = (<b>float</b>)<span class="r48 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#71fa0e02a53ce494" class="i property">Scale</a>;
+		}
+ 
+		<b>void</b> <a id="a95697b419f7d184" href="R/a95697b419f7d184.html" target="n" data-glyph="76,1" class="i method">UpdateTranslationX</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r50 rd" class="r50 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r51 rd" class="r51 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<span class="r51 r">aview</span>.<span class="i">TranslationX</span> = <a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r50 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#e319cb8ba4509319" class="i property">TranslationX</a>);
+		}
+ 
+		<b>void</b> <a id="169d6830ca790925" href="R/169d6830ca790925.html" target="n" data-glyph="76,1" class="i method">UpdateTranslationY</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r52 rd" class="r52 r">view</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>;
+			<span class="i">AView</span> <span id="r53 rd" class="r53 r">aview</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>;
+ 
+			<span class="r53 r">aview</span>.<span class="i">TranslationY</span> = <a href="#84e825d9b5ca640f" class="i field">_context</a>.<a href="ContextExtensions.cs.html#d1f1750c2a270beb" class="i method">ToPixels</a>(<span class="r52 r">view</span>.<a href="/Xamarin.Forms.Core/A.html#4f7b15503ebb471e" class="i property">TranslationY</a>);
+		}
+ 
+		<b>void</b> <a id="3861f07ca9130485" href="R/3861f07ca9130485.html" target="n" data-glyph="76,1" class="i method">UpdateIsEnabled</a>()
+		{
+			<a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#0c96abedd7d8e58d" class="i property">View</a>.<span class="i">Enabled</span> = <a href="#60c4363206898821" class="i field">_renderer</a>.<a href="IVisualElementRenderer.cs.html#ba34e1556f8cc6bc" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#3497e1caaa2fb3cc" class="i property">IsEnabled</a>;
+		}
+ 
+		<b>class</b> <a id="ca469da3ab814fd6" href="R/ca469da3ab814fd6.html" target="n" data-glyph="4,1" class="t t"><span id="8c7443e3403b55dd">AttachTracker</span></a> : <span class="i">Object</span>, <span class="i">AView</span>.<span class="i">IOnAttachStateChangeListener</span>
+		{
+			<b>public static readonly</b> <a href="#ca469da3ab814fd6" class="t t">AttachTracker</a> <a id="4a5ce4c572141a22" href="R/4a5ce4c572141a22.html" target="n" data-glyph="42,2" class="i field">Instance</a> = <b>new</b> <a href="#ca469da3ab814fd6" class="t constructor">AttachTracker</a>();
+ 
+			<b>public void</b> <a id="393a3722c64ba064" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i method">OnViewAttachedToWindow</a>(<span class="i">AView</span> <span id="r54 rd" class="r54 r">attachedView</span>)
+			{
+				<a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="k">var</a> <span id="r55 rd" class="r55 r">renderer</span> = <span class="r54 r">attachedView</span> <b>as</b> <a href="IVisualElementRenderer.cs.html#0736b5467d596326" class="t t">IVisualElementRenderer</a>;
+				<b>if</b> (<span class="r55 r">renderer</span> == <b>null</b> || <span class="r55 r">renderer</span>.<a href="IVisualElementRenderer.cs.html#cfa32eccc8f34910" class="i property">Tracker</a> == <b>null</b>)
+					<b>return</b>;
+ 
+				<span class="r55 r">renderer</span>.<a href="IVisualElementRenderer.cs.html#cfa32eccc8f34910" class="i property">Tracker</a>.<a href="#4708bacaeb5b440a" class="i method">HandleViewAttachedToWindow</a>();
+			}
+ 
+			<b>public void</b> <a id="5478b5ed6fda07d4" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i method">OnViewDetachedFromWindow</a>(<span class="i">AView</span> <span id="r56 rd" class="r56 r">detachedView</span>)
+			{
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

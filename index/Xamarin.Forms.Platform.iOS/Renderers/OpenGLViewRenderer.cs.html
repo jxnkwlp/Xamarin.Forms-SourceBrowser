@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html><head><title>OpenGLViewRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(105);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/Renderers/OpenGLViewRenderer.cs" target="_top">Renderers\OpenGLViewRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">GLKit</span>;
+<b>using</b> <span class="i n">OpenGLES</span>;
+<b>using</b> <span class="i n">Foundation</span>;
+<b>using</b> <span class="i n">CoreAnimation</span>;
+<b>using</b> <span class="t">RectangleF</span> = <span class="i n">CoreGraphics</span>.<span class="t t">CGRect</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+{
+	<b>internal class</b> <a id="2341dcd849830c3d" href="../R/2341dcd849830c3d.html" target="n" data-glyph="2,0" class="t t"><span id="34344e2b94f62b5c">OpenGLViewRenderer</span></a> : <a href="../ViewRenderer.cs.html#a26bff279160b03e" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#40d830acaa862b63" class="t t">OpenGLView</a>, <span class="t t">GLKView</span>&gt;
+	{
+		<span class="t t">CADisplayLink</span> <a id="90cce77f433e8899" href="../R/90cce77f433e8899.html" target="n" data-glyph="46,1" class="i field">_displayLink</a>;
+ 
+		<b>public void</b> <a id="b0a33259a1a3255a" href="../R/b0a33259a1a3255a.html" target="n" data-glyph="72,1" class="i method">Display</a>(<b>object</b> <span id="r0 rd" class="r0 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r1 rd" class="r1 r">eventArgs</span>)
+		{
+			<b>if</b> (<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ac0cef7056e34214" class="i property">HasRenderLoop</a>)
+				<b>return</b>;
+			<a href="#2fa0f1d72cffec30" class="i method">SetupRenderLoop</a>(<b>true</b>);
+		}
+ 
+		<b>protected override void</b> <a id="dad849ec1c7b644d" href="../R/dad849ec1c7b644d.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r2 rd" class="r2 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#90cce77f433e8899" class="i field">_displayLink</a> != <b>null</b>)
+			{
+				<a href="#90cce77f433e8899" class="i field">_displayLink</a>.<span class="i method">Invalidate</span>();
+				<a href="#90cce77f433e8899" class="i field">_displayLink</a>.<span class="i method">Dispose</span>();
+				<a href="#90cce77f433e8899" class="i field">_displayLink</a> = <b>null</b>;
+ 
+				<b>if</b> (<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a> != <b>null</b>)
+					<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#58c34bf8952ff5cf" class="i">DisplayRequested</a> -= <a href="#b0a33259a1a3255a" class="i method">Display</a>;
+			}
+ 
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#0263ff95aef8d32c" class="i method">Dispose</a>(<span class="r2 r">disposing</span>);
+		}
+ 
+		<b>protected override void</b> <a id="cffa51326bb707e8" href="../R/cffa51326bb707e8.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="../ElementChangedEventArgs.cs.html#8cd59c48d876c811" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#40d830acaa862b63" class="t t">OpenGLView</a>&gt; <span id="r3 rd" class="r3 r">e</span>)
+		{
+			<b>if</b> (<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#4f3197519f522690" class="i property">OldElement</a> != <b>null</b>)
+				<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#4f3197519f522690" class="i property">OldElement</a>.<a href="/Xamarin.Forms.Core/A.html#58c34bf8952ff5cf" class="i">DisplayRequested</a> -= <a href="#b0a33259a1a3255a" class="i method">Display</a>;
+ 
+			<b>if</b> (<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<b>var</b> <span id="r4 rd" class="r4 r">context</span> = <b>new</b> <span class="t constructor">EAGLContext</span>(<span class="t t">EAGLRenderingAPI</span>.<span class="i field">OpenGLES2</span>);
+				<b>var</b> <span id="r5 rd" class="r5 r">glkView</span> = <b>new</b> <span class="t constructor">GLKView</span>(<span class="t t">RectangleF</span>.<span class="i field">Empty</span>) { <span class="i property">Context</span> = <span class="r4 r">context</span>, <span class="i property">DrawableDepthFormat</span> = <span class="t t">GLKViewDrawableDepthFormat</span>.<span class="i field">Format24</span>, <span class="i property">Delegate</span> = <b>new</b> <a href="#40b344418736c57f" class="t constructor">Delegate</a>(<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a>) };
+				<a href="../ViewRenderer.cs.html#5a05fd07ede87b4f" class="i method">SetNativeControl</a>(<span class="r5 r">glkView</span>);
+ 
+				<span class="r3 r">e</span>.<a href="../ElementChangedEventArgs.cs.html#d2a2951b1359cace" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#58c34bf8952ff5cf" class="i">DisplayRequested</a> += <a href="#b0a33259a1a3255a" class="i method">Display</a>;
+ 
+				<a href="#2fa0f1d72cffec30" class="i method">SetupRenderLoop</a>(<b>false</b>);
+			}
+ 
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#8d6908150c52ef88" class="i method">OnElementChanged</a>(<span class="r3 r">e</span>);
+		}
+ 
+		<b>protected override void</b> <a id="9d05936275ca6cb3" href="../R/9d05936275ca6cb3.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r6 rd" class="r6 r">sender</span>, <a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r7 rd" class="r7 r">e</span>)
+		{
+			<a href="../ViewRenderer.cs.html#a26bff279160b03e" class="k">base</a>.<a href="../ViewRenderer.cs.html#9d8f9c1b9a699acd" class="i method">OnElementPropertyChanged</a>(<span class="r6 r">sender</span>, <span class="r7 r">e</span>);
+ 
+			<b>if</b> (<span class="r7 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a> == <a href="/Xamarin.Forms.Core/A.html#40d830acaa862b63" class="t t">OpenGLView</a>.<a href="/Xamarin.Forms.Core/A.html#ebc9ed6485a174c8" class="i field">HasRenderLoopProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+				<a href="#2fa0f1d72cffec30" class="i method">SetupRenderLoop</a>(<b>false</b>);
+		}
+ 
+		<b>void</b> <a id="2fa0f1d72cffec30" href="../R/2fa0f1d72cffec30.html" target="n" data-glyph="76,1" class="i method">SetupRenderLoop</a>(<b>bool</b> <span id="r8 rd" class="r8 r">oneShot</span>)
+		{
+			<b>if</b> (<a href="#90cce77f433e8899" class="i field">_displayLink</a> != <b>null</b>)
+				<b>return</b>;
+			<b>if</b> (!<span class="r8 r">oneShot</span> &amp;&amp; !<a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ac0cef7056e34214" class="i property">HasRenderLoop</a>)
+				<b>return</b>;
+ 
+			<a href="#90cce77f433e8899" class="i field">_displayLink</a> = <span class="t t">CADisplayLink</span>.<span class="i method">Create</span>(() =&gt;
+			{
+				<b>var</b> <span id="r9 rd" class="r9 r">control</span> = <a href="../ViewRenderer.cs.html#ea5394d10e713fe0" class="i property">Control</a>;
+				<a href="/Xamarin.Forms.Core/A.html#40d830acaa862b63" class="k">var</a> <span id="r10 rd" class="r10 r">model</span> = <a href="../VisualElementRenderer.cs.html#31c34a1126d7ec15" class="i property">Element</a>;
+				<b>if</b> (<span class="r9 r">control</span> != <b>null</b>)
+					<span class="r9 r">control</span>.<span class="i method">Display</span>();
+				<b>if</b> (<span class="r9 r">control</span> == <b>null</b> || <span class="r10 r">model</span> == <b>null</b> || !<span class="r10 r">model</span>.<a href="/Xamarin.Forms.Core/A.html#ac0cef7056e34214" class="i property">HasRenderLoop</a>)
+				{
+					<a href="#90cce77f433e8899" class="i field">_displayLink</a>?.<span class="i method">Invalidate</span>();
+					<a href="#90cce77f433e8899" class="i field">_displayLink</a>?.<span class="i method">Dispose</span>();
+					<a href="#90cce77f433e8899" class="i field">_displayLink</a> = <b>null</b>;
+				}
+			});
+			<a href="#90cce77f433e8899" class="i field">_displayLink</a>.<span class="i method">AddToRunLoop</span>(<span class="t t">NSRunLoop</span>.<span class="i property">Current</span>, <span class="t t">NSRunLoop</span>.<span class="i property">NSRunLoopCommonModes</span>);
+		}
+ 
+		<b>class</b> <a id="b25002a9e51ae421" href="../R/b25002a9e51ae421.html" target="n" data-glyph="4,1" class="t t">Delegate</a> : <span class="t t">GLKViewDelegate</span>
+		{
+			<b>readonly</b> <a href="/Xamarin.Forms.Core/A.html#40d830acaa862b63" class="t t">OpenGLView</a> <a id="dc344a395d3e3162" href="../R/dc344a395d3e3162.html" target="n" data-glyph="46,2" class="i field">_model</a>;
+ 
+			<b>public</b> <a id="40b344418736c57f" href="../R/40b344418736c57f.html" target="n" data-glyph="72,2" class="i constructor">Delegate</a>(<a href="/Xamarin.Forms.Core/A.html#40d830acaa862b63" class="t t">OpenGLView</a> <span id="r11 rd" class="r11 r">model</span>)
+			{
+				<a href="#dc344a395d3e3162" class="i field">_model</a> = <span class="r11 r">model</span>;
+			}
+ 
+			<b>public override void</b> <a id="64b0f2cad02fcd1b" href="../R/64b0f2cad02fcd1b.html" target="n" data-glyph="72,2" class="i method">DrawInRect</a>(<span class="t t">GLKView</span> <span id="r12 rd" class="r12 r">view</span>, <span class="t t">RectangleF</span> <span id="r13 rd" class="r13 r">rect</span>)
+			{
+				<a href="@0@mscorlib/A.html#486d58da4553e12d" class="k">var</a> <span id="r14 rd" class="r14 r">onDisplay</span> = <a href="#dc344a395d3e3162" class="i field">_model</a>.<a href="/Xamarin.Forms.Core/A.html#673a9a14f344c28a" class="i property">OnDisplay</a>;
+				<b>if</b> (<span class="r14 r">onDisplay</span> == <b>null</b>)
+					<b>return</b>;
+				<span class="r14 r">onDisplay</span>(<span class="r13 r">rect</span>.<a href="../Extensions/ColorExtensions.cs.html#b858afacbe876940" class="i method">ToRectangle</a>());
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

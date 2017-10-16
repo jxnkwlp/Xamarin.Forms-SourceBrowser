@@ -1,0 +1,335 @@
+﻿<!DOCTYPE html>
+<html><head><title>TypeReferenceExtensions.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(326);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/TypeReferenceExtensions.cs" target="_top">TypeReferenceExtensions.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Rocks</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>
+{
+	<b>class</b> <a id="c04e2288f97027a1" href="R/c04e2288f97027a1.html" target="n" data-glyph="2,0" class="t t"><span id="36ad193b8593b72d">TypeRefComparer</span></a> : <a href="@0@mscorlib/A.html#66a06cfe895400c7" class="t t">IEqualityComparer</a>&lt;<span class="i">TypeReference</span>&gt;
+	{
+		<b>static string</b> <a id="fffa293335a1fb4a" href="R/fffa293335a1fb4a.html" target="n" data-glyph="76,1" class="i method">GetAssembly</a>(<span class="i">TypeReference</span> <span id="r0 rd" class="r0 r">typeRef</span>)
+		{
+			<b>var</b> <span id="r1 rd" class="r1 r">md</span> = <span class="r0 r">typeRef</span>.<span class="i">Scope</span> <b>as</b> <span class="i">ModuleDefinition</span>;
+			<b>if</b> (<span class="r1 r">md</span> != <b>null</b>)
+				<b>return</b> <span class="r1 r">md</span>.<span class="i">Assembly</span>.<span class="i">FullName</span>;
+			<b>var</b> <span id="r2 rd" class="r2 r">anr</span> = <span class="r0 r">typeRef</span>.<span class="i">Scope</span> <b>as</b> <span class="i">AssemblyNameReference</span>;
+			<b>if</b> (<span class="r2 r">anr</span> != <b>null</b>)
+				<b>return</b> <span class="r2 r">anr</span>.<span class="i">FullName</span>;
+			<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<b>nameof</b>(<span class="r0 r">typeRef</span>));
+		}
+ 
+		<b>public bool</b> <a id="4cd22669c77e4a97" href="R/4cd22669c77e4a97.html" target="n" data-glyph="72,1" class="i method">Equals</a>(<span class="i">TypeReference</span> <span id="r3 rd" class="r3 r">x</span>, <span class="i">TypeReference</span> <span id="r4 rd" class="r4 r">y</span>)
+		{
+			<b>if</b> (<span class="r3 r">x</span>.<span class="i">FullName</span> != <span class="r4 r">y</span>.<span class="i">FullName</span>)
+				<b>return false</b>;
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r5 rd" class="r5 r">xasm</span> = <a href="#fffa293335a1fb4a" class="i method">GetAssembly</a>(<span class="r3 r">x</span>);
+			<b>if</b> (<span class="r5 r">xasm</span>.<a href="@0@mscorlib/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;System.Runtime&quot;</span>, <a href="@0@mscorlib/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@0@mscorlib/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>) || <span class="r5 r">xasm</span>.<a href="@0@mscorlib/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;mscorlib&quot;</span>, <a href="@0@mscorlib/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@0@mscorlib/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+				<span class="r5 r">xasm</span> = <span class="s">&quot;mscorlib&quot;</span>;
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r6 rd" class="r6 r">yasm</span> = <a href="#fffa293335a1fb4a" class="i method">GetAssembly</a>(<span class="r4 r">y</span>);
+			<b>if</b> (<span class="r6 r">yasm</span>.<a href="@0@mscorlib/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;System.Runtime&quot;</span>, <a href="@0@mscorlib/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@0@mscorlib/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>) || <span class="r6 r">yasm</span>.<a href="@0@mscorlib/A.html#1c787ba07a7b11ab" class="i method">StartsWith</a>(<span class="s">&quot;mscorlib&quot;</span>, <a href="@0@mscorlib/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@0@mscorlib/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>))
+				<span class="r6 r">yasm</span> = <span class="s">&quot;mscorlib&quot;</span>;
+			<b>return</b> <span class="r5 r">xasm</span> == <span class="r6 r">yasm</span>;
+		}
+ 
+		<b>public int</b> <a id="e35be96dcb3aa558" href="R/e35be96dcb3aa558.html" target="n" data-glyph="72,1" class="i method">GetHashCode</a>(<span class="i">TypeReference</span> <span id="r7 rd" class="r7 r">obj</span>)
+		{
+			<b>return</b> <span class="s">$&quot;</span>{<a href="#fffa293335a1fb4a" class="i method">GetAssembly</a>(<span class="r7 r">obj</span>)}<span class="s">//</span>{<span class="r7 r">obj</span>.<span class="i">FullName</span>}<span class="s">&quot;</span>.<a href="@0@mscorlib/A.html#0a17bbac4851d0d4" class="i method">GetHashCode</a>();
+		}
+ 
+		<b>static</b> <a href="#c04e2288f97027a1" class="t t">TypeRefComparer</a> <a id="7ee082654c2df28e" href="R/7ee082654c2df28e.html" target="n" data-glyph="46,1" class="i field">s_default</a>;
+		<b>public static</b> <a href="#c04e2288f97027a1" class="t t">TypeRefComparer</a> <a id="2b1543925cc58ddb" href="R/2b1543925cc58ddb.html" target="n" data-glyph="102,1" class="i property">Default</a> =&gt; <a href="#7ee082654c2df28e" class="i field">s_default</a> ?? (<a href="#7ee082654c2df28e" class="i field">s_default</a> = <b>new</b> <a href="#c04e2288f97027a1" class="t constructor">TypeRefComparer</a>());
+	}
+ 
+	<b>static class</b> <a id="fbea628a8e81c1da" href="R/fbea628a8e81c1da.html" target="n" data-glyph="2,0" class="t t">TypeReferenceExtensions</a>
+	{
+		<b>public static</b> <span class="i">PropertyDefinition</span> <a id="1241dc112cff5006" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">GetProperty</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r8 rd" class="r8 r">typeRef</span>, <a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">PropertyDefinition</span>, <b>bool</b>&gt; <span id="r9 rd" class="r9 r">predicate</span>,
+			<b>out</b> <span class="i">TypeReference</span> <span id="r10 rd" class="r10 r">declaringTypeRef</span>)
+		{
+			<span class="r10 r">declaringTypeRef</span> = <span class="r8 r">typeRef</span>;
+			<b>var</b> <span id="r11 rd" class="r11 r">typeDef</span> = <span class="r8 r">typeRef</span>.<span class="i">Resolve</span>();
+			<b>var</b> <span id="r12 rd" class="r12 r">properties</span> = <span class="r11 r">typeDef</span>.<span class="i">Properties</span>.<span class="i">Where</span>(<span class="r9 r">predicate</span>);
+			<b>if</b> (<span class="r12 r">properties</span>.<span class="i">Any</span>())
+				<b>return</b> <span class="r12 r">properties</span>.<span class="i">Single</span>();
+			<b>if</b> (<span class="r11 r">typeDef</span>.<span class="i">BaseType</span> == <b>null</b> || <span class="r11 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Object&quot;</span>)
+				<b>return null</b>;
+			<b>return</b> <span class="r11 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">GetProperty</span>(<span class="r9 r">predicate</span>, <b>out</b> <span class="r10 r">declaringTypeRef</span>);
+		}
+ 
+		<b>public static</b> <span class="i">EventDefinition</span> <a id="649939871d165720" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">GetEvent</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r13 rd" class="r13 r">typeRef</span>, <a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">EventDefinition</span>, <b>bool</b>&gt; <span id="r14 rd" class="r14 r">predicate</span>,
+			<b>out</b> <span class="i">TypeReference</span> <span id="r15 rd" class="r15 r">declaringTypeRef</span>)
+		{
+			<span class="r15 r">declaringTypeRef</span> = <span class="r13 r">typeRef</span>;
+			<b>var</b> <span id="r16 rd" class="r16 r">typeDef</span> = <span class="r13 r">typeRef</span>.<span class="i">Resolve</span>();
+			<b>var</b> <span id="r17 rd" class="r17 r">events</span> = <span class="r16 r">typeDef</span>.<span class="i">Events</span>.<span class="i">Where</span>(<span class="r14 r">predicate</span>);
+			<b>if</b> (<span class="r17 r">events</span>.<span class="i">Any</span>()) {
+				<b>var</b> <span id="r18 rd" class="r18 r">ev</span> = <span class="r17 r">events</span>.<span class="i">Single</span>();
+				<b>return</b> <span class="r18 r">ev</span>.<span class="i">ResolveGenericEvent</span>(<span class="r15 r">declaringTypeRef</span>);
+			}
+			<b>if</b> (<span class="r16 r">typeDef</span>.<span class="i">BaseType</span> == <b>null</b> || <span class="r16 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Object&quot;</span>)
+				<b>return null</b>;
+			<b>return</b> <span class="r16 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">GetEvent</span>(<span class="r14 r">predicate</span>, <b>out</b> <span class="r15 r">declaringTypeRef</span>);
+		}
+ 
+		<span class="c">//this resolves generic eventargs (https://bugzilla.xamarin.com/show_bug.cgi?id=57574)</span>
+		<b>static</b> <span class="i">EventDefinition</span> <a id="9f0ace0047d7fdbb" href="R/../../0000000000.html" target="n" data-glyph="224,1" class="i method">ResolveGenericEvent</a>(<b>this</b> <span class="i">EventDefinition</span> <span id="r19 rd" class="r19 r">eventDef</span>, <span class="i">TypeReference</span> <span id="r20 rd" class="r20 r">declaringTypeRef</span>)
+		{
+			<b>if</b> (<span class="r19 r">eventDef</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r19 r">eventDef</span>));
+			<b>if</b> (<span class="r20 r">declaringTypeRef</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r20 r">declaringTypeRef</span>));
+			<b>if</b> (!<span class="r19 r">eventDef</span>.<span class="i">EventType</span>.<span class="i">IsGenericInstance</span>)
+				<b>return</b> <span class="r19 r">eventDef</span>;
+			<b>if</b> (<span class="r19 r">eventDef</span>.<span class="i">EventType</span>.<span class="i">Resolve</span>().<span class="i">FullName</span> != <span class="s">&quot;System.EventHandler`1&quot;</span>)
+				<b>return</b> <span class="r19 r">eventDef</span>;
+ 
+			<b>var</b> <span id="r21 rd" class="r21 r">git</span> = <span class="r19 r">eventDef</span>.<span class="i">EventType</span> <b>as</b> <span class="i">GenericInstanceType</span>;
+			<b>var</b> <span id="r22 rd" class="r22 r">ga</span> = <span class="r21 r">git</span>.<span class="i">GenericArguments</span>.<span class="i">First</span>();
+			<span class="r22 r">ga</span> = <span class="r22 r">ga</span>.<span class="i">ResolveGenericParameters</span>(<span class="r20 r">declaringTypeRef</span>);
+			<span class="r21 r">git</span>.<span class="i">GenericArguments</span>[0] = <span class="r22 r">ga</span>;
+			<span class="r19 r">eventDef</span>.<span class="i">EventType</span> = <span class="r21 r">git</span>;
+ 
+			<b>return</b> <span class="r19 r">eventDef</span>;
+ 
+		}
+		<b>public static</b> <span class="i">FieldDefinition</span> <a id="518b7c963b5f049d" href="R/518b7c963b5f049d.html" target="n" data-glyph="220,1" class="i method">GetField</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r23 rd" class="r23 r">typeRef</span>, <a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">FieldDefinition</span>, <b>bool</b>&gt; <span id="r24 rd" class="r24 r">predicate</span>,
+			<b>out</b> <span class="i">TypeReference</span> <span id="r25 rd" class="r25 r">declaringTypeRef</span>)
+		{
+			<span class="r25 r">declaringTypeRef</span> = <span class="r23 r">typeRef</span>;
+			<b>var</b> <span id="r26 rd" class="r26 r">typeDef</span> = <span class="r23 r">typeRef</span>.<span class="i">Resolve</span>();
+			<b>var</b> <span id="r27 rd" class="r27 r">bp</span> = <span class="r26 r">typeDef</span>.<span class="i">Fields</span>.<span class="i">Where</span>
+				(<span class="r24 r">predicate</span>);
+			<b>if</b> (<span class="r27 r">bp</span>.<span class="i">Any</span>())
+				<b>return</b> <span class="r27 r">bp</span>.<span class="i">Single</span>();
+			<b>if</b> (<span class="r26 r">typeDef</span>.<span class="i">BaseType</span> == <b>null</b> || <span class="r26 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Object&quot;</span>)
+				<b>return null</b>;
+			<b>var</b> <span id="r28 rd" class="r28 r">basetype</span> = <span class="r26 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">ResolveGenericParameters</span>(<span class="r23 r">typeRef</span>);
+			<b>return</b> <span class="r28 r">basetype</span>.<span class="i">GetField</span>(<span class="r24 r">predicate</span>, <b>out</b> <span class="r25 r">declaringTypeRef</span>);
+		}
+ 
+		<b>public static bool</b> <a id="336917074a1668cd" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">ImplementsInterface</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r29 rd" class="r29 r">typeRef</span>, <span class="i">TypeReference</span> <span id="r30 rd" class="r30 r">@interface</span>)
+		{
+			<b>var</b> <span id="r31 rd" class="r31 r">typeDef</span> = <span class="r29 r">typeRef</span>.<span class="i">Resolve</span>();
+			<b>if</b> (<span class="r31 r">typeDef</span>.<span class="i">Interfaces</span>.<span class="i">Any</span>(<span id="r32 rd" class="r32 r">tr</span> =&gt; <span class="r32 r">tr</span>.<span class="i">InterfaceType</span>.<span class="i">FullName</span> == <span class="r30 r">@interface</span>.<span class="i">FullName</span>))
+				<b>return true</b>;
+			<b>var</b> <span id="r33 rd" class="r33 r">baseTypeRef</span> = <span class="r31 r">typeDef</span>.<span class="i">BaseType</span>;
+			<b>if</b> (<span class="r33 r">baseTypeRef</span> != <b>null</b> &amp;&amp; <span class="r33 r">baseTypeRef</span>.<span class="i">FullName</span> != <span class="s">&quot;System.Object&quot;</span>)
+				<b>return</b> <span class="r33 r">baseTypeRef</span>.<span class="i">ImplementsInterface</span>(<span class="r30 r">@interface</span>);
+			<b>return false</b>;
+		}
+ 
+		<b>public static bool</b> <a id="a82efa741b667a60" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">ImplementsGenericInterface</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r34 rd" class="r34 r">typeRef</span>, <b>string</b> <span id="r35 rd" class="r35 r">@interface</span>,
+			<b>out</b> <span class="i">GenericInstanceType</span> <span id="r36 rd" class="r36 r">interfaceReference</span>, <b>out</b> <a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<span class="i">TypeReference</span>&gt; <span id="r37 rd" class="r37 r">genericArguments</span>)
+		{
+			<span class="r36 r">interfaceReference</span> = <b>null</b>;
+			<span class="r37 r">genericArguments</span> = <b>null</b>;
+			<b>var</b> <span id="r38 rd" class="r38 r">typeDef</span> = <span class="r34 r">typeRef</span>.<span class="i">Resolve</span>();
+			<span class="i">InterfaceImplementation</span> <span id="r39 rd" class="r39 r">iface</span>;
+			<b>if</b> ((<span class="r39 r">iface</span> = <span class="r38 r">typeDef</span>.<span class="i">Interfaces</span>.<span class="i">FirstOrDefault</span>(<span id="r40 rd" class="r40 r">tr</span> =&gt;
+							<span class="r40 r">tr</span>.<span class="i">InterfaceType</span>.<span class="i">FullName</span>.<span class="i">StartsWith</span>(<span class="r35 r">@interface</span>, <a href="@0@mscorlib/A.html#702797def97ecb7c" class="t t">StringComparison</a>.<a href="@0@mscorlib/A.html#87891a6d28c64c9b" class="i field">Ordinal</a>) &amp;&amp;
+							<span class="r40 r">tr</span>.<span class="i">InterfaceType</span>.<span class="i">IsGenericInstance</span> &amp;&amp; (<span class="r40 r">tr</span>.<span class="i">InterfaceType</span> <b>as</b> <span class="i">GenericInstanceType</span>).<span class="i">HasGenericArguments</span>)) != <b>null</b>)
+			{
+				<span class="r36 r">interfaceReference</span> = <span class="r39 r">iface</span>.<span class="i">InterfaceType</span> <b>as</b> <span class="i">GenericInstanceType</span>;
+				<span class="r37 r">genericArguments</span> = (<span class="r39 r">iface</span>.<span class="i">InterfaceType</span> <b>as</b> <span class="i">GenericInstanceType</span>).<span class="i">GenericArguments</span>;
+				<b>return true</b>;
+			}
+			<b>var</b> <span id="r41 rd" class="r41 r">baseTypeRef</span> = <span class="r38 r">typeDef</span>.<span class="i">BaseType</span>;
+			<b>if</b> (<span class="r41 r">baseTypeRef</span> != <b>null</b> &amp;&amp; <span class="r41 r">baseTypeRef</span>.<span class="i">FullName</span> != <span class="s">&quot;System.Object&quot;</span>)
+				<b>return</b> <span class="r41 r">baseTypeRef</span>.<span class="i">ImplementsGenericInterface</span>(<span class="r35 r">@interface</span>, <b>out</b> <span class="r36 r">interfaceReference</span>, <b>out</b> <span class="r37 r">genericArguments</span>);
+			<b>return false</b>;
+		}
+ 
+		<b>static readonly string</b>[] <a id="9da5b1cd861cd3ff" href="R/9da5b1cd861cd3ff.html" target="n" data-glyph="46,1" class="i field">arrayInterfaces</a> = {
+			<span class="s">&quot;System.ICloneable&quot;</span>,
+			<span class="s">&quot;System.Collections.IEnumerable&quot;</span>,
+			<span class="s">&quot;System.Collections.IList&quot;</span>,
+			<span class="s">&quot;System.Collections.ICollection&quot;</span>,
+			<span class="s">&quot;System.Collections.IStructuralComparable&quot;</span>,
+			<span class="s">&quot;System.Collections.IStructuralEquatable&quot;</span>,
+		};
+ 
+		<b>static readonly string</b>[] <a id="8f496d2d7341ff21" href="R/8f496d2d7341ff21.html" target="n" data-glyph="46,1" class="i field">arrayGenericInterfaces</a> = {
+			<span class="s">&quot;System.Collections.Generic.IEnumerable`1&quot;</span>,
+			<span class="s">&quot;System.Collections.Generic.IList`1&quot;</span>,
+			<span class="s">&quot;System.Collections.Generic.ICollection`1&quot;</span>,
+			<span class="s">&quot;System.Collections.Generic.IReadOnlyCollection`1&quot;</span>,
+			<span class="s">&quot;System.Collections.Generic.IReadOnlyList`1&quot;</span>,
+		};
+ 
+		<b>public static bool</b> <a id="e20a2ec38bb30d6b" href="R/e20a2ec38bb30d6b.html" target="n" data-glyph="220,1" class="i method">InheritsFromOrImplements</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r42 rd" class="r42 r">typeRef</span>, <span class="i">TypeReference</span> <span id="r43 rd" class="r43 r">baseClass</span>)
+		{
+			<b>if</b> (<a href="#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="#2b1543925cc58ddb" class="i property">Default</a>.<a href="#4cd22669c77e4a97" class="i method">Equals</a>(<span class="r42 r">typeRef</span>, <span class="r43 r">baseClass</span>))
+				<b>return true</b>;
+ 
+			<b>if</b> (<span class="r42 r">typeRef</span>.<span class="i">IsValueType</span>)
+				<b>return false</b>;
+ 
+			<b>if</b> (<span class="r42 r">typeRef</span>.<span class="i">IsArray</span>) {
+				<b>var</b> <span id="r44 rd" class="r44 r">array</span> = (<span class="i">ArrayType</span>)<span class="r42 r">typeRef</span>;
+				<b>var</b> <span id="r45 rd" class="r45 r">arrayType</span> = <span class="r42 r">typeRef</span>.<span class="i">Resolve</span>();
+				<b>if</b> (<a href="#9da5b1cd861cd3ff" class="i field">arrayInterfaces</a>.<span class="i">Contains</span>(<span class="r43 r">baseClass</span>.<span class="i">FullName</span>))
+					<b>return true</b>;
+				<b>if</b> (<span class="r44 r">array</span>.<span class="i">IsVector</span> &amp;&amp;  <span class="c">//generic interfaces are not implemented on multidimensional arrays</span>
+					<a href="#8f496d2d7341ff21" class="i field">arrayGenericInterfaces</a>.<span class="i">Contains</span>(<span class="r43 r">baseClass</span>.<span class="i">Resolve</span>().<span class="i">FullName</span>) &amp;&amp;
+					<span class="r43 r">baseClass</span>.<span class="i">IsGenericInstance</span> &amp;&amp;
+					<a href="#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>((<span class="r43 r">baseClass</span> <b>as</b> <span class="i">GenericInstanceType</span>).<span class="i">GenericArguments</span>[0], <span class="r45 r">arrayType</span>))
+					<b>return true</b>;
+				<b>return</b> <span class="r43 r">baseClass</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Object&quot;</span>;
+			}
+ 
+			<b>if</b> (<span class="r42 r">typeRef</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Object&quot;</span>)
+				<b>return false</b>;
+			<b>var</b> <span id="r46 rd" class="r46 r">typeDef</span> = <span class="r42 r">typeRef</span>.<span class="i">Resolve</span>();
+			<b>if</b> (<a href="#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r46 r">typeDef</span>, <span class="r43 r">baseClass</span>.<span class="i">Resolve</span>()))
+				<b>return true</b>;
+			<b>if</b> (<span class="r46 r">typeDef</span>.<span class="i">Interfaces</span>.<span class="i">Any</span>(<span id="r47 rd" class="r47 r">ir</span> =&gt; <a href="#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="#2b1543925cc58ddb" class="i property">Default</a>.<span class="i">Equals</span>(<span class="r47 r">ir</span>.<span class="i">InterfaceType</span>.<span class="i">ResolveGenericParameters</span>(<span class="r42 r">typeRef</span>), <span class="r43 r">baseClass</span>)))
+				<b>return true</b>;
+			<b>if</b> (<span class="r46 r">typeDef</span>.<span class="i">BaseType</span> == <b>null</b>)
+				<b>return false</b>;
+ 
+			<span class="r42 r">typeRef</span> = <span class="r46 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">ResolveGenericParameters</span>(<span class="r42 r">typeRef</span>);
+			<b>return</b> <span class="r42 r">typeRef</span>.<a href="#e20a2ec38bb30d6b" class="i method">InheritsFromOrImplements</a>(<span class="r43 r">baseClass</span>);
+		}
+ 
+		<b>public static</b> <span class="i">CustomAttribute</span> <a id="9836395884d8ec9f" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">GetCustomAttribute</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r48 rd" class="r48 r">typeRef</span>, <span class="i">TypeReference</span> <span id="r49 rd" class="r49 r">attribute</span>)
+		{
+			<b>var</b> <span id="r50 rd" class="r50 r">typeDef</span> = <span class="r48 r">typeRef</span>.<span class="i">Resolve</span>();
+			<span class="c">//FIXME: avoid string comparison. make sure the attribute TypeRef is the same one</span>
+			<b>var</b> <span id="r51 rd" class="r51 r">attr</span> = <span class="r50 r">typeDef</span>.<span class="i">CustomAttributes</span>.<span class="i">SingleOrDefault</span>(<span id="r52 rd" class="r52 r">ca</span> =&gt; <span class="r52 r">ca</span>.<span class="i">AttributeType</span>.<span class="i">FullName</span> == <span class="r49 r">attribute</span>.<span class="i">FullName</span>);
+			<b>if</b> (<span class="r51 r">attr</span> != <b>null</b>)
+				<b>return</b> <span class="r51 r">attr</span>;
+			<b>var</b> <span id="r53 rd" class="r53 r">baseTypeRef</span> = <span class="r50 r">typeDef</span>.<span class="i">BaseType</span>;
+			<b>if</b> (<span class="r53 r">baseTypeRef</span> != <b>null</b> &amp;&amp; <span class="r53 r">baseTypeRef</span>.<span class="i">FullName</span> != <span class="s">&quot;System.Object&quot;</span>)
+				<b>return</b> <span class="r53 r">baseTypeRef</span>.<span class="i">GetCustomAttribute</span>(<span class="r49 r">attribute</span>);
+			<b>return null</b>;
+		}
+ 
+		[<a href="@0@mscorlib/A.html#8eeaa59a3d0743c0" class="t constructor">Obsolete</a>]
+		<b>public static</b> <span class="i">MethodDefinition</span> <a id="75a97d19d1fbddcf" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">GetMethod</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r54 rd" class="r54 r">typeRef</span>, <a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">MethodDefinition</span>, <b>bool</b>&gt; <span id="r55 rd" class="r55 r">predicate</span>)
+		{
+			<span class="i">TypeReference</span> <span id="r56 rd" class="r56 r">declaringTypeReference</span>;
+			<b>return</b> <span class="r54 r">typeRef</span>.<a href="#38cb6640dfbcd054" class="i method">GetMethod</a>(<span class="r55 r">predicate</span>, <b>out</b> <span class="r56 r">declaringTypeReference</span>);
+		}
+ 
+		[<a href="@0@mscorlib/A.html#8eeaa59a3d0743c0" class="t constructor">Obsolete</a>]
+		<b>public static</b> <span class="i">MethodDefinition</span> <a id="38cb6640dfbcd054" href="R/38cb6640dfbcd054.html" target="n" data-glyph="220,1" class="i method">GetMethod</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r57 rd" class="r57 r">typeRef</span>, <a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">MethodDefinition</span>, <b>bool</b>&gt; <span id="r58 rd" class="r58 r">predicate</span>,
+			<b>out</b> <span class="i">TypeReference</span> <span id="r59 rd" class="r59 r">declaringTypeRef</span>)
+		{
+			<span class="r59 r">declaringTypeRef</span> = <span class="r57 r">typeRef</span>;
+			<b>var</b> <span id="r60 rd" class="r60 r">typeDef</span> = <span class="r57 r">typeRef</span>.<span class="i">Resolve</span>();
+			<b>var</b> <span id="r61 rd" class="r61 r">methods</span> = <span class="r60 r">typeDef</span>.<span class="i">Methods</span>.<span class="i">Where</span>(<span class="r58 r">predicate</span>);
+			<b>if</b> (<span class="r61 r">methods</span>.<span class="i">Any</span>())
+				<b>return</b> <span class="r61 r">methods</span>.<span class="i">Single</span>();
+			<b>if</b> (<span class="r60 r">typeDef</span>.<span class="i">BaseType</span> != <b>null</b> &amp;&amp; <span class="r60 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Object&quot;</span>)
+				<b>return null</b>;
+			<b>if</b> (<span class="r60 r">typeDef</span>.<span class="i">IsInterface</span>)
+			{
+				<b>foreach</b> (<b>var</b> <span id="r62 rd" class="r62 r">face</span> <b>in</b> <span class="r60 r">typeDef</span>.<span class="i">Interfaces</span>)
+				{
+					<b>var</b> <span id="r63 rd" class="r63 r">m</span> = <span class="r62 r">face</span>.<span class="i">InterfaceType</span>.<span class="i">GetMethod</span>(<span class="r58 r">predicate</span>);
+					<b>if</b> (<span class="r63 r">m</span> != <b>null</b>)
+						<b>return</b> <span class="r63 r">m</span>;
+				}
+				<b>return null</b>;
+			}
+			<b>return</b> <span class="r60 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">GetMethod</span>(<span class="r58 r">predicate</span>, <b>out</b> <span class="r59 r">declaringTypeRef</span>);
+		}
+ 
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="@0@mscorlib/A.html#1806cf6634f5a371" class="t t">Tuple</a>&lt;<span class="i">MethodDefinition</span>, <span class="i">TypeReference</span>&gt;&gt; <a id="4121ca1497db26dc" href="R/4121ca1497db26dc.html" target="n" data-glyph="220,1" class="i method">GetMethods</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r64 rd" class="r64 r">typeRef</span>,
+			<a href="@0@mscorlib/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="i">MethodDefinition</span>, <b>bool</b>&gt; <span id="r65 rd" class="r65 r">predicate</span>, <span class="i">ModuleDefinition</span> <span id="r66 rd" class="r66 r">module</span>)
+		{
+			<b>return</b> <span class="r64 r">typeRef</span>.<a href="#2aed9eb484742ccd" class="i method">GetMethods</a>((<span id="r67 rd" class="r67 r">md</span>, <span id="r68 rd" class="r68 r">tr</span>) =&gt; <span class="r65 r">predicate</span>(<span class="r67 r">md</span>), <span class="r66 r">module</span>);
+		}
+ 
+		<b>public static</b> <a href="@0@mscorlib/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="@0@mscorlib/A.html#1806cf6634f5a371" class="t t">Tuple</a>&lt;<span class="i">MethodDefinition</span>, <span class="i">TypeReference</span>&gt;&gt; <a id="2aed9eb484742ccd" href="R/2aed9eb484742ccd.html" target="n" data-glyph="220,1" class="i method">GetMethods</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r69 rd" class="r69 r">typeRef</span>,
+			<a href="@0@mscorlib/A.html#8adbe0476ca899db" class="t t">Func</a>&lt;<span class="i">MethodDefinition</span>, <span class="i">TypeReference</span>, <b>bool</b>&gt; <span id="r70 rd" class="r70 r">predicate</span>, <span class="i">ModuleDefinition</span> <span id="r71 rd" class="r71 r">module</span>)
+		{
+			<b>var</b> <span id="r72 rd" class="r72 r">typeDef</span> = <span class="r69 r">typeRef</span>.<span class="i">Resolve</span>();
+			<b>foreach</b> (<b>var</b> <span id="r73 rd" class="r73 r">method</span> <b>in</b> <span class="r72 r">typeDef</span>.<span class="i">Methods</span>.<span class="i">Where</span>(<span id="r74 rd" class="r74 r">md</span> =&gt; <span class="r70 r">predicate</span>(<span class="r74 r">md</span>, <span class="r69 r">typeRef</span>)))
+				<b>yield return</b> <b>new</b> <span class="t">Tuple</span>&lt;<span class="i">MethodDefinition</span>, <span class="i">TypeReference</span>&gt;(<span class="r73 r">method</span>, <span class="r69 r">typeRef</span>);
+			<b>if</b> (<span class="r72 r">typeDef</span>.<span class="i">IsInterface</span>)
+			{
+				<b>foreach</b> (<b>var</b> <span id="r75 rd" class="r75 r">face</span> <b>in</b> <span class="r72 r">typeDef</span>.<span class="i">Interfaces</span>)
+				{
+					<b>if</b> (<span class="r75 r">face</span>.<span class="i">InterfaceType</span>.<span class="i">IsGenericInstance</span> &amp;&amp; <span class="r69 r">typeRef</span> <b>is</b> <span class="i">GenericInstanceType</span>)
+					{
+						<b>int</b> <span id="r76 rd" class="r76 r">i</span> = 0;
+						<b>foreach</b> (<b>var</b> <span id="r77 rd" class="r77 r">arg</span> <b>in</b> ((<span class="i">GenericInstanceType</span>)<span class="r69 r">typeRef</span>).<span class="i">GenericArguments</span>)
+							((<span class="i">GenericInstanceType</span>)<span class="r75 r">face</span>.<span class="i">InterfaceType</span>).<span class="i">GenericArguments</span>[<span class="r76 r">i</span>++] = <span class="r71 r">module</span>.<span class="i">ImportReference</span>(<span class="r77 r">arg</span>);
+					}
+					<b>foreach</b> (<a href="@0@mscorlib/A.html#1806cf6634f5a371" class="k">var</a> <span id="r78 rd" class="r78 r">tuple</span> <b>in</b> <span class="r75 r">face</span>.<span class="i">InterfaceType</span>.<span class="i">GetMethods</span>(<span class="r70 r">predicate</span>, <span class="r71 r">module</span>))
+						<b>yield return</b> <span class="r78 r">tuple</span>;
+				}
+				<b>yield break</b>;
+			}
+			<b>if</b> (<span class="r72 r">typeDef</span>.<span class="i">BaseType</span> == <b>null</b> || <span class="r72 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">FullName</span> == <span class="s">&quot;System.Object&quot;</span>)
+				<b>yield break</b>;
+			<b>var</b> <span id="r79 rd" class="r79 r">baseType</span> = <span class="r72 r">typeDef</span>.<span class="i">BaseType</span>.<span class="i">ResolveGenericParameters</span>(<span class="r69 r">typeRef</span>);
+			<b>foreach</b> (<a href="@0@mscorlib/A.html#1806cf6634f5a371" class="k">var</a> <span id="r80 rd" class="r80 r">tuple</span> <b>in</b> <span class="r79 r">baseType</span>.<span class="i">GetMethods</span>(<span class="r70 r">predicate</span>, <span class="r71 r">module</span>))
+				<b>yield return</b> <span class="r80 r">tuple</span>;
+		}
+ 
+		<b>public static</b> <span class="i">MethodReference</span> <a id="eee796c32148ce38" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">GetImplicitOperatorTo</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r81 rd" class="r81 r">fromType</span>, <span class="i">TypeReference</span> <span id="r82 rd" class="r82 r">toType</span>, <span class="i">ModuleDefinition</span> <span id="r83 rd" class="r83 r">module</span>)
+		{
+			<b>if</b> (<a href="#c04e2288f97027a1" class="t t">TypeRefComparer</a>.<a href="#2b1543925cc58ddb" class="i property">Default</a>.<a href="#4cd22669c77e4a97" class="i method">Equals</a>(<span class="r81 r">fromType</span>, <span class="r82 r">toType</span>))
+				<b>return null</b>;
+ 
+			<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="k">var</a> <span id="r84 rd" class="r84 r">implicitOperatorsOnFromType</span> = <span class="r81 r">fromType</span>.<a href="#4121ca1497db26dc" class="i method">GetMethods</a>(<span id="r85 rd" class="r85 r">md</span> =&gt;    <span class="r85 r">md</span>.<span class="i">IsPublic</span>
+																		&amp;&amp; <span class="r85 r">md</span>.<span class="i">IsStatic</span>
+																		&amp;&amp; <span class="r85 r">md</span>.<span class="i">IsSpecialName</span>
+																		&amp;&amp; <span class="r85 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;op_Implicit&quot;</span>, <span class="r83 r">module</span>);
+			<a href="@0@mscorlib/A.html#3acf01620172c7f0" class="k">var</a> <span id="r86 rd" class="r86 r">implicitOperatorsOnToType</span> = <span class="r82 r">toType</span>.<a href="#4121ca1497db26dc" class="i method">GetMethods</a>(<span id="r87 rd" class="r87 r">md</span> =&gt;    <span class="r87 r">md</span>.<span class="i">IsPublic</span>
+																	&amp;&amp; <span class="r87 r">md</span>.<span class="i">IsStatic</span>
+																	&amp;&amp; <span class="r87 r">md</span>.<span class="i">IsSpecialName</span>
+																	&amp;&amp; <span class="r87 r">md</span>.<span class="i">Name</span> == <span class="s">&quot;op_Implicit&quot;</span>, <span class="r83 r">module</span>);
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r88 rd" class="r88 r">implicitOperators</span> = <span class="r84 r">implicitOperatorsOnFromType</span>.<a href="@0@System.Core/A.html#9c0a66e386e37265" class="i method">Concat</a>(<span class="r86 r">implicitOperatorsOnToType</span>).<a href="@0@System.Core/A.html#e276d6892241255b" class="i method">ToList</a>();
+ 
+			<b>if</b> (<span class="r88 r">implicitOperators</span>.<a href="@0@System.Core/A.html#8788153112b7ffd0" class="i method">Any</a>()) {
+				<b>foreach</b> (<a href="@0@mscorlib/A.html#1806cf6634f5a371" class="k">var</a> <span id="r89 rd" class="r89 r">op</span> <b>in</b> <span class="r88 r">implicitOperators</span>) {
+					<b>var</b> <span id="r90 rd" class="r90 r">cast</span> = <span class="r89 r">op</span>.<a href="@0@mscorlib/A.html#d1922db1cf9dcd03" class="i property">Item1</a>;
+					<b>var</b> <span id="r91 rd" class="r91 r">opDeclTypeRef</span> = <span class="r89 r">op</span>.<a href="@0@mscorlib/A.html#85ddc983cace902c" class="i property">Item2</a>;
+					<b>var</b> <span id="r92 rd" class="r92 r">castDef</span> = <span class="r83 r">module</span>.<span class="i">ImportReference</span>(<span class="r90 r">cast</span>).<span class="i">ResolveGenericParameters</span>(<span class="r91 r">opDeclTypeRef</span>, <span class="r83 r">module</span>);
+					<b>var</b> <span id="r93 rd" class="r93 r">returnType</span> = <span class="r92 r">castDef</span>.<span class="i">ReturnType</span>;
+					<b>if</b> (<span class="r93 r">returnType</span>.<span class="i">IsGenericParameter</span>)
+						<span class="r93 r">returnType</span> = ((<span class="i">GenericInstanceType</span>)<span class="r91 r">opDeclTypeRef</span>).<span class="i">GenericArguments</span> [((<span class="i">GenericParameter</span>)<span class="r93 r">returnType</span>).<span class="i">Position</span>];
+					<b>if</b> (!<span class="r93 r">returnType</span>.<span class="i">InheritsFromOrImplements</span>(<span class="r82 r">toType</span>))
+						<b>continue</b>;
+					<b>var</b> <span id="r94 rd" class="r94 r">paramType</span> = <span class="r90 r">cast</span>.<span class="i">Parameters</span>[0].<span class="i">ParameterType</span>;
+					<b>if</b> (!<span class="r81 r">fromType</span>.<span class="i">InheritsFromOrImplements</span>(<span class="r94 r">paramType</span>))
+						<b>continue</b>;
+					<b>return</b> <span class="r92 r">castDef</span>;
+				}
+			}
+			<b>return null</b>;
+		}
+ 
+		<b>public static</b> <span class="i">TypeReference</span> <a id="591de170ff7f265c" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">ResolveGenericParameters</a>(<b>this</b> <span class="i">TypeReference</span> <span id="r95 rd" class="r95 r">self</span>, <span class="i">TypeReference</span> <span id="r96 rd" class="r96 r">declaringTypeReference</span>)
+		{
+			<b>var</b> <span id="r97 rd" class="r97 r">genericself</span> = <span class="r95 r">self</span> <b>as</b> <span class="i">GenericInstanceType</span>;
+			<b>if</b> (<span class="r97 r">genericself</span> == <b>null</b>)
+				<b>return</b> <span class="r95 r">self</span>;
+ 
+			<b>var</b> <span id="r98 rd" class="r98 r">genericdeclType</span> = <span class="r96 r">declaringTypeReference</span> <b>as</b> <span class="i">GenericInstanceType</span>;
+			<b>if</b> (<span class="r98 r">genericdeclType</span> == <b>null</b>)
+				<b>return</b> <span class="r95 r">self</span>;
+ 
+			<b>if</b> (!<span class="r97 r">genericself</span>.<span class="i">GenericArguments</span>.<span class="i">Any</span>(<span id="r99 rd" class="r99 r">arg</span> =&gt; <span class="r99 r">arg</span>.<span class="i">IsGenericParameter</span>))
+				<b>return</b> <span class="r95 r">self</span>;
+ 
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<span class="i">TypeReference</span>&gt; <span id="r100 rd" class="r100 r">args</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i">TypeReference</span>&gt;();
+			<b>for</b> (<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r101 rd" class="r101 r">i</span> = 0; <span class="r101 r">i</span> &lt; <span class="r97 r">genericself</span>.<span class="i">GenericArguments</span>.<span class="i">Count</span>; <span class="r101 r">i</span>++)
+				<span class="r100 r">args</span>.<span class="i">Add</span>(<span class="r98 r">genericdeclType</span>.<span class="i">GenericArguments</span>[(<span class="r97 r">genericself</span>.<span class="i">GenericArguments</span>[<span class="r101 r">i</span>] <b>as</b> <span class="i">GenericParameter</span>).<span class="i">Position</span>]);
+			<b>return</b> <span class="r95 r">self</span>.<span class="i">GetElementType</span>().<span class="i">MakeGenericInstanceType</span>(<span class="r100 r">args</span>.<a href="@0@mscorlib/A.html#d4409b7542728cec" class="i method">ToArray</a>());
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

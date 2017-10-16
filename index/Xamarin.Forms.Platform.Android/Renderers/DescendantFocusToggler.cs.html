@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html><head><title>DescendantFocusToggler.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(42);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Renderers/DescendantFocusToggler.cs" target="_top">Renderers\DescendantFocusToggler.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>internal class</b> <a id="c46cf62c406756c7" href="../R/c46cf62c406756c7.html" target="n" data-glyph="2,0" class="t t"><span id="863bfcf1ff65a761">DescendantFocusToggler</span></a> : <a href="IDescendantFocusToggler.cs.html#071cf74aeaf63cb2" class="t t">IDescendantFocusToggler</a>
+	{
+		<b>public bool</b> <a id="cddd3b7cda7cd3c5" href="../R/cddd3b7cda7cd3c5.html" target="n" data-glyph="72,1" class="i method">RequestFocus</a>(<b>global</b>::<span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span> <span id="r0 rd" class="r0 r">control</span>, <span class="i">Func</span>&lt;<b>bool</b>&gt; <span id="r1 rd" class="r1 r">baseRequestFocus</span>)
+		{
+			<span class="i">IViewParent</span> <span id="r2 rd" class="r2 r">ancestor</span> = <span class="r0 r">control</span>.<span class="i">Parent</span>;
+			<b>var</b> <span id="r3 rd" class="r3 r">previousFocusability</span> = <span class="i">DescendantFocusability</span>.<span class="i">BlockDescendants</span>;
+			<a href="ConditionalFocusLayout.cs.html#0e142ec5b1e2f3e3" class="t t">ConditionalFocusLayout</a> <span id="r4 rd" class="r4 r">cfl</span> = <b>null</b>;
+ 
+			<span class="c">// Work our way up through the tree until we find a ConditionalFocusLayout</span>
+			<b>while</b> (<span class="r2 r">ancestor</span> <b>is</b> <span class="i">ViewGroup</span>)
+			{
+				<span class="r4 r">cfl</span> = <span class="r2 r">ancestor</span> <b>as</b> <a href="ConditionalFocusLayout.cs.html#0e142ec5b1e2f3e3" class="t t">ConditionalFocusLayout</a>;
+ 
+				<b>if</b> (<span class="r4 r">cfl</span> != <b>null</b>)
+				{
+					<span class="r3 r">previousFocusability</span> = <span class="r4 r">cfl</span>.<span class="i">DescendantFocusability</span>;
+					<span class="c">// Toggle DescendantFocusability to allow this control to get focus</span>
+					<span class="r4 r">cfl</span>.<span class="i">DescendantFocusability</span> = <span class="i">DescendantFocusability</span>.<span class="i">AfterDescendants</span>;
+					<b>break</b>;
+				}
+ 
+				<span class="r2 r">ancestor</span> = <span class="r2 r">ancestor</span>.<span class="i">Parent</span>;
+			}
+ 
+			<span class="c">// Call the original RequestFocus implementation for the View</span>
+			<b>bool</b> <span id="r5 rd" class="r5 r">result</span> = <span class="r1 r">baseRequestFocus</span>();
+ 
+			<b>if</b> (<span class="r4 r">cfl</span> != <b>null</b>)
+			{
+				<span class="c">// Toggle descendantfocusability back to whatever it was</span>
+				<span class="r4 r">cfl</span>.<span class="i">DescendantFocusability</span> = <span class="r3 r">previousFocusability</span>;
+			}
+ 
+			<b>return</b> <span class="r5 r">result</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

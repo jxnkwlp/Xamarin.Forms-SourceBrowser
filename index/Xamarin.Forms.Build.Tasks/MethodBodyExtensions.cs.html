@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html><head><title>MethodBodyExtensions.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(93);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Build.Tasks/MethodBodyExtensions.cs" target="_top">MethodBodyExtensions.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Build.Tasks" target="_top">Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj</a> (Xamarin.Forms.Build.Tasks)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Cil</span>;
+<b>using</b> <span class="i">Mono</span>.<span class="i">Cecil</span>.<span class="i">Rocks</span>;
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Build</span>.<span class="i n">Tasks</span>
+{
+	<b>static class</b> <a id="50a64e0ef64a0229" href="R/../../0000000000.html" target="n" data-glyph="2,0" class="t t">MethodBodyExtensions</a>
+	{
+		<b>public static void</b> <a id="4c6b25dd7d5dcf80" href="R/../../0000000000.html" target="n" data-glyph="220,1" class="i method">Optimize</a>(<b>this</b> <span class="i">MethodBody</span> <span id="r0 rd" class="r0 r">self</span>)
+		{
+			<b>if</b> (<span class="r0 r">self</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r0 r">self</span>));
+ 
+			<span class="r0 r">self</span>.<a href="#85835e48e17b21bf" class="i method">OptimizeLongs</a>();
+			<span class="r0 r">self</span>.<a href="#d0cd6e8a50de6e60" class="i method">OptimizeStLdLoc</a>();
+			<span class="r0 r">self</span>.<a href="#c31e71a2ceae1308" class="i method">RemoveUnusedLocals</a>();
+			<span class="r0 r">self</span>.<span class="i">OptimizeMacros</span>();
+		}
+ 
+		<b>static void</b> <a id="28d5557f1674b5b1" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">ExpandMacro</a>(<span class="i">Instruction</span> <span id="r1 rd" class="r1 r">instruction</span>, <span class="i">OpCode</span> <span id="r2 rd" class="r2 r">opcode</span>, <b>object</b> <span id="r3 rd" class="r3 r">operand</span>)
+		{
+			<span class="r1 r">instruction</span>.<span class="i">OpCode</span> = <span class="r2 r">opcode</span>;
+			<span class="r1 r">instruction</span>.<span class="i">Operand</span> = <span class="r3 r">operand</span>;
+		}
+ 
+		<span class="c">//this can be removed if/when https://github.com/jbevain/cecil/pull/307 is released in a nuget we consume</span>
+		<b>static void</b> <a id="85835e48e17b21bf" href="R/85835e48e17b21bf.html" target="n" data-glyph="224,1" class="i method">OptimizeLongs</a>(<b>this</b> <span class="i">MethodBody</span> <span id="r4 rd" class="r4 r">self</span>)
+		{
+			<b>for</b> (<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r5 rd" class="r5 r">i</span> = 0; <span class="r5 r">i</span> &lt; <span class="r4 r">self</span>.<span class="i">Instructions</span>.<span class="i">Count</span>; <span class="r5 r">i</span>++) {
+				<b>var</b> <span id="r6 rd" class="r6 r">instruction</span> = <span class="r4 r">self</span>.<span class="i">Instructions</span>[<span class="r5 r">i</span>];
+				<b>if</b> (<span class="r6 r">instruction</span>.<span class="i">OpCode</span>.<span class="i">Code</span> != <span class="i">Code</span>.<span class="i">Ldc_I8</span>)
+					<b>continue</b>;
+				<a href="@0@mscorlib/A.html#e566178cce890c36" class="k">var</a> <span id="r7 rd" class="r7 r">l</span> = (<b>long</b>)<span class="r6 r">instruction</span>.<span class="i">Operand</span>;
+				<b>if</b> (<span class="r7 r">l</span> &lt; <b>int</b>.<a href="@0@mscorlib/A.html#e3cfc4661f06e948" class="i field">MinValue</a> || <span class="r7 r">l</span> &gt; <b>int</b>.<a href="@0@mscorlib/A.html#c45153c0501d7122" class="i field">MaxValue</a>)
+					<b>continue</b>;
+				<span class="i">ExpandMacro</span>(<span class="r6 r">instruction</span>, <span class="i">OpCodes</span>.<span class="i">Ldc_I4</span>, <b>unchecked</b>((<b>int</b>)<span class="r7 r">l</span>));
+				<span class="r4 r">self</span>.<span class="i">Instructions</span>.<span class="i">Insert</span>(++<span class="r5 r">i</span>, <span class="i">Instruction</span>.<span class="i">Create</span>(<span class="i">OpCodes</span>.<span class="i">Conv_I8</span>));
+			}
+		}
+ 
+		<b>static void</b> <a id="d0cd6e8a50de6e60" href="R/d0cd6e8a50de6e60.html" target="n" data-glyph="224,1" class="i method">OptimizeStLdLoc</a>(<b>this</b> <span class="i">MethodBody</span> <span id="r8 rd" class="r8 r">self</span>)
+		{
+			<b>var</b> <span id="r9 rd" class="r9 r">method</span> = <span class="r8 r">self</span>.<span class="i">Method</span>;
+			<b>for</b> (<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r10 rd" class="r10 r">i</span> = 0; <span class="r10 r">i</span> &lt; <span class="r8 r">self</span>.<span class="i">Instructions</span>.<span class="i">Count</span>; <span class="r10 r">i</span>++) {
+				<b>var</b> <span id="r11 rd" class="r11 r">instruction</span> = <span class="r8 r">self</span>.<span class="i">Instructions</span>[<span class="r10 r">i</span>];
+				<b>if</b> (<span class="r11 r">instruction</span>.<span class="i">OpCode</span>.<span class="i">Code</span> != <span class="i">Code</span>.<span class="i">Stloc</span>)
+					<b>continue</b>;
+				<b>if</b> (<span class="r10 r">i</span> + 1 &gt;= <span class="r8 r">self</span>.<span class="i">Instructions</span>.<span class="i">Count</span>)
+					<b>continue</b>;
+				<b>var</b> <span id="r12 rd" class="r12 r">next</span> = <span class="r8 r">self</span>.<span class="i">Instructions</span>[<span class="r10 r">i</span> + 1];
+				<b>int</b> <span id="r13 rd" class="r13 r">num</span> = ((<span class="i">VariableDefinition</span>)<span class="r11 r">instruction</span>.<span class="i">Operand</span>).<span class="i">Index</span>;
+				<b>var</b> <span id="r14 rd" class="r14 r">vardef</span> = <span class="r11 r">instruction</span>.<span class="i">Operand</span>;
+				<b>if</b> (<span class="r12 r">next</span>.<span class="i">OpCode</span>.<span class="i">Code</span> != <span class="i">Code</span>.<span class="i">Ldloc</span> || <span class="r13 r">num</span> != ((<span class="i">VariableDefinition</span>)<span class="r12 r">next</span>.<span class="i">Operand</span>).<span class="i">Index</span>)
+					<b>continue</b>;
+				<span class="i">ExpandMacro</span>(<span class="r11 r">instruction</span>, <span class="i">OpCodes</span>.<span class="i">Dup</span>, <b>null</b>);
+				<span class="i">ExpandMacro</span>(<span class="r12 r">next</span>, <span class="i">OpCodes</span>.<span class="i">Stloc</span>, <span class="r14 r">vardef</span>);
+			}
+		}
+ 
+		<b>static void</b> <a id="c31e71a2ceae1308" href="R/c31e71a2ceae1308.html" target="n" data-glyph="224,1" class="i method">RemoveUnusedLocals</a>(<b>this</b> <span class="i">MethodBody</span> <span id="r15 rd" class="r15 r">self</span>)
+		{
+			<span class="c">//Count ldloc for each variable</span>
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r16 rd" class="r16 r">ldlocUsed</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<span class="i">VariableDefinition</span>&gt;();
+			<b>foreach</b> (<b>var</b> <span id="r17 rd" class="r17 r">instruction</span> <b>in</b> <span class="r15 r">self</span>.<span class="i">Instructions</span>) {
+				<b>if</b> (<span class="r17 r">instruction</span>.<span class="i">OpCode</span>.<span class="i">Code</span> != <span class="i">Code</span>.<span class="i">Ldloc</span>)
+					<b>continue</b>;
+				<b>var</b> <span id="r18 rd" class="r18 r">varDef</span> = (<span class="i">VariableDefinition</span>)<span class="r17 r">instruction</span>.<span class="i">Operand</span>;
+				<b>if</b> (!<span class="r16 r">ldlocUsed</span>.<a href="@0@mscorlib/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r18 r">varDef</span>))
+					<span class="r16 r">ldlocUsed</span>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r18 r">varDef</span>);
+			}
+ 
+			<b>foreach</b> (<b>var</b> <span id="r19 rd" class="r19 r">varDef</span> <b>in</b> <span class="r15 r">self</span>.<span class="i">Variables</span>.<span class="i">ToArray</span>()) {
+				<b>if</b> (<span class="r16 r">ldlocUsed</span>.<span class="i">Contains</span>(<span class="r19 r">varDef</span>))
+					<b>continue</b>;
+ 
+				<span class="c">//find the Stloc instruction</span>
+				<b>var</b> <span id="r20 rd" class="r20 r">instruction</span> = (<b>from</b> <span class="i">instr</span> <b>in</b> <span class="r15 r">self</span>.<span class="i">Instructions</span> <b>where</b> <span class="i">instr</span>.<span class="i">OpCode</span>.<span class="i">Code</span> == <span class="i">Code</span>.<span class="i">Stloc</span> &amp;&amp; <span class="i">instr</span>.<span class="i">Operand</span> == <span class="r19 r">varDef</span> <b>select</b> <span class="i">instr</span>).<span class="i">First</span>();
+ 
+				<span class="c">//remove dup/stloc</span>
+				<b>if</b> (<span class="r20 r">instruction</span>.<span class="i">Previous</span>.<span class="i">OpCode</span>.<span class="i">Code</span> != <span class="i">Code</span>.<span class="i">Dup</span>)
+					<b>break</b>;
+ 
+				<span class="r15 r">self</span>.<span class="i">Instructions</span>.<span class="i">Remove</span>(<span class="r20 r">instruction</span>.<span class="i">Previous</span>);
+				<span class="r15 r">self</span>.<span class="i">Instructions</span>.<span class="i">Remove</span>(<span class="r20 r">instruction</span>);
+ 
+				<span class="c">//and remove the variable</span>
+				<span class="r15 r">self</span>.<span class="i">Variables</span>.<span class="i">Remove</span>(<span class="r19 r">varDef</span>);
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

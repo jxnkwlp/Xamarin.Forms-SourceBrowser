@@ -1,0 +1,280 @@
+﻿<!DOCTYPE html>
+<html><head><title>TableViewModelRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(271);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Renderers/TableViewModelRenderer.cs" target="_top">Renderers\TableViewModelRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Util</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Widget</span>;
+<b>using</b> <span class="i">AView</span> = <span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span>;
+<b>using</b> <span class="i">AListView</span> = <span class="i">Android</span>.<span class="i">Widget</span>.<span class="i">ListView</span>;
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>public class</b> <a id="7fe50231bd326f44" href="../R/7fe50231bd326f44.html" target="n" data-glyph="0,0" class="t t">TableViewModelRenderer</a> : <a href="../CellAdapter.cs.html#1eafcf74c856323d" class="t t">CellAdapter</a>
+	{
+		<b>readonly</b> <a href="/Xamarin.Forms.Core/A.html#3fe8bdf9289cb986" class="t t">TableView</a> <a id="a9e1308d66a9b40a" href="../R/a9e1308d66a9b40a.html" target="n" data-glyph="46,1" class="i field">_view</a>;
+		<b>protected readonly</b> <span class="i">Context</span> <a id="41657875fb1b174d" href="../R/41657875fb1b174d.html" target="n" data-glyph="45,1" class="i field">Context</a>;
+		<a href="/Xamarin.Forms.Core/A.html#03ee00c154c254c5" class="t t">ITableViewController</a> <a id="d393aaa9c0c63000" href="../R/d393aaa9c0c63000.html" target="n" data-glyph="106,1" class="i property">Controller</a> =&gt; <a href="#a9e1308d66a9b40a" class="i field">_view</a>;
+		<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <a id="5b7f1cd573e3a8dd" href="../R/5b7f1cd573e3a8dd.html" target="n" data-glyph="46,1" class="i field">_restoreFocus</a>;
+		<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>[] <a id="3194bb87238fdbd0" href="../R/3194bb87238fdbd0.html" target="n" data-glyph="46,1" class="i field">_cellCache</a>;
+		<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>[] <a id="42dda4554e4d0161" href="../R/42dda4554e4d0161.html" target="n" data-glyph="106,1" class="i property">CellCache</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<a href="#3194bb87238fdbd0" class="i field">_cellCache</a> == <b>null</b>)
+					<a href="#8e51b17e69adfb71" class="i method">FillCache</a>();
+				<b>return</b> <a href="#3194bb87238fdbd0" class="i field">_cellCache</a>;
+			}
+		}
+		<b>bool</b>[] <a id="78754e5a790c0e89" href="../R/78754e5a790c0e89.html" target="n" data-glyph="46,1" class="i field">_isHeaderCache</a>;
+		<b>bool</b>[] <a id="fdbac7c421cdee52" href="../R/fdbac7c421cdee52.html" target="n" data-glyph="106,1" class="i property">IsHeaderCache</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<a href="#78754e5a790c0e89" class="i field">_isHeaderCache</a> == <b>null</b>)
+					<a href="#8e51b17e69adfb71" class="i method">FillCache</a>();
+				<b>return</b> <a href="#78754e5a790c0e89" class="i field">_isHeaderCache</a>;
+			}
+		}
+		<b>bool</b>[] <a id="4accaea6d7f0e1ee" href="../R/4accaea6d7f0e1ee.html" target="n" data-glyph="46,1" class="i field">_nextIsHeaderCache</a>;
+		<b>bool</b>[] <a id="e2c026fa220e3eee" href="../R/e2c026fa220e3eee.html" target="n" data-glyph="106,1" class="i property">NextIsHeaderCache</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<a href="#4accaea6d7f0e1ee" class="i field">_nextIsHeaderCache</a> == <b>null</b>)
+					<a href="#8e51b17e69adfb71" class="i method">FillCache</a>();
+				<b>return</b> <a href="#4accaea6d7f0e1ee" class="i field">_nextIsHeaderCache</a>;
+			}
+		}
+ 
+		<b>public</b> <a id="937e8a9648035928" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">TableViewModelRenderer</a>(<span class="i">Context</span> <span id="r0 rd" class="r0 r">context</span>, <span class="i">AListView</span> <span id="r1 rd" class="r1 r">listView</span>, <a href="/Xamarin.Forms.Core/A.html#3fe8bdf9289cb986" class="t t">TableView</a> <span id="r2 rd" class="r2 r">view</span>) : <a href="../CellAdapter.cs.html#65feae30f68bae5c" class="k">base</a>(<span class="r0 r">context</span>)
+		{
+			<a href="#a9e1308d66a9b40a" class="i field">_view</a> = <span class="r2 r">view</span>;
+			<a href="#41657875fb1b174d" class="i field">Context</a> = <span class="r0 r">context</span>;
+ 
+			<a href="#d393aaa9c0c63000" class="i property">Controller</a>.<a href="/Xamarin.Forms.Core/A.html#91276ead23fdf426" class="i">ModelChanged</a> += <span class="i">OnModelChanged</span>;
+ 
+			<span class="r1 r">listView</span>.<span class="i">OnItemClickListener</span> = <a href="#7fe50231bd326f44" class="k">this</a>;
+			<span class="r1 r">listView</span>.<span class="i">OnItemLongClickListener</span> = <a href="#7fe50231bd326f44" class="k">this</a>;
+		}
+ 
+		<b>public override int</b> <a id="99cf42b93a68a812" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Count</a> =&gt; <a href="#42dda4554e4d0161" class="i property">CellCache</a>.<span class="i">Length</span>;
+ 
+		<b>public override object</b> <a id="c38ca99c4f6dff34" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="k">this</a>[<b>int</b> <span id="r3 rd" class="r3 r">position</span>]
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<span class="r3 r">position</span> &lt; 0 || <span class="r3 r">position</span> &gt;= <a href="#42dda4554e4d0161" class="i property">CellCache</a>.<span class="i">Length</span>)
+					<b>return null</b>;
+ 
+				<b>return</b> <a href="#42dda4554e4d0161" class="i property">CellCache</a>[<span class="r3 r">position</span>];
+			}
+		}
+ 
+		<b>public override int</b> <a id="a43af95fdb02c45a" href="../R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">ViewTypeCount</a>
+		{
+			<b>get</b>
+			{
+				<span class="c">// 1 for the headers + 1 for each non header cell</span>
+				<b>var</b> <span id="r4 rd" class="r4 r">viewTypeCount</span> = 1;
+				<b>foreach</b> (<b>var</b> <span id="r5 rd" class="r5 r">b</span> <b>in</b> <a href="#fdbac7c421cdee52" class="i property">IsHeaderCache</a>)
+					<b>if</b> (!<span class="r5 r">b</span>)
+						<span class="r4 r">viewTypeCount</span>++;
+				<b>return</b> <span class="r4 r">viewTypeCount</span>;
+			}
+		}
+ 
+		<b>public override bool</b> <a id="0a289258f23ec06c" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">AreAllItemsEnabled</a>()
+		{
+			<b>return false</b>;
+		}
+ 
+		<b>public override long</b> <a id="5ab5655f9794b4a8" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetItemId</a>(<b>int</b> <span id="r6 rd" class="r6 r">position</span>)
+		{
+			<b>return</b> <span class="r6 r">position</span>;
+		}
+ 
+		<b>public override</b> <span class="i">AView</span> <a id="13ae35eb98777256" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">GetView</a>(<b>int</b> <span id="r7 rd" class="r7 r">position</span>, <span class="i">AView</span> <span id="r8 rd" class="r8 r">convertView</span>, <span class="i">ViewGroup</span> <span id="r9 rd" class="r9 r">parent</span>)
+		{
+			<b>bool</b> <span id="r10 rd" class="r10 r">isHeader</span>, <span id="r11 rd" class="r11 r">nextIsHeader</span>;
+			<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r12 rd" class="r12 r">item</span> = <a href="#ffeadc105f65585f" class="i method">GetCellForPosition</a>(<span class="r7 r">position</span>, <b>out</b> <span class="r10 r">isHeader</span>, <b>out</b> <span class="r11 r">nextIsHeader</span>);
+			<b>if</b> (<span class="r12 r">item</span> == <b>null</b>)
+				<b>return</b> <b>new</b> <span class="i">AView</span>(<a href="#41657875fb1b174d" class="i field">Context</a>);
+ 
+			<b>var</b> <span id="r13 rd" class="r13 r">makeBline</span> = <b>true</b>;
+			<a href="ConditionalFocusLayout.cs.html#0e142ec5b1e2f3e3" class="k">var</a> <span id="r14 rd" class="r14 r">layout</span> = <span class="r8 r">convertView</span> <b>as</b> <a href="ConditionalFocusLayout.cs.html#0e142ec5b1e2f3e3" class="t t">ConditionalFocusLayout</a>;
+			<b>if</b> (<span class="r14 r">layout</span> != <b>null</b>)
+			{
+				<span class="r13 r">makeBline</span> = <b>false</b>;
+				<span class="r8 r">convertView</span> = <span class="r14 r">layout</span>.<span class="i">GetChildAt</span>(0);
+			}
+			<b>else</b>
+				<span class="r14 r">layout</span> = <b>new</b> <a href="ConditionalFocusLayout.cs.html#4b5701ea71cbcda5" class="t constructor">ConditionalFocusLayout</a>(<a href="#41657875fb1b174d" class="i field">Context</a>) { <span class="i">Orientation</span> = <span class="i">Orientation</span>.<span class="i">Vertical</span> };
+ 
+			<span class="i">AView</span> <span id="r15 rd" class="r15 r">aview</span> = <a href="../Cells/CellFactory.cs.html#596b29076b5af656" class="t t">CellFactory</a>.<a href="../Cells/CellFactory.cs.html#15504fe89a45dbad" class="i method">GetCell</a>(<span class="r12 r">item</span>, <span class="r8 r">convertView</span>, <span class="r9 r">parent</span>, <a href="#41657875fb1b174d" class="i field">Context</a>, <a href="#a9e1308d66a9b40a" class="i field">_view</a>);
+ 
+			<b>if</b> (!<span class="r13 r">makeBline</span>)
+			{
+				<b>if</b> (<span class="r8 r">convertView</span> != <span class="r15 r">aview</span>)
+				{
+					<span class="r14 r">layout</span>.<span class="i">RemoveViewAt</span>(0);
+					<span class="r14 r">layout</span>.<span class="i">AddView</span>(<span class="r15 r">aview</span>, 0);
+				}
+			}
+			<b>else</b>
+				<span class="r14 r">layout</span>.<span class="i">AddView</span>(<span class="r15 r">aview</span>, 0);
+ 
+			<span class="i">AView</span> <span id="r16 rd" class="r16 r">bline</span>;
+			<b>if</b> (<span class="r13 r">makeBline</span>)
+			{
+				<span class="r16 r">bline</span> = <b>new</b> <span class="i">AView</span>(<a href="#41657875fb1b174d" class="i field">Context</a>) { <span class="i">LayoutParameters</span> = <b>new</b> <span class="i">LinearLayout</span>.<span class="i">LayoutParams</span>(<span class="i">ViewGroup</span>.<span class="i">LayoutParams</span>.<span class="i">MatchParent</span>, 1) };
+ 
+				<span class="r14 r">layout</span>.<span class="i">AddView</span>(<span class="r16 r">bline</span>);
+			}
+			<b>else</b>
+				<span class="r16 r">bline</span> = <span class="r14 r">layout</span>.<span class="i">GetChildAt</span>(1);
+ 
+			<b>if</b> (<span class="r10 r">isHeader</span>)
+				<span class="r16 r">bline</span>.<span class="i">SetBackgroundColor</span>(<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#20ed50b13a0f4f97" class="i property">Accent</a>.<a href="../ColorExtensions.cs.html#268d9eb79e3a1fda" class="i method">ToAndroid</a>());
+			<b>else if</b> (<span class="r11 r">nextIsHeader</span>)
+				<span class="r16 r">bline</span>.<span class="i">SetBackgroundColor</span>(<b>global</b>::<span class="i">Android</span>.<span class="i">Graphics</span>.<span class="i">Color</span>.<span class="i">Transparent</span>);
+			<b>else</b>
+			{
+				<b>using</b> (<b>var</b> <span id="r17 rd" class="r17 r">value</span> = <b>new</b> <span class="i">TypedValue</span>())
+				{
+					<b>int</b> <span id="r18 rd" class="r18 r">id</span> = <b>global</b>::<span class="i">Android</span>.<span class="i">Resource</span>.<span class="i">Drawable</span>.<span class="i">DividerHorizontalDark</span>;
+					<b>if</b> (<a href="#41657875fb1b174d" class="i field">Context</a>.<span class="i">Theme</span>.<span class="i">ResolveAttribute</span>(<b>global</b>::<span class="i">Android</span>.<span class="i">Resource</span>.<span class="i">Attribute</span>.<span class="i">ListDivider</span>, <span class="r17 r">value</span>, <b>true</b>))
+						<span class="r18 r">id</span> = <span class="r17 r">value</span>.<span class="i">ResourceId</span>;
+					<b>else if</b> (<a href="#41657875fb1b174d" class="i field">Context</a>.<span class="i">Theme</span>.<span class="i">ResolveAttribute</span>(<b>global</b>::<span class="i">Android</span>.<span class="i">Resource</span>.<span class="i">Attribute</span>.<span class="i">Divider</span>, <span class="r17 r">value</span>, <b>true</b>))
+						<span class="r18 r">id</span> = <span class="r17 r">value</span>.<span class="i">ResourceId</span>;
+ 
+					<span class="r16 r">bline</span>.<span class="i">SetBackgroundResource</span>(<span class="r18 r">id</span>);
+				}
+			}
+ 
+			<span class="r14 r">layout</span>.<a href="ConditionalFocusLayout.cs.html#7a8c2614bd5dc3d6" class="i method">ApplyTouchListenersToSpecialCells</a>(<span class="r12 r">item</span>);
+ 
+			<b>if</b> (<a href="#5b7f1cd573e3a8dd" class="i field">_restoreFocus</a> == <span class="r12 r">item</span>)
+			{
+				<b>if</b> (!<span class="r15 r">aview</span>.<span class="i">HasFocus</span>)
+					<span class="r15 r">aview</span>.<span class="i">RequestFocus</span>();
+ 
+				<a href="#5b7f1cd573e3a8dd" class="i field">_restoreFocus</a> = <b>null</b>;
+			}
+			<b>else if</b> (<span class="r15 r">aview</span>.<span class="i">HasFocus</span>)
+				<span class="r15 r">aview</span>.<span class="i">ClearFocus</span>();
+ 
+			<b>return</b> <span class="r14 r">layout</span>;
+		}
+ 
+		<b>public override bool</b> <a id="9195081fa60f4129" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">IsEnabled</a>(<b>int</b> <span id="r19 rd" class="r19 r">position</span>)
+		{
+			<b>bool</b> <span id="r20 rd" class="r20 r">isHeader</span>, <span id="r21 rd" class="r21 r">nextIsHeader</span>;
+			<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r22 rd" class="r22 r">item</span> = <a href="#ffeadc105f65585f" class="i method">GetCellForPosition</a>(<span class="r19 r">position</span>, <b>out</b> <span class="r20 r">isHeader</span>, <b>out</b> <span class="r21 r">nextIsHeader</span>);
+			<b>return</b> !<span class="r20 r">isHeader</span> &amp;&amp; <span class="r22 r">item</span>.<a href="/Xamarin.Forms.Core/A.html#b8771aed49c9b0ce" class="i property">IsEnabled</a>;
+		}
+ 
+		<b>protected override</b> <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <a id="50e2874dd1c38cc4" href="../R/50e2874dd1c38cc4.html" target="n" data-glyph="75,1" class="i method">GetCellForPosition</a>(<b>int</b> <span id="r23 rd" class="r23 r">position</span>)
+		{
+			<b>bool</b> <span id="r24 rd" class="r24 r">isHeader</span>, <span id="r25 rd" class="r25 r">nextIsHeader</span>;
+			<b>return</b> <a href="#ffeadc105f65585f" class="i method">GetCellForPosition</a>(<span class="r23 r">position</span>, <b>out</b> <span class="r24 r">isHeader</span>, <b>out</b> <span class="r25 r">nextIsHeader</span>);
+		}
+ 
+		<b>protected override void</b> <a id="27a3b1e696cb3a80" href="../R/27a3b1e696cb3a80.html" target="n" data-glyph="75,1" class="i method">HandleItemClick</a>(<span class="i">AdapterView</span> <span id="r26 rd" class="r26 r">parent</span>, <span class="i">AView</span> <span id="r27 rd" class="r27 r">nview</span>, <b>int</b> <span id="r28 rd" class="r28 r">position</span>, <b>long</b> <span id="r29 rd" class="r29 r">id</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#6b7ba335c63cfcff" class="t t">ITableModel</a> <span id="r30 rd" class="r30 r">model</span> = <a href="#d393aaa9c0c63000" class="i property">Controller</a>.<a href="/Xamarin.Forms.Core/A.html#43ff709231d4bfee" class="i property">Model</a>;
+ 
+			<b>if</b> (<span class="r28 r">position</span> &lt; 0 || <span class="r28 r">position</span> &gt;= <a href="#42dda4554e4d0161" class="i property">CellCache</a>.<span class="i">Length</span>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#fdbac7c421cdee52" class="i property">IsHeaderCache</a>[<span class="r28 r">position</span>])
+				<b>return</b>;
+ 
+			<span class="r30 r">model</span>.<span class="i">RowSelected</span>(<a href="#42dda4554e4d0161" class="i property">CellCache</a>[<span class="r28 r">position</span>]);
+		}
+ 
+		<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <a id="ffeadc105f65585f" href="../R/ffeadc105f65585f.html" target="n" data-glyph="76,1" class="i method">GetCellForPosition</a>(<b>int</b> <span id="r31 rd" class="r31 r">position</span>, <b>out bool</b> <span id="r32 rd" class="r32 r">isHeader</span>, <b>out bool</b> <span id="r33 rd" class="r33 r">nextIsHeader</span>)
+		{
+			<span class="r32 r">isHeader</span> = <b>false</b>;
+			<span class="r33 r">nextIsHeader</span> = <b>false</b>;
+ 
+			<b>if</b> (<span class="r31 r">position</span> &lt; 0 || <span class="r31 r">position</span> &gt;= <a href="#42dda4554e4d0161" class="i property">CellCache</a>.<span class="i">Length</span>)
+				<b>return null</b>;
+ 
+			<span class="r32 r">isHeader</span> = <a href="#fdbac7c421cdee52" class="i property">IsHeaderCache</a>[<span class="r31 r">position</span>];
+			<span class="r33 r">nextIsHeader</span> = <a href="#e2c026fa220e3eee" class="i property">NextIsHeaderCache</a>[<span class="r31 r">position</span>];
+			<b>return</b> <a href="#42dda4554e4d0161" class="i property">CellCache</a>[<span class="r31 r">position</span>];
+		}
+ 
+		<b>void</b> <a id="8e51b17e69adfb71" href="../R/8e51b17e69adfb71.html" target="n" data-glyph="76,1" class="i method">FillCache</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#6b7ba335c63cfcff" class="t t">ITableModel</a> <span id="r34 rd" class="r34 r">model</span> = <a href="#d393aaa9c0c63000" class="i property">Controller</a>.<a href="/Xamarin.Forms.Core/A.html#43ff709231d4bfee" class="i property">Model</a>;
+			<b>int</b> <span id="r35 rd" class="r35 r">sectionCount</span> = <span class="r34 r">model</span>.<span class="i">GetSectionCount</span>();
+ 
+			<b>var</b> <span id="r36 rd" class="r36 r">newCellCache</span> = <b>new</b> <span class="i">List</span>&lt;<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>&gt;();
+			<b>var</b> <span id="r37 rd" class="r37 r">newIsHeaderCache</span> = <b>new</b> <span class="i">List</span>&lt;<b>bool</b>&gt;();
+			<b>var</b> <span id="r38 rd" class="r38 r">newNextIsHeaderCache</span> = <b>new</b> <span class="i">List</span>&lt;<b>bool</b>&gt;();
+ 
+			<b>for</b> (<b>var</b> <span id="r39 rd" class="r39 r">sectionIndex</span> = 0; <span class="r39 r">sectionIndex</span> &lt; <span class="r35 r">sectionCount</span>; <span class="r39 r">sectionIndex</span>++)
+			{
+				<b>var</b> <span id="r40 rd" class="r40 r">sectionTitle</span> = <span class="r34 r">model</span>.<span class="i">GetSectionTitle</span>(<span class="r39 r">sectionIndex</span>);
+				<b>var</b> <span id="r41 rd" class="r41 r">sectionRowCount</span> = <span class="r34 r">model</span>.<span class="i">GetRowCount</span>(<span class="r39 r">sectionIndex</span>);
+ 
+				<b>if</b> (!<b>string</b>.<span class="i">IsNullOrEmpty</span>(<span class="r40 r">sectionTitle</span>))
+				{
+					<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r42 rd" class="r42 r">headerCell</span> = <span class="r34 r">model</span>.<span class="i">GetHeaderCell</span>(<span class="r39 r">sectionIndex</span>);
+					<b>if</b> (<span class="r42 r">headerCell</span> == <b>null</b>)
+						<span class="r42 r">headerCell</span> = <b>new</b> <span class="t">TextCell</span> { <a href="/Xamarin.Forms.Core/A.html#9a390bb4c00083be" class="i property">Text</a> = <span class="r40 r">sectionTitle</span> };
+					<span class="r42 r">headerCell</span>.<span class="i">Parent</span> = <a href="#a9e1308d66a9b40a" class="i field">_view</a>;
+ 
+					<span class="r37 r">newIsHeaderCache</span>.<span class="i">Add</span>(<b>true</b>);
+					<span class="r38 r">newNextIsHeaderCache</span>.<span class="i">Add</span>(<span class="r41 r">sectionRowCount</span> == 0 &amp;&amp; <span class="r39 r">sectionIndex</span> &lt; <span class="r35 r">sectionCount</span> - 1);
+					<span class="r36 r">newCellCache</span>.<span class="i">Add</span>(<span class="r42 r">headerCell</span>);
+				}
+ 
+				<b>for</b> (<b>int</b> <span id="r43 rd" class="r43 r">i</span> = 0; <span class="r43 r">i</span> &lt; <span class="r41 r">sectionRowCount</span>; <span class="r43 r">i</span>++)
+				{
+					<span class="r37 r">newIsHeaderCache</span>.<span class="i">Add</span>(<b>false</b>);
+					<span class="r38 r">newNextIsHeaderCache</span>.<span class="i">Add</span>(<span class="r43 r">i</span> == <span class="r41 r">sectionRowCount</span> - 1 &amp;&amp; <span class="r39 r">sectionIndex</span> &lt; <span class="r35 r">sectionCount</span> - 1);
+					<span class="r36 r">newCellCache</span>.<span class="i">Add</span>((<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>)<span class="r34 r">model</span>.<span class="i">GetItem</span>(<span class="r39 r">sectionIndex</span>, <span class="r43 r">i</span>));
+				}
+			}
+ 
+			<a href="#3194bb87238fdbd0" class="i field">_cellCache</a> = <span class="r36 r">newCellCache</span>.<span class="i">ToArray</span>();
+			<a href="#78754e5a790c0e89" class="i field">_isHeaderCache</a> = <span class="r37 r">newIsHeaderCache</span>.<span class="i">ToArray</span>();
+			<a href="#4accaea6d7f0e1ee" class="i field">_nextIsHeaderCache</a> = <span class="r38 r">newNextIsHeaderCache</span>.<span class="i">ToArray</span>();
+		}
+ 
+		<b>void</b> <a id="1163702cf46b29b2" href="../R/1163702cf46b29b2.html" target="n" data-glyph="76,1" class="i method">InvalidateCellCache</a>()
+		{
+			<a href="#3194bb87238fdbd0" class="i field">_cellCache</a> = <b>null</b>;
+			<a href="#78754e5a790c0e89" class="i field">_isHeaderCache</a> = <b>null</b>;
+			<a href="#4accaea6d7f0e1ee" class="i field">_nextIsHeaderCache</a> = <b>null</b>;
+		}
+ 
+		<b>void</b> <a id="768ffb7b5dbdf200" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnModelChanged</a>(<b>object</b> <span id="r44 rd" class="r44 r">sender</span>, <span class="i">EventArgs</span> <span id="r45 rd" class="r45 r">e</span>)
+		{
+			<a href="#1163702cf46b29b2" class="i method">InvalidateCellCache</a>();
+			<span class="i">NotifyDataSetChanged</span>();
+		}
+ 
+		<b>protected override void</b> <a id="c784c4ce0ee7835e" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r46 rd" class="r46 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r46 r">disposing</span>)
+			{
+				<a href="#1163702cf46b29b2" class="i method">InvalidateCellCache</a>();
+				<a href="#d393aaa9c0c63000" class="i property">Controller</a>.<a href="/Xamarin.Forms.Core/A.html#91276ead23fdf426" class="i">ModelChanged</a> -= <span class="i">OnModelChanged</span>;
+			}
+ 
+			<a href="../CellAdapter.cs.html#1eafcf74c856323d" class="k">base</a>.<span class="i">Dispose</span>(<span class="r46 r">disposing</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

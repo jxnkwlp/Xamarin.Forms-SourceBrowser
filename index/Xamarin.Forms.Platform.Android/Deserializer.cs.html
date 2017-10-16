@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html><head><title>Deserializer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(90);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Deserializer.cs" target="_top">Deserializer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Diagnostics</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">IO</span>.<span class="i">IsolatedStorage</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Runtime</span>.<span class="i">Serialization</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Xml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>internal class</b> <a id="189e45fb15a0c40d" href="R/189e45fb15a0c40d.html" target="n" data-glyph="2,0" class="t t"><span id="b679a3ba3e0ab7d9">Deserializer</span></a> : <a href="/Xamarin.Forms.Core/A.html#4485832055b9ed19" class="t t">IDeserializer</a>
+	{
+		<b>const string</b> <a id="1e9d89a62ca791f2" href="R/1e9d89a62ca791f2.html" target="n" data-glyph="10,1" class="i field">PropertyStoreFile</a> = <span class="s">&quot;PropertyStore.forms&quot;</span>;
+ 
+		<b>public</b> <span class="i">Task</span>&lt;<span class="i">IDictionary</span>&lt;<b>string</b>, <b>object</b>&gt;&gt; <a id="4b1dabd57026afbc" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">DeserializePropertiesAsync</a>()
+		{
+			<span class="c">// Deserialize property dictionary to local storage</span>
+			<span class="c">// Make sure to use Internal</span>
+			<b>return</b> <span class="i">Task</span>.<span class="i">Run</span>(() =&gt;
+			{
+				<b>using</b> (<span class="i">IsolatedStorageFile</span> <span id="r0 rd" class="r0 r">store</span> = <span class="i">IsolatedStorageFile</span>.<span class="i">GetUserStoreForApplication</span>())
+				<b>using</b> (<span class="i">IsolatedStorageFileStream</span> <span id="r1 rd" class="r1 r">stream</span> = <span class="r0 r">store</span>.<span class="i">OpenFile</span>(<a href="#1e9d89a62ca791f2" class="i field">PropertyStoreFile</a>, <span class="i">System</span>.<span class="i">IO</span>.<span class="i">FileMode</span>.<span class="i">OpenOrCreate</span>))
+				<b>using</b> (<span class="i">XmlDictionaryReader</span> <span id="r2 rd" class="r2 r">reader</span> = <span class="i">XmlDictionaryReader</span>.<span class="i">CreateBinaryReader</span>(<span class="r1 r">stream</span>, <span class="i">XmlDictionaryReaderQuotas</span>.<span class="i">Max</span>))
+				{
+					<b>if</b> (<span class="r1 r">stream</span>.<span class="i">Length</span> == 0)
+						<b>return null</b>;
+ 
+					<b>try</b>
+					{
+						<b>var</b> <span id="r3 rd" class="r3 r">dcs</span> = <b>new</b> <span class="i">DataContractSerializer</span>(<b>typeof</b>(<span class="i">Dictionary</span>&lt;<b>string</b>, <b>object</b>&gt;));
+						<b>return</b> (<span class="i">IDictionary</span>&lt;<b>string</b>, <b>object</b>&gt;)<span class="r3 r">dcs</span>.<span class="i">ReadObject</span>(<span class="r2 r">reader</span>);
+					}
+					<b>catch</b> (<span class="i">Exception</span> <span id="r4 rd" class="r4 r">e</span>)
+					{
+						<span class="i">Debug</span>.<span class="i">WriteLine</span>(<span class="s">&quot;Could not deserialize properties: &quot;</span> + <span class="r4 r">e</span>.<span class="i">Message</span>);
+						<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<span class="i">Warning</span>(<span class="s">&quot;Xamarin.Forms PropertyStore&quot;</span>, <span class="s">$&quot;</span><span class="s">Exception while reading Application properties: </span>{<span class="r4 r">e</span>}<span class="s">&quot;</span>);
+					}
+				}
+ 
+				<b>return null</b>;
+			});
+		}
+ 
+		<b>public</b> <span class="i">Task</span> <a id="4a77c596e94a04c9" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SerializePropertiesAsync</a>(<span class="i">IDictionary</span>&lt;<b>string</b>, <b>object</b>&gt; <span id="r5 rd" class="r5 r">properties</span>)
+		{
+			<span class="r5 r">properties</span> = <b>new</b> <span class="i">Dictionary</span>&lt;<b>string</b>, <b>object</b>&gt;(<span class="r5 r">properties</span>);
+			<span class="c">// Serialize property dictionary to local storage</span>
+			<span class="c">// Make sure to use Internal</span>
+			<b>return</b> <span class="i">Task</span>.<span class="i">Run</span>(() =&gt;
+			{
+				<b>var</b> <span id="r6 rd" class="r6 r">success</span> = <b>false</b>;
+				<b>using</b> (<span class="i">IsolatedStorageFile</span> <span id="r7 rd" class="r7 r">store</span> = <span class="i">IsolatedStorageFile</span>.<span class="i">GetUserStoreForApplication</span>())
+				<b>using</b> (<span class="i">IsolatedStorageFileStream</span> <span id="r8 rd" class="r8 r">stream</span> = <span class="r7 r">store</span>.<span class="i">OpenFile</span>(<a href="#1e9d89a62ca791f2" class="i field">PropertyStoreFile</a> + <span class="s">&quot;.tmp&quot;</span>, <span class="i">System</span>.<span class="i">IO</span>.<span class="i">FileMode</span>.<span class="i">OpenOrCreate</span>))
+				<b>using</b> (<span class="i">XmlDictionaryWriter</span> <span id="r9 rd" class="r9 r">writer</span> = <span class="i">XmlDictionaryWriter</span>.<span class="i">CreateBinaryWriter</span>(<span class="r8 r">stream</span>))
+				{
+					<b>try</b>
+					{
+						<b>var</b> <span id="r10 rd" class="r10 r">dcs</span> = <b>new</b> <span class="i">DataContractSerializer</span>(<b>typeof</b>(<span class="i">Dictionary</span>&lt;<b>string</b>, <b>object</b>&gt;));
+						<span class="r10 r">dcs</span>.<span class="i">WriteObject</span>(<span class="r9 r">writer</span>, <span class="r5 r">properties</span>);
+						<span class="r9 r">writer</span>.<span class="i">Flush</span>();
+						<span class="r6 r">success</span> = <b>true</b>;
+					}
+					<b>catch</b> (<span class="i">Exception</span> <span id="r11 rd" class="r11 r">e</span>)
+					{
+						<span class="i">Debug</span>.<span class="i">WriteLine</span>(<span class="s">&quot;Could not serialize properties: &quot;</span> + <span class="r11 r">e</span>.<span class="i">Message</span>);
+						<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<span class="i">Warning</span>(<span class="s">&quot;Xamarin.Forms PropertyStore&quot;</span>, <span class="s">$&quot;</span><span class="s">Exception while writing Application properties: </span>{<span class="r11 r">e</span>}<span class="s">&quot;</span>);
+					}
+				}
+ 
+				<b>if</b> (!<span class="r6 r">success</span>)
+					<b>return</b>;
+				<b>using</b> (<span class="i">IsolatedStorageFile</span> <span id="r12 rd" class="r12 r">store</span> = <span class="i">IsolatedStorageFile</span>.<span class="i">GetUserStoreForApplication</span>())
+				{
+					<b>try</b>
+					{
+						<b>if</b> (<span class="r12 r">store</span>.<span class="i">FileExists</span>(<a href="#1e9d89a62ca791f2" class="i field">PropertyStoreFile</a>))
+							<span class="r12 r">store</span>.<span class="i">DeleteFile</span>(<a href="#1e9d89a62ca791f2" class="i field">PropertyStoreFile</a>);
+						<span class="r12 r">store</span>.<span class="i">MoveFile</span>(<a href="#1e9d89a62ca791f2" class="i field">PropertyStoreFile</a> + <span class="s">&quot;.tmp&quot;</span>, <a href="#1e9d89a62ca791f2" class="i field">PropertyStoreFile</a>);
+					}
+					<b>catch</b> (<span class="i">Exception</span> <span id="r13 rd" class="r13 r">e</span>)
+					{
+						<span class="i">Debug</span>.<span class="i">WriteLine</span>(<span class="s">&quot;Could not move new serialized property file over old: &quot;</span> + <span class="r13 r">e</span>.<span class="i">Message</span>);
+						<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<span class="i">Warning</span>(<span class="s">&quot;Xamarin.Forms PropertyStore&quot;</span>, <span class="s">$&quot;</span><span class="s">Exception while writing Application properties: </span>{<span class="r13 r">e</span>}<span class="s">&quot;</span>);
+					}
+				}
+			});
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html>
+<html><head><title>KeyboardInsetTracker.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(96);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/Renderers/KeyboardInsetTracker.cs" target="_top">Renderers\KeyboardInsetTracker.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">UIKit</span>;
+<b>using</b> <span class="t">PointF</span> = <span class="i n">CoreGraphics</span>.<span class="t t">CGPoint</span>;
+<b>using</b> <span class="t">RectangleF</span> = <span class="i n">CoreGraphics</span>.<span class="t t">CGRect</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>
+{
+	<b>internal class</b> <a id="33fbb10dfa84ca05" href="../R/33fbb10dfa84ca05.html" target="n" data-glyph="2,0" class="t t">KeyboardInsetTracker</a> : <a href="@0@mscorlib/A.html#1f55292c3174123d" class="t t">IDisposable</a>
+	{
+		<b>readonly</b> <a href="@0@mscorlib/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<span class="t t">UIWindow</span>&gt; <a id="902e881e16f88fef" href="../R/902e881e16f88fef.html" target="n" data-glyph="46,1" class="i field">_fetchWindow</a>;
+		<b>readonly</b> <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="t t">PointF</span>&gt; <a id="6ea4dca13fdb071f" href="../R/6ea4dca13fdb071f.html" target="n" data-glyph="46,1" class="i field">_setContentOffset</a>;
+		<b>readonly</b> <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="t t">UIEdgeInsets</span>&gt; <a id="22f99cd952912e86" href="../R/22f99cd952912e86.html" target="n" data-glyph="46,1" class="i field">_setInsetAction</a>;
+		<b>readonly</b> <span class="t t">UIView</span> <a id="6018061fb778b779" href="../R/6018061fb778b779.html" target="n" data-glyph="46,1" class="i field">_targetView</a>;
+		<b>bool</b> <a id="e1372ed1921e5ccc" href="../R/e1372ed1921e5ccc.html" target="n" data-glyph="46,1" class="i field">_disposed</a>;
+ 
+		<span class="t t">RectangleF</span> <a id="0cecfad32f0cf691" href="../R/0cecfad32f0cf691.html" target="n" data-glyph="46,1" class="i field">_lastKeyboardRect</a>;
+ 
+		<b>public</b> <a id="74a6a93c09637b2b" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i constructor">KeyboardInsetTracker</a>(<span class="t t">UIView</span> <span id="r0 rd" class="r0 r">targetView</span>, <a href="@0@mscorlib/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<span class="t t">UIWindow</span>&gt; <span id="r1 rd" class="r1 r">fetchWindow</span>, <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="t t">UIEdgeInsets</span>&gt; <span id="r2 rd" class="r2 r">setInsetAction</span>) : <a href="#839813244c67b1fa" class="k">this</a>(<span class="r0 r">targetView</span>, <span class="r1 r">fetchWindow</span>, <span class="r2 r">setInsetAction</span>, <b>null</b>)
+		{
+		}
+ 
+		<b>public</b> <a id="839813244c67b1fa" href="../R/839813244c67b1fa.html" target="n" data-glyph="72,1" class="i constructor">KeyboardInsetTracker</a>(<span class="t t">UIView</span> <span id="r3 rd" class="r3 r">targetView</span>, <a href="@0@mscorlib/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<span class="t t">UIWindow</span>&gt; <span id="r4 rd" class="r4 r">fetchWindow</span>, <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="t t">UIEdgeInsets</span>&gt; <span id="r5 rd" class="r5 r">setInsetAction</span>, <a href="@0@mscorlib/A.html#486d58da4553e12d" class="t t">Action</a>&lt;<span class="t t">PointF</span>&gt; <span id="r6 rd" class="r6 r">setContentOffset</span>)
+		{
+			<a href="#6ea4dca13fdb071f" class="i field">_setContentOffset</a> = <span class="r6 r">setContentOffset</span>;
+			<a href="#6018061fb778b779" class="i field">_targetView</a> = <span class="r3 r">targetView</span>;
+			<a href="#902e881e16f88fef" class="i field">_fetchWindow</a> = <span class="r4 r">fetchWindow</span>;
+			<a href="#22f99cd952912e86" class="i field">_setInsetAction</a> = <span class="r5 r">setInsetAction</span>;
+			<a href="KeyboardObserver.cs.html#b816904496acad85" class="t t">KeyboardObserver</a>.<a href="KeyboardObserver.cs.html#efb96760ebc04052" class="i">KeyboardWillShow</a> += <a href="#eb03c81f3a42580d" class="i method">OnKeyboardShown</a>;
+			<a href="KeyboardObserver.cs.html#b816904496acad85" class="t t">KeyboardObserver</a>.<a href="KeyboardObserver.cs.html#f2c13e89f0a4ea75" class="i">KeyboardWillHide</a> += <a href="#44bec9dacded6b69" class="i method">OnKeyboardHidden</a>;
+		}
+ 
+		<b>public void</b> <a id="78ece48d7fe90d14" href="../R/78ece48d7fe90d14.html" target="n" data-glyph="72,1" class="i method">Dispose</a>()
+		{
+			<b>if</b> (<a href="#e1372ed1921e5ccc" class="i field">_disposed</a>)
+				<b>return</b>;
+			<a href="#e1372ed1921e5ccc" class="i field">_disposed</a> = <b>true</b>;
+ 
+			<a href="KeyboardObserver.cs.html#b816904496acad85" class="t t">KeyboardObserver</a>.<a href="KeyboardObserver.cs.html#efb96760ebc04052" class="i">KeyboardWillShow</a> -= <a href="#eb03c81f3a42580d" class="i method">OnKeyboardShown</a>;
+			<a href="KeyboardObserver.cs.html#b816904496acad85" class="t t">KeyboardObserver</a>.<a href="KeyboardObserver.cs.html#f2c13e89f0a4ea75" class="i">KeyboardWillHide</a> -= <a href="#44bec9dacded6b69" class="i method">OnKeyboardHidden</a>;
+		}
+ 
+		<span class="c">//This method allows us to update the insets if the Frame changes</span>
+		<b>internal void</b> <a id="749b9d94f8d41bd6" href="../R/749b9d94f8d41bd6.html" target="n" data-glyph="74,1" class="i method">UpdateInsets</a>()
+		{
+			<span class="c">//being called from LayoutSubviews but keyboard wasn&#39;t shown yet</span>
+			<b>if</b> (<a href="#0cecfad32f0cf691" class="i field">_lastKeyboardRect</a>.<span class="i property">IsEmpty</span>)
+				<b>return</b>;
+ 
+			<b>var</b> <span id="r7 rd" class="r7 r">window</span> = <a href="#902e881e16f88fef" class="i field">_fetchWindow</a>();
+			<span class="c">// Code left verbose to make its operation more obvious</span>
+			<b>if</b> (<span class="r7 r">window</span> == <b>null</b>)
+			{
+				<span class="c">// we are not currently displayed and can safely ignore this</span>
+				<span class="c">// most likely this renderer is on a page which is currently not displayed (e.g. in NavController)</span>
+				<b>return</b>;
+			}
+ 
+			<b>var</b> <span id="r8 rd" class="r8 r">field</span> = <a href="#6018061fb778b779" class="i field">_targetView</a>.<a href="../Extensions/UIViewExtensions.cs.html#c83da841fa87f340" class="i method">FindFirstResponder</a>();
+ 
+			<span class="c">//the view that is triggering the keyboard is not inside our UITableView?</span>
+			<span class="c">//if (field == null)</span>
+			<span class="c">//	return;</span>
+ 
+			<b>var</b> <span id="r9 rd" class="r9 r">boundsSize</span> = <a href="#6018061fb778b779" class="i field">_targetView</a>.<span class="i property">Frame</span>.<span class="i property">Size</span>;
+ 
+			<span class="c">//since our keyboard frame is RVC CoordinateSpace, lets convert it to our targetView CoordinateSpace</span>
+			<b>var</b> <span id="r10 rd" class="r10 r">rect</span> = <a href="#6018061fb778b779" class="i field">_targetView</a>.<span class="i property">Superview</span>.<span class="i method">ConvertRectFromView</span>(<a href="#0cecfad32f0cf691" class="i field">_lastKeyboardRect</a>, <b>null</b>);
+			<span class="c">//let&#39;s see how much does it cover our target view</span>
+			<b>var</b> <span id="r11 rd" class="r11 r">overlay</span> = <span class="t t">RectangleF</span>.<span class="i method">Intersect</span>(<span class="r10 r">rect</span>, <a href="#6018061fb778b779" class="i field">_targetView</a>.<span class="i property">Frame</span>);
+ 
+			<a href="#22f99cd952912e86" class="i field">_setInsetAction</a>(<b>new</b> <span class="t constructor">UIEdgeInsets</span>(0, 0, <span class="r11 r">overlay</span>.<span class="i property">Height</span>, 0));
+ 
+			<b>if</b> (<span class="r8 r">field</span> <b>is</b> <span class="t t">UITextView</span> &amp;&amp; <a href="#6ea4dca13fdb071f" class="i field">_setContentOffset</a> != <b>null</b>)
+			{
+				<b>var</b> <span id="r12 rd" class="r12 r">keyboardTop</span> = <span class="r9 r">boundsSize</span>.<span class="i property">Height</span> - <span class="r11 r">overlay</span>.<span class="i property">Height</span>;
+				<b>var</b> <span id="r13 rd" class="r13 r">fieldPosition</span> = <span class="r8 r">field</span>.<span class="i method">ConvertPointToView</span>(<span class="r8 r">field</span>.<span class="i property">Frame</span>.<span class="i property">Location</span>, <a href="#6018061fb778b779" class="i field">_targetView</a>.<span class="i property">Superview</span>);
+				<b>var</b> <span id="r14 rd" class="r14 r">fieldBottom</span> = <span class="r13 r">fieldPosition</span>.<span class="i property">Y</span> + <span class="r8 r">field</span>.<span class="i property">Frame</span>.<span class="i property">Height</span>;
+				<b>var</b> <span id="r15 rd" class="r15 r">offset</span> = <span class="r14 r">fieldBottom</span> - <span class="r12 r">keyboardTop</span>;
+				<b>if</b> (<span class="r15 r">offset</span> &gt; 0)
+					<a href="#6ea4dca13fdb071f" class="i field">_setContentOffset</a>(<b>new</b> <span class="t constructor">PointF</span>(0, <span class="r15 r">offset</span>));
+			}
+		}
+ 
+		<b>void</b> <a id="44bec9dacded6b69" href="../R/44bec9dacded6b69.html" target="n" data-glyph="76,1" class="i method">OnKeyboardHidden</a>(<b>object</b> <span id="r16 rd" class="r16 r">sender</span>, <span class="t t">UIKeyboardEventArgs</span> <span id="r17 rd" class="r17 r">args</span>)
+		{
+			<a href="#22f99cd952912e86" class="i field">_setInsetAction</a>(<b>new</b> <span class="t constructor">UIEdgeInsets</span>(0, 0, 0, 0));
+			<a href="#0cecfad32f0cf691" class="i field">_lastKeyboardRect</a> = <span class="t t">RectangleF</span>.<span class="i field">Empty</span>;
+		}
+ 
+		<b>void</b> <a id="eb03c81f3a42580d" href="../R/eb03c81f3a42580d.html" target="n" data-glyph="76,1" class="i method">OnKeyboardShown</a>(<b>object</b> <span id="r18 rd" class="r18 r">sender</span>, <span class="t t">UIKeyboardEventArgs</span> <span id="r19 rd" class="r19 r">args</span>)
+		{
+			<a href="#0cecfad32f0cf691" class="i field">_lastKeyboardRect</a> = <span class="r19 r">args</span>.<span class="i property">FrameEnd</span>;
+			<a href="#749b9d94f8d41bd6" class="i method">UpdateInsets</a>();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

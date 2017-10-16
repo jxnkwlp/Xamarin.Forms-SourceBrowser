@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html><head><title>Bugzilla39489.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(111);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Controls/Bugzilla39489.cs" target="_top">Bugzilla39489.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Controls" target="_top">Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj</a> (Xamarin.Forms.Controls)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">CustomAttributes</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Maps</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">using Xamarin.Forms.Core.UITests;
+using Xamarin.UITest;
+using NUnit.Framework;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>.<span class="i n">Issues</span>
+{
+	[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a>(<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">	[Category(UITestCategories.Maps)]
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+	[<a href="/Xamarin.Forms.CustomAttributes/A.html#7e3803f42297329b" class="t constructor">Issue</a>(<a href="/Xamarin.Forms.CustomAttributes/A.html#71fbc272a65cfefa" class="t t">IssueTracker</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#4c33f6b873a9476c" class="i field">Bugzilla</a>, 39489, <span class="s">&quot;Memory leak when using NavigationPage with Maps&quot;</span>, <a href="/Xamarin.Forms.CustomAttributes/A.html#e0966d88fdc6123d" class="t t">PlatformAffected</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#3ae82ddf44fd075d" class="i field">Android</a> | <a href="/Xamarin.Forms.CustomAttributes/A.html#e0966d88fdc6123d" class="t t">PlatformAffected</a>.<a href="/Xamarin.Forms.CustomAttributes/A.html#f84b70a5245316d6" class="i field">iOS</a>)]
+	<b>public class</b> <a id="4d59cc54a3fb110a" href="R/../../0000000000.html" target="n" data-glyph="0,0" class="t t"><span id="8107acea71d0ec77">Bugzilla39489</span></a> : <a href="TestPages.cs.html#33c495d7fb850a48" class="t t">TestNavigationPage</a>
+	{
+		<b>protected override void</b> <a id="2f7a1c81f9d4611f" href="R/2f7a1c81f9d4611f.html" target="n" data-glyph="75,1" class="i method">Init</a>()
+		{
+			<a href="/Xamarin.Forms.Core/A.html#0b928594869960ba" class="i method">PushAsync</a>(<b>new</b> <a href="#3ab7f070183e9c13" class="t constructor">Bz39489Content</a>());
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">UITEST</span>
+<span class="e">
+		protected override bool Isolate =&gt; true;
+ 
+		[Test]
+		public async Task Bugzilla39489Test()
+		{
+			// Original bug report (https://bugzilla.xamarin.com/show_bug.cgi?id=39489) had a crash (OOM) after 25-30
+			// page loads. Obviously it&#39;s going to depend heavily on the device and amount of available memory, but
+			// if this starts failing before 50 we&#39;ll know we&#39;ve sprung another serious leak
+			int iterations = 50;
+ 
+			for (int n = 0; n &lt; iterations; n++)
+			{
+				RunningApp.WaitForElement(q =&gt; q.Marked(&quot;New Page&quot;));
+				RunningApp.Tap(q =&gt; q.Marked(&quot;New Page&quot;));
+				RunningApp.WaitForElement(q =&gt; q.Marked(&quot;New Page&quot;));
+				await Task.Delay(1000);
+				RunningApp.Back();
+			}
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+	}
+ 
+	<b>public class</b> <a id="496708355e48f9d7" href="R/496708355e48f9d7.html" target="n" data-glyph="0,0" class="t t">Bz39489Map</a> : <a href="/Xamarin.Forms.Maps/A.html#cdab2379e240d88f" class="t t">Map</a>
+	{
+		<b>static int</b> <a id="b11aa99c0b7b9e7a" href="R/b11aa99c0b7b9e7a.html" target="n" data-glyph="46,1" class="i field">s_count</a>;
+ 
+		<b>public</b> <a id="7e930fe095eb71a7" href="R/7e930fe095eb71a7.html" target="n" data-glyph="72,1" class="i constructor">Bz39489Map</a>()
+		{
+			<span class="t t">Interlocked</span>.<span class="i method">Increment</span>(<b>ref</b> <a href="#b11aa99c0b7b9e7a" class="i field">s_count</a>);
+			<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">$&quot;</span><span class="s">++++++++ Bz39489Map : Constructor, count is </span>{<a href="#b11aa99c0b7b9e7a" class="i field">s_count</a>}<span class="s">&quot;</span>);
+		}
+ 
+		~<a id="9b34b18d8c1543e5" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Bz39489Map</a>()
+		{
+			<span class="t t">Interlocked</span>.<span class="i method">Decrement</span>(<b>ref</b> <a href="#b11aa99c0b7b9e7a" class="i field">s_count</a>);
+			<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">$&quot;</span><span class="s">-------- Bz39489Map: Destructor, count is </span>{<a href="#b11aa99c0b7b9e7a" class="i field">s_count</a>}<span class="s">&quot;</span>);
+		}
+	}
+ 
+	[<a href="/Xamarin.Forms.Core/A.html#86e8cd96f62aab08" class="t constructor">Preserve</a>(<a href="/Xamarin.Forms.Core/A.html#1bacf10dafd22c73" class="i field">AllMembers</a> = <b>true</b>)]
+	<b>public class</b> <a id="f993159190d75edc" href="R/f993159190d75edc.html" target="n" data-glyph="0,0" class="t t">Bz39489Content</a> : <a href="/Xamarin.Forms.Core/A.html#2f77fd3b834f8534" class="t t">ContentPage</a>
+	{
+		<b>static int</b> <a id="94e3d5f78d01e3ee" href="R/94e3d5f78d01e3ee.html" target="n" data-glyph="46,1" class="i field">s_count</a>;
+ 
+		<b>public</b> <a id="3ab7f070183e9c13" href="R/3ab7f070183e9c13.html" target="n" data-glyph="72,1" class="i constructor">Bz39489Content</a>()
+		{
+			<span class="t t">Interlocked</span>.<span class="i method">Increment</span>(<b>ref</b> <a href="#94e3d5f78d01e3ee" class="i field">s_count</a>);
+			<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">$&quot;</span><span class="s">&gt;&gt;&gt;&gt;&gt; Bz39489Content Bz39489Content 54: Constructor, count is </span>{<a href="#94e3d5f78d01e3ee" class="i field">s_count</a>}<span class="s">&quot;</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="k">var</a> <span id="r0 rd" class="r0 r">button</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#c9ccc9248166aa0f" class="t constructor">Button</a> { <a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a> = <span class="s">&quot;New Page&quot;</span> };
+ 
+			<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="k">var</a> <span id="r1 rd" class="r1 r">gcbutton</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#c9ccc9248166aa0f" class="t constructor">Button</a> { <a href="/Xamarin.Forms.Core/A.html#259ea62d7aa7ac0a" class="i property">Text</a> = <span class="s">&quot;GC&quot;</span> };
+ 
+			<a href="#496708355e48f9d7" class="k">var</a> <span id="r2 rd" class="r2 r">map</span> = <b>new</b> <a href="#7e930fe095eb71a7" class="t constructor">Bz39489Map</a>();
+ 
+			<span class="r0 r">button</span>.<a href="/Xamarin.Forms.Core/A.html#2f35d86af34f02f3" class="i">Clicked</a> += <a href="#365ebb627bb8366b" class="i method">Button_Clicked</a>;
+			<span class="r1 r">gcbutton</span>.<a href="/Xamarin.Forms.Core/A.html#2f35d86af34f02f3" class="i">Clicked</a> += <a href="#c8e0a824db3b1f21" class="i method">GCbutton_Clicked</a>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#3929eda3f5d3e80d" class="i property">Content</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#9eff482dc844e6af" class="t constructor">StackLayout</a> { <a href="/Xamarin.Forms.Core/A.html#5049824abac2f58c" class="i property">Children</a> = { <span class="r0 r">button</span>, <span class="r1 r">gcbutton</span>, <span class="r2 r">map</span> } };
+		}
+ 
+		<b>void</b> <a id="c8e0a824db3b1f21" href="R/c8e0a824db3b1f21.html" target="n" data-glyph="76,1" class="i method">GCbutton_Clicked</a>(<b>object</b> <span id="r3 rd" class="r3 r">sender</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r4 rd" class="r4 r">e</span>)
+		{
+			<span class="i n">System</span>.<span class="i n">Diagnostics</span>.<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Running Garbage Collection&quot;</span>);
+			<a href="@1@System.Runtime/A.html#25d9c1e022317a99" class="t t">GC</a>.<a href="@1@System.Runtime/A.html#7abab96bebb051fd" class="i method">Collect</a>();
+			<a href="@1@System.Runtime/A.html#25d9c1e022317a99" class="t t">GC</a>.<a href="@1@System.Runtime/A.html#0a7c5667390b95d5" class="i method">WaitForPendingFinalizers</a>();
+			<span class="i n">System</span>.<span class="i n">Diagnostics</span>.<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">$&quot;</span><span class="s">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; GC.GetTotalMemory = </span>{<a href="@1@System.Runtime/A.html#25d9c1e022317a99" class="t t">GC</a>.<a href="@1@System.Runtime/A.html#3d710c141a784dbf" class="i method">GetTotalMemory</a>(<b>true</b>):<span class="s">n0</span>}<span class="s">&quot;</span>);
+		}
+ 
+		<b>void</b> <a id="365ebb627bb8366b" href="R/365ebb627bb8366b.html" target="n" data-glyph="76,1" class="i method">Button_Clicked</a>(<b>object</b> <span id="r5 rd" class="r5 r">sender</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r6 rd" class="r6 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#0621720042f94078" class="i property">Navigation</a>.<a href="/Xamarin.Forms.Core/A.html#3ff757e3b604805a" class="i method">PushAsync</a>(<b>new</b> <a href="#3ab7f070183e9c13" class="t constructor">Bz39489Content</a>());
+		}
+ 
+		~<a id="6ef2b89b82fc0273" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Bz39489Content</a>()
+		{
+			<span class="t t">Interlocked</span>.<span class="i method">Decrement</span>(<b>ref</b> <a href="#94e3d5f78d01e3ee" class="i field">s_count</a>);
+			<span class="t t">Debug</span>.<span class="i method">WriteLine</span>(<span class="s">$&quot;</span><span class="s">&gt;&gt;&gt;&gt;&gt; Bz39489Content ~Bz39489Content 82: Destructor, count is </span>{<a href="#94e3d5f78d01e3ee" class="i field">s_count</a>}<span class="s">&quot;</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

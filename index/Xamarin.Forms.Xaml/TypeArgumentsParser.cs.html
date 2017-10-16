@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html><head><title>TypeArgumentsParser.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(70);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Xaml/TypeArgumentsParser.cs" target="_top">TypeArgumentsParser.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Xaml" target="_top">Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj</a> (Xamarin.Forms.Xaml)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Xml</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>
+{
+	<b>static class</b> <a id="1d55d421fe322b76" href="R/1d55d421fe322b76.html" target="n" data-glyph="2,0" class="t t">TypeArgumentsParser</a>
+	{
+		<b>public static</b> <a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="XamlNode.cs.html#944154aac15f45be" class="t t">XmlType</a>&gt; <a id="07591374f92b8280" href="R/07591374f92b8280.html" target="n" data-glyph="72,1" class="i method">ParseExpression</a>(<b>string</b> <span id="r0 rd" class="r0 r">expression</span>, <span class="t t">IXmlNamespaceResolver</span> <span id="r1 rd" class="r1 r">resolver</span>, <span class="t t">IXmlLineInfo</span> <span id="r2 rd" class="r2 r">lineInfo</span>)
+		{
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r3 rd" class="r3 r">typeList</span> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="XamlNode.cs.html#944154aac15f45be" class="t t">XmlType</a>&gt;();
+			<b>while</b> (!<b>string</b>.<a href="@1@System.Runtime/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(<span class="r0 r">expression</span>))
+			{
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r4 rd" class="r4 r">match</span> = <span class="r0 r">expression</span>;
+				<span class="r3 r">typeList</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<a href="#ae6c207d3109409d" class="i method">Parse</a>(<span class="r4 r">match</span>, <b>ref</b> <span class="r0 r">expression</span>, <span class="r1 r">resolver</span>, <span class="r2 r">lineInfo</span>));
+			}
+			<b>return</b> <span class="r3 r">typeList</span>;
+		}
+ 
+		<b>static</b> <a href="XamlNode.cs.html#944154aac15f45be" class="t t">XmlType</a> <a id="ae6c207d3109409d" href="R/ae6c207d3109409d.html" target="n" data-glyph="76,1" class="i method">Parse</a>(<b>string</b> <span id="r5 rd" class="r5 r">match</span>, <b>ref string</b> <span id="r6 rd" class="r6 r">remaining</span>, <span class="t t">IXmlNamespaceResolver</span> <span id="r7 rd" class="r7 r">resolver</span>, <span class="t t">IXmlLineInfo</span> <span id="r8 rd" class="r8 r">lineinfo</span>)
+		{
+			<span class="r6 r">remaining</span> = <b>null</b>;
+			<b>int</b> <span id="r9 rd" class="r9 r">parensCount</span> = 0;
+			<b>int</b> <span id="r10 rd" class="r10 r">pos</span> = 0;
+			<b>bool</b> <span id="r11 rd" class="r11 r">isGeneric</span> = <b>false</b>;
+ 
+			<b>for</b> (<span class="r10 r">pos</span> = 0; <span class="r10 r">pos</span> &lt; <span class="r5 r">match</span>.<a href="@1@System.Runtime/A.html#e13f5829ef28aa07" class="i property">Length</a>; <span class="r10 r">pos</span>++)
+			{
+				<b>if</b> (<span class="r5 r">match</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r10 r">pos</span>] == <span class="s">&#39;(&#39;</span>)
+				{
+					<span class="r9 r">parensCount</span>++;
+					<span class="r11 r">isGeneric</span> = <b>true</b>;
+				}
+				<b>else if</b> (<span class="r5 r">match</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r10 r">pos</span>] == <span class="s">&#39;)&#39;</span>)
+					<span class="r9 r">parensCount</span>--;
+				<b>else if</b> (<span class="r5 r">match</span><a href="@1@System.Runtime/A.html#8307d03426b56fe1">[</a><span class="r10 r">pos</span>] == <span class="s">&#39;,&#39;</span> &amp;&amp; <span class="r9 r">parensCount</span> == 0)
+				{
+					<span class="r6 r">remaining</span> = <span class="r5 r">match</span>.<a href="@1@System.Runtime/A.html#882fa7998d6ca35a" class="i method">Substring</a>(<span class="r10 r">pos</span> + 1);
+					<b>break</b>;
+				}
+			}
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r12 rd" class="r12 r">type</span> = <span class="r5 r">match</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(0, <span class="r10 r">pos</span>).<a href="@1@System.Runtime/A.html#06a5f7c688e69307" class="i method">Trim</a>();
+ 
+			<a href="@1@System.Runtime/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="XamlNode.cs.html#944154aac15f45be" class="t t">XmlType</a>&gt; <span id="r13 rd" class="r13 r">typeArguments</span> = <b>null</b>;
+			<b>if</b> (<span class="r11 r">isGeneric</span>)
+			{
+				<span class="r13 r">typeArguments</span> = <a href="#07591374f92b8280" class="i method">ParseExpression</a>(
+					<span class="r12 r">type</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(<span class="r12 r">type</span>.<a href="@1@System.Runtime/A.html#eb06d6d166f6a3d9" class="i method">IndexOf</a>(<span class="s">&#39;(&#39;</span>) + 1, <span class="r12 r">type</span>.<a href="@1@System.Runtime/A.html#43ea090a2243545e" class="i method">LastIndexOf</a>(<span class="s">&#39;)&#39;</span>) - <span class="r12 r">type</span>.<a href="@1@System.Runtime/A.html#eb06d6d166f6a3d9" class="i method">IndexOf</a>(<span class="s">&#39;(&#39;</span>) - 1), <span class="r7 r">resolver</span>, <span class="r8 r">lineinfo</span>);
+				<span class="r12 r">type</span> = <span class="r12 r">type</span>.<a href="@1@System.Runtime/A.html#8124961f027d9ac9" class="i method">Substring</a>(0, <span class="r12 r">type</span>.<a href="@1@System.Runtime/A.html#eb06d6d166f6a3d9" class="i method">IndexOf</a>(<span class="s">&#39;(&#39;</span>));
+			}
+ 
+			<b>var</b> <span id="r14 rd" class="r14 r">split</span> = <span class="r12 r">type</span>.<a href="@1@System.Runtime/A.html#1c4a9dc78ba38999" class="i method">Split</a>(<span class="s">&#39;:&#39;</span>);
+			<b>if</b> (<span class="r14 r">split</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> &gt; 2)
+				<b>return null</b>;
+ 
+			<b>string</b> <span id="r15 rd" class="r15 r">prefix</span>, <span id="r16 rd" class="r16 r">name</span>;
+			<b>if</b> (<span class="r14 r">split</span>.<a href="@1@System.Runtime/A.html#42e9b7616956cf94" class="i property">Length</a> == 2) {
+				<span class="r15 r">prefix</span> = <span class="r14 r">split</span> [0];
+				<span class="r16 r">name</span> = <span class="r14 r">split</span> [1];
+			} <b>else</b> {
+				<span class="r15 r">prefix</span> = <span class="s">&quot;&quot;</span>;
+				<span class="r16 r">name</span> = <span class="r14 r">split</span> [0];
+			}
+ 
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r17 rd" class="r17 r">namespaceuri</span> = <span class="r7 r">resolver</span>.<span class="i method">LookupNamespace</span>(<span class="r15 r">prefix</span>);
+			<b>if</b> (<span class="r17 r">namespaceuri</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="/Xamarin.Forms.Core/A.html#40567081c8b7dfe0" class="t constructor">XamlParseException</a>(<span class="s">$&quot;</span><span class="s">No xmlns declaration for prefix &#39;</span>{<span class="r15 r">prefix</span>}<span class="s">&#39;.</span><span class="s">&quot;</span>, <span class="r8 r">lineinfo</span>, <b>null</b>);
+			<b>return</b> <b>new</b> <a href="XamlNode.cs.html#0a1740224b8aaa73" class="t constructor">XmlType</a>(<span class="r17 r">namespaceuri</span>, <span class="r16 r">name</span>, <span class="r13 r">typeArguments</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

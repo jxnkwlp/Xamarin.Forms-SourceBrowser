@@ -1,0 +1,194 @@
+﻿<!DOCTYPE html>
+<html><head><title>ToolbarTracker.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(185);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/Internals/ToolbarTracker.cs" target="_top">Internals\ToolbarTracker.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">ObjectModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Specialized</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>
+{
+	[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+	<b>public class</b> <a id="05aae3e95105f7c5" href="../R/05aae3e95105f7c5.html" target="n" data-glyph="0,0" class="t t"><span id="1e690acab145869e">ToolbarTracker</span></a>
+	{
+		<b>int</b> <a id="bd62a39765d44ce2" href="../R/bd62a39765d44ce2.html" target="n" data-glyph="46,1" class="i field">_masterDetails</a>;
+		<a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <a id="d0e05d0c78662267" href="../R/d0e05d0c78662267.html" target="n" data-glyph="46,1" class="i field">_target</a>;
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt; <a id="1e6c8f7b9ed9979c" href="../R/1e6c8f7b9ed9979c.html" target="n" data-glyph="102,1" class="i property">AdditionalTargets</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public bool</b> <a id="2ab69a1b8011102c" href="../R/2ab69a1b8011102c.html" target="n" data-glyph="102,1" class="i property">HaveMasterDetail</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#bd62a39765d44ce2" class="i field">_masterDetails</a> &gt; 0; }
+		}
+ 
+		<b>public bool</b> <a id="070571e1cb2dea93" href="../R/070571e1cb2dea93.html" target="n" data-glyph="102,1" class="i property">SeparateMasterDetail</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public</b> <a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <a id="8488e5527229368f" href="../R/8488e5527229368f.html" target="n" data-glyph="102,1" class="i property">Target</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#d0e05d0c78662267" class="i field">_target</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#d0e05d0c78662267" class="i field">_target</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<a href="#61842ffa5890c63c" class="i method">UntrackTarget</a>(<a href="#d0e05d0c78662267" class="i field">_target</a>);
+				<a href="#d0e05d0c78662267" class="i field">_target</a> = <b>value</b>;
+ 
+				<b>if</b> (<a href="#d0e05d0c78662267" class="i field">_target</a> != <b>null</b>)
+					<a href="#33d1d67fb7e60dfd" class="i method">TrackTarget</a>(<a href="#d0e05d0c78662267" class="i field">_target</a>);
+				<a href="#1cec0a8030544959" class="i method">EmitCollectionChanged</a>();
+			}
+		}
+ 
+		<b>public</b> <a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="../ToolbarItem.cs.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt; <a id="ce0e28ad1e0711be" href="../R/ce0e28ad1e0711be.html" target="n" data-glyph="102,1" class="i property">ToolbarItems</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (<a href="#8488e5527229368f" class="i property">Target</a> == <b>null</b>)
+					<b>return</b> <span class="t t">Enumerable</span>.<span class="i method">Empty</span>&lt;<a href="../ToolbarItem.cs.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt;();
+				<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="../ToolbarItem.cs.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt; <span id="r0 rd" class="r0 r">items</span> = <a href="#00f370e41d5fb9ba" class="i method">GetCurrentToolbarItems</a>(<a href="#8488e5527229368f" class="i property">Target</a>);
+				<b>if</b> (<a href="#1e6c8f7b9ed9979c" class="i property">AdditionalTargets</a> != <b>null</b>)
+					<span class="r0 r">items</span> = <span class="r0 r">items</span>.<span class="i method">Concat</span>(<a href="#1e6c8f7b9ed9979c" class="i property">AdditionalTargets</a>.<span class="i method">SelectMany</span>(<span id="r1 rd" class="r1 r">t</span> =&gt; <span class="r1 r">t</span>.<a href="../Page.cs.html#d2ac1f7009750d5f" class="i property">ToolbarItems</a>));
+ 
+				<b>return</b> <span class="r0 r">items</span>.<span class="i method">OrderBy</span>(<span id="r2 rd" class="r2 r">ti</span> =&gt; <span class="r2 r">ti</span>.<a href="../ToolbarItem.cs.html#d930dc3e56b045ce" class="i property">Priority</a>);
+			}
+		}
+ 
+		<b>public event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="519a12d50b29339c" href="../R/519a12d50b29339c.html" target="n" data-glyph="30,1" class="i">CollectionChanged</a>;
+ 
+		<b>void</b> <a id="1cec0a8030544959" href="../R/1cec0a8030544959.html" target="n" data-glyph="76,1" class="i method">EmitCollectionChanged</a>()
+		{
+			<b>if</b> (<a href="#519a12d50b29339c" class="i">CollectionChanged</a> != <b>null</b>)
+				<a href="#519a12d50b29339c" class="i">CollectionChanged</a>(<a href="#05aae3e95105f7c5" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>);
+		}
+ 
+		<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<a href="../ToolbarItem.cs.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt; <a id="00f370e41d5fb9ba" href="../R/00f370e41d5fb9ba.html" target="n" data-glyph="76,1" class="i method">GetCurrentToolbarItems</a>(<a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r3 rd" class="r3 r">page</span>)
+		{
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r4 rd" class="r4 r">result</span> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="../ToolbarItem.cs.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt;();
+			<span class="r4 r">result</span>.<a href="@1@System.Collections/A.html#e569d850a66a1771" class="i method">AddRange</a>(<span class="r3 r">page</span>.<a href="../Page.cs.html#d2ac1f7009750d5f" class="i property">ToolbarItems</a>);
+ 
+			<b>if</b> (<span class="r3 r">page</span> <b>is</b> <a href="../MasterDetailPage.cs.html#187368fc14858e81" class="t t">MasterDetailPage</a>)
+			{
+				<a href="../MasterDetailPage.cs.html#187368fc14858e81" class="k">var</a> <span id="r5 rd" class="r5 r">masterDetail</span> = (<a href="../MasterDetailPage.cs.html#187368fc14858e81" class="t t">MasterDetailPage</a>)<span class="r3 r">page</span>;
+				<b>if</b> (<a href="#070571e1cb2dea93" class="i property">SeparateMasterDetail</a>)
+				{
+					<b>if</b> (<span class="r5 r">masterDetail</span>.<a href="../MasterDetailPage.cs.html#59f4de40953f21a2" class="i property">IsPresented</a>)
+					{
+						<b>if</b> (<span class="r5 r">masterDetail</span>.<a href="../MasterDetailPage.cs.html#95e50e7ead12e7eb" class="i property">Master</a> != <b>null</b>)
+							<span class="r4 r">result</span>.<a href="@1@System.Collections/A.html#e569d850a66a1771" class="i method">AddRange</a>(<a href="#00f370e41d5fb9ba" class="i method">GetCurrentToolbarItems</a>(<span class="r5 r">masterDetail</span>.<a href="../MasterDetailPage.cs.html#95e50e7ead12e7eb" class="i property">Master</a>));
+					}
+					<b>else</b>
+					{
+						<b>if</b> (<span class="r5 r">masterDetail</span>.<a href="../MasterDetailPage.cs.html#f1d01a371fd01303" class="i property">Detail</a> != <b>null</b>)
+							<span class="r4 r">result</span>.<a href="@1@System.Collections/A.html#e569d850a66a1771" class="i method">AddRange</a>(<a href="#00f370e41d5fb9ba" class="i method">GetCurrentToolbarItems</a>(<span class="r5 r">masterDetail</span>.<a href="../MasterDetailPage.cs.html#f1d01a371fd01303" class="i property">Detail</a>));
+					}
+				}
+				<b>else</b>
+				{
+					<b>if</b> (<span class="r5 r">masterDetail</span>.<a href="../MasterDetailPage.cs.html#95e50e7ead12e7eb" class="i property">Master</a> != <b>null</b>)
+						<span class="r4 r">result</span>.<a href="@1@System.Collections/A.html#e569d850a66a1771" class="i method">AddRange</a>(<a href="#00f370e41d5fb9ba" class="i method">GetCurrentToolbarItems</a>(<span class="r5 r">masterDetail</span>.<a href="../MasterDetailPage.cs.html#95e50e7ead12e7eb" class="i property">Master</a>));
+					<b>if</b> (<span class="r5 r">masterDetail</span>.<a href="../MasterDetailPage.cs.html#f1d01a371fd01303" class="i property">Detail</a> != <b>null</b>)
+						<span class="r4 r">result</span>.<a href="@1@System.Collections/A.html#e569d850a66a1771" class="i method">AddRange</a>(<a href="#00f370e41d5fb9ba" class="i method">GetCurrentToolbarItems</a>(<span class="r5 r">masterDetail</span>.<a href="../MasterDetailPage.cs.html#f1d01a371fd01303" class="i property">Detail</a>));
+				}
+			}
+			<b>else if</b> (<span class="r3 r">page</span> <b>is</b> <a href="../IPageContainer.cs.html#bc871d05751370ed" class="t t">IPageContainer</a>&lt;<a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;)
+			{
+				<a href="../IPageContainer.cs.html#bc871d05751370ed" class="k">var</a> <span id="r6 rd" class="r6 r">container</span> = (<a href="../IPageContainer.cs.html#bc871d05751370ed" class="t t">IPageContainer</a>&lt;<a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;)<span class="r3 r">page</span>;
+				<b>if</b> (<span class="r6 r">container</span>.<a href="../IPageContainer.cs.html#ba02d65acd22ef3c" class="i property">CurrentPage</a> != <b>null</b>)
+					<span class="r4 r">result</span>.<a href="@1@System.Collections/A.html#e569d850a66a1771" class="i method">AddRange</a>(<a href="#00f370e41d5fb9ba" class="i method">GetCurrentToolbarItems</a>(<span class="r6 r">container</span>.<a href="../IPageContainer.cs.html#ba02d65acd22ef3c" class="i property">CurrentPage</a>));
+			}
+ 
+			<b>return</b> <span class="r4 r">result</span>;
+		}
+ 
+		<b>void</b> <a id="6845d9ee7a2098a9" href="../R/6845d9ee7a2098a9.html" target="n" data-glyph="76,1" class="i method">OnChildAdded</a>(<b>object</b> <span id="r7 rd" class="r7 r">sender</span>, <a href="../ElementEventArgs.cs.html#2f1ac1d6a4d190ba" class="t t">ElementEventArgs</a> <span id="r8 rd" class="r8 r">eventArgs</span>)
+		{
+			<a href="../Page.cs.html#d2450da355a1c8f2" class="k">var</a> <span id="r9 rd" class="r9 r">page</span> = <span class="r8 r">eventArgs</span>.<a href="../ElementEventArgs.cs.html#bd424cf4a66020d2" class="i property">Element</a> <b>as</b> <a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>;
+			<b>if</b> (<span class="r9 r">page</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="#eaf6dd3672851e64" class="i method">RegisterChildPage</a>(<span class="r9 r">page</span>);
+		}
+ 
+		<b>void</b> <a id="befbd21fc483cf5c" href="../R/befbd21fc483cf5c.html" target="n" data-glyph="76,1" class="i method">OnChildRemoved</a>(<b>object</b> <span id="r10 rd" class="r10 r">sender</span>, <a href="../ElementEventArgs.cs.html#2f1ac1d6a4d190ba" class="t t">ElementEventArgs</a> <span id="r11 rd" class="r11 r">eventArgs</span>)
+		{
+			<a href="../Page.cs.html#d2450da355a1c8f2" class="k">var</a> <span id="r12 rd" class="r12 r">page</span> = <span class="r11 r">eventArgs</span>.<a href="../ElementEventArgs.cs.html#bd424cf4a66020d2" class="i property">Element</a> <b>as</b> <a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>;
+			<b>if</b> (<span class="r12 r">page</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="#ce24ea06a5eacbff" class="i method">UnregisterChildPage</a>(<span class="r12 r">page</span>);
+		}
+ 
+		<b>void</b> <a id="63b578d96da867a6" href="../R/63b578d96da867a6.html" target="n" data-glyph="76,1" class="i method">OnCollectionChanged</a>(<b>object</b> <span id="r13 rd" class="r13 r">sender</span>, <span class="t t">NotifyCollectionChangedEventArgs</span> <span id="r14 rd" class="r14 r">notifyCollectionChangedEventArgs</span>)
+		{
+			<a href="#1cec0a8030544959" class="i method">EmitCollectionChanged</a>();
+		}
+ 
+		<b>void</b> <a id="b19caeb6cf7914d1" href="../R/b19caeb6cf7914d1.html" target="n" data-glyph="76,1" class="i method">OnPropertyChanged</a>(<b>object</b> <span id="r15 rd" class="r15 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r16 rd" class="r16 r">propertyChangedEventArgs</span>)
+		{
+			<b>if</b> (<span class="r16 r">propertyChangedEventArgs</span>.<span class="i property">PropertyName</span> == <a href="../NavigationPage.cs.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>.<a href="../NavigationPage.cs.html#c76fa11c142c9983" class="i field">CurrentPageProperty</a>.<a href="../BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> || <span class="r16 r">propertyChangedEventArgs</span>.<span class="i property">PropertyName</span> == <a href="../MasterDetailPage.cs.html#187368fc14858e81" class="t t">MasterDetailPage</a>.<a href="../MasterDetailPage.cs.html#6517745f6cc786be" class="i field">IsPresentedProperty</a>.<a href="../BindableProperty.cs.html#3e8a9f30dd5c9578" class="i property">PropertyName</a> ||
+				<span class="r16 r">propertyChangedEventArgs</span>.<span class="i property">PropertyName</span> == <span class="s">&quot;Detail&quot;</span> || <span class="r16 r">propertyChangedEventArgs</span>.<span class="i property">PropertyName</span> == <span class="s">&quot;Master&quot;</span>)
+			{
+				<a href="#1cec0a8030544959" class="i method">EmitCollectionChanged</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="eaf6dd3672851e64" href="../R/eaf6dd3672851e64.html" target="n" data-glyph="76,1" class="i method">RegisterChildPage</a>(<a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r17 rd" class="r17 r">page</span>)
+		{
+			<b>if</b> (<span class="r17 r">page</span> <b>is</b> <a href="../MasterDetailPage.cs.html#187368fc14858e81" class="t t">MasterDetailPage</a>)
+				<a href="#bd62a39765d44ce2" class="i field">_masterDetails</a>++;
+ 
+			((<span class="t t">ObservableCollection</span>&lt;<a href="../ToolbarItem.cs.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt;)<span class="r17 r">page</span>.<a href="../Page.cs.html#d2ac1f7009750d5f" class="i property">ToolbarItems</a>).<span class="i">CollectionChanged</span> += <a href="#63b578d96da867a6" class="i method">OnCollectionChanged</a>;
+			<span class="r17 r">page</span>.<a href="../BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#b19caeb6cf7914d1" class="i method">OnPropertyChanged</a>;
+		}
+ 
+		<b>void</b> <a id="33d1d67fb7e60dfd" href="../R/33d1d67fb7e60dfd.html" target="n" data-glyph="76,1" class="i method">TrackTarget</a>(<a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r18 rd" class="r18 r">page</span>)
+		{
+			<b>if</b> (<span class="r18 r">page</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<span class="r18 r">page</span> <b>is</b> <a href="../MasterDetailPage.cs.html#187368fc14858e81" class="t t">MasterDetailPage</a>)
+				<a href="#bd62a39765d44ce2" class="i field">_masterDetails</a>++;
+ 
+			((<span class="t t">ObservableCollection</span>&lt;<a href="../ToolbarItem.cs.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt;)<span class="r18 r">page</span>.<a href="../Page.cs.html#d2ac1f7009750d5f" class="i property">ToolbarItems</a>).<span class="i">CollectionChanged</span> += <a href="#63b578d96da867a6" class="i method">OnCollectionChanged</a>;
+			<span class="r18 r">page</span>.<a href="../Element.cs.html#98df2bf4ead61efb" class="i method">Descendants</a>().<span class="i method">OfType</span>&lt;<a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;().<a href="../EnumerableExtensions.cs.html#eafb76084182e156" class="i method">ForEach</a>(<a href="#eaf6dd3672851e64" class="i method">RegisterChildPage</a>);
+ 
+			<span class="r18 r">page</span>.<a href="../Element.cs.html#5d0dffd3058cc236" class="i">DescendantAdded</a> += <a href="#6845d9ee7a2098a9" class="i method">OnChildAdded</a>;
+			<span class="r18 r">page</span>.<a href="../Element.cs.html#3fba70896794895d" class="i">DescendantRemoved</a> += <a href="#befbd21fc483cf5c" class="i method">OnChildRemoved</a>;
+			<span class="r18 r">page</span>.<a href="../BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#b19caeb6cf7914d1" class="i method">OnPropertyChanged</a>;
+		}
+ 
+		<b>void</b> <a id="ce24ea06a5eacbff" href="../R/ce24ea06a5eacbff.html" target="n" data-glyph="76,1" class="i method">UnregisterChildPage</a>(<a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r19 rd" class="r19 r">page</span>)
+		{
+			<b>if</b> (<span class="r19 r">page</span> <b>is</b> <a href="../MasterDetailPage.cs.html#187368fc14858e81" class="t t">MasterDetailPage</a>)
+				<a href="#bd62a39765d44ce2" class="i field">_masterDetails</a>--;
+ 
+			((<span class="t t">ObservableCollection</span>&lt;<a href="../ToolbarItem.cs.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt;)<span class="r19 r">page</span>.<a href="../Page.cs.html#d2ac1f7009750d5f" class="i property">ToolbarItems</a>).<span class="i">CollectionChanged</span> -= <a href="#63b578d96da867a6" class="i method">OnCollectionChanged</a>;
+			<span class="r19 r">page</span>.<a href="../BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#b19caeb6cf7914d1" class="i method">OnPropertyChanged</a>;
+		}
+ 
+		<b>void</b> <a id="61842ffa5890c63c" href="../R/61842ffa5890c63c.html" target="n" data-glyph="76,1" class="i method">UntrackTarget</a>(<a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r20 rd" class="r20 r">page</span>)
+		{
+			<b>if</b> (<span class="r20 r">page</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<span class="r20 r">page</span> <b>is</b> <a href="../MasterDetailPage.cs.html#187368fc14858e81" class="t t">MasterDetailPage</a>)
+				<a href="#bd62a39765d44ce2" class="i field">_masterDetails</a>--;
+ 
+			((<span class="t t">ObservableCollection</span>&lt;<a href="../ToolbarItem.cs.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt;)<span class="r20 r">page</span>.<a href="../Page.cs.html#d2ac1f7009750d5f" class="i property">ToolbarItems</a>).<span class="i">CollectionChanged</span> -= <a href="#63b578d96da867a6" class="i method">OnCollectionChanged</a>;
+			<span class="r20 r">page</span>.<a href="../Element.cs.html#98df2bf4ead61efb" class="i method">Descendants</a>().<span class="i method">OfType</span>&lt;<a href="../Page.cs.html#d2450da355a1c8f2" class="t t">Page</a>&gt;().<a href="../EnumerableExtensions.cs.html#eafb76084182e156" class="i method">ForEach</a>(<a href="#ce24ea06a5eacbff" class="i method">UnregisterChildPage</a>);
+ 
+			<span class="r20 r">page</span>.<a href="../Element.cs.html#5d0dffd3058cc236" class="i">DescendantAdded</a> -= <a href="#6845d9ee7a2098a9" class="i method">OnChildAdded</a>;
+			<span class="r20 r">page</span>.<a href="../Element.cs.html#3fba70896794895d" class="i">DescendantRemoved</a> -= <a href="#befbd21fc483cf5c" class="i method">OnChildRemoved</a>;
+			<span class="r20 r">page</span>.<a href="../BindableObject.cs.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#b19caeb6cf7914d1" class="i method">OnPropertyChanged</a>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,346 @@
+﻿<!DOCTYPE html>
+<html><head><title>Forms.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(337);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.iOS/Forms.cs" target="_top">Forms.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.iOS" target="_top">Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS.csproj</a> (Xamarin.Forms.Platform.iOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>.<span class="i n">IsolatedStorage</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>.<span class="i n">Expressions</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Net</span>.<span class="i n">Http</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Security</span>.<span class="i n">Cryptography</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Text</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Foundation</span>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<b>using</b> <span class="i n">UIKit</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">iOS</span>;
+<b>using</b> <span class="t">TNativeView</span> = <span class="i n">UIKit</span>.<span class="t t">UIView</span>;
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">using AppKit;
+using Xamarin.Forms.Platform.MacOS;
+using TNativeView = AppKit.NSView;
+ 
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>public static class</b> <a id="eb8800bb7e650425" href="R/eb8800bb7e650425.html" target="n" data-glyph="0,0" class="t t">Forms</a>
+	{
+		<span class="c">//Preserve GetCallingAssembly</span>
+		<b>static readonly bool</b> <a id="e50fef3a2df509d1" href="R/e50fef3a2df509d1.html" target="n" data-glyph="46,1" class="i field">nevertrue</a> = <b>false</b>;
+ 
+		<b>public static bool</b> <a id="e95a77dd210e7a30" href="R/e95a77dd210e7a30.html" target="n" data-glyph="102,1" class="i property">IsInitialized</a> { <b>get</b>; <b>private set</b>; }
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<b>static bool</b>? <a id="0a814f27cb541217" href="R/0a814f27cb541217.html" target="n" data-glyph="46,1" class="i field">s_isiOS9OrNewer</a>;
+		<b>static bool</b>? <a id="7ee725ed84ea745e" href="R/7ee725ed84ea745e.html" target="n" data-glyph="46,1" class="i field">s_isiOS10OrNewer</a>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		<b>static</b> <a id="6eadb84003524d3d" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">Forms</a>()
+		{
+			<b>if</b> (<a href="#e50fef3a2df509d1" class="i field">nevertrue</a>)
+				<a href="@0@mscorlib/A.html#73b5be5e9c2474b2" class="t t">Assembly</a>.<a href="@0@mscorlib/A.html#5eeb5fbee65fc470" class="i method">GetCallingAssembly</a>();
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+		<b>internal static bool</b> <a id="c03e7d280ce62a49" href="R/c03e7d280ce62a49.html" target="n" data-glyph="104,1" class="i property">IsiOS9OrNewer</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (!<a href="#0a814f27cb541217" class="i field">s_isiOS9OrNewer</a>.<a href="@0@mscorlib/A.html#7bbe60e33e857298" class="i property">HasValue</a>)
+					<a href="#0a814f27cb541217" class="i field">s_isiOS9OrNewer</a> = <span class="t t">UIDevice</span>.<span class="i property">CurrentDevice</span>.<span class="i method">CheckSystemVersion</span>(9, 0);
+				<b>return</b> <a href="#0a814f27cb541217" class="i field">s_isiOS9OrNewer</a>.<a href="@0@mscorlib/A.html#7b38d1fa76071c95" class="i property">Value</a>;
+			}
+		}
+ 
+ 
+		<b>internal static bool</b> <a id="2d3a1c9974113b40" href="R/2d3a1c9974113b40.html" target="n" data-glyph="104,1" class="i property">IsiOS10OrNewer</a>
+		{
+			<b>get</b>
+			{
+				<b>if</b> (!<a href="#7ee725ed84ea745e" class="i field">s_isiOS10OrNewer</a>.<a href="@0@mscorlib/A.html#7bbe60e33e857298" class="i property">HasValue</a>)
+					<a href="#7ee725ed84ea745e" class="i field">s_isiOS10OrNewer</a> = <span class="t t">UIDevice</span>.<span class="i property">CurrentDevice</span>.<span class="i method">CheckSystemVersion</span>(10, 0);
+				<b>return</b> <a href="#7ee725ed84ea745e" class="i field">s_isiOS10OrNewer</a>.<a href="@0@mscorlib/A.html#7b38d1fa76071c95" class="i property">Value</a>;
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>static</b> <a href="@0@mscorlib/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<b>string</b>&gt; <a id="ce8013f9001e9016" href="R/ce8013f9001e9016.html" target="n" data-glyph="46,1" class="i field">s_flags</a>;
+		<b>public static</b> <a href="@0@mscorlib/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<b>string</b>&gt; <a id="7aa52dc6b3d218a9" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">Flags</a> =&gt; <a href="#ce8013f9001e9016" class="i field">s_flags</a> ?? (<a href="#ce8013f9001e9016" class="i field">s_flags</a> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>string</b>&gt;().<a href="@0@mscorlib/A.html#2b710ab0bc8866ad" class="i method">AsReadOnly</a>());
+ 
+		<b>public static void</b> <a id="b879c4a5e444d606" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SetFlags</a>(<b>params string</b>[] <span id="r0 rd" class="r0 r">flags</span>)
+		{
+			<b>if</b> (<a href="#e95a77dd210e7a30" class="i property">IsInitialized</a>)
+			{
+				<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#265d72f49e915224" class="t constructor">InvalidOperationException</a>(<span class="s">$&quot;</span>{<b>nameof</b>(<span class="i">SetFlags</span>)}<span class="s"> must be called before </span>{<b>nameof</b>(<span class="i">Init</span>)}<span class="s">&quot;</span>);
+			}
+ 
+			<a href="#ce8013f9001e9016" class="i field">s_flags</a> = <span class="r0 r">flags</span>.<a href="@0@System.Core/A.html#e276d6892241255b" class="i method">ToList</a>().<a href="@0@mscorlib/A.html#2b710ab0bc8866ad" class="i method">AsReadOnly</a>();
+		}
+ 
+		<b>public static void</b> <a id="0b1d4e3d5e00be78" href="R/0b1d4e3d5e00be78.html" target="n" data-glyph="72,1" class="i method">Init</a>()
+		{
+			<b>if</b> (<a href="#e95a77dd210e7a30" class="i property">IsInitialized</a>)
+				<b>return</b>;
+			<a href="#e95a77dd210e7a30" class="i property">IsInitialized</a> = <b>true</b>;
+			<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#24856c6c80097d91" class="i method">SetAccent</a>(<a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#2e42af77b217360f" class="i method">FromRgba</a>(50, 79, 133, 255));
+ 
+			<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#0d63cf44198128a5" class="i property">Listeners</a>.<a href="@0@mscorlib/A.html#a9319db8c62ae453" class="i method">Add</a>(<b>new</b> <a href="/Xamarin.Forms.Core/A.html#4e122b74b5fba7ae" class="t constructor">DelegateLogListener</a>((<span id="r1 rd" class="r1 r">c</span>, <span id="r2 rd" class="r2 r">m</span>) =&gt; <a href="@0@System/A.html#c63a0f19b2d4db69" class="t t">Trace</a>.<a href="@0@System/A.html#00b527ef5902befb" class="i method">WriteLine</a>(<span class="r2 r">m</span>, <span class="r1 r">c</span>)));
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+			<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#9bdd365ea60f2adf" class="i method">SetIdiom</a>(<span class="t t">UIDevice</span>.<span class="i property">CurrentDevice</span>.<span class="i property">UserInterfaceIdiom</span> == <span class="t t">UIUserInterfaceIdiom</span>.<span class="i field">Pad</span> ? <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#0f247fdcb2e64049" class="i field">Tablet</a> : <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a>);
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">			Device.SetIdiom(TargetIdiom.Desktop);
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+			<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#4b16d4a43172fca6" class="i property">PlatformServices</a> = <b>new</b> <a href="#f7278a31c242e1d6" class="t constructor">IOSPlatformServices</a>();
+			<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#996ca2ce6b1f29b2" class="i property">Info</a> = <b>new</b> <a href="#dee5ecf3bbf8a740" class="t constructor">IOSDeviceInfo</a>();
+ 
+			<span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#44c60787abb7ad29" class="t t">Registrar</a>.<a href="/Xamarin.Forms.Core/A.html#5b146820d12389b6" class="i method">RegisterAll</a>(<b>new</b>[]
+				{ <b>typeof</b>(<a href="ExportRendererAttribute.cs.html#b9d338ece55f8e50" class="t t">ExportRendererAttribute</a>), <b>typeof</b>(<a href="ExportCellAttribute.cs.html#ca41e1d76c8a1b3d" class="t t">ExportCellAttribute</a>), <b>typeof</b>(<a href="ExportImageSourceHandlerAttribute.cs.html#84b79b11d68a6c87" class="t t">ExportImageSourceHandlerAttribute</a>) });
+			<a href="/Xamarin.Forms.Core/A.html#5c23111d1c34e810" class="t t">ExpressionSearch</a>.<a href="/Xamarin.Forms.Core/A.html#f4e23cbbe03e2071" class="i property">Default</a> = <b>new</b> <a href="#3308e3cbc3cd6427" class="t constructor">iOSExpressionSearch</a>();
+		}
+ 
+		<b>public static event</b> <a href="@0@mscorlib/A.html#96ed969784b9d510" class="t t">EventHandler</a>&lt;<a href="ViewInitializedEventArgs.cs.html#582171dc0c08ea72" class="t t">ViewInitializedEventArgs</a>&gt; <a id="6d9728c6e11153db" href="R/6d9728c6e11153db.html" target="n" data-glyph="30,1" class="i">ViewInitialized</a>;
+ 
+		<b>internal static void</b> <a id="79cbf197d8eb982a" href="R/79cbf197d8eb982a.html" target="n" data-glyph="221,1" class="i method">SendViewInitialized</a>(<b>this</b> <a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a> <span id="r3 rd" class="r3 r">self</span>, <span class="t t">TNativeView</span> <span id="r4 rd" class="r4 r">nativeView</span>)
+		{
+			<a href="#6d9728c6e11153db" class="i">ViewInitialized</a>?.<a href="@0@mscorlib/A.html#48225ee7c18a0e20" class="i method">Invoke</a>(<span class="r3 r">self</span>, <b>new</b> <a href="ViewInitializedEventArgs.cs.html#582171dc0c08ea72" class="t constructor">ViewInitializedEventArgs</a> { <a href="ViewInitializedEventArgs.cs.html#a3fe62752ec0778d" class="i property">View</a> = <span class="r3 r">self</span>, <a href="ViewInitializedEventArgs.cs.html#7c383db20e5baf8d" class="i property">NativeView</a> = <span class="r4 r">nativeView</span> });
+		}
+ 
+		<b>class</b> <a id="3308e3cbc3cd6427" href="R/3308e3cbc3cd6427.html" target="n" data-glyph="4,1" class="t t"><span id="59b1ad012c54cbab">iOSExpressionSearch</span></a> : <a href="@0@System.Core/A.html#f0615a823a9efe36" class="t t">ExpressionVisitor</a>, <a href="/Xamarin.Forms.Core/A.html#1aabf9c27618ae28" class="t t">IExpressionSearch</a>
+		{
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<b>object</b>&gt; <a id="b0b1cadf95699130" href="R/b0b1cadf95699130.html" target="n" data-glyph="46,2" class="i field">_results</a>;
+			<a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a> <a id="d152b01b9e1ff668" href="R/d152b01b9e1ff668.html" target="n" data-glyph="46,2" class="i field">_targetType</a>;
+ 
+			<b>public</b> <a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<span class="r5 r t">T</span>&gt; <a id="fd979d05b113baa8" href="R/fd979d05b113baa8.html" target="n" data-glyph="72,2" class="i method">FindObjects</a>&lt;<span id="r5 rd t" class="r5 r t">T</span>&gt;(<a href="@0@System.Core/A.html#39a9b098482b765d" class="t t">Expression</a> <span id="r6 rd" class="r6 r">expression</span>) <b>where</b> <span class="r5 r t">T</span> : <b>class</b>
+			{
+				<a href="#b0b1cadf95699130" class="i field">_results</a> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<b>object</b>&gt;();
+				<a href="#d152b01b9e1ff668" class="i field">_targetType</a> = <b>typeof</b>(<span class="r5 r t">T</span>);
+				<a href="@0@System.Core/A.html#fd021c4965d900f0" class="i method">Visit</a>(<span class="r6 r">expression</span>);
+				<b>return</b> <a href="#b0b1cadf95699130" class="i field">_results</a>.<a href="@0@System.Core/A.html#5c652c53e80df013" class="i method">Select</a>(<span id="r7 rd" class="r7 r">o</span> =&gt; <span class="r7 r">o</span> <b>as</b> <span class="r5 r t">T</span>).<a href="@0@System.Core/A.html#e276d6892241255b" class="i method">ToList</a>();
+			}
+ 
+			<b>protected override</b> <a href="@0@System.Core/A.html#39a9b098482b765d" class="t t">Expression</a> <a id="01ac8e75500f4a4f" href="R/01ac8e75500f4a4f.html" target="n" data-glyph="75,2" class="i method">VisitMember</a>(<a href="@0@System.Core/A.html#8760a057e74485a8" class="t t">MemberExpression</a> <span id="r8 rd" class="r8 r">node</span>)
+			{
+				<b>if</b> (<span class="r8 r">node</span>.<a href="@0@System.Core/A.html#68eee84426991159" class="i property">Expression</a> <b>is</b> <a href="@0@System.Core/A.html#c3ac4c4d7e847ad9" class="t t">ConstantExpression</a> &amp;&amp; <span class="r8 r">node</span>.<a href="@0@System.Core/A.html#464f3eb0ff158aae" class="i property">Member</a> <b>is</b> <a href="@0@mscorlib/A.html#329d417f4b15c86c" class="t t">FieldInfo</a>)
+				{
+					<a href="@0@mscorlib/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r9 rd" class="r9 r">container</span> = ((<a href="@0@System.Core/A.html#c3ac4c4d7e847ad9" class="t t">ConstantExpression</a>)<span class="r8 r">node</span>.<a href="@0@System.Core/A.html#68eee84426991159" class="i property">Expression</a>).<a href="@0@System.Core/A.html#d18072aa45164344" class="i property">Value</a>;
+					<a href="@0@mscorlib/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r10 rd" class="r10 r">value</span> = ((<a href="@0@mscorlib/A.html#329d417f4b15c86c" class="t t">FieldInfo</a>)<span class="r8 r">node</span>.<a href="@0@System.Core/A.html#464f3eb0ff158aae" class="i property">Member</a>).<a href="@0@mscorlib/A.html#f8ddbb1dc1c6b29e" class="i method">GetValue</a>(<span class="r9 r">container</span>);
+ 
+					<b>if</b> (<a href="#d152b01b9e1ff668" class="i field">_targetType</a>.<a href="@0@mscorlib/A.html#fe506f282c6fb9c5" class="i method">IsInstanceOfType</a>(<span class="r10 r">value</span>))
+						<a href="#b0b1cadf95699130" class="i field">_results</a>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r10 r">value</span>);
+				}
+				<b>return</b> <a href="@0@System.Core/A.html#f0615a823a9efe36" class="k">base</a>.<a href="@0@System.Core/A.html#9cf0db10b049b123" class="i method">VisitMember</a>(<span class="r8 r">node</span>);
+			}
+		}
+ 
+		<b>internal class</b> <a id="01299de44baf5b15" href="R/01299de44baf5b15.html" target="n" data-glyph="2,1" class="t t">IOSDeviceInfo</a> : <a href="/Xamarin.Forms.Core/A.html#7a78723b79e3a0d3" class="t t">DeviceInfo</a>
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+			<b>readonly</b> <span class="t t">NSObject</span> <a id="0f8e1cda43bd1447" href="R/0f8e1cda43bd1447.html" target="n" data-glyph="46,2" class="i field">_notification</a>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+			<b>readonly</b> <a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <a id="76eab47253fd41cb" href="R/76eab47253fd41cb.html" target="n" data-glyph="46,2" class="i field">_scaledScreenSize</a>;
+			<b>readonly double</b> <a id="3c4c3cd950546d78" href="R/3c4c3cd950546d78.html" target="n" data-glyph="46,2" class="i field">_scalingFactor</a>;
+ 
+			<b>public</b> <a id="dee5ecf3bbf8a740" href="R/dee5ecf3bbf8a740.html" target="n" data-glyph="72,2" class="i constructor">IOSDeviceInfo</a>()
+			{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+				<a href="#0f8e1cda43bd1447" class="i field">_notification</a> = <span class="t t">UIDevice</span>.<span class="t t">Notifications</span>.<span class="i method">ObserveOrientationDidChange</span>((<span id="r11 rd" class="r11 r">sender</span>, <span id="r12 rd" class="r12 r">args</span>) =&gt; <a href="/Xamarin.Forms.Core/A.html#578640b1d635e4d0" class="i property">CurrentOrientation</a> = <span class="t t">UIDevice</span>.<span class="i property">CurrentDevice</span>.<span class="i property">Orientation</span>.<a href="Extensions/Extensions.cs.html#b2b9ccab5c382ce7" class="i method">ToDeviceOrientation</a>());
+				<a href="#3c4c3cd950546d78" class="i field">_scalingFactor</a> = <span class="t t">UIScreen</span>.<span class="i property">MainScreen</span>.<span class="i property">Scale</span>;
+				<a href="#76eab47253fd41cb" class="i field">_scaledScreenSize</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#1727209bca650e71" class="t constructor">Size</a>(<span class="t t">UIScreen</span>.<span class="i property">MainScreen</span>.<span class="i property">Bounds</span>.<span class="i property">Width</span>, <span class="t t">UIScreen</span>.<span class="i property">MainScreen</span>.<span class="i property">Bounds</span>.<span class="i property">Height</span>);
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">				_scalingFactor = NSScreen.MainScreen.BackingScaleFactor;
+				_scaledScreenSize = new Size(NSScreen.MainScreen.Frame.Width, NSScreen.MainScreen.Frame.Height);
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+				<a href="#ce28a8f2d3dcaf00" class="i property">PixelScreenSize</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#1727209bca650e71" class="t constructor">Size</a>(<a href="#76eab47253fd41cb" class="i field">_scaledScreenSize</a>.<a href="/Xamarin.Forms.Core/A.html#6207d8e3826352f7" class="i property">Width</a> * <a href="#3c4c3cd950546d78" class="i field">_scalingFactor</a>, <a href="#76eab47253fd41cb" class="i field">_scaledScreenSize</a>.<a href="/Xamarin.Forms.Core/A.html#d581c837a1ed6a2e" class="i property">Height</a> * <a href="#3c4c3cd950546d78" class="i field">_scalingFactor</a>);
+			}
+ 
+			<b>public override</b> <a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <a id="ce28a8f2d3dcaf00" href="R/ce28a8f2d3dcaf00.html" target="n" data-glyph="102,2" class="i property">PixelScreenSize</a> { <b>get</b>; }
+ 
+			<b>public override</b> <a href="/Xamarin.Forms.Core/A.html#a940b381a4300f8b" class="t t">Size</a> <a id="05580bd3353b4ac6" href="R/05580bd3353b4ac6.html" target="n" data-glyph="102,2" class="i property">ScaledScreenSize</a> =&gt; <a href="#76eab47253fd41cb" class="i field">_scaledScreenSize</a>;
+ 
+			<b>public override double</b> <a id="348b26e244709643" href="R/348b26e244709643.html" target="n" data-glyph="102,2" class="i property">ScalingFactor</a> =&gt; <a href="#3c4c3cd950546d78" class="i field">_scalingFactor</a>;
+ 
+			<b>protected override void</b> <a id="375c282625f675cb" href="R/375c282625f675cb.html" target="n" data-glyph="75,2" class="i method">Dispose</a>(<b>bool</b> <span id="r13 rd" class="r13 r">disposing</span>)
+			{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+				<a href="#0f8e1cda43bd1447" class="i field">_notification</a>.<span class="i method">Dispose</span>();
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+				<a href="/Xamarin.Forms.Core/A.html#7a78723b79e3a0d3" class="k">base</a>.<a href="/Xamarin.Forms.Core/A.html#5d0fe4f45992231f" class="i method">Dispose</a>(<span class="r13 r">disposing</span>);
+			}
+		}
+ 
+		<b>class</b> <a id="f7278a31c242e1d6" href="R/f7278a31c242e1d6.html" target="n" data-glyph="4,1" class="t t"><span id="9cf034231d7b1c20">IOSPlatformServices</span></a> : <a href="/Xamarin.Forms.Core/A.html#864b71d4c5bc97ef" class="t t">IPlatformServices</a>
+		{
+			<b>static readonly</b> <a href="@0@mscorlib/A.html#80152d7eff9b1f70" class="t t">MD5CryptoServiceProvider</a> <a id="3f8489c22f2d99b5" href="R/3f8489c22f2d99b5.html" target="n" data-glyph="46,2" class="i field">s_checksum</a> = <b>new</b> <a href="@0@mscorlib/A.html#70c81aebb2907399" class="t constructor">MD5CryptoServiceProvider</a>();
+ 
+			<b>public void</b> <a id="91e38dcf3811dc0d" href="R/91e38dcf3811dc0d.html" target="n" data-glyph="72,2" class="i method">BeginInvokeOnMainThread</a>(<a href="@0@mscorlib/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r14 rd" class="r14 r">action</span>)
+			{
+				<span class="t t">NSRunLoop</span>.<span class="i property">Main</span>.<span class="i method">BeginInvokeOnMainThread</span>(<span class="r14 r">action</span>.<a href="@0@mscorlib/A.html#6fbb51427c383a3a" class="i method">Invoke</a>);
+			}
+ 
+			<b>public</b> <a href="/Xamarin.Forms.Core/A.html#9ac4e7c1113aeac4" class="t t">Ticker</a> <a id="2a4a8003f3615853" href="R/2a4a8003f3615853.html" target="n" data-glyph="72,2" class="i method">CreateTicker</a>()
+			{
+				<b>return</b> <b>new</b> <a href="CADisplayLinkTicker.cs.html#be44b7915afbf5f4" class="t constructor">CADisplayLinkTicker</a>();
+			}
+ 
+			<b>public</b> <a href="@0@mscorlib/A.html#73b5be5e9c2474b2" class="t t">Assembly</a>[] <a id="c5d58e0e69ecb3f9" href="R/c5d58e0e69ecb3f9.html" target="n" data-glyph="72,2" class="i method">GetAssemblies</a>()
+			{
+				<b>return</b> <a href="@0@mscorlib/A.html#2e9e7922eace2be8" class="t t">AppDomain</a>.<a href="@0@mscorlib/A.html#0f1cf66beffbb219" class="i property">CurrentDomain</a>.<a href="@0@mscorlib/A.html#4aefe0d6a192742f" class="i method">GetAssemblies</a>();
+			}
+ 
+			<b>public string</b> <a id="b25b889d8f5a6d6b" href="R/b25b889d8f5a6d6b.html" target="n" data-glyph="72,2" class="i method">GetMD5Hash</a>(<b>string</b> <span id="r15 rd" class="r15 r">input</span>)
+			{
+				<b>var</b> <span id="r16 rd" class="r16 r">bytes</span> = <a href="#3f8489c22f2d99b5" class="i field">s_checksum</a>.<a href="@0@mscorlib/A.html#a71a3cba2c656040" class="i method">ComputeHash</a>(<a href="@0@mscorlib/A.html#3b6090c501893c25" class="t t">Encoding</a>.<a href="@0@mscorlib/A.html#a10eb90a3d884500" class="i property">UTF8</a>.<a href="@0@mscorlib/A.html#83f2d2c6f22db1a9" class="i method">GetBytes</a>(<span class="r15 r">input</span>));
+				<b>var</b> <span id="r17 rd" class="r17 r">ret</span> = <b>new</b> <b>char</b>[32];
+				<b>for</b> (<a href="@0@mscorlib/A.html#225942ed7b7a3252" class="k">var</a> <span id="r18 rd" class="r18 r">i</span> = 0; <span class="r18 r">i</span> &lt; 16; <span class="r18 r">i</span>++)
+				{
+					<span class="r17 r">ret</span>[<span class="r18 r">i</span> * 2] = (<b>char</b>)<a href="#5b907b2aa5ca3dca" class="i method">Hex</a>(<span class="r16 r">bytes</span>[<span class="r18 r">i</span>] &gt;&gt; 4);
+					<span class="r17 r">ret</span>[<span class="r18 r">i</span> * 2 + 1] = (<b>char</b>)<a href="#5b907b2aa5ca3dca" class="i method">Hex</a>(<span class="r16 r">bytes</span>[<span class="r18 r">i</span>] &amp; 0xf);
+				}
+				<b>return</b> <b>new</b> <b>string</b>(<span class="r17 r">ret</span>);
+			}
+ 
+			<b>public double</b> <a id="e148da504e05d6bc" href="R/e148da504e05d6bc.html" target="n" data-glyph="72,2" class="i method">GetNamedSize</a>(<a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a> <span id="r19 rd" class="r19 r">size</span>, <a href="@0@mscorlib/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r20 rd" class="r20 r">targetElementType</span>, <b>bool</b> <span id="r21 rd" class="r21 r">useOldSizes</span>)
+			{
+				<span class="c">// We make these up anyway, so new sizes didn&#39;t really change</span>
+				<span class="c">// iOS docs say default button font size is 15, default label font size is 17 so we use those as the defaults.</span>
+				<b>switch</b> (<span class="r19 r">size</span>)
+				{
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#b6d39447146e6ceb" class="i field">Default</a>:
+						<b>return typeof</b>(<a href="/Xamarin.Forms.Core/A.html#c68e8cba3f0e63a3" class="t t">Button</a>).<a href="@0@mscorlib/A.html#ba0cffea035fe210" class="i method">IsAssignableFrom</a>(<span class="r20 r">targetElementType</span>) ? 15 : 17;
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#d2bce0c32f6d2703" class="i field">Micro</a>:
+						<b>return</b> 12;
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#6e9f79ba23a0d2bf" class="i field">Small</a>:
+						<b>return</b> 14;
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#39e23d062cfa35c6" class="i field">Medium</a>:
+						<b>return</b> 17;
+					<b>case</b> <a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a>.<a href="/Xamarin.Forms.Core/A.html#a5aafb9ea6f22531" class="i field">Large</a>:
+						<b>return</b> 22;
+					<b>default</b>:
+						<b>throw</b> <b>new</b> <a href="@0@mscorlib/A.html#5fec5e06371b1f6c" class="t constructor">ArgumentOutOfRangeException</a>(<span class="s">&quot;size&quot;</span>);
+				}
+			}
+ 
+			<b>public async</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="t t">Stream</a>&gt; <a id="e8a58ca3b1151538" href="R/e8a58ca3b1151538.html" target="n" data-glyph="72,2" class="i method">GetStreamAsync</a>(<a href="@0@System/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r22 rd" class="r22 r">uri</span>, <a href="@0@mscorlib/A.html#36b17ded8b1a228c" class="t t">CancellationToken</a> <span id="r23 rd" class="r23 r">cancellationToken</span>)
+			{
+				<b>using</b> (<a href="@0@System.Net.Http/A.html#7c0c7a5434c1bab0" class="k">var</a> <span id="r24 rd" class="r24 r">client</span> = <a href="#931ac08e00e7bef7" class="i method">GetHttpClient</a>())
+				<b>using</b> (<a href="@0@System.Net.Http/A.html#05a8b293e3792b58" class="k">var</a> <span id="r25 rd" class="r25 r">response</span> = <b>await</b> <span class="r24 r">client</span>.<a href="@0@System.Net.Http/A.html#e97b232b9f0e05f6" class="i method">GetAsync</a>(<span class="r22 r">uri</span>, <span class="r23 r">cancellationToken</span>))
+				{
+					<b>if</b> (!<span class="r25 r">response</span>.<a href="@0@System.Net.Http/A.html#85a7ef9189314fea" class="i property">IsSuccessStatusCode</a>)
+					{
+						<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;HTTP Request&quot;</span>, <span class="s">$&quot;</span><span class="s">Could not retrieve </span>{<span class="r22 r">uri</span>}<span class="s">, status code </span>{<span class="r25 r">response</span>.<a href="@0@System.Net.Http/A.html#5f0a91b0e794dad4" class="i property">StatusCode</a>}<span class="s">&quot;</span>);
+						<b>return null</b>;
+					}
+					<b>return await</b> <span class="r25 r">response</span>.<a href="@0@System.Net.Http/A.html#29d639c7ef3851ec" class="i property">Content</a>.<a href="@0@System.Net.Http/A.html#fd200448d1126137" class="i method">ReadAsStreamAsync</a>();
+				}
+			}
+ 
+			<b>public</b> <a href="/Xamarin.Forms.Core/A.html#04ea35780c7f35ff" class="t t">IIsolatedStorageFile</a> <a id="62a7720246414ce1" href="R/62a7720246414ce1.html" target="n" data-glyph="72,2" class="i method">GetUserStoreForApplication</a>()
+			{
+				<b>return</b> <b>new</b> <a href="#d3d2e6a2e49ab18a" class="t constructor">_IsolatedStorageFile</a>(<a href="@0@mscorlib/A.html#a535e123427a84ae" class="t t">IsolatedStorageFile</a>.<a href="@0@mscorlib/A.html#cd4cafef41b07a73" class="i method">GetUserStoreForApplication</a>());
+			}
+ 
+			<b>public bool</b> <a id="6b226cb2bcb00258" href="R/6b226cb2bcb00258.html" target="n" data-glyph="102,2" class="i property">IsInvokeRequired</a> =&gt; !<span class="t t">NSThread</span>.<span class="i property">IsMain</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+			<b>public string</b> <a id="de6ca1fe26231886" href="R/de6ca1fe26231886.html" target="n" data-glyph="102,2" class="i property">RuntimePlatform</a> =&gt; <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#0cbde22b5a22a79f" class="i field">iOS</a>;
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">			public string RuntimePlatform =&gt; Device.macOS;
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+			<b>public void</b> <a id="8cdf10ea1a4fc7c4" href="R/8cdf10ea1a4fc7c4.html" target="n" data-glyph="72,2" class="i method">OpenUriAction</a>(<a href="@0@System/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r26 rd" class="r26 r">uri</span>)
+			{
+				<b>var</b> <span id="r27 rd" class="r27 r">url</span> = <span class="t t">NSUrl</span>.<span class="i method">FromString</span>(<span class="r26 r">uri</span>.<a href="@0@System/A.html#ab70d31e484fbe3e" class="i property">OriginalString</a>) ?? <b>new</b> <span class="t constructor">NSUrl</span>(<span class="r26 r">uri</span>.<a href="@0@System/A.html#e73925be401b9bcb" class="i property">Scheme</a>, <span class="r26 r">uri</span>.<a href="@0@System/A.html#c230833968da7179" class="i property">Host</a>, <span class="r26 r">uri</span>.<a href="@0@System/A.html#c202e346f185b3eb" class="i property">PathAndQuery</a>);
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+				<span class="t t">UIApplication</span>.<span class="i property">SharedApplication</span>.<span class="i method">OpenUrl</span>(<span class="r27 r">url</span>);
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">				NSWorkspace.SharedWorkspace.OpenUrl(url);
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+			}
+ 
+			<b>public void</b> <a id="bfa22d3861241f56" href="R/bfa22d3861241f56.html" target="n" data-glyph="72,2" class="i method">StartTimer</a>(<a href="@0@mscorlib/A.html#865ef7b89f41b632" class="t t">TimeSpan</a> <span id="r28 rd" class="r28 r">interval</span>, <a href="@0@mscorlib/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>bool</b>&gt; <span id="r29 rd" class="r29 r">callback</span>)
+			{
+				<span class="t t">NSTimer</span> <span id="r30 rd" class="r30 r">timer</span> = <span class="t t">NSTimer</span>.<span class="i method">CreateRepeatingTimer</span>(<span class="r28 r">interval</span>, <span id="r31 rd" class="r31 r">t</span> =&gt;
+				{
+					<b>if</b> (!<span class="r29 r">callback</span>())
+						<span class="r31 r">t</span>.<span class="i method">Invalidate</span>();
+				});
+				<span class="t t">NSRunLoop</span>.<span class="i property">Main</span>.<span class="i method">AddTimer</span>(<span class="r30 r">timer</span>, <span class="t t">NSRunLoopMode</span>.<span class="i field">Common</span>);
+			}
+ 
+			<a href="@0@System.Net.Http/A.html#7c0c7a5434c1bab0" class="t t">HttpClient</a> <a id="931ac08e00e7bef7" href="R/931ac08e00e7bef7.html" target="n" data-glyph="76,2" class="i method">GetHttpClient</a>()
+			{
+				<b>var</b> <span id="r32 rd" class="r32 r">proxy</span> = <span class="i n">CoreFoundation</span>.<span class="t t">CFNetwork</span>.<span class="i method">GetSystemProxySettings</span>();
+				<a href="@0@System.Net.Http/A.html#d2733cca80990075" class="k">var</a> <span id="r33 rd" class="r33 r">handler</span> = <b>new</b> <a href="@0@System.Net.Http/A.html#16d386c51818d117" class="t constructor">HttpClientHandler</a>();
+				<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r32 r">proxy</span>.<span class="i property">HTTPProxy</span>))
+				{
+					<span class="r33 r">handler</span>.<a href="@0@System.Net.Http/A.html#1c58ddf50ec38424" class="i property">Proxy</a> = <span class="i n">CoreFoundation</span>.<span class="t t">CFNetwork</span>.<span class="i method">GetDefaultProxy</span>();
+					<span class="r33 r">handler</span>.<a href="@0@System.Net.Http/A.html#c19914c13106bfe9" class="i property">UseProxy</a> = <b>true</b>;
+				}
+				<b>return</b> <b>new</b> <a href="@0@System.Net.Http/A.html#34b14e2466149209" class="t constructor">HttpClient</a>(<span class="r33 r">handler</span>);
+			}
+ 
+			<b>static int</b> <a id="5b907b2aa5ca3dca" href="R/5b907b2aa5ca3dca.html" target="n" data-glyph="76,2" class="i method">Hex</a>(<b>int</b> <span id="r34 rd" class="r34 r">v</span>)
+			{
+				<b>if</b> (<span class="r34 r">v</span> &lt; 10)
+					<b>return</b> <span class="s">&#39;0&#39;</span> + <span class="r34 r">v</span>;
+				<b>return</b> <span class="s">&#39;a&#39;</span> + <span class="r34 r">v</span> - 10;
+			}
+ 
+			<b>public class</b> <a id="8c4c712811ac4668" href="R/8c4c712811ac4668.html" target="n" data-glyph="0,2" class="t t">_IsolatedStorageFile</a> : <a href="/Xamarin.Forms.Core/A.html#04ea35780c7f35ff" class="t t">IIsolatedStorageFile</a>
+			{
+				<b>readonly</b> <a href="@0@mscorlib/A.html#a535e123427a84ae" class="t t">IsolatedStorageFile</a> <a id="119aaa6e78bcea7d" href="R/119aaa6e78bcea7d.html" target="n" data-glyph="46,3" class="i field">_isolatedStorageFile</a>;
+ 
+				<b>public</b> <a id="d3d2e6a2e49ab18a" href="R/d3d2e6a2e49ab18a.html" target="n" data-glyph="72,3" class="i constructor">_IsolatedStorageFile</a>(<a href="@0@mscorlib/A.html#a535e123427a84ae" class="t t">IsolatedStorageFile</a> <span id="r35 rd" class="r35 r">isolatedStorageFile</span>)
+				{
+					<a href="#119aaa6e78bcea7d" class="i field">_isolatedStorageFile</a> = <span class="r35 r">isolatedStorageFile</span>;
+				}
+ 
+				<b>public</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a> <a id="e2c12c5c33e11211" href="R/e2c12c5c33e11211.html" target="n" data-glyph="72,3" class="i method">CreateDirectoryAsync</a>(<b>string</b> <span id="r36 rd" class="r36 r">path</span>)
+				{
+					<a href="#119aaa6e78bcea7d" class="i field">_isolatedStorageFile</a>.<a href="@0@mscorlib/A.html#b4607f798dd49ee8" class="i method">CreateDirectory</a>(<span class="r36 r">path</span>);
+					<b>return</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a>.<a href="@0@mscorlib/A.html#11a386e7d7cae64a" class="i method">FromResult</a>(<b>true</b>);
+				}
+ 
+				<b>public</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<b>bool</b>&gt; <a id="3837ce828293baa8" href="R/3837ce828293baa8.html" target="n" data-glyph="72,3" class="i method">GetDirectoryExistsAsync</a>(<b>string</b> <span id="r37 rd" class="r37 r">path</span>)
+				{
+					<b>return</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a>.<a href="@0@mscorlib/A.html#11a386e7d7cae64a" class="i method">FromResult</a>(<a href="#119aaa6e78bcea7d" class="i field">_isolatedStorageFile</a>.<a href="@0@mscorlib/A.html#cd20627c4837658c" class="i method">DirectoryExists</a>(<span class="r37 r">path</span>));
+				}
+ 
+				<b>public</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<b>bool</b>&gt; <a id="08dd675f8e62510e" href="R/08dd675f8e62510e.html" target="n" data-glyph="72,3" class="i method">GetFileExistsAsync</a>(<b>string</b> <span id="r38 rd" class="r38 r">path</span>)
+				{
+					<b>return</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a>.<a href="@0@mscorlib/A.html#11a386e7d7cae64a" class="i method">FromResult</a>(<a href="#119aaa6e78bcea7d" class="i field">_isolatedStorageFile</a>.<a href="@0@mscorlib/A.html#96406fbff43a24cf" class="i method">FileExists</a>(<span class="r38 r">path</span>));
+				}
+ 
+				<b>public</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<a href="@0@mscorlib/A.html#68b4bb83ce8d1c31" class="t t">DateTimeOffset</a>&gt; <a id="de449be6123feb46" href="R/de449be6123feb46.html" target="n" data-glyph="72,3" class="i method">GetLastWriteTimeAsync</a>(<b>string</b> <span id="r39 rd" class="r39 r">path</span>)
+				{
+					<b>return</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a>.<a href="@0@mscorlib/A.html#11a386e7d7cae64a" class="i method">FromResult</a>(<a href="#119aaa6e78bcea7d" class="i field">_isolatedStorageFile</a>.<a href="@0@mscorlib/A.html#40bea84d80abbfb1" class="i method">GetLastWriteTime</a>(<span class="r39 r">path</span>));
+				}
+ 
+				<b>public</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="t t">Stream</a>&gt; <a id="07d6c3583c4bca74" href="R/07d6c3583c4bca74.html" target="n" data-glyph="72,3" class="i method">OpenFileAsync</a>(<b>string</b> <span id="r40 rd" class="r40 r">path</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a> <span id="r41 rd" class="r41 r">mode</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#254bf02e30755ba7" class="t t">FileAccess</a> <span id="r42 rd" class="r42 r">access</span>)
+				{
+					<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="t t">Stream</a> <span id="r43 rd" class="r43 r">stream</span> = <a href="#119aaa6e78bcea7d" class="i field">_isolatedStorageFile</a>.<a href="@0@mscorlib/A.html#8fe26b00299f0a10" class="i method">OpenFile</a>(<span class="r40 r">path</span>, (<span class="i n">System</span>.<span class="i n">IO</span>.<a href="@0@mscorlib/A.html#c0cb6ba6af625b3a" class="t t">FileMode</a>)<span class="r41 r">mode</span>, (<span class="i n">System</span>.<span class="i n">IO</span>.<a href="@0@mscorlib/A.html#5cc5644ae3acd24b" class="t t">FileAccess</a>)<span class="r42 r">access</span>);
+					<b>return</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a>.<a href="@0@mscorlib/A.html#11a386e7d7cae64a" class="i method">FromResult</a>(<span class="r43 r">stream</span>);
+				}
+ 
+				<b>public</b> <a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="t t">Task</a>&lt;<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="t t">Stream</a>&gt; <a id="22bfb0e8998afcd3" href="R/22bfb0e8998afcd3.html" target="n" data-glyph="72,3" class="i method">OpenFileAsync</a>(<b>string</b> <span id="r44 rd" class="r44 r">path</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#246e3bb317b89af3" class="t t">FileMode</a> <span id="r45 rd" class="r45 r">mode</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#254bf02e30755ba7" class="t t">FileAccess</a> <span id="r46 rd" class="r46 r">access</span>, <span class="i n">Internals</span>.<a href="/Xamarin.Forms.Core/A.html#d462b5f07b93898b" class="t t">FileShare</a> <span id="r47 rd" class="r47 r">share</span>)
+				{
+					<a href="@0@mscorlib/A.html#f956b0c07e86df64" class="t t">Stream</a> <span id="r48 rd" class="r48 r">stream</span> = <a href="#119aaa6e78bcea7d" class="i field">_isolatedStorageFile</a>.<a href="@0@mscorlib/A.html#7b8b8457d287dce2" class="i method">OpenFile</a>(<span class="r44 r">path</span>, (<span class="i n">System</span>.<span class="i n">IO</span>.<a href="@0@mscorlib/A.html#c0cb6ba6af625b3a" class="t t">FileMode</a>)<span class="r45 r">mode</span>, (<span class="i n">System</span>.<span class="i n">IO</span>.<a href="@0@mscorlib/A.html#5cc5644ae3acd24b" class="t t">FileAccess</a>)<span class="r46 r">access</span>,
+						(<span class="i n">System</span>.<span class="i n">IO</span>.<a href="@0@mscorlib/A.html#2bfafb4d44a4f126" class="t t">FileShare</a>)<span class="r47 r">share</span>);
+					<b>return</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a>.<a href="@0@mscorlib/A.html#11a386e7d7cae64a" class="i method">FromResult</a>(<span class="r48 r">stream</span>);
+				}
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

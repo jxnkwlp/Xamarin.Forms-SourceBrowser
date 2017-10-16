@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html><head><title>ToolbarPlacementHelper.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(121);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/ToolbarPlacementHelper.cs" target="_top">ToolbarPlacementHelper.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">WindowsSpecific</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+{
+	<b>internal class</b> <a id="5ae729382c28bbea" href="R/5ae729382c28bbea.html" target="n" data-glyph="2,0" class="t t"><span id="c5a9bf135640161c">ToolbarPlacementHelper</span></a>
+	{
+		<span class="t t">Border</span> <a id="5b7efeed80a5b220" href="R/5b7efeed80a5b220.html" target="n" data-glyph="46,1" class="i field">_bottomCommandBarArea</a>;
+		<span class="t t">CommandBar</span> <a id="f051368c3b1999bb" href="R/f051368c3b1999bb.html" target="n" data-glyph="46,1" class="i field">_commandBar</a>;
+		<span class="i">Func</span>&lt;<a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a>&gt; <a id="49efb53168108e42" href="R/49efb53168108e42.html" target="n" data-glyph="46,1" class="i field">_getToolbarPlacement</a>;
+		<span class="t t">Border</span> <a id="3c7ae4d9d29f517a" href="R/3c7ae4d9d29f517a.html" target="n" data-glyph="46,1" class="i field">_titleArea</a>;
+		<span class="t t">Border</span> <a id="b82385f852b6388d" href="R/b82385f852b6388d.html" target="n" data-glyph="46,1" class="i field">_topCommandBarArea</a>;
+ 
+		<b>public void</b> <a id="2e625b3e2ff99df4" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">Initialize</a>(<span class="t t">CommandBar</span> <span id="r0 rd" class="r0 r">commandBar</span>, <span class="i">Func</span>&lt;<a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a>&gt; <span id="r1 rd" class="r1 r">getToolbarPlacement</span>,
+			<span class="i">Func</span>&lt;<b>string</b>, <span class="t t">DependencyObject</span>&gt; <span id="r2 rd" class="r2 r">getTemplateChild</span>)
+		{
+			<a href="#f051368c3b1999bb" class="i field">_commandBar</a> = <span class="r0 r">commandBar</span>;
+			<a href="#49efb53168108e42" class="i field">_getToolbarPlacement</a> = <span class="r1 r">getToolbarPlacement</span>;
+			<a href="#5b7efeed80a5b220" class="i field">_bottomCommandBarArea</a> = <span class="r2 r">getTemplateChild</span>(<span class="s">&quot;BottomCommandBarArea&quot;</span>) <b>as</b> <span class="t t">Border</span>;
+			<a href="#b82385f852b6388d" class="i field">_topCommandBarArea</a> = <span class="r2 r">getTemplateChild</span>(<span class="s">&quot;TopCommandBarArea&quot;</span>) <b>as</b> <span class="t t">Border</span>;
+			<a href="#3c7ae4d9d29f517a" class="i field">_titleArea</a> = <span class="r2 r">getTemplateChild</span>(<span class="s">&quot;TitleArea&quot;</span>) <b>as</b> <span class="t t">Border</span>;
+ 
+			<b>if</b> (<a href="#f051368c3b1999bb" class="i field">_commandBar</a> != <b>null</b> &amp;&amp; <a href="#5b7efeed80a5b220" class="i field">_bottomCommandBarArea</a> != <b>null</b> &amp;&amp; <a href="#b82385f852b6388d" class="i field">_topCommandBarArea</a> != <b>null</b>)
+			{
+				<span class="c">// We have to wait for the command bar to load so that it&#39;ll be in the control hierarchy</span>
+				<span class="c">// otherwise we can&#39;t properly move it to wherever the toolbar is supposed to be</span>
+				<a href="#f051368c3b1999bb" class="i field">_commandBar</a>.<span class="i">Loaded</span> += (<span id="r3 rd" class="r3 r">sender</span>, <span id="r4 rd" class="r4 r">args</span>) =&gt;
+				{
+					<a href="#fa4725114b7907c2" class="i method">UpdateToolbarPlacement</a>();
+					<a href="#b2ba37689e712c2d" class="i method">UpdateIsInValidLocation</a>();
+				};
+			}
+		}
+ 
+		<b>public void</b> <a id="fa4725114b7907c2" href="R/fa4725114b7907c2.html" target="n" data-glyph="72,1" class="i method">UpdateToolbarPlacement</a>()
+		{
+			<b>if</b> (<a href="#f051368c3b1999bb" class="i field">_commandBar</a> == <b>null</b> || <a href="#49efb53168108e42" class="i field">_getToolbarPlacement</a> == <b>null</b> || <a href="#5b7efeed80a5b220" class="i field">_bottomCommandBarArea</a> == <b>null</b> ||
+			    <a href="#b82385f852b6388d" class="i field">_topCommandBarArea</a> == <b>null</b>)
+			{
+				<span class="c">// Template hasn&#39;t been applied yet, so we&#39;re not ready to update the toolbar placement</span>
+				<b>return</b>;
+			}
+ 
+			<span class="i">UpdateToolbarPlacement</span>(<a href="#f051368c3b1999bb" class="i field">_commandBar</a>, <span class="i">_getToolbarPlacement</span>(), <a href="#5b7efeed80a5b220" class="i field">_bottomCommandBarArea</a>, <a href="#b82385f852b6388d" class="i field">_topCommandBarArea</a>, <a href="#3c7ae4d9d29f517a" class="i field">_titleArea</a>);
+		}
+ 
+		<b>static void</b> <a id="286912aabc2edaf9" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">UpdateToolbarPlacement</a>(<span class="t t">CommandBar</span> <span id="r5 rd" class="r5 r">toolbar</span>, <a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a> <span id="r6 rd" class="r6 r">toolbarPlacement</span>, <span class="t t">Border</span> <span id="r7 rd" class="r7 r">bottomCommandBarArea</span>,
+			<span class="t t">Border</span> <span id="r8 rd" class="r8 r">topCommandBarArea</span>, <span class="t t">Border</span> <span id="r9 rd" class="r9 r">titleArea</span>)
+		{
+			<span class="c">// Figure out what&#39;s hosting the command bar right now</span>
+			<b>var</b> <span id="r10 rd" class="r10 r">current</span> = <span class="r5 r">toolbar</span>.<span class="i property">Parent</span> <b>as</b> <span class="t t">Border</span>;
+ 
+			<span class="c">// And figure out where it should be</span>
+			<span class="t t">Border</span> <span id="r11 rd" class="r11 r">target</span>;
+ 
+			<b>switch</b> (<span class="r6 r">toolbarPlacement</span>)
+			{
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a>.<a href="/Xamarin.Forms.Core/A.html#1926068048ea5e18" class="i field">Top</a>:
+					<span class="r11 r">target</span> = <span class="r8 r">topCommandBarArea</span>;
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a>.<a href="/Xamarin.Forms.Core/A.html#24d46efe88390121" class="i field">Bottom</a>:
+					<span class="r11 r">target</span> = <span class="r7 r">bottomCommandBarArea</span>;
+					<b>break</b>;
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a>.<a href="/Xamarin.Forms.Core/A.html#33898a5b09541264" class="i field">Default</a>:
+				<b>default</b>:
+					<span class="r11 r">target</span> = <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> == <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a> ? <span class="r7 r">bottomCommandBarArea</span> : <span class="r8 r">topCommandBarArea</span>;
+					<b>break</b>;
+			}
+ 
+			<b>if</b> (<span class="r10 r">current</span> == <b>null</b> || <span class="r11 r">target</span> == <b>null</b> || <span class="r10 r">current</span> == <span class="r11 r">target</span>)
+			{
+				<b>return</b>;
+			}
+ 
+			<span class="c">// Remove the command bar from its current host and add it to the new one</span>
+			<span class="r10 r">current</span>.<span class="i">Child</span> = <b>null</b>;
+			<span class="r11 r">target</span>.<span class="i">Child</span> = <span class="r5 r">toolbar</span>;
+ 
+			<b>if</b> (<span class="r9 r">titleArea</span> != <b>null</b>)
+			{
+				<b>if</b> (<span class="r11 r">target</span> == <span class="r7 r">bottomCommandBarArea</span>)
+				{
+					<span class="c">// If the title is hosted in the command bar and we&#39;re moving the command bar to the bottom,</span>
+					<span class="c">// put the title into the topCommandBarArea</span>
+					<span class="r5 r">toolbar</span>.<span class="i property">Content</span> = <b>null</b>;
+					<span class="r8 r">topCommandBarArea</span>.<span class="i">Child</span> = <span class="r9 r">titleArea</span>;
+				}
+				<b>else</b>
+				{
+					<span class="c">// Put the title back into the command bar</span>
+					<span class="r5 r">toolbar</span>.<span class="i property">Content</span> = <span class="r9 r">titleArea</span>;
+				}
+			}
+		}
+ 
+		<span class="c">// For the time being, keeping this logic for dealing with consistency between the platforms</span>
+		<span class="c">// re: toolbar visibility here; at some point we should be separating toolbars from navigation bars,</span>
+		<span class="c">// and this won&#39;t be necessary</span>
+		<b>bool</b> <a id="6a4226d91c722c6f" href="R/6a4226d91c722c6f.html" target="n" data-glyph="46,1" class="i field">_shouldShowToolBar</a>;
+		<b>public bool</b> <a id="e5c9cfbdad518001" href="R/e5c9cfbdad518001.html" target="n" data-glyph="102,1" class="i property">ShouldShowToolBar</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#6a4226d91c722c6f" class="i field">_shouldShowToolBar</a>; }
+			<b>set</b>
+			{
+				<a href="#6a4226d91c722c6f" class="i field">_shouldShowToolBar</a> = <b>value</b>;
+				<a href="#b2ba37689e712c2d" class="i method">UpdateIsInValidLocation</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="b2ba37689e712c2d" href="R/b2ba37689e712c2d.html" target="n" data-glyph="76,1" class="i method">UpdateIsInValidLocation</a>()
+		{
+			<a href="FormsCommandBar.cs.html#efa4b9171e8b0bdf" class="k">var</a> <span id="r12 rd" class="r12 r">formsCommandBar</span> = <a href="#f051368c3b1999bb" class="i field">_commandBar</a> <b>as</b> <a href="FormsCommandBar.cs.html#efa4b9171e8b0bdf" class="t t">FormsCommandBar</a>;
+			<b>if</b> (<span class="r12 r">formsCommandBar</span> != <b>null</b>)
+			{
+				<span class="r12 r">formsCommandBar</span>.<a href="FormsCommandBar.cs.html#419ad52abfcdd1f2" class="i property">IsInValidLocation</a> = <a href="#e5c9cfbdad518001" class="i property">ShouldShowToolBar</a>;
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

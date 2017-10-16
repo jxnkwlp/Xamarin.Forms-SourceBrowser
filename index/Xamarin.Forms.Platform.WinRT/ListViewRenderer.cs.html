@@ -1,0 +1,629 @@
+﻿<!DOCTYPE html>
+<html><head><title>ListViewRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(620);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.WinRT/ListViewRenderer.cs" target="_top">ListViewRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.WinRT" target="_top">Xamarin.Forms.Platform.WinRT\Xamarin.Forms.Platform.WinRT.csproj</a> (Xamarin.Forms.Platform.WinRT)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">System</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Data</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Input</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>;
+<b>using</b> <span class="t">WListView</span> = <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">ListView</span>;
+<b>using</b> <span class="t">WBinding</span> = <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Data</span>.<span class="t t">Binding</span>;
+<b>using</b> <span class="t">WApp</span> = <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Application</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public class</b> <a id="5d2a62e9852f2449" href="R/5d2a62e9852f2449.html" target="n" data-glyph="0,0" class="t t"><span id="525aee5814c8b96f">ListViewRenderer</span></a> : <a href="ViewRenderer.cs.html#758d77404199f47d" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>, <span class="t t">FrameworkElement</span>&gt;
+	{
+		<a href="/Xamarin.Forms.Core/A.html#7d7c0ddfee2f7ca3" class="t t">ITemplatedItemsView</a>&lt;<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>&gt; <a id="15c268e1a188f492" href="R/15c268e1a188f492.html" target="n" data-glyph="106,1" class="i property">TemplatedItemsView</a> =&gt; <a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>;
+ 
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">WINDOWS_UWP</span>
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="3bf17d9354cce2b5" href="R/3bf17d9354cce2b5.html" target="n" data-glyph="42,1" class="i field">HighlightWhenSelectedProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i method">RegisterAttached</span>(<span class="s">&quot;HighlightWhenSelected&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#5d2a62e9852f2449" class="t t">ListViewRenderer</a>),
+			<b>new</b> <span class="t constructor">PropertyMetadata</span>(<b>false</b>));
+ 
+		<b>public static bool</b> <a id="8b9e7feb928d801b" href="R/8b9e7feb928d801b.html" target="n" data-glyph="72,1" class="i method">GetHighlightWhenSelected</a>(<span class="t t">DependencyObject</span> <span id="r0 rd" class="r0 r">dependencyObject</span>)
+		{
+			<b>return</b> (<b>bool</b>)<span class="r0 r">dependencyObject</span>.<span class="i method">GetValue</span>(<a href="#3bf17d9354cce2b5" class="i field">HighlightWhenSelectedProperty</a>);
+		}
+ 
+		<b>public static void</b> <a id="97831c38b363a50f" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">SetHighlightWhenSelected</a>(<span class="t t">DependencyObject</span> <span id="r1 rd" class="r1 r">dependencyObject</span>, <b>bool</b> <span id="r2 rd" class="r2 r">value</span>)
+		{
+			<span class="r1 r">dependencyObject</span>.<span class="i method">SetValue</span>(<a href="#3bf17d9354cce2b5" class="i field">HighlightWhenSelectedProperty</a>, <span class="r2 r">value</span>);
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected</b> <span class="t t">WListView</span> <a id="5c685357b933d20f" href="R/5c685357b933d20f.html" target="n" data-glyph="105,1" class="i property">List</a> { <b>get</b>; <b>private set</b>; }
+ 
+		<b>protected override void</b> <a id="e6b5be1f2bb95a24" href="R/e6b5be1f2bb95a24.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="VisualElementChangedEventArgs.cs.html#2106a6c47320d5ce" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>&gt; <span id="r3 rd" class="r3 r">e</span>)
+		{
+			<a href="ViewRenderer.cs.html#758d77404199f47d" class="k">base</a>.<a href="ViewRenderer.cs.html#604db20e09ba949f" class="i method">OnElementChanged</a>(<span class="r3 r">e</span>);
+ 
+			<b>if</b> (<span class="r3 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#4e3446e0b6157432" class="i property">OldElement</a> != <b>null</b>)
+			{
+				<span class="r3 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#4e3446e0b6157432" class="i property">OldElement</a>.<a href="/Xamarin.Forms.Core/A.html#b7f2960fb90d27ad" class="i">ItemSelected</a> -= <a href="#24daf3177490f320" class="i method">OnElementItemSelected</a>;
+				<span class="r3 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#4e3446e0b6157432" class="i property">OldElement</a>.<a href="/Xamarin.Forms.Core/A.html#55534a7ecbfa5f31" class="i">ScrollToRequested</a> -= <a href="#8da064f43ad949c8" class="i method">OnElementScrollToRequested</a>;
+			}
+ 
+			<b>if</b> (<span class="r3 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#be4376e6abb54396" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<span class="r3 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#be4376e6abb54396" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#b7f2960fb90d27ad" class="i">ItemSelected</a> += <a href="#24daf3177490f320" class="i method">OnElementItemSelected</a>;
+				<span class="r3 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#be4376e6abb54396" class="i property">NewElement</a>.<a href="/Xamarin.Forms.Core/A.html#55534a7ecbfa5f31" class="i">ScrollToRequested</a> += <a href="#8da064f43ad949c8" class="i method">OnElementScrollToRequested</a>;
+ 
+				<b>if</b> (<a href="#5c685357b933d20f" class="i property">List</a> == <b>null</b>)
+				{
+					<a href="#5c685357b933d20f" class="i property">List</a> = <b>new</b> <span class="t constructor">WListView</span>
+					{
+						<span class="i property">IsSynchronizedWithCurrentItem</span> = <b>false</b>,
+						<span class="i property">ItemTemplate</span> = (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">DataTemplate</span>)<span class="t t">WApp</span>.<span class="i property">Current</span>.<span class="i property">Resources</span><a href="@1@System.Runtime/A.html#86884956b17e491a">[</a><span class="s">&quot;CellTemplate&quot;</span>],
+						<span class="i property">HeaderTemplate</span> = (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">DataTemplate</span>)<span class="t t">WApp</span>.<span class="i property">Current</span>.<span class="i property">Resources</span><a href="@1@System.Runtime/A.html#86884956b17e491a">[</a><span class="s">&quot;View&quot;</span>],
+						<span class="i property">FooterTemplate</span> = (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">DataTemplate</span>)<span class="t t">WApp</span>.<span class="i property">Current</span>.<span class="i property">Resources</span><a href="@1@System.Runtime/A.html#86884956b17e491a">[</a><span class="s">&quot;View&quot;</span>],
+						<span class="i property">ItemContainerStyle</span> = (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Style</span>)<span class="t t">WApp</span>.<span class="i property">Current</span>.<span class="i property">Resources</span><a href="@1@System.Runtime/A.html#86884956b17e491a">[</a><span class="s">&quot;FormsListViewItem&quot;</span>],
+						<span class="i property">GroupStyleSelector</span> = (<span class="t t">GroupStyleSelector</span>)<span class="t t">WApp</span>.<span class="i property">Current</span>.<span class="i property">Resources</span><a href="@1@System.Runtime/A.html#86884956b17e491a">[</a><span class="s">&quot;ListViewGroupSelector&quot;</span>]
+					};
+ 
+					<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">IsItemClickEnabled</span> = <b>true</b>;
+					<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i">ItemClick</span> += <a href="#5b179c2dde1dbfd6" class="i method">OnListItemClicked</a>;
+ 
+					<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i">SelectionChanged</span> += <a href="#9a3b9c1f2499c68f" class="i method">OnControlSelectionChanged</a>;
+ 
+					<a href="#5c685357b933d20f" class="i property">List</a>.<a href="Extensions.cs.html#4d630711256d1c37" class="i method">SetBinding</a>(<span class="t t">ItemsControl</span>.<span class="i property">ItemsSourceProperty</span>, <span class="s">&quot;&quot;</span>);
+				}
+ 
+				<span class="c">// WinRT throws an exception if you set ItemsSource directly to a CVS, so bind it.</span>
+				<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">DataContext</span> = <b>new</b> <span class="t constructor">CollectionViewSource</span> { <span class="i property">Source</span> = <a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5eab030fbef30e59" class="i property">ItemsSource</a>, <span class="i property">IsSourceGrouped</span> = <a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#0b780b61bce76534" class="i property">IsGroupingEnabled</a> };
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">WINDOWS_UWP</span>
+				<a href="@1@System.Runtime/A.html#d9262ceecc1719ab" class="k">var</a> <span id="r4 rd" class="r4 r">selected</span> = <a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#dfce6372456ec083" class="i property">SelectedItem</a>;
+				<b>if</b> (<span class="r4 r">selected</span> != <b>null</b>)
+					<a href="#24daf3177490f320" class="i method">OnElementItemSelected</a>(<b>null</b>, <b>new</b> <a href="/Xamarin.Forms.Core/A.html#f75588b084f6aa45" class="t constructor">SelectedItemChangedEventArgs</a>(<span class="r4 r">selected</span>));
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+				<a href="#79583a14bd291e20" class="i method">UpdateGrouping</a>();
+				<a href="#3e8fee394f32660f" class="i method">UpdateHeader</a>();
+				<a href="#c1a7a3defa6862f8" class="i method">UpdateFooter</a>();
+				<a href="#36e0907a006ebe37" class="i method">ClearSizeEstimate</a>();
+			}
+		}
+ 
+		<b>protected override void</b> <a id="60953aca69db4169" href="R/60953aca69db4169.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r5 rd" class="r5 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r6 rd" class="r6 r">e</span>)
+		{
+			<a href="ViewRenderer.cs.html#758d77404199f47d" class="k">base</a>.<a href="VisualElementRenderer.cs.html#571db90aaeaa58ff" class="i method">OnElementPropertyChanged</a>(<span class="r5 r">sender</span>, <span class="r6 r">e</span>);
+ 
+			<b>if</b> (<span class="r6 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#036cd02de28b0419" class="i field">IsGroupingEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#79583a14bd291e20" class="i method">UpdateGrouping</a>();
+			}
+			<b>else if</b> (<span class="r6 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#926e93cbfca7cdfc" class="i field">HeaderProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#3e8fee394f32660f" class="i method">UpdateHeader</a>();
+			}
+			<b>else if</b> (<span class="r6 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#b11c3ee784de2a2e" class="i field">FooterProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#c1a7a3defa6862f8" class="i method">UpdateFooter</a>();
+			}
+			<b>else if</b> (<span class="r6 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#96072a718638095e" class="i field">RowHeightProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#36e0907a006ebe37" class="i method">ClearSizeEstimate</a>();
+			}
+			<b>else if</b> (<span class="r6 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#ba5f9bb59f0aeffc" class="i field">HasUnevenRowsProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#36e0907a006ebe37" class="i method">ClearSizeEstimate</a>();
+			}
+			<b>else if</b> (<span class="r6 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#ff5fcf02ddedda77" class="i field">ItemTemplateProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#36e0907a006ebe37" class="i method">ClearSizeEstimate</a>();
+			}
+			<b>else if</b> (<span class="r6 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#ec65dccca42e4f36" class="i field">ItemsSourceProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<a href="#36e0907a006ebe37" class="i method">ClearSizeEstimate</a>();
+				((<span class="t t">CollectionViewSource</span>)<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">DataContext</span>).<span class="i property">Source</span> = <a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#5eab030fbef30e59" class="i property">ItemsSource</a>;
+			}
+		}
+ 
+		<b>protected override void</b> <a id="54dd0e725c503ea9" href="R/54dd0e725c503ea9.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r7 rd" class="r7 r">disposing</span>)
+		{
+			<b>if</b> (<a href="#5c685357b933d20f" class="i property">List</a> != <b>null</b>)
+			{
+				<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i">ItemClick</span> -= <a href="#5b179c2dde1dbfd6" class="i method">OnListItemClicked</a>;
+				<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i">SelectionChanged</span> -= <a href="#9a3b9c1f2499c68f" class="i method">OnControlSelectionChanged</a>;
+ 
+				<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">DataContext</span> = <b>null</b>;
+				<a href="#5c685357b933d20f" class="i property">List</a> = <b>null</b>;
+			}
+ 
+			<b>if</b> (<a href="#6de98e0e3ffd6dd1" class="i field">_zoom</a> != <b>null</b>)
+			{
+				<a href="#6de98e0e3ffd6dd1" class="i field">_zoom</a>.<span class="i">ViewChangeCompleted</span> -= <a href="#b61721b0db081085" class="i method">OnViewChangeCompleted</a>;
+				<a href="#6de98e0e3ffd6dd1" class="i field">_zoom</a> = <b>null</b>;
+			}
+ 
+			<a href="ViewRenderer.cs.html#758d77404199f47d" class="k">base</a>.<a href="VisualElementRenderer.cs.html#0ec1d01e03bda5a7" class="i method">Dispose</a>(<span class="r7 r">disposing</span>);
+		}
+ 
+		<b>static</b> <a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="r8 r t">T</span>&gt; <a id="6bb905fbcc386762" href="R/6bb905fbcc386762.html" target="n" data-glyph="76,1" class="i method">FindDescendants</a>&lt;<span id="r8 rd t" class="r8 r t">T</span>&gt;(<span class="t t">DependencyObject</span> <span id="r9 rd" class="r9 r">dobj</span>) <b>where</b> <span class="r8 r t">T</span> : <span class="t t">DependencyObject</span>
+		{
+			<b>int</b> <span id="r10 rd" class="r10 r">count</span> = <span class="t t">VisualTreeHelper</span>.<span class="i method">GetChildrenCount</span>(<span class="r9 r">dobj</span>);
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r11 rd" class="r11 r">i</span> = 0; <span class="r11 r">i</span> &lt; <span class="r10 r">count</span>; <span class="r11 r">i</span>++)
+			{
+				<span class="t t">DependencyObject</span> <span id="r12 rd" class="r12 r">element</span> = <span class="t t">VisualTreeHelper</span>.<span class="i method">GetChild</span>(<span class="r9 r">dobj</span>, <span class="r11 r">i</span>);
+				<b>if</b> (<span class="r12 r">element</span> <b>is</b> <span class="r8 r t">T</span>)
+					<b>yield return</b> (<span class="r8 r t">T</span>)<span class="r12 r">element</span>;
+ 
+				<b>foreach</b> (<span class="r8 r t">T</span> <span id="r13 rd" class="r13 r">descendant</span> <b>in</b> <a href="#6bb905fbcc386762" class="i method">FindDescendants</a>&lt;<span class="r8 r t">T</span>&gt;(<span class="r12 r">element</span>))
+					<b>yield return</b> <span class="r13 r">descendant</span>;
+			}
+		}
+ 
+		<b>sealed class</b> <a id="cf5a540c5d022d3a" href="R/cf5a540c5d022d3a.html" target="n" data-glyph="4,1" class="t t">BrushedElement</a>
+		{
+			<b>public</b> <a id="d77a5849f77ed7fa" href="R/d77a5849f77ed7fa.html" target="n" data-glyph="72,2" class="i constructor">BrushedElement</a>(<span class="t t">FrameworkElement</span> <span id="r14 rd" class="r14 r">element</span>, <span class="t t">WBinding</span> <span id="r15 rd" class="r15 r">brushBinding</span> = <b>null</b>, <span class="t t">Brush</span> <span id="r16 rd" class="r16 r">brush</span> = <b>null</b>)
+			{
+				<a href="#aa33db516a4cd9f5" class="i property">Element</a> = <span class="r14 r">element</span>;
+				<a href="#df8a06a93fcdce61" class="i property">BrushBinding</a> = <span class="r15 r">brushBinding</span>;
+				<a href="#d1c7287bfcef2b05" class="i property">Brush</a> = <span class="r16 r">brush</span>;
+			}
+ 
+			<b>public</b> <span class="t t">Brush</span> <a id="d1c7287bfcef2b05" href="R/d1c7287bfcef2b05.html" target="n" data-glyph="102,2" class="i property">Brush</a> { <b>get</b>; }
+ 
+			<b>public</b> <span class="t t">WBinding</span> <a id="df8a06a93fcdce61" href="R/df8a06a93fcdce61.html" target="n" data-glyph="102,2" class="i property">BrushBinding</a> { <b>get</b>; }
+ 
+			<b>public</b> <span class="t t">FrameworkElement</span> <a id="aa33db516a4cd9f5" href="R/aa33db516a4cd9f5.html" target="n" data-glyph="102,2" class="i property">Element</a> { <b>get</b>; }
+ 
+			<b>public bool</b> <a id="2042ac15837710e7" href="R/2042ac15837710e7.html" target="n" data-glyph="102,2" class="i property">IsBound</a>
+			{
+				<b>get</b> { <b>return</b> <a href="#df8a06a93fcdce61" class="i property">BrushBinding</a> != <b>null</b>; }
+			}
+		}
+ 
+		<span class="t t">SemanticZoom</span> <a id="6de98e0e3ffd6dd1" href="R/6de98e0e3ffd6dd1.html" target="n" data-glyph="46,1" class="i field">_zoom</a>;
+		<span class="t t">ScrollViewer</span> <a id="589e47498787eab3" href="R/589e47498787eab3.html" target="n" data-glyph="46,1" class="i field">_scrollViewer</a>;
+		<span class="t t">ContentControl</span> <a id="e57ef448c60174a0" href="R/e57ef448c60174a0.html" target="n" data-glyph="46,1" class="i field">_headerControl</a>;
+		<b>readonly</b> <a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#cf5a540c5d022d3a" class="t t">BrushedElement</a>&gt; <a id="3a6cc795cccb0aa4" href="R/3a6cc795cccb0aa4.html" target="n" data-glyph="46,1" class="i field">_highlightedElements</a> = <b>new</b> <a href="@1@System.Collections/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="#cf5a540c5d022d3a" class="t t">BrushedElement</a>&gt;();
+ 
+		<b>void</b> <a id="36e0907a006ebe37" href="R/36e0907a006ebe37.html" target="n" data-glyph="76,1" class="i method">ClearSizeEstimate</a>()
+		{
+			<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#4b4f85fcc1a48118" class="i method">ClearValue</a>(<a href="CellControl.cs.html#e19d8919b2e106b7" class="t t">CellControl</a>.<a href="CellControl.cs.html#4d8a5a17700379ca" class="i field">MeasuredEstimateProperty</a>);
+		}
+ 
+		<b>void</b> <a id="c1a7a3defa6862f8" href="R/c1a7a3defa6862f8.html" target="n" data-glyph="76,1" class="i method">UpdateFooter</a>()
+		{
+			<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">Footer</span> = <a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#e489121e054c62f7" class="i property">FooterElement</a>;
+		}
+ 
+		<b>void</b> <a id="3e8fee394f32660f" href="R/3e8fee394f32660f.html" target="n" data-glyph="76,1" class="i method">UpdateHeader</a>()
+		{
+			<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">Header</span> = <a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#7ca6df286ce3f9a6" class="i property">HeaderElement</a>;
+		}
+ 
+		<b>void</b> <a id="79583a14bd291e20" href="R/79583a14bd291e20.html" target="n" data-glyph="76,1" class="i method">UpdateGrouping</a>()
+		{
+			<b>bool</b> <span id="r17 rd" class="r17 r">grouping</span> = <a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#0b780b61bce76534" class="i property">IsGroupingEnabled</a>;
+ 
+			((<span class="t t">CollectionViewSource</span>)<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">DataContext</span>).<span class="i property">IsSourceGrouped</span> = <span class="r17 r">grouping</span>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r18 rd" class="r18 r">templatedItems</span> = <a href="#15c268e1a188f492" class="i property">TemplatedItemsView</a>.<a href="/Xamarin.Forms.Core/A.html#5c03fae343562417" class="i property">TemplatedItems</a>;
+			<b>if</b> (<span class="r17 r">grouping</span> &amp;&amp; <span class="r18 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#698b3d0a651f405a" class="i property">ShortNames</a> != <b>null</b>)
+			{
+				<b>if</b> (<a href="#6de98e0e3ffd6dd1" class="i field">_zoom</a> == <b>null</b>)
+				{
+					<span class="t t">ScrollViewer</span>.<span class="i method">SetIsVerticalScrollChainingEnabled</span>(<a href="#5c685357b933d20f" class="i property">List</a>, <b>false</b>);
+ 
+					<b>var</b> <span id="r19 rd" class="r19 r">grid</span> = <b>new</b> <span class="t constructor">GridView</span> { <span class="i property">ItemsSource</span> = <span class="r18 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#698b3d0a651f405a" class="i property">ShortNames</a>, <span class="i property">Style</span> = (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Style</span>)<span class="t t">WApp</span>.<span class="i property">Current</span>.<span class="i property">Resources</span><a href="@1@System.Runtime/A.html#86884956b17e491a">[</a><span class="s">&quot;JumpListGrid&quot;</span>] };
+ 
+					<span class="t t">ScrollViewer</span>.<span class="i method">SetIsHorizontalScrollChainingEnabled</span>(<span class="r19 r">grid</span>, <b>false</b>);
+ 
+					<a href="#6de98e0e3ffd6dd1" class="i field">_zoom</a> = <b>new</b> <span class="t constructor">SemanticZoom</span> { <span class="i property">IsZoomOutButtonEnabled</span> = <b>false</b>, <span class="i property">ZoomedOutView</span> = <span class="r19 r">grid</span> };
+ 
+					<span class="c">// Since we reuse our ScrollTo, we have to wait until the change completes or ChangeView has odd behavior.</span>
+					<a href="#6de98e0e3ffd6dd1" class="i field">_zoom</a>.<span class="i">ViewChangeCompleted</span> += <a href="#b61721b0db081085" class="i method">OnViewChangeCompleted</a>;
+ 
+					<span class="c">// Specific order to let SNC unparent the ListView for us</span>
+					<a href="VisualElementRenderer.cs.html#77455b4fb2566b87" class="i method">SetNativeControl</a>(<a href="#6de98e0e3ffd6dd1" class="i field">_zoom</a>);
+					<a href="#6de98e0e3ffd6dd1" class="i field">_zoom</a>.<span class="i property">ZoomedInView</span> = <a href="#5c685357b933d20f" class="i property">List</a>;
+				}
+				<b>else</b>
+				{
+					<a href="#6de98e0e3ffd6dd1" class="i field">_zoom</a>.<span class="i property">CanChangeViews</span> = <b>true</b>;
+				}
+			}
+			<b>else</b>
+			{
+				<b>if</b> (<a href="#6de98e0e3ffd6dd1" class="i field">_zoom</a> != <b>null</b>)
+					<a href="#6de98e0e3ffd6dd1" class="i field">_zoom</a>.<span class="i property">CanChangeViews</span> = <b>false</b>;
+				<b>else if</b> (<a href="#5c685357b933d20f" class="i property">List</a> != <a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>)
+					<a href="VisualElementRenderer.cs.html#77455b4fb2566b87" class="i method">SetNativeControl</a>(<a href="#5c685357b933d20f" class="i property">List</a>);
+			}
+		}
+ 
+		<b>async void</b> <a id="b61721b0db081085" href="R/b61721b0db081085.html" target="n" data-glyph="76,1" class="i method">OnViewChangeCompleted</a>(<b>object</b> <span id="r20 rd" class="r20 r">sender</span>, <span class="t t">SemanticZoomViewChangedEventArgs</span> <span id="r21 rd" class="r21 r">e</span>)
+		{
+			<b>if</b> (<span class="r21 r">e</span>.<span class="i property">IsSourceZoomedInView</span>)
+				<b>return</b>;
+ 
+			<span class="c">// HACK: Technically more than one short name could be the same, this will potentially find the wrong one in that case</span>
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r22 rd" class="r22 r">item</span> = (<b>string</b>)<span class="r21 r">e</span>.<span class="i property">SourceItem</span>.<span class="i property">Item</span>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r23 rd" class="r23 r">templatedItems</span> = <a href="#15c268e1a188f492" class="i property">TemplatedItemsView</a>.<a href="/Xamarin.Forms.Core/A.html#5c03fae343562417" class="i property">TemplatedItems</a>;
+			<b>int</b> <span id="r24 rd" class="r24 r">index</span> = <span class="r23 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#698b3d0a651f405a" class="i property">ShortNames</a>.<a href="/Xamarin.Forms.Core/A.html#ae78fe906aea45a9" class="i method">IndexOf</a>(<span class="r22 r">item</span>);
+			<b>if</b> (<span class="r24 r">index</span> == -1)
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r25 rd" class="r25 r">til</span> = <span class="r23 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#1f8bfb2d10c25677" class="i method">GetGroup</a>(<span class="r24 r">index</span>);
+			<b>if</b> (<span class="r25 r">til</span>.<a href="@1@System.Runtime/A.html#6f182bb82f68780e" class="i property">Count</a> == 0)
+				<b>return</b>; <span class="c">// FIXME</span>
+ 
+			<span class="c">// Delay until after the SemanticZoom change _actually_ finishes, fixes tons of odd issues on Phone w/ virtualization.</span>
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> == <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a>)
+				<b>await</b> <span class="t t">Task</span>.<span class="i method">Delay</span>(1);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#bb08d2d17017b22f" class="t t">IListProxy</a> <span id="r26 rd" class="r26 r">listProxy</span> = <span class="r25 r">til</span>.<a href="/Xamarin.Forms.Core/A.html#95cf81e423c7f190" class="i property">ListProxy</a>;
+			<a href="#049bdf491239ef7e" class="i method">ScrollTo</a>(<span class="r26 r">listProxy</span>.<a href="/Xamarin.Forms.Core/A.html#2a97343604d30bce" class="i property">ProxiedEnumerable</a>, <span class="r26 r">listProxy</span>[0], <a href="/Xamarin.Forms.Core/A.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a>.<a href="/Xamarin.Forms.Core/A.html#78b3634b9c5b120a" class="i field">Start</a>, <b>true</b>, <b>true</b>);
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">disable</span> 1998 <span class="c">// considered for removal</span>
+		<b>async void</b> <a id="049bdf491239ef7e" href="R/049bdf491239ef7e.html" target="n" data-glyph="76,1" class="i method">ScrollTo</a>(<b>object</b> <span id="r27 rd" class="r27 r">group</span>, <b>object</b> <span id="r28 rd" class="r28 r">item</span>, <a href="/Xamarin.Forms.Core/A.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a> <span id="r29 rd" class="r29 r">toPosition</span>, <b>bool</b> <span id="r30 rd" class="r30 r">shouldAnimate</span>, <b>bool</b> <span id="r31 rd" class="r31 r">includeGroup</span> = <b>false</b>, <b>bool</b> <span id="r32 rd" class="r32 r">previouslyFailed</span> = <b>false</b>)
+<span class="k preprocess">#</span><span class="k preprocess">pragma</span> <span class="k preprocess">warning</span> <span class="k preprocess">restore</span> 1998
+		{
+			<span class="t t">ScrollViewer</span> <span id="r33 rd" class="r33 r">viewer</span> = <a href="#c9cba3823eb0f397" class="i method">GetScrollViewer</a>();
+			<b>if</b> (<span class="r33 r">viewer</span> == <b>null</b>)
+			{
+				<span class="t t">RoutedEventHandler</span> <span id="r34 rd" class="r34 r">loadedHandler</span> = <b>null</b>;
+				<span class="r34 r">loadedHandler</span> = <b>async</b> (<span id="r35 rd" class="r35 r">o</span>, <span id="r36 rd" class="r36 r">e</span>) =&gt;
+				{
+					<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i">Loaded</span> -= <span class="r34 r">loadedHandler</span>;
+ 
+					<span class="c">// Here we try to avoid an exception, see explanation at bottom</span>
+					<b>await</b> <span class="i property">Dispatcher</span>.<span class="i method">RunIdleAsync</span>(<span id="r37 rd" class="r37 r">args</span> =&gt; { <a href="#049bdf491239ef7e" class="i method">ScrollTo</a>(<span class="r27 r">group</span>, <span class="r28 r">item</span>, <span class="r29 r">toPosition</span>, <span class="r30 r">shouldAnimate</span>, <span class="r31 r">includeGroup</span>); });
+				};
+				<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i">Loaded</span> += <span class="r34 r">loadedHandler</span>;
+				<b>return</b>;
+			}
+			<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r38 rd" class="r38 r">templatedItems</span> = <a href="#15c268e1a188f492" class="i property">TemplatedItemsView</a>.<a href="/Xamarin.Forms.Core/A.html#5c03fae343562417" class="i property">TemplatedItems</a>;
+			<a href="@1@System.Runtime/A.html#1806cf6634f5a371" class="t t">Tuple</a>&lt;<b>int</b>, <b>int</b>&gt; <span id="r39 rd" class="r39 r">location</span> = <span class="r38 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#cd53b32b78cbab85" class="i method">GetGroupAndIndexOfItem</a>(<span class="r27 r">group</span>, <span class="r28 r">item</span>);
+			<b>if</b> (<span class="r39 r">location</span>.<a href="@1@System.Runtime/A.html#d1922db1cf9dcd03" class="i property">Item1</a> == -1 || <span class="r39 r">location</span>.<a href="@1@System.Runtime/A.html#85ddc983cace902c" class="i property">Item2</a> == -1)
+				<b>return</b>;
+ 
+			<b>object</b>[] <span id="r40 rd" class="r40 r">t</span> = <span class="r38 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#1f8bfb2d10c25677" class="i method">GetGroup</a>(<span class="r39 r">location</span>.<a href="@1@System.Runtime/A.html#d1922db1cf9dcd03" class="i property">Item1</a>).<a href="/Xamarin.Forms.Core/A.html#ca765c504701ad64" class="i property">ItemsSource</a>.<span class="i method">Cast</span>&lt;<b>object</b>&gt;().<span class="i method">ToArray</span>();
+			<b>object</b> <span id="r41 rd" class="r41 r">c</span> = <span class="r40 r">t</span>[<span class="r39 r">location</span>.<a href="@1@System.Runtime/A.html#85ddc983cace902c" class="i property">Item2</a>];
+ 
+			<b>double</b> <span id="r42 rd" class="r42 r">viewportHeight</span> = <span class="r33 r">viewer</span>.<span class="i property">ViewportHeight</span>;
+ 
+			<b>var</b> <span id="r43 rd" class="r43 r">semanticLocation</span> = <b>new</b> <span class="t constructor">SemanticZoomLocation</span> { <span class="i property">Item</span> = <span class="r41 r">c</span> };
+ 
+			<b>switch</b> (<span class="r29 r">toPosition</span>)
+			{
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a>.<a href="/Xamarin.Forms.Core/A.html#78b3634b9c5b120a" class="i field">Start</a>:
+					{
+						<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i method">ScrollIntoView</span>(<span class="r41 r">c</span>, <span class="t t">ScrollIntoViewAlignment</span>.<span class="i field">Leading</span>);
+						<b>return</b>;
+					}
+ 
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a>.<a href="/Xamarin.Forms.Core/A.html#6027307adab57e1b" class="i field">MakeVisible</a>:
+					{
+						<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i method">ScrollIntoView</span>(<span class="r41 r">c</span>, <span class="t t">ScrollIntoViewAlignment</span>.<span class="i field">Default</span>);
+						<b>return</b>;
+					}
+ 
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a>.<a href="/Xamarin.Forms.Core/A.html#c986f9da5b8e7350" class="i field">End</a>:
+				<b>case</b> <a href="/Xamarin.Forms.Core/A.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a>.<a href="/Xamarin.Forms.Core/A.html#cf0e7d490192e01f" class="i field">Center</a>:
+					{
+						<b>var</b> <span id="r44 rd" class="r44 r">content</span> = (<span class="t t">FrameworkElement</span>)<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">ItemTemplate</span>.<span class="i method">LoadContent</span>();
+						<span class="r44 r">content</span>.<span class="i property">DataContext</span> = <span class="r41 r">c</span>;
+						<span class="r44 r">content</span>.<span class="i method">Measure</span>(<b>new</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="t constructor">Size</span>(<span class="r33 r">viewer</span>.<span class="i property">ActualWidth</span>, <b>double</b>.<a href="@1@System.Runtime/A.html#704210f8dd6afaed" class="i field">PositiveInfinity</a>));
+ 
+						<b>double</b> <span id="r45 rd" class="r45 r">tHeight</span> = <span class="r44 r">content</span>.<span class="i property">DesiredSize</span>.<span class="i property">Height</span>;
+ 
+						<b>if</b> (<span class="r29 r">toPosition</span> == <a href="/Xamarin.Forms.Core/A.html#5fb20af4e6e81b90" class="t t">ScrollToPosition</a>.<a href="/Xamarin.Forms.Core/A.html#cf0e7d490192e01f" class="i field">Center</a>)
+							<span class="r43 r">semanticLocation</span>.<span class="i property">Bounds</span> = <b>new</b> <span class="t constructor">Rect</span>(0, <span class="r42 r">viewportHeight</span> / 2 - <span class="r45 r">tHeight</span> / 2, 0, 0);
+						<b>else</b>
+							<span class="r43 r">semanticLocation</span>.<span class="i property">Bounds</span> = <b>new</b> <span class="t constructor">Rect</span>(0, <span class="r42 r">viewportHeight</span> - <span class="r45 r">tHeight</span>, 0, 0);
+ 
+						<b>break</b>;
+					}
+			}
+ 
+			<span class="c">// Waiting for loaded doesn&#39;t seem to be enough anymore; the ScrollViewer does not appear until after Loaded.</span>
+			<span class="c">// Even if the ScrollViewer is present, an invoke at low priority fails (E_FAIL) presumably because the items are</span>
+			<span class="c">// still loading. An invoke at idle sometimes work, but isn&#39;t reliable enough, so we&#39;ll just have to commit</span>
+			<span class="c">// treason and use a blanket catch for the E_FAIL and try again.</span>
+			<b>try</b>
+			{
+				<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i method">MakeVisible</span>(<span class="r43 r">semanticLocation</span>);
+			}
+			<b>catch</b> (<a href="@1@System.Runtime/A.html#f092fb2b893a0162" class="t t">Exception</a>)
+			{
+				<b>if</b> (<span class="r32 r">previouslyFailed</span>)
+					<b>return</b>;
+ 
+				<span class="t t">Task</span>.<span class="i method">Delay</span>(1).<span class="i method">ContinueWith</span>(<span id="r46 rd" class="r46 r">ct</span> =&gt; { <a href="#049bdf491239ef7e" class="i method">ScrollTo</a>(<span class="r27 r">group</span>, <span class="r28 r">item</span>, <span class="r29 r">toPosition</span>, <span class="r30 r">shouldAnimate</span>, <span class="r31 r">includeGroup</span>, <b>true</b>); }, <span class="t t">TaskScheduler</span>.<span class="i method">FromCurrentSynchronizationContext</span>()).<a href="TaskExtensions.cs.html#b758813e95b6293b" class="i method">WatchForError</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="8da064f43ad949c8" href="R/8da064f43ad949c8.html" target="n" data-glyph="76,1" class="i method">OnElementScrollToRequested</a>(<b>object</b> <span id="r47 rd" class="r47 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#f03c2a98424144b5" class="t t">ScrollToRequestedEventArgs</a> <span id="r48 rd" class="r48 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#bbee832be42424be" class="k">var</a> <span id="r49 rd" class="r49 r">scrollArgs</span> = (<a href="/Xamarin.Forms.Core/A.html#bbee832be42424be" class="t t">ITemplatedItemsListScrollToRequestedEventArgs</a>)<span class="r48 r">e</span>;
+			<a href="#049bdf491239ef7e" class="i method">ScrollTo</a>(<span class="r49 r">scrollArgs</span>.<a href="/Xamarin.Forms.Core/A.html#57f314f5cc333237" class="i property">Group</a>, <span class="r49 r">scrollArgs</span>.<a href="/Xamarin.Forms.Core/A.html#2b6b4e5119bda668" class="i property">Item</a>, <span class="r48 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#fc0ff6f15e752ead" class="i property">Position</a>, <span class="r48 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#a431f3b81325da89" class="i property">ShouldAnimate</a>);
+		}
+ 
+		<span class="r50 r t">T</span> <a id="0995281770b258d2" href="R/0995281770b258d2.html" target="n" data-glyph="76,1" class="i method">GetFirstDescendant</a>&lt;<span id="r50 rd t" class="r50 r t">T</span>&gt;(<span class="t t">DependencyObject</span> <span id="r51 rd" class="r51 r">element</span>) <b>where</b> <span class="r50 r t">T</span> : <span class="t t">FrameworkElement</span>
+		{
+			<b>int</b> <span id="r52 rd" class="r52 r">count</span> = <span class="t t">VisualTreeHelper</span>.<span class="i method">GetChildrenCount</span>(<span class="r51 r">element</span>);
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r53 rd" class="r53 r">i</span> = 0; <span class="r53 r">i</span> &lt; <span class="r52 r">count</span>; <span class="r53 r">i</span>++)
+			{
+				<span class="t t">DependencyObject</span> <span id="r54 rd" class="r54 r">child</span> = <span class="t t">VisualTreeHelper</span>.<span class="i method">GetChild</span>(<span class="r51 r">element</span>, <span class="r53 r">i</span>);
+ 
+				<span class="r50 r t">T</span> <span id="r55 rd" class="r55 r">target</span> = <span class="r54 r">child</span> <b>as</b> <span class="r50 r t">T</span> ?? <a href="#0995281770b258d2" class="i method">GetFirstDescendant</a>&lt;<span class="r50 r t">T</span>&gt;(<span class="r54 r">child</span>);
+				<b>if</b> (<span class="r55 r">target</span> != <b>null</b>)
+					<b>return</b> <span class="r55 r">target</span>;
+			}
+ 
+			<b>return null</b>;
+		}
+ 
+		<span class="t t">ContentControl</span> <a id="601154e9afee5127" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">GetHeaderControl</a>()
+		{
+			<b>if</b> (<a href="#e57ef448c60174a0" class="i field">_headerControl</a> == <b>null</b>)
+			{
+				<span class="t t">ScrollViewer</span> <span id="r56 rd" class="r56 r">viewer</span> = <a href="#c9cba3823eb0f397" class="i method">GetScrollViewer</a>();
+				<b>if</b> (<span class="r56 r">viewer</span> == <b>null</b>)
+					<b>return null</b>;
+ 
+				<b>var</b> <span id="r57 rd" class="r57 r">presenter</span> = <a href="#0995281770b258d2" class="i method">GetFirstDescendant</a>&lt;<span class="t t">ItemsPresenter</span>&gt;(<span class="r56 r">viewer</span>);
+				<b>if</b> (<span class="r57 r">presenter</span> == <b>null</b>)
+					<b>return null</b>;
+ 
+				<a href="#e57ef448c60174a0" class="i field">_headerControl</a> = <a href="#0995281770b258d2" class="i method">GetFirstDescendant</a>&lt;<span class="t t">ContentControl</span>&gt;(<span class="r57 r">presenter</span>);
+			}
+ 
+			<b>return</b> <a href="#e57ef448c60174a0" class="i field">_headerControl</a>;
+		}
+ 
+		<span class="t t">ScrollViewer</span> <a id="c9cba3823eb0f397" href="R/c9cba3823eb0f397.html" target="n" data-glyph="76,1" class="i method">GetScrollViewer</a>()
+		{
+			<b>if</b> (<a href="#589e47498787eab3" class="i field">_scrollViewer</a> == <b>null</b>)
+			{
+				<a href="#589e47498787eab3" class="i field">_scrollViewer</a> = <a href="#5c685357b933d20f" class="i property">List</a>.<a href="FrameworkElementExtensions.cs.html#3f82fc0eff775270" class="i method">GetFirstDescendant</a>&lt;<span class="t t">ScrollViewer</span>&gt;();
+			}
+ 
+			<b>return</b> <a href="#589e47498787eab3" class="i field">_scrollViewer</a>;
+		}
+ 
+		<b>void</b> <a id="24daf3177490f320" href="R/24daf3177490f320.html" target="n" data-glyph="76,1" class="i method">OnElementItemSelected</a>(<b>object</b> <span id="r58 rd" class="r58 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#8b9f8c714f679914" class="t t">SelectedItemChangedEventArgs</a> <span id="r59 rd" class="r59 r">e</span>)
+		{
+			<b>if</b> (<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#a869ce2abdcbe88c" class="i field">_deferSelection</a>)
+			{
+				<span class="c">// If we get more than one of these, that&#39;s okay; we only want the latest one</span>
+				<a href="#90abdeb4d4cc3e29" class="i field">_deferredSelectedItemChangedEvent</a> = <b>new</b> <a href="@1@System.Runtime/A.html#ee1efa9bd0176f36" class="t constructor">Tuple</a>&lt;<b>object</b>, <a href="/Xamarin.Forms.Core/A.html#8b9f8c714f679914" class="t t">SelectedItemChangedEventArgs</a>&gt;(<span class="r58 r">sender</span>, <span class="r59 r">e</span>);
+				<b>return</b>;
+			}
+ 
+			<b>if</b> (<span class="r59 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#e555c9eb6c2cbc99" class="i property">SelectedItem</a> == <b>null</b>)
+			{
+				<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">SelectedIndex</span> = -1;
+				<b>return</b>;
+			}
+			<a href="/Xamarin.Forms.Core/A.html#5fafd275375b1472" class="k">var</a> <span id="r60 rd" class="r60 r">templatedItems</span> = <a href="#15c268e1a188f492" class="i property">TemplatedItemsView</a>.<a href="/Xamarin.Forms.Core/A.html#5c03fae343562417" class="i property">TemplatedItems</a>;
+			<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r61 rd" class="r61 r">index</span> = 0;
+			<b>if</b> (<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#0b780b61bce76534" class="i property">IsGroupingEnabled</a>)
+			{
+				<b>int</b> <span id="r62 rd" class="r62 r">selectedItemIndex</span> = <span class="r60 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#c0817f9c0be9808b" class="i method">GetGlobalIndexOfItem</a>(<span class="r59 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#e555c9eb6c2cbc99" class="i property">SelectedItem</a>);
+				<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r63 rd" class="r63 r">leftOver</span> = 0;
+				<b>int</b> <span id="r64 rd" class="r64 r">groupIndex</span> = <span class="r60 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#d277b521e2962bb2" class="i method">GetGroupIndexFromGlobal</a>(<span class="r62 r">selectedItemIndex</span>, <b>out</b> <span class="r63 r">leftOver</span>);
+ 
+				<span class="r61 r">index</span> = <span class="r62 r">selectedItemIndex</span> - (<span class="r64 r">groupIndex</span> + 1);
+			}
+			<b>else</b>
+			{
+				<span class="r61 r">index</span> = <span class="r60 r">templatedItems</span>.<a href="/Xamarin.Forms.Core/A.html#c0817f9c0be9808b" class="i method">GetGlobalIndexOfItem</a>(<span class="r59 r">e</span>.<a href="/Xamarin.Forms.Core/A.html#e555c9eb6c2cbc99" class="i property">SelectedItem</a>);
+			}
+ 
+			<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">SelectedIndex</span> = <span class="r61 r">index</span>;
+		}
+ 
+		<b>void</b> <a id="efeb84a8caf30f55" href="R/efeb84a8caf30f55.html" target="n" data-glyph="76,1" class="i method">OnListItemClicked</a>(<b>int</b> <span id="r65 rd" class="r65 r">index</span>)
+		{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">WINDOWS_UWP</span>
+			<span class="c">// If we&#39;re on the phone , we need to cache the selected item in case the handler </span>
+			<span class="c">// we&#39;re about to call changes any item indexes;</span>
+			<span class="c">// in some cases, those index changes will throw an exception we can&#39;t catch if </span>
+			<span class="c">// the listview has an item selected</span>
+			<b>object</b> <span id="r66 rd" class="r66 r">selectedItem</span> = <b>null</b>;
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> == <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a>)
+			{
+				<span class="r66 r">selectedItem</span> = <a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">SelectedItem</span>;
+				<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">SelectedIndex</span> = -1;
+				<a href="#a869ce2abdcbe88c" class="i field">_deferSelection</a> = <b>true</b>;
+			}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+			<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#ef571d695446a087" class="i method">NotifyRowTapped</a>(<span class="r65 r">index</span>, <span class="r67 r">cell</span>: <b>null</b>);
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">WINDOWS_UWP</span>
+ 
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> != <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a> || <a href="#5c685357b933d20f" class="i property">List</a> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="#a869ce2abdcbe88c" class="i field">_deferSelection</a> = <b>false</b>;
+ 
+			<b>if</b> (<a href="#90abdeb4d4cc3e29" class="i field">_deferredSelectedItemChangedEvent</a> != <b>null</b>)
+			{
+				<span class="c">// If there was a selection change attempt while RowTapped was being handled, replay it</span>
+				<a href="#24daf3177490f320" class="i method">OnElementItemSelected</a>(<a href="#90abdeb4d4cc3e29" class="i field">_deferredSelectedItemChangedEvent</a>.<a href="@1@System.Runtime/A.html#d1922db1cf9dcd03" class="i property">Item1</a>, <a href="#90abdeb4d4cc3e29" class="i field">_deferredSelectedItemChangedEvent</a>.<a href="@1@System.Runtime/A.html#85ddc983cace902c" class="i property">Item2</a>);
+				<a href="#90abdeb4d4cc3e29" class="i field">_deferredSelectedItemChangedEvent</a> = <b>null</b>;
+			}
+			<b>else if</b> (<a href="#5c685357b933d20f" class="i property">List</a>?.<span class="i property">SelectedIndex</span> == -1 &amp;&amp; <span class="r66 r">selectedItem</span> != <b>null</b>)
+			{
+				<span class="c">// Otherwise, set the selection back to whatever it was before all this started</span>
+				<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">SelectedItem</span> = <span class="r66 r">selectedItem</span>;
+			}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+		}
+ 
+		<b>void</b> <a id="5b179c2dde1dbfd6" href="R/5b179c2dde1dbfd6.html" target="n" data-glyph="76,1" class="i method">OnListItemClicked</a>(<b>object</b> <span id="r68 rd" class="r68 r">sender</span>, <span class="t t">ItemClickEventArgs</span> <span id="r69 rd" class="r69 r">e</span>)
+		{
+			<b>if</b> (<span class="r69 r">e</span>.<span class="i property">ClickedItem</span> != <b>null</b>)
+				<a href="#efeb84a8caf30f55" class="i method">OnListItemClicked</a>(((<span class="t t">WListView</span>)<span class="r69 r">e</span>.<span class="i property">OriginalSource</span>).<span class="i property">Items</span>.<a href="@1@System.Runtime/A.html#5fd4a456a7fab8b0" class="i method">IndexOf</a>(<span class="r69 r">e</span>.<span class="i property">ClickedItem</span>));
+		}
+ 
+		<b>void</b> <a id="9a3b9c1f2499c68f" href="R/9a3b9c1f2499c68f.html" target="n" data-glyph="76,1" class="i method">OnControlSelectionChanged</a>(<b>object</b> <span id="r70 rd" class="r70 r">sender</span>, <span class="t t">SelectionChangedEventArgs</span> <span id="r71 rd" class="r71 r">e</span>)
+		{
+			<a href="#6b62b595f629d433" class="i method">RestorePreviousSelectedVisual</a>();
+ 
+			<b>if</b> (<span class="r71 r">e</span>.<span class="i property">AddedItems</span>.<a href="@1@System.Runtime/A.html#3d6c21c4e9bd5f63" class="i property">Count</a> == 0)
+			{
+				<span class="c">// Deselecting an item is a valid SelectedItem change.</span>
+				<b>if</b> (<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#dfce6372456ec083" class="i property">SelectedItem</a> != <a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">SelectedItem</span>)
+				{
+					<a href="#efeb84a8caf30f55" class="i method">OnListItemClicked</a>(<a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">SelectedIndex</span>);
+				}
+ 
+				<b>return</b>;
+			}
+ 
+			<b>object</b> <span id="r72 rd" class="r72 r">cell</span> = <span class="r71 r">e</span>.<span class="i property">AddedItems</span>[0];
+			<b>if</b> (<span class="r72 r">cell</span> == <b>null</b>)
+				<b>return</b>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> !<span class="i">WINDOWS_UWP</span>
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> == <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a>)
+			{
+				<span class="t t">FrameworkElement</span> <span id="r73 rd" class="r73 r">element</span> = <a href="#45f7c2d29526ad7c" class="i method">FindElement</a>(<span class="r72 r">cell</span>);
+				<b>if</b> (<span class="r73 r">element</span> != <b>null</b>)
+				{
+					<a href="#2dc3166938e60550" class="i method">SetSelectedVisual</a>(<span class="r73 r">element</span>);
+				}
+			}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+			<b>if</b> (<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#dfce6372456ec083" class="i property">SelectedItem</a> != <a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">SelectedItem</span>)
+				((<a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a>)<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#5e644259f42c0939" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#bde8d740ed7039c7" class="t t">ListView</a>.<a href="/Xamarin.Forms.Core/A.html#e2fbab739592c40d" class="i field">SelectedItemProperty</a>, <a href="#5c685357b933d20f" class="i property">List</a>.<span class="i property">SelectedItem</span>);
+		}
+ 
+		<span class="t t">FrameworkElement</span> <a id="45f7c2d29526ad7c" href="R/45f7c2d29526ad7c.html" target="n" data-glyph="76,1" class="i method">FindElement</a>(<b>object</b> <span id="r74 rd" class="r74 r">cell</span>)
+		{
+			<b>foreach</b> (<a href="CellControl.cs.html#e19d8919b2e106b7" class="t t">CellControl</a> <span id="r75 rd" class="r75 r">selector</span> <b>in</b> <a href="#6bb905fbcc386762" class="i method">FindDescendants</a>&lt;<a href="CellControl.cs.html#e19d8919b2e106b7" class="t t">CellControl</a>&gt;(<a href="#5c685357b933d20f" class="i property">List</a>))
+			{
+				<b>if</b> (<a href="@1@System.Runtime/A.html#4d607d6d56a93c7e" class="i method">ReferenceEquals</a>(<span class="r74 r">cell</span>, <span class="r75 r">selector</span>.<span class="i property">DataContext</span>))
+					<b>return</b> <span class="r75 r">selector</span>;
+			}
+ 
+			<b>return null</b>;
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">		void RestorePreviousSelectedVisual()
+		{
+		}
+ 
+		void SetSelectedVisual(FrameworkElement element)
+		{
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+		<b>void</b> <a id="6b62b595f629d433" href="R/6b62b595f629d433.html" target="n" data-glyph="76,1" class="i method">RestorePreviousSelectedVisual</a>()
+		{
+			<b>foreach</b> (<a href="#cf5a540c5d022d3a" class="t t">BrushedElement</a> <span id="r76 rd" class="r76 r">highlight</span> <b>in</b> <a href="#3a6cc795cccb0aa4" class="i field">_highlightedElements</a>)
+			{
+				<b>if</b> (<span class="r76 r">highlight</span>.<a href="#2042ac15837710e7" class="i property">IsBound</a>)
+				{
+					<span class="r76 r">highlight</span>.<a href="#aa33db516a4cd9f5" class="i property">Element</a>.<a href="FrameworkElementExtensions.cs.html#5a6b4be00da6539b" class="i method">SetForeground</a>(<span class="r76 r">highlight</span>.<a href="#df8a06a93fcdce61" class="i property">BrushBinding</a>);
+				}
+				<b>else</b>
+				{
+					<span class="r76 r">highlight</span>.<a href="#aa33db516a4cd9f5" class="i property">Element</a>.<a href="FrameworkElementExtensions.cs.html#33f043c223520921" class="i method">SetForeground</a>(<span class="r76 r">highlight</span>.<a href="#d1c7287bfcef2b05" class="i property">Brush</a>);
+				}
+			}
+ 
+			<a href="#3a6cc795cccb0aa4" class="i field">_highlightedElements</a>.<a href="@1@System.Collections/A.html#ca7bce81a50b0aeb" class="i method">Clear</a>();
+		}
+ 
+		<b>void</b> <a id="2dc3166938e60550" href="R/2dc3166938e60550.html" target="n" data-glyph="76,1" class="i method">SetSelectedVisual</a>(<span class="t t">FrameworkElement</span> <span id="r77 rd" class="r77 r">element</span>)
+		{
+			<span class="c">// Find all labels in children and set their foreground color to accent color</span>
+			<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="t t">FrameworkElement</span>&gt; <span id="r78 rd" class="r78 r">elementsToHighlight</span> = <a href="#eea98f51863afc1a" class="i method">FindPhoneHighlights</a>(<span class="r77 r">element</span>);
+			<b>var</b> <span id="r79 rd" class="r79 r">systemAccentBrush</span> = (<span class="t t">Brush</span>)<span class="t t">WApp</span>.<span class="i property">Current</span>.<span class="i property">Resources</span><a href="@1@System.Runtime/A.html#86884956b17e491a">[</a><span class="s">&quot;SystemColorControlAccentBrush&quot;</span>];
+ 
+			<b>foreach</b> (<span class="t t">FrameworkElement</span> <span id="r80 rd" class="r80 r">toHighlight</span> <b>in</b> <span class="r78 r">elementsToHighlight</span>)
+			{
+				<span class="t t">Brush</span> <span id="r81 rd" class="r81 r">brush</span> = <b>null</b>;
+				<span class="t t">WBinding</span> <span id="r82 rd" class="r82 r">binding</span> = <span class="r80 r">toHighlight</span>.<a href="FrameworkElementExtensions.cs.html#fe064ca72196b227" class="i method">GetForegroundBinding</a>();
+				<b>if</b> (<span class="r82 r">binding</span> == <b>null</b>)
+					<span class="r81 r">brush</span> = <span class="r80 r">toHighlight</span>.<a href="FrameworkElementExtensions.cs.html#7d2cc60c02485736" class="i method">GetForeground</a>();
+ 
+				<a href="#cf5a540c5d022d3a" class="k">var</a> <span id="r83 rd" class="r83 r">brushedElement</span> = <b>new</b> <a href="#d77a5849f77ed7fa" class="t constructor">BrushedElement</a>(<span class="r80 r">toHighlight</span>, <span class="r82 r">binding</span>, <span class="r81 r">brush</span>);
+				<a href="#3a6cc795cccb0aa4" class="i field">_highlightedElements</a>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r83 r">brushedElement</span>);
+ 
+				<span class="r80 r">toHighlight</span>.<a href="FrameworkElementExtensions.cs.html#33f043c223520921" class="i method">SetForeground</a>(<span class="r79 r">systemAccentBrush</span>);
+			}
+		}
+ 
+		<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="t t">FrameworkElement</span>&gt; <a id="eea98f51863afc1a" href="R/eea98f51863afc1a.html" target="n" data-glyph="76,1" class="i method">FindPhoneHighlights</a>(<span class="t t">FrameworkElement</span> <span id="r84 rd" class="r84 r">element</span>)
+		{
+			<span class="t t">FrameworkElement</span> <span id="r85 rd" class="r85 r">parent</span> = <span class="r84 r">element</span>;
+			<b>while</b> (<b>true</b>)
+			{
+				<span class="r84 r">element</span> = <span class="r85 r">parent</span>;
+				<b>if</b> (<span class="r84 r">element</span> <b>is</b> <a href="CellControl.cs.html#e19d8919b2e106b7" class="t t">CellControl</a>)
+					<b>break</b>;
+ 
+				<span class="r85 r">parent</span> = <span class="t t">VisualTreeHelper</span>.<span class="i method">GetParent</span>(<span class="r84 r">element</span>) <b>as</b> <span class="t t">FrameworkElement</span>;
+				<b>if</b> (<span class="r85 r">parent</span> == <b>null</b>)
+				{
+					<span class="r85 r">parent</span> = <span class="r84 r">element</span>;
+					<b>break</b>;
+				}
+			}
+ 
+			<b>return</b> <a href="#90ec7efb0e0c962f" class="i method">FindPhoneHighlightCore</a>(<span class="r85 r">parent</span>);
+		}
+ 
+		<a href="@1@System.Runtime/A.html#3acf01620172c7f0" class="t t">IEnumerable</a>&lt;<span class="t t">FrameworkElement</span>&gt; <a id="90ec7efb0e0c962f" href="R/90ec7efb0e0c962f.html" target="n" data-glyph="76,1" class="i method">FindPhoneHighlightCore</a>(<span class="t t">DependencyObject</span> <span id="r86 rd" class="r86 r">element</span>)
+		{
+			<b>int</b> <span id="r87 rd" class="r87 r">children</span> = <span class="t t">VisualTreeHelper</span>.<span class="i method">GetChildrenCount</span>(<span class="r86 r">element</span>);
+			<b>for</b> (<a href="@1@System.Runtime/A.html#225942ed7b7a3252" class="k">var</a> <span id="r88 rd" class="r88 r">i</span> = 0; <span class="r88 r">i</span> &lt; <span class="r87 r">children</span>; <span class="r88 r">i</span>++)
+			{
+				<span class="t t">DependencyObject</span> <span id="r89 rd" class="r89 r">child</span> = <span class="t t">VisualTreeHelper</span>.<span class="i method">GetChild</span>(<span class="r86 r">element</span>, <span class="r88 r">i</span>);
+ 
+				<a href="LabelRenderer.cs.html#ab8b3571f50b893f" class="k">var</a> <span id="r90 rd" class="r90 r">label</span> = <span class="r89 r">child</span> <b>as</b> <a href="LabelRenderer.cs.html#ab8b3571f50b893f" class="t t">LabelRenderer</a>;
+				<b>var</b> <span id="r91 rd" class="r91 r">childElement</span> = <span class="r89 r">child</span> <b>as</b> <span class="t t">FrameworkElement</span>;
+				<b>if</b> (<span class="r91 r">childElement</span> != <b>null</b> &amp;&amp; (<a href="#8b9e7feb928d801b" class="i method">GetHighlightWhenSelected</a>(<span class="r91 r">childElement</span>) || <span class="r90 r">label</span> != <b>null</b>))
+				{
+					<b>if</b> (<span class="r90 r">label</span> != <b>null</b>)
+						<b>yield return</b> <span class="r90 r">label</span>.<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>;
+					<b>else
+						yield return</b> <span class="r91 r">childElement</span>;
+				}
+ 
+				<b>foreach</b> (<span class="t t">FrameworkElement</span> <span id="r92 rd" class="r92 r">recursedElement</span> <b>in</b> <a href="#90ec7efb0e0c962f" class="i method">FindPhoneHighlightCore</a>(<span class="r91 r">childElement</span>))
+					<b>yield return</b> <span class="r92 r">recursedElement</span>;
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>bool</b> <a id="a869ce2abdcbe88c" href="R/a869ce2abdcbe88c.html" target="n" data-glyph="46,1" class="i field">_deferSelection</a> = <b>false</b>;
+		<a href="@1@System.Runtime/A.html#1806cf6634f5a371" class="t t">Tuple</a>&lt;<b>object</b>, <a href="/Xamarin.Forms.Core/A.html#8b9f8c714f679914" class="t t">SelectedItemChangedEventArgs</a>&gt; <a id="90abdeb4d4cc3e29" href="R/90abdeb4d4cc3e29.html" target="n" data-glyph="46,1" class="i field">_deferredSelectedItemChangedEvent</a>;
+	}
+}</pre></td></tr></table></div></body></html>

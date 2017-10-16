@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html><head><title>WindowsBasePlatformServices.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(146);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.WinRT/WindowsBasePlatformServices.cs" target="_top">WindowsBasePlatformServices.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.WinRT" target="_top">Xamarin.Forms.Platform.WinRT\Xamarin.Forms.Platform.WinRT.csproj</a> (Xamarin.Forms.Platform.WinRT)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Net</span>.<span class="i n">Http</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Runtime</span>.<span class="i n">InteropServices</span>.<span class="i n">WindowsRuntime</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Text</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">ApplicationModel</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">ApplicationModel</span>.<span class="i n">Core</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Security</span>.<span class="i n">Cryptography</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Security</span>.<span class="i n">Cryptography</span>.<span class="i n">Core</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Storage</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Storage</span>.<span class="i n">Search</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Storage</span>.<span class="i n">Streams</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">System</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Core</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal abstract class</b> <a id="a7faffcba3c6906d" href="R/a7faffcba3c6906d.html" target="n" data-glyph="2,0" class="t t">WindowsBasePlatformServices</a> : <a href="/Xamarin.Forms.Core/A.html#864b71d4c5bc97ef" class="t t">IPlatformServices</a>
+	{
+		<b>readonly</b> <span class="t t">CoreDispatcher</span> <a id="76a10f1a11152802" href="R/76a10f1a11152802.html" target="n" data-glyph="46,1" class="i field">_dispatcher</a>;
+ 
+		<b>protected</b> <a id="5eca1e6ba977f500" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">WindowsBasePlatformServices</a>(<span class="t t">CoreDispatcher</span> <span id="r0 rd" class="r0 r">dispatcher</span>)
+		{
+			<b>if</b> (<span class="r0 r">dispatcher</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<b>nameof</b>(<span class="r0 r">dispatcher</span>));
+ 
+			<a href="#76a10f1a11152802" class="i field">_dispatcher</a> = <span class="r0 r">dispatcher</span>;
+		}
+ 
+		<b>public void</b> <a id="76c7071fa4274b01" href="R/76c7071fa4274b01.html" target="n" data-glyph="72,1" class="i method">BeginInvokeOnMainThread</a>(<a href="@1@System.Runtime/A.html#9147ae6f76643aae" class="t t">Action</a> <span id="r1 rd" class="r1 r">action</span>)
+		{
+			<a href="#76a10f1a11152802" class="i field">_dispatcher</a>.<span class="i method">RunAsync</span>(<span class="t t">CoreDispatcherPriority</span>.<span class="i field">Normal</span>, () =&gt; <span class="r1 r">action</span>()).<a href="TaskExtensions.cs.html#b91aeae3c5d801ea" class="i method">WatchForError</a>();
+		}
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#9ac4e7c1113aeac4" class="t t">Ticker</a> <a id="cf9cec7cd2b9d7b0" href="R/cf9cec7cd2b9d7b0.html" target="n" data-glyph="72,1" class="i method">CreateTicker</a>()
+		{
+			<b>return</b> <b>new</b> <a href="WindowsTicker.cs.html#ea8c11cfcf055c94" class="t constructor">WindowsTicker</a>();
+		}
+ 
+		<b>public virtual</b> <span class="t t">Assembly</span>[] <a id="bb62dfdc7230e259" href="R/bb62dfdc7230e259.html" target="n" data-glyph="72,1" class="i method">GetAssemblies</a>()
+		{
+			<b>var</b> <span id="r2 rd" class="r2 r">options</span> = <b>new</b> <span class="t constructor">QueryOptions</span> { <span class="i property">FileTypeFilter</span> = { <span class="s">&quot;.exe&quot;</span>, <span class="s">&quot;.dll&quot;</span> } };
+ 
+			<span class="t t">StorageFileQueryResult</span> <span id="r3 rd" class="r3 r">query</span> = <span class="t t">Package</span>.<span class="i property">Current</span>.<span class="i property">InstalledLocation</span>.<span class="i method">CreateFileQueryWithOptions</span>(<span class="r2 r">options</span>);
+			<a href="@1@System.Runtime/A.html#b040fb780bdd59f4" class="t t">IReadOnlyList</a>&lt;<span class="t t">StorageFile</span>&gt; <span id="r4 rd" class="r4 r">files</span> = <span class="r3 r">query</span>.<span class="i method">GetFilesAsync</span>().<span class="i method">AsTask</span>().<span class="i property">Result</span>;
+ 
+			<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r5 rd" class="r5 r">assemblies</span> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<span class="t t">Assembly</span>&gt;(<span class="r4 r">files</span>.<a href="@1@System.Runtime/A.html#6f182bb82f68780e" class="i property">Count</a>);
+			<b>foreach</b> (<span class="t t">StorageFile</span> <span id="r6 rd" class="r6 r">file</span> <b>in</b> <span class="r4 r">files</span>)
+			{
+				<b>try</b>
+				{
+					<span class="t t">Assembly</span> <span id="r7 rd" class="r7 r">assembly</span> = <span class="t t">Assembly</span>.<span class="i method">Load</span>(<b>new</b> <span class="t constructor">AssemblyName</span> { <span class="i property">Name</span> = <span class="t t">Path</span>.<span class="i method">GetFileNameWithoutExtension</span>(<span class="r6 r">file</span>.<span class="i property">Name</span>) });
+ 
+					<span class="r5 r">assemblies</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r7 r">assembly</span>);
+				}
+				<b>catch</b> (<span class="t t">IOException</span>)
+				{
+				}
+				<b>catch</b> (<a href="@1@System.Runtime/A.html#fe10eaec43de649e" class="t t">BadImageFormatException</a>)
+				{
+				}
+			}
+ 
+			<span class="t t">Assembly</span> <span id="r8 rd" class="r8 r">thisAssembly</span> = <a href="@1@System.Runtime/A.html#4d73eb225aef8a61" class="i method">GetType</a>().<span class="i method">GetTypeInfo</span>().<span class="i property">Assembly</span>;
+			<span class="c">// this happens with .NET Native</span>
+			<b>if</b> (!<span class="r5 r">assemblies</span>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r8 r">thisAssembly</span>))
+				<span class="r5 r">assemblies</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r8 r">thisAssembly</span>);
+ 
+			<span class="t t">Assembly</span> <span id="r9 rd" class="r9 r">xamlAssembly</span> = <b>typeof</b>(<span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Xaml</span>.<a href="/Xamarin.Forms.Core/A.html#dc3b63a88853ac8b" class="t t">IMarkupExtension</a>).<span class="i method">GetTypeInfo</span>().<span class="i property">Assembly</span>;
+			<b>if</b> (!<span class="r5 r">assemblies</span>.<a href="@1@System.Collections/A.html#521b9f7129105e15" class="i method">Contains</a>(<span class="r9 r">xamlAssembly</span>))
+				<span class="r5 r">assemblies</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r9 r">xamlAssembly</span>);
+ 
+			<b>return</b> <span class="r5 r">assemblies</span>.<a href="@1@System.Collections/A.html#d4409b7542728cec" class="i method">ToArray</a>();
+		}
+ 
+		<b>public string</b> <a id="e51d12f748e3c977" href="R/e51d12f748e3c977.html" target="n" data-glyph="72,1" class="i method">GetMD5Hash</a>(<b>string</b> <span id="r10 rd" class="r10 r">input</span>)
+		{
+			<span class="t t">HashAlgorithmProvider</span> <span id="r11 rd" class="r11 r">algorithm</span> = <span class="t t">HashAlgorithmProvider</span>.<span class="i method">OpenAlgorithm</span>(<span class="t t">HashAlgorithmNames</span>.<span class="i property">Md5</span>);
+			<span class="t t">IBuffer</span> <span id="r12 rd" class="r12 r">buffer</span> = <span class="r11 r">algorithm</span>.<span class="i method">HashData</span>(<span class="t t">Encoding</span>.<span class="i property">Unicode</span>.<span class="i method">GetBytes</span>(<span class="r10 r">input</span>).<span class="i method">AsBuffer</span>());
+			<b>return</b> <span class="t t">CryptographicBuffer</span>.<span class="i method">EncodeToHexString</span>(<span class="r12 r">buffer</span>);
+		}
+ 
+		<b>public double</b> <a id="2f58d688e4d15f7e" href="R/2f58d688e4d15f7e.html" target="n" data-glyph="72,1" class="i method">GetNamedSize</a>(<a href="/Xamarin.Forms.Core/A.html#6ea57413a7159d38" class="t t">NamedSize</a> <span id="r13 rd" class="r13 r">size</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r14 rd" class="r14 r">targetElementType</span>, <b>bool</b> <span id="r15 rd" class="r15 r">useOldSizes</span>)
+		{
+			<b>return</b> <span class="r13 r">size</span>.<a href="FontExtensions.cs.html#c8b21622e4b8d17b" class="i method">GetFontSize</a>();
+		}
+ 
+		<b>public async</b> <span class="t t">Task</span>&lt;<span class="t t">Stream</span>&gt; <a id="c0acd24523e9faa5" href="R/c0acd24523e9faa5.html" target="n" data-glyph="72,1" class="i method">GetStreamAsync</a>(<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r16 rd" class="r16 r">uri</span>, <span class="t t">CancellationToken</span> <span id="r17 rd" class="r17 r">cancellationToken</span>)
+		{
+			<b>using</b> (<a href="@0@System.Net.Http/A.html#7c0c7a5434c1bab0" class="k">var</a> <span id="r18 rd" class="r18 r">client</span> = <b>new</b> <a href="@0@System.Net.Http/A.html#2e60cd545084b74e" class="t constructor">HttpClient</a>())
+			{
+				<a href="@0@System.Net.Http/A.html#05a8b293e3792b58" class="t t">HttpResponseMessage</a> <span id="r19 rd" class="r19 r">streamResponse</span> = <b>await</b> <span class="r18 r">client</span>.<a href="@0@System.Net.Http/A.html#0223e16bb4f598fc" class="i method">GetAsync</a>(<span class="r16 r">uri</span>.<a href="@1@System.Runtime/A.html#e335fec0022465e6" class="i property">AbsoluteUri</a>).<span class="i method">ConfigureAwait</span>(<b>false</b>);
+ 
+				<b>if</b> (!<span class="r19 r">streamResponse</span>.<a href="@0@System.Net.Http/A.html#85a7ef9189314fea" class="i property">IsSuccessStatusCode</a>)
+				{
+					<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="/Xamarin.Forms.Core/A.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;HTTP Request&quot;</span>, <span class="s">$&quot;</span><span class="s">Could not retrieve </span>{<span class="r16 r">uri</span>}<span class="s">, status code </span>{<span class="r19 r">streamResponse</span>.<a href="@0@System.Net.Http/A.html#5f0a91b0e794dad4" class="i property">StatusCode</a>}<span class="s">&quot;</span>);
+					<b>return null</b>;
+				}
+ 
+				<b>return await</b> <span class="r19 r">streamResponse</span>.<a href="@0@System.Net.Http/A.html#29d639c7ef3851ec" class="i property">Content</a>.<a href="@0@System.Net.Http/A.html#fd200448d1126137" class="i method">ReadAsStreamAsync</a>().<span class="i method">ConfigureAwait</span>(<b>false</b>);
+			}
+		}
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#04ea35780c7f35ff" class="t t">IIsolatedStorageFile</a> <a id="87a0796452a82ce7" href="R/87a0796452a82ce7.html" target="n" data-glyph="72,1" class="i method">GetUserStoreForApplication</a>()
+		{
+			<b>return</b> <b>new</b> <a href="WindowsIsolatedStorage.cs.html#f4d994dbf94e21fd" class="t constructor">WindowsIsolatedStorage</a>(<span class="t t">ApplicationData</span>.<span class="i property">Current</span>.<span class="i property">LocalFolder</span>);
+		}
+ 
+		<b>public bool</b> <a id="92cb68726d777bfa" href="R/92cb68726d777bfa.html" target="n" data-glyph="102,1" class="i property">IsInvokeRequired</a> =&gt; !<span class="t t">CoreApplication</span>.<span class="i property">MainView</span>.<span class="i property">CoreWindow</span>.<span class="i property">Dispatcher</span>.<span class="i property">HasThreadAccess</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">		public string RuntimePlatform =&gt; Device.UWP;
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+		<b>public string</b> <a id="530df7548207ca99" href="R/530df7548207ca99.html" target="n" data-glyph="102,1" class="i property">RuntimePlatform</a> =&gt; <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#f67fa52b30da808f" class="i field">WinRT</a>;
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>public void</b> <a id="8c0e2c0d4a414c6e" href="R/8c0e2c0d4a414c6e.html" target="n" data-glyph="72,1" class="i method">OpenUriAction</a>(<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r20 rd" class="r20 r">uri</span>)
+		{
+			<span class="t t">Launcher</span>.<span class="i method">LaunchUriAsync</span>(<span class="r20 r">uri</span>).<a href="TaskExtensions.cs.html#a6e55a03a87201ab" class="i method">WatchForError</a>();
+		}
+ 
+		<b>public void</b> <a id="458094d7d6223f82" href="R/458094d7d6223f82.html" target="n" data-glyph="72,1" class="i method">StartTimer</a>(<a href="@1@System.Runtime/A.html#865ef7b89f41b632" class="t t">TimeSpan</a> <span id="r21 rd" class="r21 r">interval</span>, <a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<b>bool</b>&gt; <span id="r22 rd" class="r22 r">callback</span>)
+		{
+			<b>var</b> <span id="r23 rd" class="r23 r">timer</span> = <b>new</b> <span class="t constructor">DispatcherTimer</span> { <span class="i property">Interval</span> = <span class="r21 r">interval</span> };
+			<span class="r23 r">timer</span>.<span class="i method">Start</span>();
+			<span class="r23 r">timer</span>.<span class="i">Tick</span> += (<span id="r24 rd" class="r24 r">sender</span>, <span id="r25 rd" class="r25 r">args</span>) =&gt;
+			{
+				<b>bool</b> <span id="r26 rd" class="r26 r">result</span> = <span class="r22 r">callback</span>();
+				<b>if</b> (!<span class="r26 r">result</span>)
+					<span class="r23 r">timer</span>.<span class="i method">Stop</span>();
+			};
+		}
+	}
+}</pre></td></tr></table></div></body></html>

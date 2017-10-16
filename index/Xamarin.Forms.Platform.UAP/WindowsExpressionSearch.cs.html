@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html><head><title>WindowsExpressionSearch.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(171);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/WindowsExpressionSearch.cs" target="_top">WindowsExpressionSearch.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>.<span class="i">Expressions</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Reflection</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.WinRT
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>internal sealed class</b> <a id="ecc6fab9b66dc2fe" href="R/ecc6fab9b66dc2fe.html" target="n" data-glyph="2,0" class="t t"><span id="10b3a359d35ff365">WindowsExpressionSearch</span></a> : <a href="/Xamarin.Forms.Core/A.html#1aabf9c27618ae28" class="t t">IExpressionSearch</a>
+	{
+		<span class="i">List</span>&lt;<b>object</b>&gt; <a id="4faa77e5c5f33e98" href="R/4faa77e5c5f33e98.html" target="n" data-glyph="46,1" class="i field">_results</a>;
+		<span class="i">Type</span> <a id="af267cb98f63103a" href="R/af267cb98f63103a.html" target="n" data-glyph="46,1" class="i field">_targeType</a>;
+ 
+		<b>public</b> <span class="i">List</span>&lt;<span class="r0 r t">T</span>&gt; <a id="51dd485bda7ddb0f" href="R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">FindObjects</a>&lt;<span id="r0 rd t" class="r0 r t">T</span>&gt;(<span class="i">Expression</span> <span id="r1 rd" class="r1 r">expression</span>) <b>where</b> <span class="r0 r t">T</span> : <b>class</b>
+		{
+			<a href="#4faa77e5c5f33e98" class="i field">_results</a> = <b>new</b> <span class="i">List</span>&lt;<b>object</b>&gt;();
+			<a href="#af267cb98f63103a" class="i field">_targeType</a> = <b>typeof</b>(<span class="r0 r t">T</span>);
+ 
+			<a href="#f9bc8fbb2d0098dd" class="i method">Visit</a>(<span class="r1 r">expression</span>);
+ 
+			<span class="i">List</span>&lt;<span class="r0 r t">T</span>&gt; <span id="r2 rd" class="r2 r">final</span> = <a href="#4faa77e5c5f33e98" class="i field">_results</a>.<span class="i">Cast</span>&lt;<span class="r0 r t">T</span>&gt;().<span class="i">ToList</span>();
+			<a href="#4faa77e5c5f33e98" class="i field">_results</a> = <b>null</b>;
+			<b>return</b> <span class="r2 r">final</span>;
+		}
+ 
+		<b>void</b> <a id="f9bc8fbb2d0098dd" href="R/f9bc8fbb2d0098dd.html" target="n" data-glyph="76,1" class="i method">Visit</a>(<span class="i">Expression</span> <span id="r3 rd" class="r3 r">expression</span>)
+		{
+			<b>if</b> (<span class="r3 r">expression</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>switch</b> (<span class="r3 r">expression</span>.<span class="i">NodeType</span>)
+			{
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Negate</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">NegateChecked</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Not</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Convert</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">ConvertChecked</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">ArrayLength</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Quote</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">TypeAs</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">UnaryPlus</span>:
+					<span class="i">Visit</span>(((<span class="i">UnaryExpression</span>)<span class="r3 r">expression</span>).<span class="i">Operand</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Add</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">AddChecked</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Subtract</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">SubtractChecked</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Multiply</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">MultiplyChecked</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Divide</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Modulo</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Power</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">And</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">AndAlso</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Or</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">OrElse</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">LessThan</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">LessThanOrEqual</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">GreaterThan</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">GreaterThanOrEqual</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Equal</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">NotEqual</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Coalesce</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">ArrayIndex</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">RightShift</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">LeftShift</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">ExclusiveOr</span>:
+					<b>var</b> <span id="r4 rd" class="r4 r">binary</span> = (<span class="i">BinaryExpression</span>)<span class="r3 r">expression</span>;
+					<span class="i">Visit</span>(<span class="r4 r">binary</span>.<span class="i">Left</span>);
+					<span class="i">Visit</span>(<span class="r4 r">binary</span>.<span class="i">Right</span>);
+					<span class="i">Visit</span>(<span class="r4 r">binary</span>.<span class="i">Conversion</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">TypeIs</span>:
+					<span class="i">Visit</span>(((<span class="i">TypeBinaryExpression</span>)<span class="r3 r">expression</span>).<span class="i">Expression</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Conditional</span>:
+					<b>var</b> <span id="r5 rd" class="r5 r">conditional</span> = (<span class="i">ConditionalExpression</span>)<span class="r3 r">expression</span>;
+					<span class="i">Visit</span>(<span class="r5 r">conditional</span>.<span class="i">Test</span>);
+					<span class="i">Visit</span>(<span class="r5 r">conditional</span>.<span class="i">IfTrue</span>);
+					<span class="i">Visit</span>(<span class="r5 r">conditional</span>.<span class="i">IfFalse</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">MemberAccess</span>:
+					<a href="#2914baf0f866c61a" class="i method">VisitMemberAccess</a>((<span class="i">MemberExpression</span>)<span class="r3 r">expression</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Call</span>:
+					<b>var</b> <span id="r6 rd" class="r6 r">methodCall</span> = (<span class="i">MethodCallExpression</span>)<span class="r3 r">expression</span>;
+					<span class="i">Visit</span>(<span class="r6 r">methodCall</span>.<span class="i">Object</span>);
+					<span class="i">VisitList</span>(<span class="r6 r">methodCall</span>.<span class="i">Arguments</span>, <span class="i">Visit</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Lambda</span>:
+					<span class="i">Visit</span>(((<span class="i">LambdaExpression</span>)<span class="r3 r">expression</span>).<span class="i">Body</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">New</span>:
+					<span class="i">VisitList</span>(((<span class="i">NewExpression</span>)<span class="r3 r">expression</span>).<span class="i">Arguments</span>, <span class="i">Visit</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">NewArrayInit</span>:
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">NewArrayBounds</span>:
+					<span class="i">VisitList</span>(((<span class="i">NewArrayExpression</span>)<span class="r3 r">expression</span>).<span class="i">Expressions</span>, <span class="i">Visit</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Invoke</span>:
+					<b>var</b> <span id="r7 rd" class="r7 r">invocation</span> = (<span class="i">InvocationExpression</span>)<span class="r3 r">expression</span>;
+					<span class="i">VisitList</span>(<span class="r7 r">invocation</span>.<span class="i">Arguments</span>, <span class="i">Visit</span>);
+					<span class="i">Visit</span>(<span class="r7 r">invocation</span>.<span class="i">Expression</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">MemberInit</span>:
+					<b>var</b> <span id="r8 rd" class="r8 r">init</span> = (<span class="i">MemberInitExpression</span>)<span class="r3 r">expression</span>;
+					<span class="i">VisitList</span>(<span class="r8 r">init</span>.<span class="i">NewExpression</span>.<span class="i">Arguments</span>, <span class="i">Visit</span>);
+					<span class="i">VisitList</span>(<span class="r8 r">init</span>.<span class="i">Bindings</span>, <span class="i">VisitBinding</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">ListInit</span>:
+					<b>var</b> <span id="r9 rd" class="r9 r">init1</span> = (<span class="i">ListInitExpression</span>)<span class="r3 r">expression</span>;
+					<span class="i">VisitList</span>(<span class="r9 r">init1</span>.<span class="i">NewExpression</span>.<span class="i">Arguments</span>, <span class="i">Visit</span>);
+					<span class="i">VisitList</span>(<span class="r9 r">init1</span>.<span class="i">Initializers</span>, <span id="r10 rd" class="r10 r">initializer</span> =&gt; <span class="i">VisitList</span>(<span class="r10 r">initializer</span>.<span class="i">Arguments</span>, <span class="i">Visit</span>));
+					<b>break</b>;
+				<b>case</b> <span class="i">ExpressionType</span>.<span class="i">Constant</span>:
+					<b>break</b>;
+				<b>default</b>:
+					<b>throw</b> <b>new</b> <span class="i">ArgumentException</span>(<b>string</b>.<span class="i">Format</span>(<span class="s">&quot;Unhandled expression type: &#39;{0}&#39;&quot;</span>, <span class="r3 r">expression</span>.<span class="i">NodeType</span>));
+			}
+		}
+ 
+		<b>void</b> <a id="a95311c7e8148f2b" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">VisitBinding</a>(<span class="i">MemberBinding</span> <span id="r11 rd" class="r11 r">binding</span>)
+		{
+			<b>switch</b> (<span class="r11 r">binding</span>.<span class="i">BindingType</span>)
+			{
+				<b>case</b> <span class="i">MemberBindingType</span>.<span class="i">Assignment</span>:
+					<span class="i">Visit</span>(((<span class="i">MemberAssignment</span>)<span class="r11 r">binding</span>).<span class="i">Expression</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">MemberBindingType</span>.<span class="i">MemberBinding</span>:
+					<span class="i">VisitList</span>(((<span class="i">MemberMemberBinding</span>)<span class="r11 r">binding</span>).<span class="i">Bindings</span>, <span class="i">VisitBinding</span>);
+					<b>break</b>;
+				<b>case</b> <span class="i">MemberBindingType</span>.<span class="i">ListBinding</span>:
+					<span class="i">VisitList</span>(((<span class="i">MemberListBinding</span>)<span class="r11 r">binding</span>).<span class="i">Initializers</span>, <span id="r12 rd" class="r12 r">initializer</span> =&gt; <span class="i">VisitList</span>(<span class="r12 r">initializer</span>.<span class="i">Arguments</span>, <span class="i">Visit</span>));
+					<b>break</b>;
+				<b>default</b>:
+					<b>throw</b> <b>new</b> <span class="i">ArgumentException</span>(<b>string</b>.<span class="i">Format</span>(<span class="s">&quot;Unhandled binding type &#39;{0}&#39;&quot;</span>, <span class="r11 r">binding</span>.<span class="i">BindingType</span>));
+			}
+		}
+ 
+		<b>static void</b> <a id="296cdf424be8c3c3" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">VisitList</a>&lt;<span id="r13 rd t" class="r13 r t">TList</span>&gt;(<span class="i">IEnumerable</span>&lt;<span class="r13 r t">TList</span>&gt; <span id="r14 rd" class="r14 r">list</span>, <span class="i">Action</span>&lt;<span class="r13 r t">TList</span>&gt; <span id="r15 rd" class="r15 r">visitor</span>)
+		{
+			<b>foreach</b> (<span class="r13 r t">TList</span> <span id="r16 rd" class="r16 r">element</span> <b>in</b> <span class="r14 r">list</span>)
+			{
+				<span class="r15 r">visitor</span>(<span class="r16 r">element</span>);
+			}
+		}
+ 
+		<span class="c">// All important magic happens here</span>
+		<b>void</b> <a id="2914baf0f866c61a" href="R/2914baf0f866c61a.html" target="n" data-glyph="76,1" class="i method">VisitMemberAccess</a>(<span class="i">MemberExpression</span> <span id="r17 rd" class="r17 r">member</span>)
+		{
+			<b>if</b> (<span class="r17 r">member</span>.<span class="i">Expression</span> <b>is</b> <span class="i">ConstantExpression</span> &amp;&amp; <span class="r17 r">member</span>.<span class="i">Member</span> <b>is</b> <span class="i">FieldInfo</span>)
+			{
+				<b>object</b> <span id="r18 rd" class="r18 r">container</span> = ((<span class="i">ConstantExpression</span>)<span class="r17 r">member</span>.<span class="i">Expression</span>).<span class="i">Value</span>;
+				<b>object</b> <span id="r19 rd" class="r19 r">value</span> = ((<span class="i">FieldInfo</span>)<span class="r17 r">member</span>.<span class="i">Member</span>).<span class="i">GetValue</span>(<span class="r18 r">container</span>);
+ 
+				<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#6708d9b62c25fb57" class="t t">ReflectionExtensions</a>.<span class="i">IsInstanceOfType</span>(<a href="#af267cb98f63103a" class="i field">_targeType</a>, <span class="r19 r">value</span>))
+				{
+					<a href="#4faa77e5c5f33e98" class="i field">_results</a>.<span class="i">Add</span>(<span class="r19 r">value</span>);
+				}
+			}
+			<span class="i">Visit</span>(<span class="r17 r">member</span>.<span class="i">Expression</span>);
+		}
+	}
+}</pre></td></tr></table></div></body></html>

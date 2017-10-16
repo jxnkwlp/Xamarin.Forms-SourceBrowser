@@ -1,0 +1,256 @@
+﻿<!DOCTYPE html>
+<html><head><title>Binding.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(247);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/Binding.cs" target="_top">Binding.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Globalization</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>.<span class="i n">Expressions</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Text</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	<b>public sealed class</b> <a id="2dbd2de7439b0217" href="R/2dbd2de7439b0217.html" target="n" data-glyph="0,0" class="t t">Binding</a> : <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a>
+	{
+		<b>internal const string</b> <a id="ca2f62e01593b7ea" href="R/ca2f62e01593b7ea.html" target="n" data-glyph="8,1" class="i field">SelfPath</a> = <span class="s">&quot;.&quot;</span>;
+		<a href="IValueConverter.cs.html#8c54b2166c66ec65" class="t t">IValueConverter</a> <a id="ff34410a13a7314e" href="R/ff34410a13a7314e.html" target="n" data-glyph="46,1" class="i field">_converter</a>;
+		<b>object</b> <a id="2dd7e930fd67a190" href="R/2dd7e930fd67a190.html" target="n" data-glyph="46,1" class="i field">_converterParameter</a>;
+ 
+		<a href="BindingExpression.cs.html#2aec715b3c2631f3" class="t t">BindingExpression</a> <a id="a50743cf6b893756" href="R/a50743cf6b893756.html" target="n" data-glyph="46,1" class="i field">_expression</a>;
+		<b>string</b> <a id="8baaa2eaf2de2db5" href="R/8baaa2eaf2de2db5.html" target="n" data-glyph="46,1" class="i field">_path</a>;
+		<b>object</b> <a id="c938f62ec32d2d1e" href="R/c938f62ec32d2d1e.html" target="n" data-glyph="46,1" class="i field">_source</a>;
+		<b>string</b> <a id="fa3d90d472017a58" href="R/fa3d90d472017a58.html" target="n" data-glyph="46,1" class="i field">_updateSourceEventName</a>;
+ 
+		<b>public</b> <a id="9d9dbf25b2d8c9d2" href="R/9d9dbf25b2d8c9d2.html" target="n" data-glyph="72,1" class="i constructor">Binding</a>()
+		{
+		}
+ 
+		<b>public</b> <a id="c79f6c91a3606a34" href="R/c79f6c91a3606a34.html" target="n" data-glyph="72,1" class="i constructor">Binding</a>(<b>string</b> <span id="r0 rd" class="r0 r">path</span>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r1 rd" class="r1 r">mode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#522c71ff522d1c2c" class="i field">Default</a>, <a href="IValueConverter.cs.html#8c54b2166c66ec65" class="t t">IValueConverter</a> <span id="r2 rd" class="r2 r">converter</span> = <b>null</b>, <b>object</b> <span id="r3 rd" class="r3 r">converterParameter</span> = <b>null</b>, <b>string</b> <span id="r4 rd" class="r4 r">stringFormat</span> = <b>null</b>, <b>object</b> <span id="r5 rd" class="r5 r">source</span> = <b>null</b>)
+		{
+			<b>if</b> (<span class="r0 r">path</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;path&quot;</span>);
+			<b>if</b> (<b>string</b>.<a href="@1@System.Runtime/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(<span class="r0 r">path</span>))
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#4b20cd3790b6426a" class="t constructor">ArgumentException</a>(<span class="s">&quot;path can not be an empty string&quot;</span>, <span class="s">&quot;path&quot;</span>);
+ 
+			<a href="#29b77f684701226d" class="i property">Path</a> = <span class="r0 r">path</span>;
+			<a href="#44bbd16b235eaaa6" class="i property">Converter</a> = <span class="r2 r">converter</span>;
+			<a href="#7e5fac403626c0dc" class="i property">ConverterParameter</a> = <span class="r3 r">converterParameter</span>;
+			<a href="BindingBase.cs.html#6a8c8005d33f1648" class="i property">Mode</a> = <span class="r1 r">mode</span>;
+			<a href="BindingBase.cs.html#845414db5f9480a5" class="i property">StringFormat</a> = <span class="r4 r">stringFormat</span>;
+			<a href="#c9e00813a5e7d5d9" class="i property">Source</a> = <span class="r5 r">source</span>;
+		}
+ 
+		<b>public</b> <a href="IValueConverter.cs.html#8c54b2166c66ec65" class="t t">IValueConverter</a> <a id="44bbd16b235eaaa6" href="R/44bbd16b235eaaa6.html" target="n" data-glyph="102,1" class="i property">Converter</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#ff34410a13a7314e" class="i field">_converter</a>; }
+			<b>set</b>
+			{
+				<a href="BindingBase.cs.html#c83e8e3ba5dfb4e9" class="i method">ThrowIfApplied</a>();
+ 
+				<a href="#ff34410a13a7314e" class="i field">_converter</a> = <b>value</b>;
+			}
+		}
+ 
+		<b>public object</b> <a id="7e5fac403626c0dc" href="R/7e5fac403626c0dc.html" target="n" data-glyph="102,1" class="i property">ConverterParameter</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#2dd7e930fd67a190" class="i field">_converterParameter</a>; }
+			<b>set</b>
+			{
+				<a href="BindingBase.cs.html#c83e8e3ba5dfb4e9" class="i method">ThrowIfApplied</a>();
+ 
+				<a href="#2dd7e930fd67a190" class="i field">_converterParameter</a> = <b>value</b>;
+			}
+		}
+ 
+		<b>public string</b> <a id="29b77f684701226d" href="R/29b77f684701226d.html" target="n" data-glyph="102,1" class="i property">Path</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#8baaa2eaf2de2db5" class="i field">_path</a>; }
+			<b>set</b>
+			{
+				<a href="BindingBase.cs.html#c83e8e3ba5dfb4e9" class="i method">ThrowIfApplied</a>();
+ 
+				<a href="#8baaa2eaf2de2db5" class="i field">_path</a> = <b>value</b>;
+				<a href="#a50743cf6b893756" class="i field">_expression</a> = <b>new</b> <a href="BindingExpression.cs.html#a5970f494188a215" class="t constructor">BindingExpression</a>(<a href="#2dbd2de7439b0217" class="k">this</a>, !<b>string</b>.<a href="@1@System.Runtime/A.html#55e241b6143365ef" class="i method">IsNullOrWhiteSpace</a>(<b>value</b>) ? <b>value</b> : <a href="#ca2f62e01593b7ea" class="i field">SelfPath</a>);
+			}
+		}
+ 
+		<b>public object</b> <a id="c9e00813a5e7d5d9" href="R/c9e00813a5e7d5d9.html" target="n" data-glyph="102,1" class="i property">Source</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#c938f62ec32d2d1e" class="i field">_source</a>; }
+			<b>set</b>
+			{
+				<a href="BindingBase.cs.html#c83e8e3ba5dfb4e9" class="i method">ThrowIfApplied</a>();
+				<a href="#c938f62ec32d2d1e" class="i field">_source</a> = <b>value</b>;
+			}
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#ab67c52c634f618d" class="t constructor">EditorBrowsable</a>(<a href="@1@System.Runtime/A.html#1a60f7b04af02e88" class="t t">EditorBrowsableState</a>.<a href="@1@System.Runtime/A.html#043ce0a55050bfc5" class="i field">Never</a>)]
+		<b>public string</b> <a id="9a02eb9cd13ca528" href="R/9a02eb9cd13ca528.html" target="n" data-glyph="102,1" class="i property">UpdateSourceEventName</a> {
+			<b>get</b> { <b>return</b> <a href="#fa3d90d472017a58" class="i field">_updateSourceEventName</a>; }
+			<b>set</b> {
+				<a href="BindingBase.cs.html#c83e8e3ba5dfb4e9" class="i method">ThrowIfApplied</a>();
+				<a href="#fa3d90d472017a58" class="i field">_updateSourceEventName</a> = <b>value</b>;
+			}
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#8eeaa59a3d0743c0" class="t constructor">Obsolete</a>]
+		<b>public static</b> <a href="#2dbd2de7439b0217" class="t t">Binding</a> <a id="fb57e53097ea517c" href="R/fb57e53097ea517c.html" target="n" data-glyph="72,1" class="i method">Create</a>&lt;<span id="r6 rd t" class="r6 r t">TSource</span>&gt;(<span class="t t">Expression</span>&lt;<a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="r6 r t">TSource</span>, <b>object</b>&gt;&gt; <span id="r7 rd" class="r7 r">propertyGetter</span>, <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a> <span id="r8 rd" class="r8 r">mode</span> = <a href="BindingMode.cs.html#fc1bd67c74123628" class="t t">BindingMode</a>.<a href="BindingMode.cs.html#522c71ff522d1c2c" class="i field">Default</a>, <a href="IValueConverter.cs.html#8c54b2166c66ec65" class="t t">IValueConverter</a> <span id="r9 rd" class="r9 r">converter</span> = <b>null</b>, <b>object</b> <span id="r10 rd" class="r10 r">converterParameter</span> = <b>null</b>,
+											  <b>string</b> <span id="r11 rd" class="r11 r">stringFormat</span> = <b>null</b>)
+		{
+			<b>if</b> (<span class="r7 r">propertyGetter</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#8314938388254d5a" class="t constructor">ArgumentNullException</a>(<span class="s">&quot;propertyGetter&quot;</span>);
+ 
+			<b>string</b> <span id="r12 rd" class="r12 r">path</span> = <a href="#d6b999ae86a6a6a0" class="i method">GetBindingPath</a>(<span class="r7 r">propertyGetter</span>);
+			<b>return</b> <b>new</b> <a href="#c79f6c91a3606a34" class="t constructor">Binding</a>(<span class="r12 r">path</span>, <span class="r8 r">mode</span>, <span class="r9 r">converter</span>, <span class="r10 r">converterParameter</span>, <span class="r11 r">stringFormat</span>);
+		}
+ 
+		<b>internal override void</b> <a id="ecbc7bf67ff3afac" href="R/ecbc7bf67ff3afac.html" target="n" data-glyph="74,1" class="i method">Apply</a>(<b>bool</b> <span id="r13 rd" class="r13 r">fromTarget</span>)
+		{
+			<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="k">base</a>.<a href="BindingBase.cs.html#3e1982c75e1e5fd4" class="i method">Apply</a>(<span class="r13 r">fromTarget</span>);
+ 
+			<b>if</b> (<a href="#a50743cf6b893756" class="i field">_expression</a> == <b>null</b>)
+				<a href="#a50743cf6b893756" class="i field">_expression</a> = <b>new</b> <a href="BindingExpression.cs.html#a5970f494188a215" class="t constructor">BindingExpression</a>(<a href="#2dbd2de7439b0217" class="k">this</a>, <a href="#ca2f62e01593b7ea" class="i field">SelfPath</a>);
+ 
+			<a href="#a50743cf6b893756" class="i field">_expression</a>.<a href="BindingExpression.cs.html#dd79f5ec1efc8f89" class="i method">Apply</a>(<span class="r13 r">fromTarget</span>);
+		}
+ 
+		<b>internal override void</b> <a id="193daaa9e5beeba8" href="R/193daaa9e5beeba8.html" target="n" data-glyph="74,1" class="i method">Apply</a>(<b>object</b> <span id="r14 rd" class="r14 r">newContext</span>, <a href="BindableObject.cs.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r15 rd" class="r15 r">bindObj</span>, <a href="BindableProperty.cs.html#743d6dd5177e1828" class="t t">BindableProperty</a> <span id="r16 rd" class="r16 r">targetProperty</span>)
+		{
+			<b>object</b> <span id="r17 rd" class="r17 r">src</span> = <a href="#c938f62ec32d2d1e" class="i field">_source</a>;
+			<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="k">base</a>.<a href="BindingBase.cs.html#a881d515c9b53e0d" class="i method">Apply</a>(<span class="r17 r">src</span> ?? <span class="r14 r">newContext</span>, <span class="r15 r">bindObj</span>, <span class="r16 r">targetProperty</span>);
+ 
+			<b>object</b> <span id="r18 rd" class="r18 r">bindingContext</span> = <span class="r17 r">src</span> ?? <a href="BindingBase.cs.html#b71fb453e66ea93b" class="i property">Context</a> ?? <span class="r14 r">newContext</span>;
+			<b>if</b> (<a href="#a50743cf6b893756" class="i field">_expression</a> == <b>null</b> &amp;&amp; <span class="r18 r">bindingContext</span> != <b>null</b>)
+				<a href="#a50743cf6b893756" class="i field">_expression</a> = <b>new</b> <a href="BindingExpression.cs.html#a5970f494188a215" class="t constructor">BindingExpression</a>(<a href="#2dbd2de7439b0217" class="k">this</a>, <a href="#ca2f62e01593b7ea" class="i field">SelfPath</a>);
+ 
+			<a href="#a50743cf6b893756" class="i field">_expression</a>.<a href="BindingExpression.cs.html#7d9b4ea22c1ab17d" class="i method">Apply</a>(<span class="r18 r">bindingContext</span>, <span class="r15 r">bindObj</span>, <span class="r16 r">targetProperty</span>);
+		}
+ 
+		<b>internal override</b> <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="t t">BindingBase</a> <a id="f6184663d4a6140f" href="R/f6184663d4a6140f.html" target="n" data-glyph="74,1" class="i method">Clone</a>()
+		{
+			<b>return</b> <b>new</b> <a href="#c79f6c91a3606a34" class="t constructor">Binding</a>(<a href="#29b77f684701226d" class="i property">Path</a>, <a href="BindingBase.cs.html#6a8c8005d33f1648" class="i property">Mode</a>) { <a href="#44bbd16b235eaaa6" class="i property">Converter</a> = <a href="#44bbd16b235eaaa6" class="i property">Converter</a>, <a href="#7e5fac403626c0dc" class="i property">ConverterParameter</a> = <a href="#7e5fac403626c0dc" class="i property">ConverterParameter</a>, <a href="BindingBase.cs.html#845414db5f9480a5" class="i property">StringFormat</a> = <a href="BindingBase.cs.html#845414db5f9480a5" class="i property">StringFormat</a>, <a href="#c9e00813a5e7d5d9" class="i property">Source</a> = <a href="#c9e00813a5e7d5d9" class="i property">Source</a>, <a href="#9a02eb9cd13ca528" class="i property">UpdateSourceEventName</a> = <a href="#9a02eb9cd13ca528" class="i property">UpdateSourceEventName</a> };
+		}
+ 
+		<b>internal override object</b> <a id="1083732303232acf" href="R/1083732303232acf.html" target="n" data-glyph="74,1" class="i method">GetSourceValue</a>(<b>object</b> <span id="r19 rd" class="r19 r">value</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r20 rd" class="r20 r">targetPropertyType</span>)
+		{
+			<b>if</b> (<a href="#44bbd16b235eaaa6" class="i property">Converter</a> != <b>null</b>)
+				<span class="r19 r">value</span> = <a href="#44bbd16b235eaaa6" class="i property">Converter</a>.<a href="IValueConverter.cs.html#0930b4947b3f7de4" class="i method">Convert</a>(<span class="r19 r">value</span>, <span class="r20 r">targetPropertyType</span>, <a href="#7e5fac403626c0dc" class="i property">ConverterParameter</a>, <span class="t t">CultureInfo</span>.<span class="i property">CurrentUICulture</span>);
+ 
+			<b>return</b> <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="k">base</a>.<a href="BindingBase.cs.html#c7c5f480e9a869aa" class="i method">GetSourceValue</a>(<span class="r19 r">value</span>, <span class="r20 r">targetPropertyType</span>);
+		}
+ 
+		<b>internal override object</b> <a id="7722d1157b5d38ca" href="R/7722d1157b5d38ca.html" target="n" data-glyph="74,1" class="i method">GetTargetValue</a>(<b>object</b> <span id="r21 rd" class="r21 r">value</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r22 rd" class="r22 r">sourcePropertyType</span>)
+		{
+			<b>if</b> (<a href="#44bbd16b235eaaa6" class="i property">Converter</a> != <b>null</b>)
+				<span class="r21 r">value</span> = <a href="#44bbd16b235eaaa6" class="i property">Converter</a>.<a href="IValueConverter.cs.html#03444acec9dd02ac" class="i method">ConvertBack</a>(<span class="r21 r">value</span>, <span class="r22 r">sourcePropertyType</span>, <a href="#7e5fac403626c0dc" class="i property">ConverterParameter</a>, <span class="t t">CultureInfo</span>.<span class="i property">CurrentUICulture</span>);
+ 
+			<b>return</b> <a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="k">base</a>.<a href="BindingBase.cs.html#928f054402b65903" class="i method">GetTargetValue</a>(<span class="r21 r">value</span>, <span class="r22 r">sourcePropertyType</span>);
+		}
+ 
+		<b>internal override void</b> <a id="0c84634eb8c8e056" href="R/0c84634eb8c8e056.html" target="n" data-glyph="74,1" class="i method">Unapply</a>()
+		{
+			<a href="BindingBase.cs.html#d4b9ac5f0cf91b95" class="k">base</a>.<a href="BindingBase.cs.html#39ff00242bdac3e9" class="i method">Unapply</a>();
+ 
+			<b>if</b> (<a href="#a50743cf6b893756" class="i field">_expression</a> != <b>null</b>)
+				<a href="#a50743cf6b893756" class="i field">_expression</a>.<a href="BindingExpression.cs.html#f5a4604d4d3d6f25" class="i method">Unapply</a>();
+		}
+ 
+		[<a href="@1@System.Runtime/A.html#8eeaa59a3d0743c0" class="t constructor">Obsolete</a>]
+		<b>static string</b> <a id="d6b999ae86a6a6a0" href="R/d6b999ae86a6a6a0.html" target="n" data-glyph="76,1" class="i method">GetBindingPath</a>&lt;<span id="r23 rd t" class="r23 r t">TSource</span>&gt;(<span class="t t">Expression</span>&lt;<a href="@1@System.Runtime/A.html#7a86aba051da82dd" class="t t">Func</a>&lt;<span class="r23 r t">TSource</span>, <b>object</b>&gt;&gt; <span id="r24 rd" class="r24 r">propertyGetter</span>)
+		{
+			<span class="t t">Expression</span> <span id="r25 rd" class="r25 r">expr</span> = <span class="r24 r">propertyGetter</span>.<span class="i property">Body</span>;
+ 
+			<b>var</b> <span id="r26 rd" class="r26 r">unary</span> = <span class="r25 r">expr</span> <b>as</b> <span class="t t">UnaryExpression</span>;
+			<b>if</b> (<span class="r26 r">unary</span> != <b>null</b>)
+				<span class="r25 r">expr</span> = <span class="r26 r">unary</span>.<span class="i property">Operand</span>;
+ 
+			<a href="@1@System.Runtime/A.html#adf60ee46ebd299f" class="k">var</a> <span id="r27 rd" class="r27 r">builder</span> = <b>new</b> <a href="@1@System.Runtime/A.html#6e631639c1e2746b" class="t constructor">StringBuilder</a>();
+ 
+			<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r28 rd" class="r28 r">indexed</span> = <b>false</b>;
+ 
+			<b>var</b> <span id="r29 rd" class="r29 r">member</span> = <span class="r25 r">expr</span> <b>as</b> <span class="t t">MemberExpression</span>;
+			<b>if</b> (<span class="r29 r">member</span> == <b>null</b>)
+			{
+				<b>var</b> <span id="r30 rd" class="r30 r">methodCall</span> = <span class="r25 r">expr</span> <b>as</b> <span class="t t">MethodCallExpression</span>;
+				<b>if</b> (<span class="r30 r">methodCall</span> != <b>null</b>)
+				{
+					<b>if</b> (<span class="r30 r">methodCall</span>.<span class="i property">Arguments</span>.<a href="@1@System.Runtime/A.html#7e2071514968aca1" class="i property">Count</a> == 0)
+						<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;Method calls are not allowed in binding expression&quot;</span>);
+ 
+					<a href="@1@System.Collections/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r31 rd" class="r31 r">arguments</span> = <b>new</b> <a href="@1@System.Collections/A.html#b65c1a07c4e5b13a" class="t constructor">List</a>&lt;<b>string</b>&gt;(<span class="r30 r">methodCall</span>.<span class="i property">Arguments</span>.<a href="@1@System.Runtime/A.html#7e2071514968aca1" class="i property">Count</a>);
+					<b>foreach</b> (<span class="t t">Expression</span> <span id="r32 rd" class="r32 r">arg</span> <b>in</b> <span class="r30 r">methodCall</span>.<span class="i property">Arguments</span>)
+					{
+						<b>if</b> (<span class="r32 r">arg</span>.<span class="i property">NodeType</span> != <span class="t t">ExpressionType</span>.<span class="i field">Constant</span>)
+							<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;Only constants can be used as indexer arguments&quot;</span>);
+ 
+						<b>object</b> <span id="r33 rd" class="r33 r">value</span> = ((<span class="t t">ConstantExpression</span>)<span class="r32 r">arg</span>).<span class="i property">Value</span>;
+						<span class="r31 r">arguments</span>.<a href="@1@System.Collections/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r33 r">value</span> != <b>null</b> ? <span class="r33 r">value</span>.<a href="@1@System.Runtime/A.html#ff31a6bf27c58f89" class="i method">ToString</a>() : <span class="s">&quot;null&quot;</span>);
+					}
+ 
+					<a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r34 rd" class="r34 r">declarerType</span> = <span class="r30 r">methodCall</span>.<span class="i property">Method</span>.<span class="i property">DeclaringType</span>;
+					<a href="@1@System.Runtime/A.html#d73c83d205a57372" class="t t">DefaultMemberAttribute</a> <span id="r35 rd" class="r35 r">defaultMember</span> = <span class="r34 r">declarerType</span>.<span class="i method">GetTypeInfo</span>().<span class="i method">GetCustomAttributes</span>(<b>typeof</b>(<a href="@1@System.Runtime/A.html#d73c83d205a57372" class="t t">DefaultMemberAttribute</a>), <b>true</b>).<span class="i method">OfType</span>&lt;<a href="@1@System.Runtime/A.html#d73c83d205a57372" class="t t">DefaultMemberAttribute</a>&gt;().<span class="i method">FirstOrDefault</span>();
+					<b>string</b> <span id="r36 rd" class="r36 r">indexerName</span> = <span class="r35 r">defaultMember</span> != <b>null</b> ? <span class="r35 r">defaultMember</span>.<a href="@1@System.Runtime/A.html#cfc08d1ce96a090c" class="i property">MemberName</a> : <span class="s">&quot;Item&quot;</span>;
+ 
+					<span class="t t">MethodInfo</span> <span id="r37 rd" class="r37 r">getterInfo</span> =
+						<span class="r34 r">declarerType</span>.<a href="ReflectionExtensions.cs.html#216c52aeec2d34f1" class="i method">GetProperties</a>().<span class="i method">Where</span>(<span id="r38 rd" class="r38 r">pi</span> =&gt; <span class="r38 r">pi</span>.<span class="i property">Name</span> == <span class="r36 r">indexerName</span> &amp;&amp; <span class="r38 r">pi</span>.<span class="i property">CanRead</span> &amp;&amp; <span class="r38 r">pi</span>.<span class="i property">GetMethod</span>.<span class="i property">IsPublic</span> &amp;&amp; !<span class="r38 r">pi</span>.<span class="i property">GetMethod</span>.<span class="i property">IsStatic</span>).<span class="i method">Select</span>(<span id="r39 rd" class="r39 r">pi</span> =&gt; <span class="r39 r">pi</span>.<span class="i property">GetMethod</span>).<span class="i method">FirstOrDefault</span>();
+					<b>if</b> (<span class="r37 r">getterInfo</span> != <b>null</b>)
+					{
+						<b>if</b> (<span class="r37 r">getterInfo</span> == <span class="r30 r">methodCall</span>.<span class="i property">Method</span>)
+						{
+							<span class="r28 r">indexed</span> = <b>true</b>;
+							<span class="r27 r">builder</span>.<a href="@1@System.Runtime/A.html#e8eaef3c361184bc" class="i method">Append</a>(<span class="s">&quot;[&quot;</span>);
+ 
+							<a href="@1@System.Runtime/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r40 rd" class="r40 r">first</span> = <b>true</b>;
+							<b>foreach</b> (<b>string</b> <span id="r41 rd" class="r41 r">argument</span> <b>in</b> <span class="r31 r">arguments</span>)
+							{
+								<b>if</b> (!<span class="r40 r">first</span>)
+									<span class="r27 r">builder</span>.<a href="@1@System.Runtime/A.html#e8eaef3c361184bc" class="i method">Append</a>(<span class="s">&quot;,&quot;</span>);
+ 
+								<span class="r27 r">builder</span>.<a href="@1@System.Runtime/A.html#e8eaef3c361184bc" class="i method">Append</a>(<span class="r41 r">argument</span>);
+								<span class="r40 r">first</span> = <b>false</b>;
+							}
+ 
+							<span class="r27 r">builder</span>.<a href="@1@System.Runtime/A.html#e8eaef3c361184bc" class="i method">Append</a>(<span class="s">&quot;]&quot;</span>);
+ 
+							<span class="r29 r">member</span> = <span class="r30 r">methodCall</span>.<span class="i property">Object</span> <b>as</b> <span class="t t">MemberExpression</span>;
+						}
+						<b>else
+							throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;Method calls are not allowed in binding expressions&quot;</span>);
+					}
+					<b>else
+						throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;Public indexer not found&quot;</span>);
+				}
+				<b>else
+					throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;Invalid expression type&quot;</span>);
+			}
+ 
+			<b>while</b> (<span class="r29 r">member</span> != <b>null</b>)
+			{
+				<b>var</b> <span id="r42 rd" class="r42 r">property</span> = (<span class="t t">PropertyInfo</span>)<span class="r29 r">member</span>.<span class="i property">Member</span>;
+				<b>if</b> (<span class="r27 r">builder</span>.<a href="@1@System.Runtime/A.html#7d7729bd88adac53" class="i property">Length</a> != 0)
+				{
+					<b>if</b> (!<span class="r28 r">indexed</span>)
+						<span class="r27 r">builder</span>.<a href="@1@System.Runtime/A.html#3eed2a3baf63a7f3" class="i method">Insert</a>(0, <span class="s">&quot;.&quot;</span>);
+					<b>else</b>
+						<span class="r28 r">indexed</span> = <b>false</b>;
+				}
+ 
+				<span class="r27 r">builder</span>.<a href="@1@System.Runtime/A.html#3eed2a3baf63a7f3" class="i method">Insert</a>(0, <span class="r42 r">property</span>.<span class="i property">Name</span>);
+ 
+				<span class="c">//				member = member.Expression as MemberExpression ?? (member.Expression as UnaryExpression)?.Operand as MemberExpression;</span>
+				<span class="r29 r">member</span> = <span class="r29 r">member</span>.<span class="i property">Expression</span> <b>as</b> <span class="t t">MemberExpression</span> ?? (<span class="r29 r">member</span>.<span class="i property">Expression</span> <b>is</b> <span class="t t">UnaryExpression</span> ? (<span class="r29 r">member</span>.<span class="i property">Expression</span> <b>as</b> <span class="t t">UnaryExpression</span>).<span class="i property">Operand</span> <b>as</b> <span class="t t">MemberExpression</span> : <b>null</b>);
+			}
+ 
+			<b>return</b> <span class="r27 r">builder</span>.<a href="@1@System.Runtime/A.html#5a97da49a158a3c9" class="i method">ToString</a>();
+		}
+	}
+}</pre></td></tr></table></div></body></html>

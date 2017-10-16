@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html><head><title>ImageSource.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(147);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core/ImageSource.cs" target="_top">ImageSource.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core" target="_top">Xamarin.Forms.Core\Xamarin.Forms.Core.csproj</a> (Xamarin.Forms.Core)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">IO</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Reflection</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>
+{
+	[<a href="TypeConverterAttribute.cs.html#ba9bf382c7a66e7b" class="t constructor">TypeConverter</a>(<b>typeof</b>(<a href="ImageSourceConverter.cs.html#2cdbbd6bbcf8b9ac" class="t t">ImageSourceConverter</a>))]
+	<b>public abstract class</b> <a id="bc9d2c0cce52238b" href="R/bc9d2c0cce52238b.html" target="n" data-glyph="0,0" class="t t">ImageSource</a> : <a href="Element.cs.html#76098df8350c0484" class="t t">Element</a>
+	{
+		<b>readonly object</b> <a id="7fdffb0d9825432b" href="R/7fdffb0d9825432b.html" target="n" data-glyph="46,1" class="i field">_synchandle</a> = <b>new</b> <b>object</b>();
+		<span class="t t">CancellationTokenSource</span> <a id="5bc53753f0f7953e" href="R/5bc53753f0f7953e.html" target="n" data-glyph="46,1" class="i field">_cancellationTokenSource</a>;
+ 
+		<span class="t t">TaskCompletionSource</span>&lt;<b>bool</b>&gt; <a id="a96ca9cd0544bd5e" href="R/a96ca9cd0544bd5e.html" target="n" data-glyph="46,1" class="i field">_completionSource</a>;
+ 
+		<b>readonly</b> <a href="WeakEventManager.cs.html#3a9e9e10abb4bf6b" class="t t">WeakEventManager</a> <a id="4e97fe0d13b09e19" href="R/4e97fe0d13b09e19.html" target="n" data-glyph="46,1" class="i field">_weakEventManager</a> = <b>new</b> <a href="WeakEventManager.cs.html#3a9e9e10abb4bf6b" class="t constructor">WeakEventManager</a>();
+ 
+		<b>protected</b> <a id="1994ec6517bd421e" href="R/../../0000000000.html" target="n" data-glyph="75,1" class="i constructor">ImageSource</a>()
+		{
+		}
+ 
+		<b>protected</b> <span class="t t">CancellationTokenSource</span> <a id="dd5b0b895d1e5670" href="R/dd5b0b895d1e5670.html" target="n" data-glyph="105,1" class="i property">CancellationTokenSource</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#5bc53753f0f7953e" class="i field">_cancellationTokenSource</a>; }
+			<b>private set</b>
+			{
+				<b>if</b> (<a href="#5bc53753f0f7953e" class="i field">_cancellationTokenSource</a> == <b>value</b>)
+					<b>return</b>;
+				<b>if</b> (<a href="#5bc53753f0f7953e" class="i field">_cancellationTokenSource</a> != <b>null</b>)
+					<a href="#5bc53753f0f7953e" class="i field">_cancellationTokenSource</a>.<span class="i method">Cancel</span>();
+				<a href="#5bc53753f0f7953e" class="i field">_cancellationTokenSource</a> = <b>value</b>;
+			}
+		}
+ 
+		<b>bool</b> <a id="1ecd1f9810911fe1" href="R/1ecd1f9810911fe1.html" target="n" data-glyph="106,1" class="i property">IsLoading</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#5bc53753f0f7953e" class="i field">_cancellationTokenSource</a> != <b>null</b>; }
+		}
+ 
+		<b>public virtual</b> <span class="t t">Task</span>&lt;<b>bool</b>&gt; <a id="ae1a7600bb16255c" href="R/ae1a7600bb16255c.html" target="n" data-glyph="72,1" class="i method">Cancel</a>()
+		{
+			<b>if</b> (!<a href="#1ecd1f9810911fe1" class="i property">IsLoading</a>)
+				<b>return</b> <span class="t t">Task</span>.<span class="i method">FromResult</span>(<b>false</b>);
+ 
+			<b>var</b> <span id="r0 rd" class="r0 r">tcs</span> = <b>new</b> <span class="t constructor">TaskCompletionSource</span>&lt;<b>bool</b>&gt;();
+			<span class="t t">TaskCompletionSource</span>&lt;<b>bool</b>&gt; <span id="r1 rd" class="r1 r">original</span> = <span class="t t">Interlocked</span>.<span class="i method">CompareExchange</span>(<b>ref</b> <a href="#a96ca9cd0544bd5e" class="i field">_completionSource</a>, <span class="r0 r">tcs</span>, <b>null</b>);
+			<b>if</b> (<span class="r1 r">original</span> == <b>null</b>)
+			{
+				<a href="#5bc53753f0f7953e" class="i field">_cancellationTokenSource</a>.<span class="i method">Cancel</span>();
+			}
+			<b>else</b>
+				<span class="r0 r">tcs</span> = <span class="r1 r">original</span>;
+ 
+			<b>return</b> <span class="r0 r">tcs</span>.<span class="i property">Task</span>;
+		}
+ 
+		<b>public static</b> <a href="#bc9d2c0cce52238b" class="t t">ImageSource</a> <a id="33b88ebdbce286d3" href="R/33b88ebdbce286d3.html" target="n" data-glyph="72,1" class="i method">FromFile</a>(<b>string</b> <span id="r2 rd" class="r2 r">file</span>)
+		{
+			<b>return</b> <b>new</b> <a href="FileImageSource.cs.html#16dea7efcaba1d0f" class="t constructor">FileImageSource</a> { <a href="FileImageSource.cs.html#a7a7e7a7e3b9cdb3" class="i property">File</a> = <span class="r2 r">file</span> };
+		}
+ 
+		<b>public static</b> <a href="#bc9d2c0cce52238b" class="t t">ImageSource</a> <a id="871e48d655250392" href="R/871e48d655250392.html" target="n" data-glyph="72,1" class="i method">FromResource</a>(<b>string</b> <span id="r3 rd" class="r3 r">resource</span>, <a href="@1@System.Runtime/A.html#3d00eeab9feb80f3" class="t t">Type</a> <span id="r4 rd" class="r4 r">resolvingType</span>)
+		{
+			<b>return</b> <a href="#88f5dc9eb5b5cc28" class="i method">FromResource</a>(<span class="r3 r">resource</span>, <span class="r4 r">resolvingType</span>.<span class="i method">GetTypeInfo</span>().<span class="i property">Assembly</span>);
+		}
+ 
+		<b>public static</b> <a href="#bc9d2c0cce52238b" class="t t">ImageSource</a> <a id="88f5dc9eb5b5cc28" href="R/88f5dc9eb5b5cc28.html" target="n" data-glyph="72,1" class="i method">FromResource</a>(<b>string</b> <span id="r5 rd" class="r5 r">resource</span>, <span class="t t">Assembly</span> <span id="r6 rd" class="r6 r">sourceAssembly</span> = <b>null</b>)
+		{
+			<b>if</b> (<span class="r6 r">sourceAssembly</span> == <b>null</b>)
+			{
+				<span class="t t">MethodInfo</span> <span id="r7 rd" class="r7 r">callingAssemblyMethod</span> = <b>typeof</b>(<span class="t t">Assembly</span>).<span class="i method">GetTypeInfo</span>().<span class="i method">GetDeclaredMethod</span>(<span class="s">&quot;GetCallingAssembly&quot;</span>);
+				<b>if</b> (<span class="r7 r">callingAssemblyMethod</span> != <b>null</b>)
+				{
+					<span class="r6 r">sourceAssembly</span> = (<span class="t t">Assembly</span>)<span class="r7 r">callingAssemblyMethod</span>.<span class="i method">Invoke</span>(<b>null</b>, <b>new</b> <b>object</b>[0]);
+				}
+				<b>else</b>
+				{
+					<a href="Log.cs.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<a href="Log.cs.html#6ed81695ef8a87b6" class="i method">Warning</a>(<span class="s">&quot;Warning&quot;</span>, <span class="s">&quot;Can not find CallingAssembly, pass resolvingType to FromResource to ensure proper resolution&quot;</span>);
+					<b>return null</b>;
+				}
+			}
+ 
+			<b>return</b> <a href="#2e0c96601ab46c13" class="i method">FromStream</a>(() =&gt; <span class="r6 r">sourceAssembly</span>.<span class="i method">GetManifestResourceStream</span>(<span class="r5 r">resource</span>));
+		}
+ 
+		<b>public static</b> <a href="#bc9d2c0cce52238b" class="t t">ImageSource</a> <a id="2e0c96601ab46c13" href="R/2e0c96601ab46c13.html" target="n" data-glyph="72,1" class="i method">FromStream</a>(<a href="@1@System.Runtime/A.html#87d60abb7092d5a4" class="t t">Func</a>&lt;<span class="t t">Stream</span>&gt; <span id="r8 rd" class="r8 r">stream</span>)
+		{
+			<b>return</b> <b>new</b> <a href="StreamImageSource.cs.html#714e87519cce391d" class="t constructor">StreamImageSource</a> { <a href="StreamImageSource.cs.html#77ba82fc5b2b3198" class="i property">Stream</a> = <span id="r9 rd" class="r9 r">token</span> =&gt; <span class="t t">Task</span>.<span class="i method">Run</span>(<span class="r8 r">stream</span>, <span class="r9 r">token</span>) };
+		}
+ 
+		<b>public static</b> <a href="#bc9d2c0cce52238b" class="t t">ImageSource</a> <a id="1f4d9413016495e9" href="R/1f4d9413016495e9.html" target="n" data-glyph="72,1" class="i method">FromUri</a>(<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r10 rd" class="r10 r">uri</span>)
+		{
+			<b>if</b> (!<span class="r10 r">uri</span>.<a href="@1@System.Runtime/A.html#2e1f2f7671a40125" class="i property">IsAbsoluteUri</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;uri is relative&quot;</span>);
+			<b>return</b> <b>new</b> <a href="UriImageSource.cs.html#077fcd65674b5b78" class="t constructor">UriImageSource</a> { <a href="UriImageSource.cs.html#081f21e8d9c61f56" class="i property">Uri</a> = <span class="r10 r">uri</span> };
+		}
+ 
+		<b>public static implicit operator</b> <a href="#bc9d2c0cce52238b" class="t t">ImageSource</a>(<b>string</b> <span id="r11 rd" class="r11 r">source</span>)
+		{
+			<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r12 rd" class="r12 r">uri</span>;
+			<b>return</b> <a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a>.<a href="@1@System.Runtime/A.html#49754736d6982eb6" class="i method">TryCreate</a>(<span class="r11 r">source</span>, <a href="@1@System.Runtime/A.html#ac43655101ad74be" class="t t">UriKind</a>.<a href="@1@System.Runtime/A.html#d734108197254429" class="i field">Absolute</a>, <b>out</b> <span class="r12 r">uri</span>) &amp;&amp; <span class="r12 r">uri</span>.<a href="@1@System.Runtime/A.html#e73925be401b9bcb" class="i property">Scheme</a> != <span class="s">&quot;file&quot;</span> ? <a href="#1f4d9413016495e9" class="i method">FromUri</a>(<span class="r12 r">uri</span>) : <a href="#33b88ebdbce286d3" class="i method">FromFile</a>(<span class="r11 r">source</span>);
+		}
+ 
+		<b>public static implicit operator</b> <a href="#bc9d2c0cce52238b" class="t t">ImageSource</a>(<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r13 rd" class="r13 r">uri</span>)
+		{
+			<b>if</b> (!<span class="r13 r">uri</span>.<a href="@1@System.Runtime/A.html#2e1f2f7671a40125" class="i property">IsAbsoluteUri</a>)
+				<b>throw</b> <b>new</b> <a href="@1@System.Runtime/A.html#eb98012a74461437" class="t constructor">ArgumentException</a>(<span class="s">&quot;uri is relative&quot;</span>);
+			<b>return</b> <a href="#1f4d9413016495e9" class="i method">FromUri</a>(<span class="r13 r">uri</span>);
+		}
+ 
+		<b>protected void</b> <a id="55944823222cf3d5" href="R/55944823222cf3d5.html" target="n" data-glyph="75,1" class="i method">OnLoadingCompleted</a>(<b>bool</b> <span id="r14 rd" class="r14 r">cancelled</span>)
+		{
+			<b>if</b> (!<a href="#1ecd1f9810911fe1" class="i property">IsLoading</a> || <a href="#a96ca9cd0544bd5e" class="i field">_completionSource</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<span class="t t">TaskCompletionSource</span>&lt;<b>bool</b>&gt; <span id="r15 rd" class="r15 r">tcs</span> = <span class="t t">Interlocked</span>.<span class="i method">Exchange</span>(<b>ref</b> <a href="#a96ca9cd0544bd5e" class="i field">_completionSource</a>, <b>null</b>);
+			<b>if</b> (<span class="r15 r">tcs</span> != <b>null</b>)
+				<span class="r15 r">tcs</span>.<span class="i method">SetResult</span>(<span class="r14 r">cancelled</span>);
+ 
+			<b>lock</b> (<a href="#7fdffb0d9825432b" class="i field">_synchandle</a>)
+			{
+				<a href="#dd5b0b895d1e5670" class="i property">CancellationTokenSource</a> = <b>null</b>;
+			}
+		}
+ 
+		<b>protected void</b> <a id="ec595aa4a3f2e118" href="R/ec595aa4a3f2e118.html" target="n" data-glyph="75,1" class="i method">OnLoadingStarted</a>()
+		{
+			<b>lock</b> (<a href="#7fdffb0d9825432b" class="i field">_synchandle</a>)
+			{
+				<a href="#dd5b0b895d1e5670" class="i property">CancellationTokenSource</a> = <b>new</b> <span class="t constructor">CancellationTokenSource</span>();
+			}
+		}
+ 
+		<b>protected void</b> <a id="5cd5e153480258f7" href="R/5cd5e153480258f7.html" target="n" data-glyph="75,1" class="i method">OnSourceChanged</a>()
+		{
+			<a href="#4e97fe0d13b09e19" class="i field">_weakEventManager</a>.<a href="WeakEventManager.cs.html#ec3fcf67c14dfaef" class="i method">HandleEvent</a>(<a href="#bc9d2c0cce52238b" class="k">this</a>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a>.<a href="@1@System.Runtime/A.html#433622385e05af0d" class="i field">Empty</a>, <b>nameof</b>(<a href="#347cc52cc55e012b" class="i">SourceChanged</a>));
+		}
+ 
+		<b>internal event</b> <a href="@1@System.Runtime/A.html#3b79d2b06c15f250" class="t t">EventHandler</a> <a id="347cc52cc55e012b" href="R/347cc52cc55e012b.html" target="n" data-glyph="32,1" class="i">SourceChanged</a>
+		{
+			<b>add</b> { <a href="#4e97fe0d13b09e19" class="i field">_weakEventManager</a>.<a href="WeakEventManager.cs.html#f2fee9650badb5df" class="i method">AddEventHandler</a>(<b>nameof</b>(<a href="#347cc52cc55e012b" class="i">SourceChanged</a>), <b>value</b>); }
+			<b>remove</b> { <a href="#4e97fe0d13b09e19" class="i field">_weakEventManager</a>.<a href="WeakEventManager.cs.html#36d5bb66ba9a51f9" class="i method">RemoveEventHandler</a>(<b>nameof</b>(<a href="#347cc52cc55e012b" class="i">SourceChanged</a>), <b>value</b>);}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

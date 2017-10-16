@@ -1,0 +1,268 @@
+﻿<!DOCTYPE html>
+<html><head><title>PlatformUWP.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(259);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/PlatformUWP.cs" target="_top">PlatformUWP.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Linq</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">ApplicationModel</span>.<span class="i n">Core</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="i n">Metadata</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Core</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">ViewManagement</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+{
+	<b>public abstract</b> <a href="P/8d41bb27f92ac214.html" target="s" class="k">partial</a> <b>class</b> <a id="8d41bb27f92ac214" href="R/8d41bb27f92ac214.html" target="n" data-glyph="0,0" class="t t">Platform</a>
+	{
+		<b>internal static</b> <span class="t t">StatusBar</span> <a id="1a2922ab7c3b2ad0" href="R/1a2922ab7c3b2ad0.html" target="n" data-glyph="104,1" class="i property">MobileStatusBar</a> =&gt; <span class="t t">ApiInformation</span>.<span class="i">IsTypePresent</span>(<span class="s">&quot;Windows.UI.ViewManagement.StatusBar&quot;</span>) ? <span class="t t">StatusBar</span>.<span class="i method">GetForCurrentView</span>() : <b>null</b>;
+ 
+		<a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a> <a id="5f8a527565c68641" href="R/5f8a527565c68641.html" target="n" data-glyph="46,1" class="i field">_toolbarProvider</a>;
+ 
+		<b>void</b> <a id="abccf5f22bfdd58c" href="R/abccf5f22bfdd58c.html" target="n" data-glyph="76,1" class="i method">InitializeStatusBar</a>()
+		{
+			<span class="t t">StatusBar</span> <span id="r0 rd" class="r0 r">statusBar</span> = <a href="#1a2922ab7c3b2ad0" class="i property">MobileStatusBar</a>;
+			<b>if</b> (<span class="r0 r">statusBar</span> != <b>null</b>)
+			{
+				<span class="r0 r">statusBar</span>.<span class="i">Showing</span> += (<span id="r1 rd" class="r1 r">sender</span>, <span id="r2 rd" class="r2 r">args</span>) =&gt; <a href="#1f372d2bedc65c59" class="i method">UpdateBounds</a>();
+				<span class="r0 r">statusBar</span>.<span class="i">Hiding</span> += (<span id="r3 rd" class="r3 r">sender</span>, <span id="r4 rd" class="r4 r">args</span>) =&gt; <a href="#1f372d2bedc65c59" class="i method">UpdateBounds</a>();
+ 
+				<span class="c">// UWP 14393 Bug: If RequestedTheme is Light (which it is by default), then the </span>
+				<span class="c">// status bar uses White Foreground with White Background. </span>
+				<span class="c">// UWP 10586 Bug: If RequestedTheme is Light (which it is by default), then the </span>
+				<span class="c">// status bar uses Black Foreground with Black Background. </span>
+				<span class="c">// Since the Light theme should have a Black on White status bar, we will set it explicitly. </span>
+				<span class="c">// This can be overriden by setting the status bar colors in App.xaml.cs OnLaunched.</span>
+ 
+				<b>if</b> (<span class="r0 r">statusBar</span>.<span class="i property">BackgroundColor</span> == <b>null</b> &amp;&amp; <span class="r0 r">statusBar</span>.<span class="i property">ForegroundColor</span> == <b>null</b> &amp;&amp; <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Application</span>.<span class="i property">Current</span>.<span class="i property">RequestedTheme</span> == <span class="t t">ApplicationTheme</span>.<span class="i field">Light</span>)
+				{
+					<span class="r0 r">statusBar</span>.<span class="i property">BackgroundColor</span> = <span class="t t">Colors</span>.<span class="i property">White</span>;
+					<span class="r0 r">statusBar</span>.<span class="i property">ForegroundColor</span> = <span class="t t">Colors</span>.<span class="i property">Black</span>;
+					<span class="r0 r">statusBar</span>.<span class="i property">BackgroundOpacity</span> = 1;
+				}
+			}
+		}
+ 
+		<b>void</b> <a id="356698dceffbad3a" href="R/356698dceffbad3a.html" target="n" data-glyph="76,1" class="i method">UpdateToolbarTitle</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r5 rd" class="r5 r">page</span>)
+		{
+			<b>if</b> (<a href="#5f8a527565c68641" class="i field">_toolbarProvider</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			((<a href="#73784064cf4cde03" class="t t">ToolbarProvider</a>)<a href="#5f8a527565c68641" class="i field">_toolbarProvider</a>).<a href="#163e6ab77a534121" class="i property">CommandBar</a>.<span class="i property">Content</span> = <span class="r5 r">page</span>.<a href="/Xamarin.Forms.Core/A.html#25a9b5c9e8eb0d28" class="i property">Title</a>;
+		}
+ 
+		<b>async void</b> <a id="a677d2f55a29a482" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnPageActionSheet</a>(<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r6 rd" class="r6 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#58b1a909937065d8" class="t t">ActionSheetArguments</a> <span id="r7 rd" class="r7 r">options</span>)
+		{
+			<span class="i">List</span>&lt;<b>string</b>&gt; <span id="r8 rd" class="r8 r">buttons</span> = <span class="r7 r">options</span>.<a href="/Xamarin.Forms.Core/A.html#fd69aef906d4a4f4" class="i property">Buttons</a>.<span class="i">ToList</span>();
+ 
+			<b>var</b> <span id="r9 rd" class="r9 r">list</span> = <b>new</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t">ListView</span>
+			{
+				<span class="i">Style</span> = (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Style</span>)<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Application</span>.<span class="i property">Current</span>.<span class="i property">Resources</span>[<span class="s">&quot;ActionSheetList&quot;</span>],
+				<span class="i property">ItemsSource</span> = <span class="r8 r">buttons</span>,
+				<span class="i property">IsItemClickEnabled</span> = <b>true</b>
+			};
+ 
+			<b>var</b> <span id="r10 rd" class="r10 r">dialog</span> = <b>new</b> <span class="t">ContentDialog</span>
+			{
+				<span class="i">Template</span> = (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">ControlTemplate</span>)<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Application</span>.<span class="i property">Current</span>.<span class="i property">Resources</span>[<span class="s">&quot;MyContentDialogControlTemplate&quot;</span>],
+				<span class="i property">Content</span> = <span class="r9 r">list</span>,
+				<span class="i">Style</span> = (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Style</span>)<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Application</span>.<span class="i property">Current</span>.<span class="i property">Resources</span>[<span class="s">&quot;ActionSheetStyle&quot;</span>]
+			};
+ 
+			<b>if</b> (<span class="r7 r">options</span>.<a href="/Xamarin.Forms.Core/A.html#f0cc8505afd56c53" class="i property">Title</a> != <b>null</b>)
+				<span class="r10 r">dialog</span>.<span class="i property">Title</span> = <span class="r7 r">options</span>.<a href="/Xamarin.Forms.Core/A.html#f0cc8505afd56c53" class="i property">Title</a>;
+ 
+			<span class="r9 r">list</span>.<span class="i">ItemClick</span> += (<span id="r11 rd" class="r11 r">s</span>, <span id="r12 rd" class="r12 r">e</span>) =&gt;
+			{
+				<span class="r10 r">dialog</span>.<span class="i">Hide</span>();
+				<span class="r7 r">options</span>.<span class="i">SetResult</span>((<b>string</b>)<span class="r12 r">e</span>.<span class="i">ClickedItem</span>);
+			};
+ 
+			<span class="t t">TypedEventHandler</span>&lt;<span class="t t">CoreWindow</span>, <span class="t t">CharacterReceivedEventArgs</span>&gt; <span id="r13 rd" class="r13 r">onEscapeButtonPressed</span> = <b>delegate</b> (<span class="t t">CoreWindow</span> <span id="r14 rd" class="r14 r">window</span>, <span class="t t">CharacterReceivedEventArgs</span> <span id="r15 rd" class="r15 r">args</span>)
+			{
+				<b>if</b> (<span class="r15 r">args</span>.<span class="i property">KeyCode</span> == 27)
+				{
+					<span class="r10 r">dialog</span>.<span class="i">Hide</span>();
+					<span class="r7 r">options</span>.<span class="i">SetResult</span>(<span class="t t">ContentDialogResult</span>.<span class="i field">None</span>.<span class="i">ToString</span>());
+				}
+			};
+ 
+			<span class="t t">Window</span>.<span class="i property">Current</span>.<span class="i property">CoreWindow</span>.<span class="i">CharacterReceived</span> += <span class="r13 r">onEscapeButtonPressed</span>;
+ 
+			<a href="Platform.cs.html#6b2f1fb88f53834a" class="i field">_actionSheetOptions</a> = <span class="r7 r">options</span>;
+ 
+			<b>if</b> (<span class="r7 r">options</span>.<a href="/Xamarin.Forms.Core/A.html#2d367a4b391b10d3" class="i property">Cancel</a> != <b>null</b>)
+				<span class="r10 r">dialog</span>.<span class="i property">SecondaryButtonText</span> = <span class="r7 r">options</span>.<a href="/Xamarin.Forms.Core/A.html#2d367a4b391b10d3" class="i property">Cancel</a>;
+ 
+			<b>if</b> (<span class="r7 r">options</span>.<a href="/Xamarin.Forms.Core/A.html#1a706b33137e918f" class="i property">Destruction</a> != <b>null</b>)
+				<span class="r10 r">dialog</span>.<span class="i property">PrimaryButtonText</span> = <span class="r7 r">options</span>.<a href="/Xamarin.Forms.Core/A.html#1a706b33137e918f" class="i property">Destruction</a>;
+ 
+			<span class="t t">ContentDialogResult</span> <span id="r16 rd" class="r16 r">result</span> = <b>await</b> <span class="r10 r">dialog</span>.<span class="i">ShowAsync</span>();
+			<b>if</b> (<span class="r16 r">result</span> == <span class="t t">ContentDialogResult</span>.<span class="i field">Secondary</span>)
+				<span class="r7 r">options</span>.<span class="i">SetResult</span>(<span class="r7 r">options</span>.<a href="/Xamarin.Forms.Core/A.html#2d367a4b391b10d3" class="i property">Cancel</a>);
+			<b>else if</b> (<span class="r16 r">result</span> == <span class="t t">ContentDialogResult</span>.<span class="i field">Primary</span>)
+				<span class="r7 r">options</span>.<span class="i">SetResult</span>(<span class="r7 r">options</span>.<a href="/Xamarin.Forms.Core/A.html#1a706b33137e918f" class="i property">Destruction</a>);
+ 
+			<span class="t t">Window</span>.<span class="i property">Current</span>.<span class="i property">CoreWindow</span>.<span class="i">CharacterReceived</span> -= <span class="r13 r">onEscapeButtonPressed</span>;
+		}
+ 
+		<b>void</b> <a id="824c6671ba6e07f8" href="R/824c6671ba6e07f8.html" target="n" data-glyph="76,1" class="i method">ClearCommandBar</a>()
+		{
+			<b>if</b> (<a href="#5f8a527565c68641" class="i field">_toolbarProvider</a> != <b>null</b>)
+			{
+				<a href="#5f8a527565c68641" class="i field">_toolbarProvider</a> = <b>null</b>;
+				<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> == <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a>)
+					<a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i">BottomAppBar</span> = <b>null</b>;
+				<b>else</b>
+					<a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i">TopAppBar</span> = <b>null</b>;
+			}
+		}
+ 
+		<span class="t t">CommandBar</span> <a id="0200f0721c782ee2" href="R/0200f0721c782ee2.html" target="n" data-glyph="76,1" class="i method">CreateCommandBar</a>()
+		{
+			<a href="FormsCommandBar.cs.html#efa4b9171e8b0bdf" class="k">var</a> <span id="r17 rd" class="r17 r">bar</span> = <b>new</b> <a href="FormsCommandBar.cs.html#b7947b16f1303cd4" class="t constructor">FormsCommandBar</a>();
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> != <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a>)
+				<span class="r17 r">bar</span>.<span class="i">Style</span> = (<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Style</span>)<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="t t">Application</span>.<span class="i property">Current</span>.<span class="i property">Resources</span>[<span class="s">&quot;TitleToolbar&quot;</span>];
+ 
+			<a href="#5f8a527565c68641" class="i field">_toolbarProvider</a> = <b>new</b> <a href="#b61b1cc26eee8be8" class="t constructor">ToolbarProvider</a>(<span class="r17 r">bar</span>);
+ 
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#ecd1e66d4705505f" class="i property">Idiom</a> == <a href="/Xamarin.Forms.Core/A.html#642119abfd8db803" class="t t">TargetIdiom</a>.<a href="/Xamarin.Forms.Core/A.html#36a99c4c498ed83e" class="i field">Phone</a>)
+				<a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i">BottomAppBar</span> = <span class="r17 r">bar</span>;
+			<b>else</b>
+				<a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i">TopAppBar</span> = <span class="r17 r">bar</span>;
+ 
+			<b>return</b> <span class="r17 r">bar</span>;
+		}
+ 
+		<b>async</b> <span class="i">Task</span>&lt;<span class="t t">CommandBar</span>&gt; <a id="9f1cfdb2bdb16aa8" href="R/9f1cfdb2bdb16aa8.html" target="n" data-glyph="76,1" class="i method">GetCommandBarAsync</a>()
+		{
+			<a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a> <span id="r18 rd" class="r18 r">provider</span> = <a href="#9094fd56f57e9ea4" class="i method">GetToolbarProvider</a>();
+			<b>if</b> (<span class="r18 r">provider</span> == <b>null</b>)
+			{
+				<b>return null</b>;
+			}
+ 
+			<b>return await</b> <span class="r18 r">provider</span>.<a href="IToolbarProvider.cs.html#0902b0e2d73c7339" class="i method">GetCommandBarAsync</a>();
+		}
+ 
+		<b>void</b> <a id="1f372d2bedc65c59" href="R/1f372d2bedc65c59.html" target="n" data-glyph="76,1" class="i method">UpdateBounds</a>()
+		{
+			<a href="Platform.cs.html#1ea8edb3f496e777" class="i field">_bounds</a> = <b>new</b> <span class="t">Rectangle</span>(0, 0, <a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i property">ActualWidth</span>, <a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i property">ActualHeight</span>);
+ 
+			<span class="t t">StatusBar</span> <span id="r19 rd" class="r19 r">statusBar</span> = <a href="#1a2922ab7c3b2ad0" class="i property">MobileStatusBar</a>;
+			<b>if</b> (<span class="r19 r">statusBar</span> != <b>null</b>)
+			{
+				<b>bool</b> <span id="r20 rd" class="r20 r">landscape</span> = <a href="/Xamarin.Forms.Core/A.html#4809323d42d3030a" class="t t">Device</a>.<a href="/Xamarin.Forms.Core/A.html#996ca2ce6b1f29b2" class="i property">Info</a>.<a href="/Xamarin.Forms.Core/A.html#578640b1d635e4d0" class="i property">CurrentOrientation</a>.<span class="i">IsLandscape</span>();
+				<b>bool</b> <span id="r21 rd" class="r21 r">titleBar</span> = <span class="t t">CoreApplication</span>.<span class="i method">GetCurrentView</span>().<span class="i property">TitleBar</span>.<span class="i property">IsVisible</span>;
+				<b>double</b> <span id="r22 rd" class="r22 r">offset</span> = <span class="r20 r">landscape</span> ? <span class="r19 r">statusBar</span>.<span class="i property">OccludedRect</span>.<span class="i">Width</span> : <span class="r19 r">statusBar</span>.<span class="i property">OccludedRect</span>.<span class="i">Height</span>;
+ 
+				<a href="Platform.cs.html#1ea8edb3f496e777" class="i field">_bounds</a> = <b>new</b> <span class="t">Rectangle</span>(0, 0, <a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i property">ActualWidth</span> - (<span class="r20 r">landscape</span> ? <span class="r22 r">offset</span> : 0), <a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i property">ActualHeight</span> - (<span class="r20 r">landscape</span> ? 0 : <span class="r22 r">offset</span>));
+ 
+				<span class="c">// Even if the MainPage is a ContentPage not inside of a NavigationPage, the calculated bounds</span>
+				<span class="c">// assume the TitleBar is there even if it isn&#39;t visible. When UpdatePageSizes is called,</span>
+				<span class="c">// _container.ActualWidth is correct because it&#39;s aware that the TitleBar isn&#39;t there, but the</span>
+				<span class="c">// bounds aren&#39;t, and things can subsequently run under the StatusBar.</span>
+				<b>if</b> (!<span class="r21 r">titleBar</span>)
+				{
+					<a href="Platform.cs.html#1ea8edb3f496e777" class="i field">_bounds</a>.<a href="/Xamarin.Forms.Core/A.html#2116af7437c7d76b" class="i property">Width</a> -= (<a href="Platform.cs.html#1ea8edb3f496e777" class="i field">_bounds</a>.<a href="/Xamarin.Forms.Core/A.html#2116af7437c7d76b" class="i property">Width</a> - <a href="Platform.cs.html#a734a1e41e351c99" class="i field">_container</a>.<span class="i property">ActualWidth</span>);
+				}
+			}
+		}
+ 
+		<b>internal async</b> <span class="i">Task</span> <a id="9361371762cd264f" href="R/9361371762cd264f.html" target="n" data-glyph="74,1" class="i method">UpdateToolbarItems</a>()
+		{
+			<span class="t t">CommandBar</span> <span id="r23 rd" class="r23 r">commandBar</span> = <b>await</b> <a href="#9f1cfdb2bdb16aa8" class="i method">GetCommandBarAsync</a>();
+			<b>if</b> (<span class="r23 r">commandBar</span> != <b>null</b>)
+			{
+				<span class="r23 r">commandBar</span>.<span class="i property">PrimaryCommands</span>.<span class="i">Clear</span>();
+				<span class="r23 r">commandBar</span>.<span class="i property">SecondaryCommands</span>.<span class="i">Clear</span>();
+ 
+				<b>if</b> (<a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i property">BottomAppBar</span> != <b>null</b> || <a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i property">TopAppBar</span> != <b>null</b>)
+				{
+					<a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i">BottomAppBar</span> = <b>null</b>;
+					<a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i">TopAppBar</span> = <b>null</b>;
+					<a href="Platform.cs.html#b468a6581ea1a3a5" class="i field">_page</a>.<span class="i">InvalidateMeasure</span>();
+				}
+			}
+ 
+			<a href="IToolBarForegroundBinder.cs.html#eeaab3d3388810b0" class="k">var</a> <span id="r24 rd" class="r24 r">toolBarProvider</span> = <a href="#9094fd56f57e9ea4" class="i method">GetToolbarProvider</a>() <b>as</b> <a href="IToolBarForegroundBinder.cs.html#eeaab3d3388810b0" class="t t">IToolBarForegroundBinder</a>;
+ 
+			<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#40969ab465b00442" class="t t">ToolbarItem</a> <span id="r25 rd" class="r25 r">item</span> <b>in</b> <a href="Platform.cs.html#0a0cd6e7d4cf532a" class="i field">_toolbarTracker</a>.<a href="/Xamarin.Forms.Core/A.html#ce0e28ad1e0711be" class="i property">ToolbarItems</a>.<span class="i">OrderBy</span>(<span id="r26 rd" class="r26 r">ti</span> =&gt; <span class="r26 r">ti</span>.<span class="i">Priority</span>))
+			{
+				<b>if</b> (<span class="r23 r">commandBar</span> == <b>null</b>)
+					<span class="r23 r">commandBar</span> = <a href="#0200f0721c782ee2" class="i method">CreateCommandBar</a>();
+ 
+				<span class="r24 r">toolBarProvider</span>?.<a href="IToolBarForegroundBinder.cs.html#beab3fa498f4cb48" class="i method">BindForegroundColor</a>(<span class="r23 r">commandBar</span>);
+ 
+				<b>var</b> <span id="r27 rd" class="r27 r">button</span> = <b>new</b> <span class="t">AppBarButton</span>();
+				<span class="r27 r">button</span>.<span class="i">SetBinding</span>(<span class="t t">AppBarButton</span>.<span class="i property">LabelProperty</span>, <span class="s">&quot;Text&quot;</span>);
+				<span class="r27 r">button</span>.<span class="i">SetBinding</span>(<span class="t t">AppBarButton</span>.<span class="i property">IconProperty</span>, <span class="s">&quot;Icon&quot;</span>, <a href="Platform.cs.html#7d02ba12d28dce5b" class="i field">_fileImageSourcePathConverter</a>);
+				<span class="r27 r">button</span>.<span class="i property">Command</span> = <b>new</b> <a href="MenuItemCommand.cs.html#6d8c8bf917b5bbda" class="t constructor">MenuItemCommand</a>(<span class="r25 r">item</span>);
+				<span class="r27 r">button</span>.<span class="i property">DataContext</span> = <span class="r25 r">item</span>;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#64cf5d32fe99aba3" class="t t">ToolbarItemOrder</a> <span id="r28 rd" class="r28 r">order</span> = <span class="r25 r">item</span>.<a href="/Xamarin.Forms.Core/A.html#aba842f9dcb530ab" class="i property">Order</a> == <a href="/Xamarin.Forms.Core/A.html#64cf5d32fe99aba3" class="t t">ToolbarItemOrder</a>.<a href="/Xamarin.Forms.Core/A.html#a11478240857be85" class="i field">Default</a> ? <a href="/Xamarin.Forms.Core/A.html#64cf5d32fe99aba3" class="t t">ToolbarItemOrder</a>.<a href="/Xamarin.Forms.Core/A.html#775a722a2a48b3a7" class="i field">Primary</a> : <span class="r25 r">item</span>.<a href="/Xamarin.Forms.Core/A.html#aba842f9dcb530ab" class="i property">Order</a>;
+				<b>if</b> (<span class="r28 r">order</span> == <a href="/Xamarin.Forms.Core/A.html#64cf5d32fe99aba3" class="t t">ToolbarItemOrder</a>.<a href="/Xamarin.Forms.Core/A.html#775a722a2a48b3a7" class="i field">Primary</a>)
+				{
+					<span class="r24 r">toolBarProvider</span>?.<a href="IToolBarForegroundBinder.cs.html#0eafde9123774f8f" class="i method">BindForegroundColor</a>(<span class="r27 r">button</span>);
+					<span class="r23 r">commandBar</span>.<span class="i property">PrimaryCommands</span>.<span class="i">Add</span>(<span class="r27 r">button</span>);
+				}
+				<b>else</b>
+				{
+					<span class="r23 r">commandBar</span>.<span class="i property">SecondaryCommands</span>.<span class="i">Add</span>(<span class="r27 r">button</span>);
+				}
+			}
+ 
+			<b>if</b> (<span class="r23 r">commandBar</span>?.<span class="i property">PrimaryCommands</span>.<span class="i">Count</span> + <span class="r23 r">commandBar</span>?.<span class="i property">SecondaryCommands</span>.<span class="i">Count</span> == 0)
+				<a href="#824c6671ba6e07f8" class="i method">ClearCommandBar</a>();
+		}
+ 
+		<b>internal</b> <a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a> <a id="9094fd56f57e9ea4" href="R/9094fd56f57e9ea4.html" target="n" data-glyph="74,1" class="i method">GetToolbarProvider</a>()
+		{
+			<a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a> <span id="r29 rd" class="r29 r">provider</span> = <b>null</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a> <span id="r30 rd" class="r30 r">element</span> = <a href="Platform.cs.html#b4501b9ddb39493e" class="i field">_currentPage</a>;
+			<b>while</b> (<span class="r30 r">element</span> != <b>null</b>)
+			{
+				<span class="r29 r">provider</span> = <a href="Platform.cs.html#57cd4e7e3d7ffb95" class="i method">GetRenderer</a>(<span class="r30 r">element</span>) <b>as</b> <a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a>;
+				<b>if</b> (<span class="r29 r">provider</span> != <b>null</b>)
+					<b>break</b>;
+ 
+				<a href="/Xamarin.Forms.Core/A.html#bc871d05751370ed" class="k">var</a> <span id="r31 rd" class="r31 r">pageContainer</span> = <span class="r30 r">element</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#bc871d05751370ed" class="t t">IPageContainer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="t t">Page</a>&gt;;
+				<span class="r30 r">element</span> = <span class="r31 r">pageContainer</span>?.<a href="/Xamarin.Forms.Core/A.html#ba02d65acd22ef3c" class="i property">CurrentPage</a>;
+			}
+ 
+			<b>if</b> (<span class="r29 r">provider</span> != <b>null</b> &amp;&amp; <a href="#5f8a527565c68641" class="i field">_toolbarProvider</a> == <b>null</b>)
+				<a href="#824c6671ba6e07f8" class="i method">ClearCommandBar</a>();
+ 
+			<b>return</b> <span class="r29 r">provider</span>;
+		}
+ 
+		<b>class</b> <a id="73784064cf4cde03" href="R/73784064cf4cde03.html" target="n" data-glyph="4,1" class="t t">ToolbarProvider</a> : <a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a>
+		{
+			<b>readonly</b> <span class="i">Task</span>&lt;<span class="t t">CommandBar</span>&gt; <a id="41b96ab7bc1ffdb8" href="R/41b96ab7bc1ffdb8.html" target="n" data-glyph="46,2" class="i field">_commandBar</a>;
+ 
+			<b>public</b> <a id="b61b1cc26eee8be8" href="R/b61b1cc26eee8be8.html" target="n" data-glyph="72,2" class="i constructor">ToolbarProvider</a>(<span class="t t">CommandBar</span> <span id="r32 rd" class="r32 r">commandBar</span>)
+			{
+				<a href="#41b96ab7bc1ffdb8" class="i field">_commandBar</a> = <span class="i">Task</span>.<span class="i">FromResult</span>(<span class="r32 r">commandBar</span>);
+			}
+ 
+			<b>public</b> <span class="t t">CommandBar</span> <a id="163e6ab77a534121" href="R/163e6ab77a534121.html" target="n" data-glyph="102,2" class="i property">CommandBar</a> =&gt; <a href="#41b96ab7bc1ffdb8" class="i field">_commandBar</a>.<span class="i">Result</span>;
+ 
+			<b>public</b> <span class="i">Task</span>&lt;<span class="t t">CommandBar</span>&gt; <a id="058d8f818e89c816" href="R/058d8f818e89c816.html" target="n" data-glyph="72,2" class="i method">GetCommandBarAsync</a>()
+			{
+				<b>return</b> <a href="#41b96ab7bc1ffdb8" class="i field">_commandBar</a>;
+			}
+		}
+	}
+}
+</pre></td></tr></table></div></body></html>

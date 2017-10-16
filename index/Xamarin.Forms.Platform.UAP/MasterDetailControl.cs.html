@@ -1,0 +1,319 @@
+﻿<!DOCTYPE html>
+<html><head><title>MasterDetailControl.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(310);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/MasterDetailControl.cs" target="_top">MasterDetailControl.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">WindowsSpecific</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+{
+	<b>public class</b> <a id="9e8840b9f6f6c486" href="R/9e8840b9f6f6c486.html" target="n" data-glyph="0,0" class="t t">MasterDetailControl</a> : <span class="t t">Control</span>, <a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a>
+	{
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="ac7db5c9f137f335" href="R/ac7db5c9f137f335.html" target="n" data-glyph="42,1" class="i field">MasterProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;Master&quot;</span>, <b>typeof</b>(<span class="t t">FrameworkElement</span>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">FrameworkElement</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="dcde05f7ee5bba5f" href="R/dcde05f7ee5bba5f.html" target="n" data-glyph="42,1" class="i field">MasterTitleProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;MasterTitle&quot;</span>, <b>typeof</b>(<b>string</b>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<b>string</b>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="d70f450869e8fef5" href="R/d70f450869e8fef5.html" target="n" data-glyph="42,1" class="i field">DetailProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;Detail&quot;</span>, <b>typeof</b>(<span class="t t">FrameworkElement</span>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">FrameworkElement</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="ce326656c7dd61fd" href="R/ce326656c7dd61fd.html" target="n" data-glyph="42,1" class="i field">IsPaneOpenProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;IsPaneOpen&quot;</span>, <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<b>bool</b>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="b246aff35d55b3ae" href="R/b246aff35d55b3ae.html" target="n" data-glyph="42,1" class="i field">ShouldShowSplitModeProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#dc3528bfb5dc8059" class="i property">ShouldShowSplitMode</a>), <b>typeof</b>(<b>bool</b>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<b>bool</b>), <span class="i">OnShouldShowSplitModeChanged</span>));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="0d7c8316fe5fa0b5" href="R/0d7c8316fe5fa0b5.html" target="n" data-glyph="42,1" class="i field">CollapseStyleProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#15eb3e21e6974b2b" class="i property">CollapseStyle</a>), <b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#c04c9fb48261365c" class="t t">CollapseStyle</a>), 
+			<b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<a href="/Xamarin.Forms.Core/A.html#c04c9fb48261365c" class="t t">CollapseStyle</a>.<a href="/Xamarin.Forms.Core/A.html#e0e93fb952548c38" class="i field">Full</a>, <span class="i">CollapseStyleChanged</span>));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="299a2a2d0f83cb29" href="R/299a2a2d0f83cb29.html" target="n" data-glyph="42,1" class="i field">CollapsedPaneWidthProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#75a93a4a8bb5a31f" class="i property">CollapsedPaneWidth</a>), <b>typeof</b>(<b>double</b>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(48d, <span class="i">CollapsedPaneWidthChanged</span>));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="a25ab6e66baadfea" href="R/a25ab6e66baadfea.html" target="n" data-glyph="42,1" class="i field">DetailTitleProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;DetailTitle&quot;</span>, <b>typeof</b>(<b>string</b>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>), <b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<b>string</b>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="e630bb656dfae4f1" href="R/e630bb656dfae4f1.html" target="n" data-glyph="42,1" class="i field">ToolbarForegroundProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;ToolbarForeground&quot;</span>, <b>typeof</b>(<span class="t t">Brush</span>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">Brush</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="2d4a95bf56a63dd6" href="R/2d4a95bf56a63dd6.html" target="n" data-glyph="42,1" class="i field">ToolbarBackgroundProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;ToolbarBackground&quot;</span>, <b>typeof</b>(<span class="t t">Brush</span>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">Brush</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="b3cf7286004592e1" href="R/b3cf7286004592e1.html" target="n" data-glyph="42,1" class="i field">MasterTitleVisibilityProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;MasterTitleVisibility&quot;</span>, <b>typeof</b>(<span class="t t">Visibility</span>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">Visibility</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="e2d7c7b846496f0c" href="R/e2d7c7b846496f0c.html" target="n" data-glyph="42,1" class="i field">DetailTitleVisibilityProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;DetailTitleVisibility&quot;</span>, <b>typeof</b>(<span class="t t">Visibility</span>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">Visibility</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="9201b617f6bf9d61" href="R/9201b617f6bf9d61.html" target="n" data-glyph="42,1" class="i field">MasterToolbarVisibilityProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<span class="s">&quot;MasterToolbarVisibility&quot;</span>, <b>typeof</b>(<span class="t t">Visibility</span>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">Visibility</span>)));
+ 
+		<b>public static readonly</b> <span class="t t">DependencyProperty</span> <a id="2fc27e60b4e3145f" href="R/2fc27e60b4e3145f.html" target="n" data-glyph="42,1" class="i field">ContentTogglePaneButtonVisibilityProperty</a> = <span class="t t">DependencyProperty</span>.<span class="i">Register</span>(<b>nameof</b>(<a href="#6afb65ad1856678c" class="i property">ContentTogglePaneButtonVisibility</a>), <b>typeof</b>(<span class="t t">Visibility</span>), <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>),
+			<b>new</b> <span class="t">PropertyMetadata</span>(<b>default</b>(<span class="t t">Visibility</span>)));
+		
+		<span class="t t">CommandBar</span> <a id="d3c119e666f434dc" href="R/d3c119e666f434dc.html" target="n" data-glyph="46,1" class="i field">_commandBar</a>;
+		<b>readonly</b> <a href="ToolbarPlacementHelper.cs.html#5ae729382c28bbea" class="t t">ToolbarPlacementHelper</a> <a id="b4c1c0610cef22d0" href="R/b4c1c0610cef22d0.html" target="n" data-glyph="46,1" class="i field">_toolbarPlacementHelper</a> = <b>new</b> <a href="ToolbarPlacementHelper.cs.html#5ae729382c28bbea" class="t constructor">ToolbarPlacementHelper</a>();
+ 
+		<b>public bool</b> <a id="65b1428067b75d8a" href="R/65b1428067b75d8a.html" target="n" data-glyph="102,1" class="i property">ShouldShowToolbar</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#b4c1c0610cef22d0" class="i field">_toolbarPlacementHelper</a>.<a href="ToolbarPlacementHelper.cs.html#e5c9cfbdad518001" class="i property">ShouldShowToolBar</a>; }
+			<b>set</b> { <a href="#b4c1c0610cef22d0" class="i field">_toolbarPlacementHelper</a>.<a href="ToolbarPlacementHelper.cs.html#e5c9cfbdad518001" class="i property">ShouldShowToolBar</a> = <b>value</b>; }
+		}
+ 
+		<span class="i">TaskCompletionSource</span>&lt;<span class="t t">CommandBar</span>&gt; <a id="89c0e60f59759b5f" href="R/89c0e60f59759b5f.html" target="n" data-glyph="46,1" class="i field">_commandBarTcs</a>;
+		<span class="t t">FrameworkElement</span> <a id="890d66bbdce763a6" href="R/890d66bbdce763a6.html" target="n" data-glyph="46,1" class="i field">_masterPresenter</a>;
+		<span class="t t">FrameworkElement</span> <a id="c6dfd5c5798cc7ac" href="R/c6dfd5c5798cc7ac.html" target="n" data-glyph="46,1" class="i field">_detailPresenter</a>;
+		<span class="t t">SplitView</span> <a id="93c6a14a2dcc2a70" href="R/93c6a14a2dcc2a70.html" target="n" data-glyph="46,1" class="i field">_split</a>;
+	    <a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a> <a id="db77daae32da1471" href="R/db77daae32da1471.html" target="n" data-glyph="46,1" class="i field">_toolbarPlacement</a>;
+ 
+	    <b>public</b> <a id="69d07e054eb68426" href="R/69d07e054eb68426.html" target="n" data-glyph="72,1" class="i constructor">MasterDetailControl</a>()
+		{
+			<span class="i property">DefaultStyleKey</span> = <b>typeof</b>(<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>);
+ 
+			<a href="#d072c2a39c2f2609" class="i property">DetailTitleVisibility</a> = <span class="t t">Visibility</span>.<span class="i field">Collapsed</span>;
+ 
+			<a href="#15eb3e21e6974b2b" class="i property">CollapseStyle</a> = <a href="/Xamarin.Forms.Core/A.html#c04c9fb48261365c" class="t t">CollapseStyle</a>.<a href="/Xamarin.Forms.Core/A.html#e0e93fb952548c38" class="i field">Full</a>;
+		}
+ 
+		<b>public</b> <span class="t t">FrameworkElement</span> <a id="8545acdf54a34cd9" href="R/8545acdf54a34cd9.html" target="n" data-glyph="102,1" class="i property">Detail</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">FrameworkElement</span>)<span class="i">GetValue</span>(<a href="#d70f450869e8fef5" class="i field">DetailProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#d70f450869e8fef5" class="i field">DetailProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="i">Size</span> <a id="1d7323704d8afb58" href="R/1d7323704d8afb58.html" target="n" data-glyph="102,1" class="i property">DetailSize</a>
+		{
+			<b>get</b>
+			{
+				<b>double</b> <span id="r0 rd" class="r0 r">height</span> = <span class="i property">ActualHeight</span>;
+				<b>double</b> <span id="r1 rd" class="r1 r">width</span> = <span class="i property">ActualWidth</span>;
+ 
+				<b>if</b> (<a href="#d3c119e666f434dc" class="i field">_commandBar</a> != <b>null</b>)
+					<span class="r0 r">height</span> -= <a href="#d3c119e666f434dc" class="i field">_commandBar</a>.<span class="i property">ActualHeight</span>;
+ 
+				<b>if</b> (<a href="#dc3528bfb5dc8059" class="i property">ShouldShowSplitMode</a> &amp;&amp; <a href="#1d8c23c7f41820ff" class="i property">IsPaneOpen</a>)
+				{
+					<b>if</b> (<a href="#93c6a14a2dcc2a70" class="i field">_split</a> != <b>null</b>)
+						<span class="r1 r">width</span> -= <a href="#93c6a14a2dcc2a70" class="i field">_split</a>.<span class="i property">OpenPaneLength</span>;
+					<b>else if</b> (<a href="#c6dfd5c5798cc7ac" class="i field">_detailPresenter</a> != <b>null</b>)
+						<span class="r1 r">width</span> -= <a href="#890d66bbdce763a6" class="i field">_masterPresenter</a>.<span class="i property">ActualWidth</span>;
+				}
+ 
+				<b>return</b> <b>new</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="i">Size</span>(<span class="r1 r">width</span> &gt;= 0 ? <span class="r1 r">width</span> : 0, <span class="r0 r">height</span>);
+			}
+		}
+ 
+		<b>public string</b> <a id="d2aea6343db74239" href="R/d2aea6343db74239.html" target="n" data-glyph="102,1" class="i property">DetailTitle</a>
+		{
+			<b>get</b> { <b>return</b> (<b>string</b>)<span class="i">GetValue</span>(<a href="#a25ab6e66baadfea" class="i field">DetailTitleProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#a25ab6e66baadfea" class="i field">DetailTitleProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">Visibility</span> <a id="d072c2a39c2f2609" href="R/d072c2a39c2f2609.html" target="n" data-glyph="102,1" class="i property">DetailTitleVisibility</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Visibility</span>)<span class="i">GetValue</span>(<a href="#e2d7c7b846496f0c" class="i field">DetailTitleVisibilityProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#e2d7c7b846496f0c" class="i field">DetailTitleVisibilityProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public bool</b> <a id="1d8c23c7f41820ff" href="R/1d8c23c7f41820ff.html" target="n" data-glyph="102,1" class="i property">IsPaneOpen</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<span class="i">GetValue</span>(<a href="#ce326656c7dd61fd" class="i field">IsPaneOpenProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#ce326656c7dd61fd" class="i field">IsPaneOpenProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">FrameworkElement</span> <a id="e5efaa5b833a0bee" href="R/e5efaa5b833a0bee.html" target="n" data-glyph="102,1" class="i property">Master</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">FrameworkElement</span>)<span class="i">GetValue</span>(<a href="#ac7db5c9f137f335" class="i field">MasterProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#ac7db5c9f137f335" class="i field">MasterProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="i">Size</span> <a id="3103bc06c6fd4ccc" href="R/3103bc06c6fd4ccc.html" target="n" data-glyph="102,1" class="i property">MasterSize</a>
+		{
+			<b>get</b>
+			{
+				<span class="c">// Use the ActualHeight of the _masterPresenter to automatically adjust for the Master Title</span>
+				<b>double</b> <span id="r2 rd" class="r2 r">height</span> = <a href="#890d66bbdce763a6" class="i field">_masterPresenter</a>?.<span class="i property">ActualHeight</span> ?? 0;
+ 
+				<span class="c">// If there&#39;s no content, use the height of the control to make sure the background color expands.</span>
+				<b>if</b> (<span class="r2 r">height</span> == 0)
+					<span class="r2 r">height</span> = <span class="i property">ActualHeight</span>;
+ 
+				<b>double</b> <span id="r3 rd" class="r3 r">width</span> = 0;
+ 
+				<span class="c">// On first load, the _commandBar will still occupy space by the time this is called.</span>
+				<span class="c">// Check ShouldShowToolbar to make sure the _commandBar will still be there on render.</span>
+				<b>if</b> (<a href="#d3c119e666f434dc" class="i field">_commandBar</a> != <b>null</b> &amp;&amp; <a href="#65b1428067b75d8a" class="i property">ShouldShowToolbar</a>)
+					<span class="r2 r">height</span> -= <a href="#d3c119e666f434dc" class="i field">_commandBar</a>.<span class="i property">ActualHeight</span>;
+ 
+				<b>if</b> (<a href="#93c6a14a2dcc2a70" class="i field">_split</a> != <b>null</b>)
+					<span class="r3 r">width</span> = <a href="#93c6a14a2dcc2a70" class="i field">_split</a>.<span class="i property">OpenPaneLength</span>;
+				<b>else if</b> (<a href="#890d66bbdce763a6" class="i field">_masterPresenter</a> != <b>null</b>)
+					<span class="r3 r">width</span> = <a href="#890d66bbdce763a6" class="i field">_masterPresenter</a>.<span class="i property">ActualWidth</span>;
+ 
+				<b>return</b> <b>new</b> <span class="i n">Windows</span>.<span class="i n">Foundation</span>.<span class="i">Size</span>(<span class="r3 r">width</span>, <span class="r2 r">height</span>);
+			}
+		}
+ 
+		<b>public string</b> <a id="7d581c5d3e477f0f" href="R/7d581c5d3e477f0f.html" target="n" data-glyph="102,1" class="i property">MasterTitle</a>
+		{
+			<b>get</b> { <b>return</b> (<b>string</b>)<span class="i">GetValue</span>(<a href="#dcde05f7ee5bba5f" class="i field">MasterTitleProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#dcde05f7ee5bba5f" class="i field">MasterTitleProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">Visibility</span> <a id="75006cb4a6a3b5cc" href="R/../../0000000000.html" target="n" data-glyph="102,1" class="i property">MasterTitleVisibility</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Visibility</span>)<span class="i">GetValue</span>(<a href="#b3cf7286004592e1" class="i field">MasterTitleVisibilityProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#b3cf7286004592e1" class="i field">MasterTitleVisibilityProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">Visibility</span> <a id="8d625e4b2e2aaff4" href="R/8d625e4b2e2aaff4.html" target="n" data-glyph="102,1" class="i property">MasterToolbarVisibility</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Visibility</span>)<span class="i">GetValue</span>(<a href="#9201b617f6bf9d61" class="i field">MasterToolbarVisibilityProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#9201b617f6bf9d61" class="i field">MasterToolbarVisibilityProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public bool</b> <a id="dc3528bfb5dc8059" href="R/dc3528bfb5dc8059.html" target="n" data-glyph="102,1" class="i property">ShouldShowSplitMode</a>
+		{
+			<b>get</b> { <b>return</b> (<b>bool</b>)<span class="i">GetValue</span>(<a href="#b246aff35d55b3ae" class="i field">ShouldShowSplitModeProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#b246aff35d55b3ae" class="i field">ShouldShowSplitModeProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#c04c9fb48261365c" class="t t">CollapseStyle</a> <a id="15eb3e21e6974b2b" href="R/15eb3e21e6974b2b.html" target="n" data-glyph="102,1" class="i property">CollapseStyle</a>
+		{
+			<b>get</b> { <b>return</b> (<a href="/Xamarin.Forms.Core/A.html#c04c9fb48261365c" class="t t">CollapseStyle</a>)<span class="i">GetValue</span>(<a href="#0d7c8316fe5fa0b5" class="i field">CollapseStyleProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#0d7c8316fe5fa0b5" class="i field">CollapseStyleProperty</a>, <b>value</b>); }
+		}
+ 
+	    <b>public</b> <a href="/Xamarin.Forms.Core/A.html#b4f07288182c0640" class="t t">ToolbarPlacement</a> <a id="1381fde2e7cf695b" href="R/1381fde2e7cf695b.html" target="n" data-glyph="102,1" class="i property">ToolbarPlacement</a>
+	    {
+	        <b>get</b> { <b>return</b> <a href="#db77daae32da1471" class="i field">_toolbarPlacement</a>; }
+	        <b>set</b>
+	        {
+	            <a href="#db77daae32da1471" class="i field">_toolbarPlacement</a> = <b>value</b>;
+	            <a href="#b4c1c0610cef22d0" class="i field">_toolbarPlacementHelper</a>.<a href="ToolbarPlacementHelper.cs.html#fa4725114b7907c2" class="i method">UpdateToolbarPlacement</a>();
+	        }
+	    }
+ 
+	    <b>public</b> <span class="t t">Visibility</span> <a id="6afb65ad1856678c" href="R/6afb65ad1856678c.html" target="n" data-glyph="102,1" class="i property">ContentTogglePaneButtonVisibility</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Visibility</span>)<span class="i">GetValue</span>(<a href="#2fc27e60b4e3145f" class="i field">ContentTogglePaneButtonVisibilityProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#2fc27e60b4e3145f" class="i field">ContentTogglePaneButtonVisibilityProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public double</b> <a id="75a93a4a8bb5a31f" href="R/75a93a4a8bb5a31f.html" target="n" data-glyph="102,1" class="i property">CollapsedPaneWidth</a>
+		{
+			<b>get</b> { <b>return</b> (<b>double</b>)<span class="i">GetValue</span>(<a href="#299a2a2d0f83cb29" class="i field">CollapsedPaneWidthProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#299a2a2d0f83cb29" class="i field">CollapsedPaneWidthProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">Brush</span> <a id="2c335a49b400d07e" href="R/2c335a49b400d07e.html" target="n" data-glyph="102,1" class="i property">ToolbarBackground</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Brush</span>)<span class="i">GetValue</span>(<a href="#2d4a95bf56a63dd6" class="i field">ToolbarBackgroundProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#2d4a95bf56a63dd6" class="i field">ToolbarBackgroundProperty</a>, <b>value</b>); }
+		}
+ 
+		<b>public</b> <span class="t t">Brush</span> <a id="d1d84f8e8522994c" href="R/d1d84f8e8522994c.html" target="n" data-glyph="102,1" class="i property">ToolbarForeground</a>
+		{
+			<b>get</b> { <b>return</b> (<span class="t t">Brush</span>)<span class="i">GetValue</span>(<a href="#e630bb656dfae4f1" class="i field">ToolbarForegroundProperty</a>); }
+			<b>set</b> { <span class="i">SetValue</span>(<a href="#e630bb656dfae4f1" class="i field">ToolbarForegroundProperty</a>, <b>value</b>); }
+		}
+ 
+		<span class="i">Task</span>&lt;<span class="t t">CommandBar</span>&gt; <a href="IToolbarProvider.cs.html#cdf29a890e6e67a2" class="t t">IToolbarProvider</a>.<a href="IToolbarProvider.cs.html#0902b0e2d73c7339" class="i method">GetCommandBarAsync</a>()
+		{
+			<b>if</b> (<a href="#d3c119e666f434dc" class="i field">_commandBar</a> != <b>null</b>)
+				<b>return</b> <span class="i">Task</span>.<span class="i">FromResult</span>(<a href="#d3c119e666f434dc" class="i field">_commandBar</a>);
+ 
+			<a href="#89c0e60f59759b5f" class="i field">_commandBarTcs</a> = <b>new</b> <span class="i">TaskCompletionSource</span>&lt;<span class="t t">CommandBar</span>&gt;();
+			<span class="i">ApplyTemplate</span>();
+ 
+			<b>var</b> <span id="r4 rd" class="r4 r">commandBarFromTemplate</span> = <a href="#89c0e60f59759b5f" class="i field">_commandBarTcs</a>.<span class="i">Task</span>;
+			<a href="#89c0e60f59759b5f" class="i field">_commandBarTcs</a> = <b>null</b>;
+ 
+			<b>return</b> <span class="r4 r">commandBarFromTemplate</span>;
+		}
+ 
+		<b>protected override void</b> <a id="38fe57d590f42fe2" href="R/38fe57d590f42fe2.html" target="n" data-glyph="75,1" class="i method">OnApplyTemplate</a>()
+		{
+			<b>base</b>.<span class="i">OnApplyTemplate</span>();
+ 
+			<a href="#93c6a14a2dcc2a70" class="i field">_split</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;SplitView&quot;</span>) <b>as</b> <span class="t t">SplitView</span>;
+			<b>if</b> (<a href="#93c6a14a2dcc2a70" class="i field">_split</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>var</b> <span id="r5 rd" class="r5 r">paneToggle</span> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;PaneTogglePane&quot;</span>) <b>as</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Button</span>;
+			<b>if</b> (<span class="r5 r">paneToggle</span> != <b>null</b>)
+				<span class="r5 r">paneToggle</span>.<span class="i">Click</span> += <span class="i">OnToggleClicked</span>;
+ 
+			<b>var</b> <span id="r6 rd" class="r6 r">contentToggle</span> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;ContentTogglePane&quot;</span>) <b>as</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">Button</span>;
+			<b>if</b> (<span class="r6 r">contentToggle</span> != <b>null</b>)
+				<span class="r6 r">contentToggle</span>.<span class="i">Click</span> += <span class="i">OnToggleClicked</span>;
+ 
+			<a href="#890d66bbdce763a6" class="i field">_masterPresenter</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;MasterPresenter&quot;</span>) <b>as</b> <span class="t t">FrameworkElement</span>;
+			<a href="#c6dfd5c5798cc7ac" class="i field">_detailPresenter</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;DetailPresenter&quot;</span>) <b>as</b> <span class="t t">FrameworkElement</span>;
+ 
+			<a href="#d3c119e666f434dc" class="i field">_commandBar</a> = <span class="i">GetTemplateChild</span>(<span class="s">&quot;CommandBar&quot;</span>) <b>as</b> <span class="t t">CommandBar</span>;
+			<a href="#b4c1c0610cef22d0" class="i field">_toolbarPlacementHelper</a>.<span class="i">Initialize</span>(<a href="#d3c119e666f434dc" class="i field">_commandBar</a>, () =&gt; <a href="#1381fde2e7cf695b" class="i property">ToolbarPlacement</a>, <span class="i">GetTemplateChild</span>);
+			
+			<a href="#37a8fb07e4484d85" class="i method">UpdateMode</a>(); 
+ 
+			<b>if</b> (<a href="#89c0e60f59759b5f" class="i field">_commandBarTcs</a> != <b>null</b>)
+				<a href="#89c0e60f59759b5f" class="i field">_commandBarTcs</a>.<span class="i">SetResult</span>(<a href="#d3c119e666f434dc" class="i field">_commandBar</a>);
+		}
+ 
+		<b>static void</b> <a id="2ef68cb73d970538" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnShouldShowSplitModeChanged</a>(<span class="t t">DependencyObject</span> <span id="r7 rd" class="r7 r">dependencyObject</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r8 rd" class="r8 r">e</span>)
+		{
+			((<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>)<span class="r7 r">dependencyObject</span>).<a href="#37a8fb07e4484d85" class="i method">UpdateMode</a>();
+		}
+ 
+		<b>static void</b> <a id="dc057c8cfee74f33" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">CollapseStyleChanged</a>(<span class="t t">DependencyObject</span> <span id="r9 rd" class="r9 r">dependencyObject</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r10 rd" class="r10 r">args</span>)
+		{
+			((<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>)<span class="r9 r">dependencyObject</span>).<a href="#37a8fb07e4484d85" class="i method">UpdateMode</a>();
+		}
+ 
+		<b>static void</b> <a id="feaec1cbe802f59c" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">CollapsedPaneWidthChanged</a>(<span class="t t">DependencyObject</span> <span id="r11 rd" class="r11 r">dependencyObject</span>, <span class="t t">DependencyPropertyChangedEventArgs</span> <span id="r12 rd" class="r12 r">dependencyPropertyChangedEventArgs</span>)
+		{
+			((<a href="#9e8840b9f6f6c486" class="t t">MasterDetailControl</a>)<span class="r11 r">dependencyObject</span>).<a href="#37a8fb07e4484d85" class="i method">UpdateMode</a>();
+		}
+ 
+		<b>void</b> <a id="72e16caf147eca64" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnToggleClicked</a>(<b>object</b> <span id="r13 rd" class="r13 r">sender</span>, <span class="t t">RoutedEventArgs</span> <span id="r14 rd" class="r14 r">args</span>)
+		{
+			<a href="#1d8c23c7f41820ff" class="i property">IsPaneOpen</a> = !<a href="#1d8c23c7f41820ff" class="i property">IsPaneOpen</a>;
+		}
+ 
+		<b>void</b> <a id="37a8fb07e4484d85" href="R/37a8fb07e4484d85.html" target="n" data-glyph="76,1" class="i method">UpdateMode</a>()
+		{
+			<b>if</b> (<a href="#93c6a14a2dcc2a70" class="i field">_split</a> == <b>null</b>)
+			{
+				<b>return</b>;
+			}
+ 
+			<a href="#93c6a14a2dcc2a70" class="i field">_split</a>.<span class="i property">DisplayMode</span> = <a href="#dc3528bfb5dc8059" class="i property">ShouldShowSplitMode</a> 
+				? <span class="t t">SplitViewDisplayMode</span>.<span class="i field">Inline</span> 
+				: <a href="#15eb3e21e6974b2b" class="i property">CollapseStyle</a> == <a href="/Xamarin.Forms.Core/A.html#c04c9fb48261365c" class="t t">CollapseStyle</a>.<a href="/Xamarin.Forms.Core/A.html#e0e93fb952548c38" class="i field">Full</a> ? <span class="t t">SplitViewDisplayMode</span>.<span class="i field">Overlay</span> : <span class="t t">SplitViewDisplayMode</span>.<span class="i field">CompactOverlay</span>;
+ 
+			<a href="#93c6a14a2dcc2a70" class="i field">_split</a>.<span class="i property">CompactPaneLength</span> = <a href="#75a93a4a8bb5a31f" class="i property">CollapsedPaneWidth</a>;
+ 
+			<b>if</b> (<a href="#93c6a14a2dcc2a70" class="i field">_split</a>.<span class="i property">DisplayMode</span> == <span class="t t">SplitViewDisplayMode</span>.<span class="i field">Inline</span>)
+			{
+				<span class="c">// If we&#39;ve determined that the pane will always be open, then there&#39;s no</span>
+				<span class="c">// reason to display the show/hide pane button in the master</span>
+				<a href="#8d625e4b2e2aaff4" class="i property">MasterToolbarVisibility</a> = <span class="t t">Visibility</span>.<span class="i field">Collapsed</span>;
+			}
+ 
+			<span class="c">// If we&#39;re in compact mode or the pane is always open,</span>
+			<span class="c">// we don&#39;t need to display the content pane&#39;s toggle button</span>
+			<a href="#6afb65ad1856678c" class="i property">ContentTogglePaneButtonVisibility</a> = <a href="#93c6a14a2dcc2a70" class="i field">_split</a>.<span class="i property">DisplayMode</span> == <span class="t t">SplitViewDisplayMode</span>.<span class="i field">Overlay</span> 
+				? <span class="t t">Visibility</span>.<span class="i field">Visible</span> 
+				: <span class="t t">Visibility</span>.<span class="i field">Collapsed</span>;
+ 
+			<b>if</b> (<a href="#6afb65ad1856678c" class="i property">ContentTogglePaneButtonVisibility</a> == <span class="t t">Visibility</span>.<span class="i field">Visible</span>)
+				<a href="#d072c2a39c2f2609" class="i property">DetailTitleVisibility</a> = <span class="t t">Visibility</span>.<span class="i field">Visible</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

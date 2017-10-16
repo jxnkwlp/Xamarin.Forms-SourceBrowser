@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html><head><title>NativeViewWrapperRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(93);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/NativeViewWrapperRenderer.cs" target="_top">NativeViewWrapperRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">CoreGraphics</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<span class="e">using UIKit;
+namespace Xamarin.Forms.Platform.iOS
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+<b>using</b> <span class="t">UIView</span> = <span class="i n">AppKit</span>.<span class="t t">NSView</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public class</b> <a id="1e6037c7d340e894" href="R/1e6037c7d340e894.html" target="n" data-glyph="0,0" class="t t"><span id="5672c6605765eef9">NativeViewWrapperRenderer</span></a> : <a href="ViewRenderer.cs.html#5003565c2e9a2402" class="t t">ViewRenderer</a>&lt;<a href="NativeViewWrapper.cs.html#0f61fbbaddef76d1" class="t t">NativeViewWrapper</a>, <span class="t t">UIView</span>&gt;
+	{
+		<b>public override</b> <a href="/Xamarin.Forms.Core/A.html#76c9ea4b373db5b2" class="t t">SizeRequest</a> <a id="d01fc20d363233ca" href="R/d01fc20d363233ca.html" target="n" data-glyph="72,1" class="i method">GetDesiredSize</a>(<b>double</b> <span id="r0 rd" class="r0 r">widthConstraint</span>, <b>double</b> <span id="r1 rd" class="r1 r">heightConstraint</span>)
+		{
+			<b>if</b> (<a href="VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>?.<a href="NativeViewWrapper.cs.html#1b9e6104668c1aad" class="i property">GetDesiredSizeDelegate</a> == <b>null</b>)
+				<b>return</b> <a href="ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="ViewRenderer.cs.html#0ad75f2f2b6cfe5c" class="i method">GetDesiredSize</a>(<span class="r0 r">widthConstraint</span>, <span class="r1 r">heightConstraint</span>);
+ 
+			<span class="c">// The user has specified a different implementation of GetDesiredSize</span>
+			<a href="@0@mscorlib/A.html#ffebe438fd9cbf0e" class="k">var</a> <span id="r2 rd" class="r2 r">result</span> = <a href="VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="NativeViewWrapper.cs.html#1b9e6104668c1aad" class="i property">GetDesiredSizeDelegate</a>(<a href="#1e6037c7d340e894" class="k">this</a>, <span class="r0 r">widthConstraint</span>, <span class="r1 r">heightConstraint</span>);
+ 
+			<span class="c">// If the GetDesiredSize delegate returns a SizeRequest, we use it; if it returns null,</span>
+			<span class="c">// fall back to the default implementation</span>
+			<b>return</b> <span class="r2 r">result</span> ?? <a href="ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="ViewRenderer.cs.html#0ad75f2f2b6cfe5c" class="i method">GetDesiredSize</a>(<span class="r0 r">widthConstraint</span>, <span class="r1 r">heightConstraint</span>);
+		}
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">__MOBILE__</span>
+<span class="e">		public override void LayoutSubviews()
+		{
+			if (Element?.LayoutSubViews == null)
+			{
+				((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+				base.LayoutSubviews();
+				return;
+			}
+ 
+			// The user has specified a different implementation of LayoutSubviews
+			var handled = Element.LayoutSubViews();
+ 
+			if (!handled)
+			{
+				// If the delegate wasn&#39;t able to handle the request, fall back to the default implementation
+				base.LayoutSubviews();
+			}
+		}
+ 
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			if (Element?.SizeThatFitsDelegate == null)
+				return base.SizeThatFits(size);
+ 
+			// The user has specified a different implementation of SizeThatFits
+			var result = Element.SizeThatFitsDelegate(size);
+ 
+			// If the delegate returns a value, we use it; 
+			// if it returns null, fall back to the default implementation
+			return result ?? base.SizeThatFits(size);
+		}
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+		<b>public override void</b> <a id="8359394fc97906b8" href="R/8359394fc97906b8.html" target="n" data-glyph="72,1" class="i method">Layout</a>()
+		{
+			<b>if</b> (<a href="VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>?.<a href="NativeViewWrapper.cs.html#3f4e33d1218a8b44" class="i property">LayoutSubViews</a> == <b>null</b>)
+			{
+				((<a href="/Xamarin.Forms.Core/A.html#d605b7264f63ff57" class="t t">IVisualElementController</a>)<a href="VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>)?.<a href="/Xamarin.Forms.Core/A.html#3a793cd2c08a1bfd" class="i method">InvalidateMeasure</a>(<a href="/Xamarin.Forms.Core/A.html#310448c2f71c61f1" class="t t">InvalidationTrigger</a>.<a href="/Xamarin.Forms.Core/A.html#1c7a97ba4e810a20" class="i field">MeasureChanged</a>);
+				<a href="ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="ViewRenderer.cs.html#690696eb796edd7c" class="i method">Layout</a>();
+				<b>return</b>;
+			}
+ 
+			<span class="c">// The user has specified a different implementation of LayoutSubviews</span>
+			<a href="@0@mscorlib/A.html#f1b135ff6c380b37" class="k">var</a> <span id="r3 rd" class="r3 r">handled</span> = <a href="VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="NativeViewWrapper.cs.html#3f4e33d1218a8b44" class="i property">LayoutSubViews</a>();
+ 
+			<b>if</b> (!<span class="r3 r">handled</span>)
+			{
+				<span class="c">// If the delegate wasn&#39;t able to handle the request, fall back to the default implementation</span>
+				<a href="ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="ViewRenderer.cs.html#690696eb796edd7c" class="i method">Layout</a>();
+			}
+		}
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+ 
+		<b>protected override void</b> <a id="a8ba2f03e259d004" href="R/a8ba2f03e259d004.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="ElementChangedEventArgs.cs.html#62949d367d44776c" class="t t">ElementChangedEventArgs</a>&lt;<a href="NativeViewWrapper.cs.html#0f61fbbaddef76d1" class="t t">NativeViewWrapper</a>&gt; <span id="r4 rd" class="r4 r">e</span>)
+		{
+			<a href="ViewRenderer.cs.html#5003565c2e9a2402" class="k">base</a>.<a href="ViewRenderer.cs.html#90cd799abe64b9ad" class="i method">OnElementChanged</a>(<span class="r4 r">e</span>);
+ 
+			<b>if</b> (<span class="r4 r">e</span>.<a href="ElementChangedEventArgs.cs.html#69c68dbc9f4fbe33" class="i property">OldElement</a> == <b>null</b>)
+				<a href="ViewRenderer.cs.html#de42360b129a5181" class="i method">SetNativeControl</a>(<a href="VisualElementRenderer.cs.html#225f1aeff609b751" class="i property">Element</a>.<a href="NativeViewWrapper.cs.html#1f527bfb4234d372" class="i property">NativeView</a>);
+		}
+ 
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;</span><span class="c">summary</span><span class="c">&gt;</span>
+		<span class="c">///</span><span class="c"> The native control we&#39;re wrapping isn&#39;t ours to dispose of</span>
+		<span class="c">///</span><span class="c"> </span><span class="c">&lt;/</span><span class="c">summary</span><span class="c">&gt;</span>
+		<b>protected override bool</b> <a id="9c0f3fafb66fec35" href="R/9c0f3fafb66fec35.html" target="n" data-glyph="105,1" class="i property">ManageNativeControlLifetime</a> =&gt; <b>false</b>;
+	}
+}</pre></td></tr></table></div></body></html>

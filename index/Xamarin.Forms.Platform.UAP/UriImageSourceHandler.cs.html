@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html><head><title>UriImageSourceHandler.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(52);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.UAP/UriImageSourceHandler.cs" target="_top">UriImageSourceHandler.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.UAP" target="_top">Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj</a> (Xamarin.Forms.Platform.UAP)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Diagnostics</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">IO</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Threading</span>.<span class="i">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Storage</span>.<span class="i n">Streams</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>.<span class="i n">Imaging</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">UWP</span>
+<span class="k preprocess">#</span><span class="k preprocess">else</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.WinRT
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public sealed class</b> <a id="9601880c409fc22a" href="R/9601880c409fc22a.html" target="n" data-glyph="0,0" class="t t"><span id="38e049433c084562">UriImageSourceHandler</span></a> : <a href="IImageSourceHandler.cs.html#43f6a5f6c07d4ecb" class="t t">IImageSourceHandler</a>
+	{
+		<b>public async</b> <span class="i">Task</span>&lt;<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Media</span>.<span class="t t">ImageSource</span>&gt; <a id="48212d606bfe17b0" href="R/48212d606bfe17b0.html" target="n" data-glyph="72,1" class="i method">LoadImageAsync</a>(<a href="/Xamarin.Forms.Core/A.html#bc9d2c0cce52238b" class="t t">ImageSource</a> <span id="r0 rd" class="r0 r">imagesource</span>, <span class="i">CancellationToken</span> <span id="r1 rd" class="r1 r">cancellationToken</span> = <b>new</b> <span class="i">CancellationToken</span>())
+		{
+			<a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="k">var</a> <span id="r2 rd" class="r2 r">imageLoader</span> = <span class="r0 r">imagesource</span> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#077fcd65674b5b78" class="t t">UriImageSource</a>;
+			<b>if</b> (<span class="r2 r">imageLoader</span>?.<a href="/Xamarin.Forms.Core/A.html#081f21e8d9c61f56" class="i property">Uri</a> == <b>null</b>)
+				<b>return null</b>;
+ 
+			<span class="i">Stream</span> <span id="r3 rd" class="r3 r">streamImage</span> = <b>await</b> <span class="r2 r">imageLoader</span>.<span class="i">GetStreamAsync</span>(<span class="r1 r">cancellationToken</span>);
+			<b>if</b> (<span class="r3 r">streamImage</span> == <b>null</b> || !<span class="r3 r">streamImage</span>.<span class="i">CanRead</span>)
+			{
+				<b>return null</b>;
+			}
+ 
+			<b>using</b> (<span class="t t">IRandomAccessStream</span> <span id="r4 rd" class="r4 r">stream</span> = <span class="r3 r">streamImage</span>.<span class="i">AsRandomAccessStream</span>())
+			{
+				<b>try</b>
+				{
+					<b>var</b> <span id="r5 rd" class="r5 r">image</span> = <b>new</b> <span class="t">BitmapImage</span>();
+					<b>await</b> <span class="r5 r">image</span>.<span class="i method">SetSourceAsync</span>(<span class="r4 r">stream</span>);
+					<b>return</b> <span class="r5 r">image</span>;
+				}
+				<b>catch</b> (<span class="i">Exception</span> <span id="r6 rd" class="r6 r">ex</span>) 
+				{
+					<a href="/Xamarin.Forms.Core/A.html#43dda5e5ea5ad8f9" class="t t">Log</a>.<span class="i">Warning</span>(<span class="s">&quot;Image Loading&quot;</span>, <span class="s">$&quot;</span>{<b>nameof</b>(<a href="#9601880c409fc22a" class="t t">UriImageSourceHandler</a>)}<span class="s"> could not load </span>{<span class="r2 r">imageLoader</span>.<a href="/Xamarin.Forms.Core/A.html#081f21e8d9c61f56" class="i property">Uri</a>}<span class="s">: </span>{<span class="r6 r">ex</span>}<span class="s">&quot;</span>);
+ 
+					<span class="c">// According to https://msdn.microsoft.com/library/windows/apps/jj191522</span>
+					<span class="c">// this can happen if the image data is bad or the app is close to its </span>
+					<span class="c">// memory limit</span>
+					<b>return null</b>;
+				}
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

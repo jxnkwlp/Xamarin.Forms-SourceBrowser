@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html>
+<html><head><title>WebViewRenderer.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(221);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.WinRT/WebViewRenderer.cs" target="_top">WebViewRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.WinRT" target="_top">Xamarin.Forms.Platform.WinRT\Xamarin.Forms.Platform.WinRT.csproj</a> (Xamarin.Forms.Platform.WinRT)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">ComponentModel</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Diagnostics</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Core</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">WebUI</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>;
+<b>using</b> <span class="i n">Windows</span>.<span class="i n">Web</span>.<span class="i n">Http</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using static</b> <span class="i n">System</span>.<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="t t">String</a>;
+ 
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">WINDOWS_UWP</span>
+<span class="e">
+namespace Xamarin.Forms.Platform.UWP
+</span><span class="k preprocess">#</span><span class="k preprocess">else</span>
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">WinRT</span>
+<span class="k preprocess">#</span><span class="k preprocess">endif</span>
+{
+	<b>public class</b> <a id="8d8a1f82562dc161" href="R/8d8a1f82562dc161.html" target="n" data-glyph="0,0" class="t t"><span id="5d867845845effc3">WebViewRenderer</span></a> : <a href="ViewRenderer.cs.html#758d77404199f47d" class="t t">ViewRenderer</a>&lt;<a href="/Xamarin.Forms.Core/A.html#52d8a16d29ea5696" class="t t">WebView</a>, <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">WebView</span>&gt;, <a href="/Xamarin.Forms.Core/A.html#649224494b3f6bc2" class="t t">IWebViewDelegate</a>
+	{
+		<a href="/Xamarin.Forms.Core/A.html#33bde116439df563" class="t t">WebNavigationEvent</a> <a id="2bc1438052aa94cb" href="R/2bc1438052aa94cb.html" target="n" data-glyph="46,1" class="i field">_eventState</a>;
+		<b>bool</b> <a id="8bda5304b6424987" href="R/8bda5304b6424987.html" target="n" data-glyph="46,1" class="i field">_updating</a>;
+		<b>const string</b> <a id="50ccd911fc3b7d2a" href="R/50ccd911fc3b7d2a.html" target="n" data-glyph="10,1" class="i field">LocalScheme</a> = <span class="s">&quot;ms-appx-web:///&quot;</span>;
+ 
+		<span class="c">// Script to insert a &lt;base&gt; tag into an HTML document</span>
+		<b>const string</b> <a id="24483263d2baa484" href="R/24483263d2baa484.html" target="n" data-glyph="10,1" class="i field">BaseInsertionScript</a> = <span class="s">@&quot;
+var head = document.getElementsByTagName(&#39;head&#39;)[0];
+var bases = head.getElementsByTagName(&#39;base&#39;);
+if(bases.length == 0){
+    head.innerHTML = &#39;baseTag&#39; + head.innerHTML;
+}&quot;</span>;
+		<b>public void</b> <a id="e88aa8555edc258d" href="R/e88aa8555edc258d.html" target="n" data-glyph="72,1" class="i method">LoadHtml</a>(<b>string</b> <span id="r0 rd" class="r0 r">html</span>, <b>string</b> <span id="r1 rd" class="r1 r">baseUrl</span>)
+		{
+			<b>if</b> (<a href="@1@System.Runtime/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r1 r">baseUrl</span>))
+			{
+				<span class="r1 r">baseUrl</span> = <a href="#50ccd911fc3b7d2a" class="i field">LocalScheme</a>;
+			}
+ 
+			<span class="c">// Generate a base tag for the document</span>
+			<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r2 rd" class="r2 r">baseTag</span> = <span class="s">$&quot;</span><span class="s">&lt;base href=\&quot;</span>{<span class="r1 r">baseUrl</span>}<span class="s">\&quot;&gt;&lt;/base&gt;</span><span class="s">&quot;</span>;
+ 
+			<b>string</b> <span id="r3 rd" class="r3 r">htmlWithBaseTag</span>;
+ 
+			<span class="c">// Set up an internal WebView we can use to load and parse the original HTML string</span>
+			<b>var</b> <span id="r4 rd" class="r4 r">internalWebView</span> = <b>new</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t constructor">WebView</span>();
+ 
+			<span class="c">// When the &#39;navigation&#39; to the original HTML string is done, we can modify it to include our &lt;base&gt; tag</span>
+			<span class="r4 r">internalWebView</span>.<span class="i">NavigationCompleted</span> += <b>async</b> (<span id="r5 rd" class="r5 r">sender</span>, <span id="r6 rd" class="r6 r">args</span>) =&gt;
+			{
+				<span class="c">// Generate a version of the &lt;base&gt; script with the correct &lt;base&gt; tag</span>
+				<a href="@1@System.Runtime/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r7 rd" class="r7 r">script</span> = <a href="#24483263d2baa484" class="i field">BaseInsertionScript</a>.<a href="@1@System.Runtime/A.html#69fc1d0aa6df8a90" class="i method">Replace</a>(<span class="s">&quot;baseTag&quot;</span>, <span class="r2 r">baseTag</span>);
+ 
+				<span class="c">// Run it and retrieve the updated HTML from our WebView</span>
+				<b>await</b> <span class="r5 r">sender</span>.<span class="i method">InvokeScriptAsync</span>(<span class="s">&quot;eval&quot;</span>, <b>new</b>[] { <span class="r7 r">script</span> });
+				<span class="r3 r">htmlWithBaseTag</span> = <b>await</b> <span class="r5 r">sender</span>.<span class="i method">InvokeScriptAsync</span>(<span class="s">&quot;eval&quot;</span>, <b>new</b>[] { <span class="s">&quot;document.documentElement.outerHTML;&quot;</span> });
+ 
+				<span class="c">// Set the HTML for the &#39;real&#39; WebView to the updated HTML</span>
+				<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i method">NavigateToString</span>(!<a href="@1@System.Runtime/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r3 r">htmlWithBaseTag</span>) ? <span class="r3 r">htmlWithBaseTag</span> : <span class="r0 r">html</span>);
+			};
+ 
+			<span class="c">// Kick off the initial navigation</span>
+			<span class="r4 r">internalWebView</span>.<span class="i method">NavigateToString</span>(<span class="r0 r">html</span>);
+		}
+ 
+		<b>public void</b> <a id="17b788121ece754c" href="R/17b788121ece754c.html" target="n" data-glyph="72,1" class="i method">LoadUrl</a>(<b>string</b> <span id="r8 rd" class="r8 r">url</span>)
+		{
+			<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r9 rd" class="r9 r">uri</span> = <b>new</b> <a href="@1@System.Runtime/A.html#d9fc45d783ee73ff" class="t constructor">Uri</a>(<span class="r8 r">url</span>, <a href="@1@System.Runtime/A.html#ac43655101ad74be" class="t t">UriKind</a>.<a href="@1@System.Runtime/A.html#2a5de88dbfa86f1b" class="i field">RelativeOrAbsolute</a>);
+ 
+			<b>if</b> (!<span class="r9 r">uri</span>.<a href="@1@System.Runtime/A.html#2e1f2f7671a40125" class="i property">IsAbsoluteUri</a>)
+			{
+				<span class="r9 r">uri</span> = <b>new</b> <a href="@1@System.Runtime/A.html#d9fc45d783ee73ff" class="t constructor">Uri</a>(<a href="#50ccd911fc3b7d2a" class="i field">LocalScheme</a> +  <span class="r8 r">url</span>, <a href="@1@System.Runtime/A.html#ac43655101ad74be" class="t t">UriKind</a>.<a href="@1@System.Runtime/A.html#2a5de88dbfa86f1b" class="i field">RelativeOrAbsolute</a>);
+			}
+ 
+			<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">Source</span> = <span class="r9 r">uri</span>;
+		}
+ 
+		<b>protected override void</b> <a id="12f0e61201d817e7" href="R/12f0e61201d817e7.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r10 rd" class="r10 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r10 r">disposing</span>)
+			{
+				<b>if</b> (<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a> != <b>null</b>)
+				{
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">NavigationStarting</span> -= <a href="#6605bd310875f6c2" class="i method">OnNavigationStarted</a>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">NavigationCompleted</span> -= <a href="#362f472459219777" class="i method">OnNavigationCompleted</a>;
+					<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i">NavigationFailed</span> -= <a href="#fcb16b9d8e958431" class="i method">OnNavigationFailed</a>;
+				}
+			}
+ 
+			<a href="ViewRenderer.cs.html#758d77404199f47d" class="k">base</a>.<a href="VisualElementRenderer.cs.html#0ec1d01e03bda5a7" class="i method">Dispose</a>(<span class="r10 r">disposing</span>);
+		}
+ 
+		<b>protected override void</b> <a id="b7311c84d8938a4e" href="R/b7311c84d8938a4e.html" target="n" data-glyph="75,1" class="i method">OnElementChanged</a>(<a href="VisualElementChangedEventArgs.cs.html#2106a6c47320d5ce" class="t t">ElementChangedEventArgs</a>&lt;<a href="/Xamarin.Forms.Core/A.html#52d8a16d29ea5696" class="t t">WebView</a>&gt; <span id="r11 rd" class="r11 r">e</span>)
+		{
+			<a href="ViewRenderer.cs.html#758d77404199f47d" class="k">base</a>.<a href="ViewRenderer.cs.html#604db20e09ba949f" class="i method">OnElementChanged</a>(<span class="r11 r">e</span>);
+ 
+			<b>if</b> (<span class="r11 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#4e3446e0b6157432" class="i property">OldElement</a> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#52d8a16d29ea5696" class="k">var</a> <span id="r12 rd" class="r12 r">oldElement</span> = <span class="r11 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#4e3446e0b6157432" class="i property">OldElement</a>;
+				<span class="r12 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#65684c4180e11f4f" class="i">EvalRequested</a> -= <a href="#094f63c5a9e94ffa" class="i method">OnEvalRequested</a>;
+				<span class="r12 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#8c478c799efaa317" class="i">GoBackRequested</a> -= <a href="#ab61863bdce6b812" class="i method">OnGoBackRequested</a>;
+				<span class="r12 r">oldElement</span>.<a href="/Xamarin.Forms.Core/A.html#9b872867a6a09d60" class="i">GoForwardRequested</a> -= <a href="#79396862472da99f" class="i method">OnGoForwardRequested</a>;
+			}
+ 
+			<b>if</b> (<span class="r11 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#be4376e6abb54396" class="i property">NewElement</a> != <b>null</b>)
+			{
+				<b>if</b> (<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a> == <b>null</b>)
+				{
+					<b>var</b> <span id="r13 rd" class="r13 r">webView</span> = <b>new</b> <span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t constructor">WebView</span>();
+					<span class="r13 r">webView</span>.<span class="i">NavigationStarting</span> += <a href="#6605bd310875f6c2" class="i method">OnNavigationStarted</a>;
+					<span class="r13 r">webView</span>.<span class="i">NavigationCompleted</span> += <a href="#362f472459219777" class="i method">OnNavigationCompleted</a>;
+					<span class="r13 r">webView</span>.<span class="i">NavigationFailed</span> += <a href="#fcb16b9d8e958431" class="i method">OnNavigationFailed</a>;
+					<a href="VisualElementRenderer.cs.html#77455b4fb2566b87" class="i method">SetNativeControl</a>(<span class="r13 r">webView</span>);
+				}
+ 
+				<a href="/Xamarin.Forms.Core/A.html#52d8a16d29ea5696" class="k">var</a> <span id="r14 rd" class="r14 r">newElement</span> = <span class="r11 r">e</span>.<a href="VisualElementChangedEventArgs.cs.html#be4376e6abb54396" class="i property">NewElement</a>;
+				<span class="r14 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#65684c4180e11f4f" class="i">EvalRequested</a> += <a href="#094f63c5a9e94ffa" class="i method">OnEvalRequested</a>;
+				<span class="r14 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#9b872867a6a09d60" class="i">GoForwardRequested</a> += <a href="#79396862472da99f" class="i method">OnGoForwardRequested</a>;
+				<span class="r14 r">newElement</span>.<a href="/Xamarin.Forms.Core/A.html#8c478c799efaa317" class="i">GoBackRequested</a> += <a href="#ab61863bdce6b812" class="i method">OnGoBackRequested</a>;
+ 
+				<a href="#d704e172d57eed9b" class="i method">Load</a>();
+			}
+		}
+ 
+		<b>protected override void</b> <a id="9c73074171950495" href="R/9c73074171950495.html" target="n" data-glyph="75,1" class="i method">OnElementPropertyChanged</a>(<b>object</b> <span id="r15 rd" class="r15 r">sender</span>, <span class="t t">PropertyChangedEventArgs</span> <span id="r16 rd" class="r16 r">e</span>)
+		{
+			<a href="ViewRenderer.cs.html#758d77404199f47d" class="k">base</a>.<a href="VisualElementRenderer.cs.html#571db90aaeaa58ff" class="i method">OnElementPropertyChanged</a>(<span class="r15 r">sender</span>, <span class="r16 r">e</span>);
+ 
+			<b>if</b> (<span class="r16 r">e</span>.<span class="i property">PropertyName</span> == <a href="/Xamarin.Forms.Core/A.html#52d8a16d29ea5696" class="t t">WebView</a>.<a href="/Xamarin.Forms.Core/A.html#45ee39e401e73d89" class="i field">SourceProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>)
+			{
+				<b>if</b> (!<a href="#8bda5304b6424987" class="i field">_updating</a>)
+					<a href="#d704e172d57eed9b" class="i method">Load</a>();
+			}
+		}
+ 
+		<b>void</b> <a id="d704e172d57eed9b" href="R/d704e172d57eed9b.html" target="n" data-glyph="76,1" class="i method">Load</a>()
+		{
+			<b>if</b> (<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#9f375fc5a4f1da28" class="i property">Source</a> != <b>null</b>)
+				<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#9f375fc5a4f1da28" class="i property">Source</a>.<a href="/Xamarin.Forms.Core/A.html#666f68d7008b540d" class="i method">Load</a>(<a href="#8d8a1f82562dc161" class="k">this</a>);
+ 
+			<a href="#47aa3c25bfbbb42f" class="i method">UpdateCanGoBackForward</a>();
+		}
+ 
+		<b>async void</b> <a id="094f63c5a9e94ffa" href="R/094f63c5a9e94ffa.html" target="n" data-glyph="76,1" class="i method">OnEvalRequested</a>(<b>object</b> <span id="r17 rd" class="r17 r">sender</span>, <a href="/Xamarin.Forms.Core/A.html#7644c0604c5807d4" class="t t">EvalRequested</a> <span id="r18 rd" class="r18 r">eventArg</span>)
+		{
+			<b>await</b> <a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">Dispatcher</span>.<span class="i method">RunAsync</span>(<span class="t t">CoreDispatcherPriority</span>.<span class="i field">Normal</span>, <b>async</b> () =&gt; <b>await</b> <a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i method">InvokeScriptAsync</span>(<span class="s">&quot;eval&quot;</span>, <b>new</b>[] { <span class="r18 r">eventArg</span>.<a href="/Xamarin.Forms.Core/A.html#9377efc4da9b482b" class="i property">Script</a> }));
+		}
+ 
+		<b>void</b> <a id="ab61863bdce6b812" href="R/ab61863bdce6b812.html" target="n" data-glyph="76,1" class="i method">OnGoBackRequested</a>(<b>object</b> <span id="r19 rd" class="r19 r">sender</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r20 rd" class="r20 r">eventArgs</span>)
+		{
+			<b>if</b> (<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">CanGoBack</span>)
+			{
+				<a href="#2bc1438052aa94cb" class="i field">_eventState</a> = <a href="/Xamarin.Forms.Core/A.html#33bde116439df563" class="t t">WebNavigationEvent</a>.<a href="/Xamarin.Forms.Core/A.html#581369ee4c19d10b" class="i field">Back</a>;
+				<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i method">GoBack</span>();
+			}
+ 
+			<a href="#47aa3c25bfbbb42f" class="i method">UpdateCanGoBackForward</a>();
+		}
+ 
+		<b>void</b> <a id="79396862472da99f" href="R/79396862472da99f.html" target="n" data-glyph="76,1" class="i method">OnGoForwardRequested</a>(<b>object</b> <span id="r21 rd" class="r21 r">sender</span>, <a href="@1@System.Runtime/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r22 rd" class="r22 r">eventArgs</span>)
+		{
+			<b>if</b> (<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">CanGoForward</span>)
+			{
+				<a href="#2bc1438052aa94cb" class="i field">_eventState</a> = <a href="/Xamarin.Forms.Core/A.html#33bde116439df563" class="t t">WebNavigationEvent</a>.<a href="/Xamarin.Forms.Core/A.html#bbf475fec82bc37c" class="i field">Forward</a>;
+				<a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i method">GoForward</span>();
+			}
+ 
+			<a href="#47aa3c25bfbbb42f" class="i method">UpdateCanGoBackForward</a>();
+		}
+ 
+		<b>void</b> <a id="362f472459219777" href="R/362f472459219777.html" target="n" data-glyph="76,1" class="i method">OnNavigationCompleted</a>(<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">WebView</span> <span id="r23 rd" class="r23 r">sender</span>, <span class="t t">WebViewNavigationCompletedEventArgs</span> <span id="r24 rd" class="r24 r">e</span>)
+		{
+			<b>if</b> (<span class="r24 r">e</span>.<span class="i property">Uri</span> != <b>null</b>)
+				<a href="#419d71d1100a9fac" class="i method">SendNavigated</a>(<b>new</b> <a href="/Xamarin.Forms.Core/A.html#90b2c9ac25f33759" class="t constructor">UrlWebViewSource</a> { <a href="/Xamarin.Forms.Core/A.html#f47b7494c64cad8a" class="i property">Url</a> = <span class="r24 r">e</span>.<span class="i property">Uri</span>.<a href="@1@System.Runtime/A.html#e335fec0022465e6" class="i property">AbsoluteUri</a> }, <a href="#2bc1438052aa94cb" class="i field">_eventState</a>, <a href="/Xamarin.Forms.Core/A.html#3aadf45ddda9c544" class="t t">WebNavigationResult</a>.<a href="/Xamarin.Forms.Core/A.html#cd42f3c772224eef" class="i field">Success</a>);
+ 
+			<a href="#47aa3c25bfbbb42f" class="i method">UpdateCanGoBackForward</a>();
+		}
+ 
+		<b>void</b> <a id="fcb16b9d8e958431" href="R/fcb16b9d8e958431.html" target="n" data-glyph="76,1" class="i method">OnNavigationFailed</a>(<b>object</b> <span id="r25 rd" class="r25 r">sender</span>, <span class="t t">WebViewNavigationFailedEventArgs</span> <span id="r26 rd" class="r26 r">e</span>)
+		{
+			<b>if</b> (<span class="r26 r">e</span>.<span class="i property">Uri</span> != <b>null</b>)
+				<a href="#419d71d1100a9fac" class="i method">SendNavigated</a>(<b>new</b> <a href="/Xamarin.Forms.Core/A.html#90b2c9ac25f33759" class="t constructor">UrlWebViewSource</a> { <a href="/Xamarin.Forms.Core/A.html#f47b7494c64cad8a" class="i property">Url</a> = <span class="r26 r">e</span>.<span class="i property">Uri</span>.<a href="@1@System.Runtime/A.html#e335fec0022465e6" class="i property">AbsoluteUri</a> }, <a href="#2bc1438052aa94cb" class="i field">_eventState</a>, <a href="/Xamarin.Forms.Core/A.html#3aadf45ddda9c544" class="t t">WebNavigationResult</a>.<a href="/Xamarin.Forms.Core/A.html#02d46bdf3c1a2b8c" class="i field">Failure</a>);
+		}
+ 
+		<b>void</b> <a id="6605bd310875f6c2" href="R/6605bd310875f6c2.html" target="n" data-glyph="76,1" class="i method">OnNavigationStarted</a>(<span class="i n">Windows</span>.<span class="i n">UI</span>.<span class="i n">Xaml</span>.<span class="i n">Controls</span>.<span class="t t">WebView</span> <span id="r27 rd" class="r27 r">sender</span>, <span class="t t">WebViewNavigationStartingEventArgs</span> <span id="r28 rd" class="r28 r">e</span>)
+		{
+			<a href="@1@System.Runtime/A.html#991565dd25f47c90" class="t t">Uri</a> <span id="r29 rd" class="r29 r">uri</span> = <span class="r28 r">e</span>.<span class="i property">Uri</span>;
+ 
+			<b>if</b> (<span class="r29 r">uri</span> != <b>null</b>)
+			{
+				<a href="/Xamarin.Forms.Core/A.html#a0f096828a23a6cf" class="k">var</a> <span id="r30 rd" class="r30 r">args</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#c011619a01ec8334" class="t constructor">WebNavigatingEventArgs</a>(<a href="#2bc1438052aa94cb" class="i field">_eventState</a>, <b>new</b> <a href="/Xamarin.Forms.Core/A.html#90b2c9ac25f33759" class="t constructor">UrlWebViewSource</a> { <a href="/Xamarin.Forms.Core/A.html#f47b7494c64cad8a" class="i property">Url</a> = <span class="r29 r">uri</span>.<a href="@1@System.Runtime/A.html#e335fec0022465e6" class="i property">AbsoluteUri</a> }, <span class="r29 r">uri</span>.<a href="@1@System.Runtime/A.html#e335fec0022465e6" class="i property">AbsoluteUri</a>);
+ 
+				<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#cca38d29ce67fe41" class="i method">SendNavigating</a>(<span class="r30 r">args</span>);
+				<span class="r28 r">e</span>.<span class="i property">Cancel</span> = <span class="r30 r">args</span>.<a href="/Xamarin.Forms.Core/A.html#d0a15e0d0daa971f" class="i property">Cancel</a>;
+ 
+				<span class="c">// reset in this case because this is the last event we will get</span>
+				<b>if</b> (<span class="r30 r">args</span>.<a href="/Xamarin.Forms.Core/A.html#d0a15e0d0daa971f" class="i property">Cancel</a>)
+					<a href="#2bc1438052aa94cb" class="i field">_eventState</a> = <a href="/Xamarin.Forms.Core/A.html#33bde116439df563" class="t t">WebNavigationEvent</a>.<a href="/Xamarin.Forms.Core/A.html#cf407e353a4f36f3" class="i field">NewPage</a>;
+			}
+		}
+ 
+		<b>void</b> <a id="419d71d1100a9fac" href="R/419d71d1100a9fac.html" target="n" data-glyph="76,1" class="i method">SendNavigated</a>(<a href="/Xamarin.Forms.Core/A.html#90b2c9ac25f33759" class="t t">UrlWebViewSource</a> <span id="r31 rd" class="r31 r">source</span>, <a href="/Xamarin.Forms.Core/A.html#33bde116439df563" class="t t">WebNavigationEvent</a> <span id="r32 rd" class="r32 r">evnt</span>, <a href="/Xamarin.Forms.Core/A.html#3aadf45ddda9c544" class="t t">WebNavigationResult</a> <span id="r33 rd" class="r33 r">result</span>)
+		{
+			<a href="#8bda5304b6424987" class="i field">_updating</a> = <b>true</b>;
+			((<a href="/Xamarin.Forms.Core/A.html#abc33db1a216ce31" class="t t">IElementController</a>)<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#5e644259f42c0939" class="i method">SetValueFromRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#52d8a16d29ea5696" class="t t">WebView</a>.<a href="/Xamarin.Forms.Core/A.html#45ee39e401e73d89" class="i field">SourceProperty</a>, <span class="r31 r">source</span>);
+			<a href="#8bda5304b6424987" class="i field">_updating</a> = <b>false</b>;
+ 
+			<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>.<a href="/Xamarin.Forms.Core/A.html#a46eb98f13e5b3cb" class="i method">SendNavigated</a>(<b>new</b> <a href="/Xamarin.Forms.Core/A.html#6e391ed015a71f9b" class="t constructor">WebNavigatedEventArgs</a>(<span class="r32 r">evnt</span>, <span class="r31 r">source</span>, <span class="r31 r">source</span>.<a href="/Xamarin.Forms.Core/A.html#f47b7494c64cad8a" class="i property">Url</a>, <span class="r33 r">result</span>));
+ 
+			<a href="#47aa3c25bfbbb42f" class="i method">UpdateCanGoBackForward</a>();
+			<a href="#2bc1438052aa94cb" class="i field">_eventState</a> = <a href="/Xamarin.Forms.Core/A.html#33bde116439df563" class="t t">WebNavigationEvent</a>.<a href="/Xamarin.Forms.Core/A.html#cf407e353a4f36f3" class="i field">NewPage</a>;
+		}
+ 
+		<b>void</b> <a id="47aa3c25bfbbb42f" href="R/47aa3c25bfbbb42f.html" target="n" data-glyph="76,1" class="i method">UpdateCanGoBackForward</a>()
+		{
+			((<a href="/Xamarin.Forms.Core/A.html#07275dd4e74d2bcf" class="t t">IWebViewController</a>)<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#2d98d691b05c471a" class="i property">CanGoBack</a> = <a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">CanGoBack</span>;
+			((<a href="/Xamarin.Forms.Core/A.html#07275dd4e74d2bcf" class="t t">IWebViewController</a>)<a href="VisualElementRenderer.cs.html#7735b2edc11b6931" class="i property">Element</a>).<a href="/Xamarin.Forms.Core/A.html#e15f939979d3a22d" class="i property">CanGoForward</a> = <a href="VisualElementRenderer.cs.html#eacf064adaeceed0" class="i property">Control</a>.<span class="i property">CanGoForward</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html><head><title>FormsWebChromeClient.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(74);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Renderers/FormsWebChromeClient.cs" target="_top">Renderers\FormsWebChromeClient.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">Collections</span>.<span class="i">Generic</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">App</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Webkit</span>;
+<b>using</b> <span class="i">Object</span> = <span class="i n">Java</span>.<span class="i">Lang</span>.<span class="i">Object</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>public class</b> <a id="3c19924a960d4e40" href="../R/3c19924a960d4e40.html" target="n" data-glyph="0,0" class="t t"><span id="5fbba7a2521214dc">FormsWebChromeClient</span></a> : <span class="i">WebChromeClient</span>
+	{
+		<a href="../IStartActivityForResult.cs.html#5c2ef712eb1b2e13" class="t t">IStartActivityForResult</a> <a id="ecb26d1cced83810" href="../R/ecb26d1cced83810.html" target="n" data-glyph="46,1" class="i field">_context</a>;
+		<span class="i">List</span>&lt;<b>int</b>&gt; <a id="b23802b08c3d59dc" href="../R/b23802b08c3d59dc.html" target="n" data-glyph="46,1" class="i field">_requestCodes</a>;
+ 
+		<b>public override bool</b> <a id="15bcd42e1702c963" href="../R/../../0000000000.html" target="n" data-glyph="72,1" class="i method">OnShowFileChooser</a>(<b>global</b>::<span class="i">Android</span>.<span class="i">Webkit</span>.<span class="i">WebView</span> <span id="r0 rd" class="r0 r">webView</span>, <span class="i">IValueCallback</span> <span id="r1 rd" class="r1 r">filePathCallback</span>, <span class="i">FileChooserParams</span> <span id="r2 rd" class="r2 r">fileChooserParams</span>)
+		{
+			<b>base</b>.<span class="i">OnShowFileChooser</span>(<span class="r0 r">webView</span>, <span class="r1 r">filePathCallback</span>, <span class="r2 r">fileChooserParams</span>);
+			<b>return</b> <span class="i">ChooseFile</span>(<span class="r1 r">filePathCallback</span>, <span class="r2 r">fileChooserParams</span>.<span class="i">CreateIntent</span>(), <span class="r2 r">fileChooserParams</span>.<span class="i">Title</span>);
+		}
+ 
+		<b>public void</b> <a id="d0ff01865f41e853" href="../R/d0ff01865f41e853.html" target="n" data-glyph="72,1" class="i method">UnregisterCallbacks</a>()
+		{
+			<b>if</b> (<a href="#b23802b08c3d59dc" class="i field">_requestCodes</a> == <b>null</b> || <a href="#b23802b08c3d59dc" class="i field">_requestCodes</a>.<span class="i">Count</span> == 0 || <a href="#ecb26d1cced83810" class="i field">_context</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>foreach</b> (<b>int</b> <span id="r3 rd" class="r3 r">requestCode</span> <b>in</b> <a href="#b23802b08c3d59dc" class="i field">_requestCodes</a>)
+				<a href="#ecb26d1cced83810" class="i field">_context</a>.<a href="../IStartActivityForResult.cs.html#6b7305b0fcdd508e" class="i method">UnregisterActivityResultCallback</a>(<span class="r3 r">requestCode</span>);
+ 
+			<a href="#b23802b08c3d59dc" class="i field">_requestCodes</a> = <b>null</b>;
+		}
+ 
+		<b>protected bool</b> <a id="4bbaa45376df2740" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">ChooseFile</a>(<span class="i">IValueCallback</span> <span id="r4 rd" class="r4 r">filePathCallback</span>, <span class="i">Intent</span> <span id="r5 rd" class="r5 r">intent</span>, <b>string</b> <span id="r6 rd" class="r6 r">title</span>)
+		{
+			<span class="i">Action</span>&lt;<span class="i">Result</span>, <span class="i">Intent</span>&gt; <span id="r7 rd" class="r7 r">callback</span> = (<span id="r8 rd" class="r8 r">resultCode</span>, <span id="r9 rd" class="r9 r">intentData</span>) =&gt;
+			{
+				<b>if</b> (<span class="r4 r">filePathCallback</span> == <b>null</b>)
+					<b>return</b>;
+ 
+				<span class="i">Object</span> <span id="r10 rd" class="r10 r">result</span> = <span class="i">ParseResult</span>(<span class="r8 r">resultCode</span>, <span class="r9 r">intentData</span>);
+				<span class="r4 r">filePathCallback</span>.<span class="i">OnReceiveValue</span>(<span class="r10 r">result</span>);
+			};
+ 
+			<a href="#b23802b08c3d59dc" class="i field">_requestCodes</a> = <a href="#b23802b08c3d59dc" class="i field">_requestCodes</a> ?? <b>new</b> <span class="i">List</span>&lt;<b>int</b>&gt;();
+ 
+			<b>int</b> <span id="r11 rd" class="r11 r">newRequestCode</span> = <a href="#ecb26d1cced83810" class="i field">_context</a>.<a href="../IStartActivityForResult.cs.html#0626ec4378ab2fe9" class="i method">RegisterActivityResultCallback</a>(<span class="r7 r">callback</span>);
+ 
+			<a href="#b23802b08c3d59dc" class="i field">_requestCodes</a>.<span class="i">Add</span>(<span class="r11 r">newRequestCode</span>);
+ 
+			<a href="#ecb26d1cced83810" class="i field">_context</a>.<span class="i">StartActivityForResult</span>(<span class="i">Intent</span>.<span class="i">CreateChooser</span>(<span class="r5 r">intent</span>, <span class="r6 r">title</span>), <span class="r11 r">newRequestCode</span>);
+ 
+			<b>return true</b>;
+		}
+ 
+		<b>protected override void</b> <a id="d8409175e4b09b7c" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">Dispose</a>(<b>bool</b> <span id="r12 rd" class="r12 r">disposing</span>)
+		{
+			<b>if</b> (<span class="r12 r">disposing</span>)
+				<a href="#d0ff01865f41e853" class="i method">UnregisterCallbacks</a>();
+			<b>base</b>.<span class="i">Dispose</span>(<span class="r12 r">disposing</span>);
+		}
+ 
+		<b>protected virtual</b> <span class="i">Object</span> <a id="b034c7bf8b4e01d3" href="../R/../../0000000000.html" target="n" data-glyph="75,1" class="i method">ParseResult</a>(<span class="i">Result</span> <span id="r13 rd" class="r13 r">resultCode</span>, <span class="i">Intent</span> <span id="r14 rd" class="r14 r">data</span>)
+		{
+			<b>return</b> <span class="i">FileChooserParams</span>.<span class="i">ParseResult</span>((<b>int</b>)<span class="r13 r">resultCode</span>, <span class="r14 r">data</span>);
+		}
+ 
+		<b>internal void</b> <a id="fcf2e992946db778" href="../R/fcf2e992946db778.html" target="n" data-glyph="74,1" class="i method">SetContext</a>(<a href="../IStartActivityForResult.cs.html#5c2ef712eb1b2e13" class="t t">IStartActivityForResult</a> <span id="r15 rd" class="r15 r">startActivityForResult</span>)
+		{
+			<b>if</b> (<span class="r15 r">startActivityForResult</span> == <b>null</b>)
+				<b>throw</b> <b>new</b> <span class="i">ArgumentNullException</span>(<b>nameof</b>(<span class="r15 r">startActivityForResult</span>));
+ 
+			<a href="#ecb26d1cced83810" class="i field">_context</a> = <span class="r15 r">startActivityForResult</span>;
+		}
+	}
+}</pre></td></tr></table></div></body></html>

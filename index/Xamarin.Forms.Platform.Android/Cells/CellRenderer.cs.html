@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html><head><title>CellRenderer.cs</title><link rel="stylesheet" href="../../styles.css"><script src="../../scripts.js"></script></head>
+<body class="cB" onload="i(151);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.Android/Cells/CellRenderer.cs" target="_top">Cells\CellRenderer.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.Android" target="_top">Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android.csproj</a> (Xamarin.Forms.Platform.Android)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i">System</span>;
+<b>using</b> <span class="i">System</span>.<span class="i">ComponentModel</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Content</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Views</span>;
+<b>using</b> <span class="i">Android</span>.<span class="i">Widget</span>;
+<b>using</b> <span class="i">AView</span> = <span class="i">Android</span>.<span class="i">Views</span>.<span class="i">View</span>;
+<b>using</b> <span class="i">Object</span> = <span class="i n">Java</span>.<span class="i">Lang</span>.<span class="i">Object</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">Android</span>
+{
+	<b>public class</b> <a id="993cdcc67ff0f3c0" href="../R/993cdcc67ff0f3c0.html" target="n" data-glyph="0,0" class="t t"><span id="cdbe19e3f57bbdfe">CellRenderer</span></a> : <a href="/Xamarin.Forms.Core/A.html#7954845ad809eeba" class="t t">IRegisterable</a>
+	{
+		<b>static readonly</b> <span class="i">PropertyChangedEventHandler</span> <a id="cc63f43466f92098" href="../R/cc63f43466f92098.html" target="n" data-glyph="46,1" class="i field">PropertyChangedHandler</a> = <span class="i">OnGlobalCellPropertyChanged</span>;
+ 
+		<b>static readonly</b> <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a> <a id="6f856fc1a2d8ba25" href="../R/6f856fc1a2d8ba25.html" target="n" data-glyph="46,1" class="i field">RendererProperty</a> = <a href="/Xamarin.Forms.Core/A.html#743d6dd5177e1828" class="t t">BindableProperty</a>.<span class="i">CreateAttached</span>(<span class="s">&quot;Renderer&quot;</span>, <b>typeof</b>(<a href="#993cdcc67ff0f3c0" class="t t">CellRenderer</a>), <b>typeof</b>(<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>), <b>null</b>);
+ 
+		<span class="i">EventHandler</span> <a id="9a3dd0b82c186c72" href="../R/9a3dd0b82c186c72.html" target="n" data-glyph="46,1" class="i field">_onForceUpdateSizeRequested</a>;
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#60f54d5b73cefedd" class="t t">View</a> <a id="6b33e6bc26639d1d" href="../R/6b33e6bc26639d1d.html" target="n" data-glyph="102,1" class="i property">ParentView</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>protected</b> <a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <a id="622c83b36f9117a5" href="../R/622c83b36f9117a5.html" target="n" data-glyph="105,1" class="i property">Cell</a> { <b>get</b>; <b>set</b>; }
+ 
+		<b>public</b> <span class="i">AView</span> <a id="2982866219c568f8" href="../R/2982866219c568f8.html" target="n" data-glyph="72,1" class="i method">GetCell</a>(<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r0 rd" class="r0 r">item</span>, <span class="i">AView</span> <span id="r1 rd" class="r1 r">convertView</span>, <span class="i">ViewGroup</span> <span id="r2 rd" class="r2 r">parent</span>, <span class="i">Context</span> <span id="r3 rd" class="r3 r">context</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>();
+			
+			<a href="#622c83b36f9117a5" class="i property">Cell</a> = <span class="r0 r">item</span>;
+			<a href="#622c83b36f9117a5" class="i property">Cell</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#cc63f43466f92098" class="i field">PropertyChangedHandler</a>;
+ 
+			<a href="#57ff598586beea7c" class="i method">SetRenderer</a>(<a href="#622c83b36f9117a5" class="i property">Cell</a>, <a href="#993cdcc67ff0f3c0" class="k">this</a>);
+ 
+			<b>if</b> (<span class="r1 r">convertView</span> != <b>null</b>)
+			{
+				<span class="i">Object</span> <span id="r4 rd" class="r4 r">tag</span> = <span class="r1 r">convertView</span>.<span class="i">Tag</span>;
+				<a href="#993cdcc67ff0f3c0" class="t t">CellRenderer</a> <span id="r5 rd" class="r5 r">renderer</span> = (<span class="r4 r">tag</span> <b>as</b> <a href="#693fdcda9a0adac4" class="t t">RendererHolder</a>)?.<a href="#7fb73c6cad12f21a" class="i property">Renderer</a>;
+				
+				<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r6 rd" class="r6 r">oldCell</span> = <span class="r5 r">renderer</span>?.<a href="#622c83b36f9117a5" class="i property">Cell</a>;
+ 
+				<b>if</b> (<span class="r6 r">oldCell</span> != <b>null</b>)
+				{
+					((<a href="/Xamarin.Forms.Core/A.html#445c706db7510364" class="t t">ICellController</a>)<span class="r6 r">oldCell</span>).<span class="i">SendDisappearing</span>();
+ 
+					<b>if</b> (<a href="#622c83b36f9117a5" class="i property">Cell</a> != <span class="r6 r">oldCell</span>)
+					{
+						<a href="#57ff598586beea7c" class="i method">SetRenderer</a>(<span class="r6 r">oldCell</span>, <b>null</b>);
+					}
+				}
+			}
+ 
+			<span class="i">AView</span> <span id="r7 rd" class="r7 r">view</span> = <a href="#8f10a3eff15e83d8" class="i method">GetCellCore</a>(<span class="r0 r">item</span>, <span class="r1 r">convertView</span>, <span class="r2 r">parent</span>, <span class="r3 r">context</span>);
+ 
+			<a href="#4e24a11efb648d30" class="i method">WireUpForceUpdateSizeRequested</a>(<span class="r0 r">item</span>, <span class="r7 r">view</span>);
+ 
+			<a href="#693fdcda9a0adac4" class="k">var</a> <span id="r8 rd" class="r8 r">holder</span> = <span class="r7 r">view</span>.<span class="i">Tag</span> <b>as</b> <a href="#693fdcda9a0adac4" class="t t">RendererHolder</a>;
+			<b>if</b> (<span class="r8 r">holder</span> == <b>null</b>)
+				<span class="r7 r">view</span>.<span class="i">Tag</span> = <b>new</b> <a href="#f05f734b1069e7ef" class="t constructor">RendererHolder</a>(<a href="#993cdcc67ff0f3c0" class="k">this</a>);
+			<b>else</b>
+				<span class="r8 r">holder</span>.<a href="#7fb73c6cad12f21a" class="i property">Renderer</a> = <a href="#993cdcc67ff0f3c0" class="k">this</a>;
+ 
+			<a href="#622c83b36f9117a5" class="i property">Cell</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#cc63f43466f92098" class="i field">PropertyChangedHandler</a>;
+			((<a href="/Xamarin.Forms.Core/A.html#445c706db7510364" class="t t">ICellController</a>)<a href="#622c83b36f9117a5" class="i property">Cell</a>).<span class="i">SendAppearing</span>();
+ 
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>();
+ 
+			<b>return</b> <span class="r7 r">view</span>;
+		}
+ 
+		<b>protected virtual</b> <span class="i">AView</span> <a id="8f10a3eff15e83d8" href="../R/8f10a3eff15e83d8.html" target="n" data-glyph="75,1" class="i method">GetCellCore</a>(<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r9 rd" class="r9 r">item</span>, <span class="i">AView</span> <span id="r10 rd" class="r10 r">convertView</span>, <span class="i">ViewGroup</span> <span id="r11 rd" class="r11 r">parent</span>, <span class="i">Context</span> <span id="r12 rd" class="r12 r">context</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Start</span>();
+ 
+			<span class="i">LayoutInflater</span> <span id="r13 rd" class="r13 r">inflater</span> = <span class="i">LayoutInflater</span>.<span class="i">FromContext</span>(<span class="r12 r">context</span>);
+			<b>const int</b> <span id="r14 rd" class="r14 r">type</span> = <b>global</b>::<span class="i">Android</span>.<span class="i">Resource</span>.<span class="i">Layout</span>.<span class="i">SimpleListItem1</span>;
+			<span class="i">AView</span> <span id="r15 rd" class="r15 r">view</span> = <span class="r13 r">inflater</span>.<span class="i">Inflate</span>(<span class="r14 r">type</span>, <b>null</b>);
+ 
+			<b>var</b> <span id="r16 rd" class="r16 r">textView</span> = <span class="r15 r">view</span>.<span class="i">FindViewById</span>&lt;<span class="i">TextView</span>&gt;(<b>global</b>::<span class="i">Android</span>.<span class="i">Resource</span>.<span class="i">Id</span>.<span class="i">Text1</span>);
+			<span class="r16 r">textView</span>.<span class="i">Text</span> = <span class="r9 r">item</span>.<span class="i">ToString</span>();
+			<span class="r16 r">textView</span>.<span class="i">SetBackgroundColor</span>(<b>global</b>::<span class="i">Android</span>.<span class="i">Graphics</span>.<span class="i">Color</span>.<span class="i">Transparent</span>);
+			<span class="r15 r">view</span>.<span class="i">SetBackgroundColor</span>(<b>global</b>::<span class="i">Android</span>.<span class="i">Graphics</span>.<span class="i">Color</span>.<span class="i">Black</span>);
+ 
+			<a href="/Xamarin.Forms.Core/A.html#527d949c0649c863" class="t t">Performance</a>.<span class="i">Stop</span>();
+ 
+			<b>return</b> <span class="r15 r">view</span>;
+		}
+ 
+		<b>protected virtual void</b> <a id="e05f6c3c3bffc78a" href="../R/e05f6c3c3bffc78a.html" target="n" data-glyph="75,1" class="i method">OnCellPropertyChanged</a>(<b>object</b> <span id="r17 rd" class="r17 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r18 rd" class="r18 r">e</span>)
+		{
+		}
+ 
+		<b>protected void</b> <a id="4e24a11efb648d30" href="../R/4e24a11efb648d30.html" target="n" data-glyph="75,1" class="i method">WireUpForceUpdateSizeRequested</a>(<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a> <span id="r19 rd" class="r19 r">cell</span>, <span class="i">AView</span> <span id="r20 rd" class="r20 r">nativeCell</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#445c706db7510364" class="t t">ICellController</a> <span id="r21 rd" class="r21 r">cellController</span> = <span class="r19 r">cell</span>;
+			<span class="r21 r">cellController</span>.<a href="/Xamarin.Forms.Core/A.html#b1f3ae21a44a70f3" class="i">ForceUpdateSizeRequested</a> -= <a href="#9a3dd0b82c186c72" class="i field">_onForceUpdateSizeRequested</a>;
+ 
+			<a href="#9a3dd0b82c186c72" class="i field">_onForceUpdateSizeRequested</a> = (<span id="r22 rd" class="r22 r">sender</span>, <span id="r23 rd" class="r23 r">e</span>) =&gt; 
+			{
+				<span class="c">// RenderHeight may not be changed, but that&#39;s okay, since we</span>
+				<span class="c">// don&#39;t actually use the height argument in the OnMeasure override.</span>
+				<span class="r20 r">nativeCell</span>.<span class="i">Measure</span>(<span class="r20 r">nativeCell</span>.<span class="i">Width</span>, (<b>int</b>)<span class="r19 r">cell</span>.<a href="/Xamarin.Forms.Core/A.html#f9c815e81f5597b4" class="i property">RenderHeight</a>);
+				<span class="r20 r">nativeCell</span>.<span class="i">SetMinimumHeight</span>(<span class="r20 r">nativeCell</span>.<span class="i">MeasuredHeight</span>);
+				<span class="r20 r">nativeCell</span>.<span class="i">SetMinimumWidth</span>(<span class="r20 r">nativeCell</span>.<span class="i">MeasuredWidth</span>);
+			};
+ 
+			<span class="r21 r">cellController</span>.<a href="/Xamarin.Forms.Core/A.html#b1f3ae21a44a70f3" class="i">ForceUpdateSizeRequested</a> += <a href="#9a3dd0b82c186c72" class="i field">_onForceUpdateSizeRequested</a>;
+		}
+ 
+		<b>internal static</b> <a href="#993cdcc67ff0f3c0" class="t t">CellRenderer</a> <a id="c9d52ef6167f7888" href="../R/c9d52ef6167f7888.html" target="n" data-glyph="74,1" class="i method">GetRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r24 rd" class="r24 r">cell</span>)
+		{
+			<b>return</b> (<a href="#993cdcc67ff0f3c0" class="t t">CellRenderer</a>)<span class="r24 r">cell</span>.<span class="i">GetValue</span>(<a href="#6f856fc1a2d8ba25" class="i field">RendererProperty</a>);
+		}
+ 
+		<b>internal static void</b> <a id="57ff598586beea7c" href="../R/57ff598586beea7c.html" target="n" data-glyph="74,1" class="i method">SetRenderer</a>(<a href="/Xamarin.Forms.Core/A.html#804aed41f6e6b7c8" class="t t">BindableObject</a> <span id="r25 rd" class="r25 r">cell</span>, <a href="#993cdcc67ff0f3c0" class="t t">CellRenderer</a> <span id="r26 rd" class="r26 r">renderer</span>)
+		{
+			<span class="r25 r">cell</span>.<span class="i">SetValue</span>(<a href="#6f856fc1a2d8ba25" class="i field">RendererProperty</a>, <span class="r26 r">renderer</span>);
+		}
+ 
+		<b>static void</b> <a id="ec816f78212cf4ee" href="../R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">OnGlobalCellPropertyChanged</a>(<b>object</b> <span id="r27 rd" class="r27 r">sender</span>, <span class="i">PropertyChangedEventArgs</span> <span id="r28 rd" class="r28 r">e</span>)
+		{
+			<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="k">var</a> <span id="r29 rd" class="r29 r">cell</span> = (<a href="/Xamarin.Forms.Core/A.html#7706486019503b22" class="t t">Cell</a>)<span class="r27 r">sender</span>;
+			<a href="#993cdcc67ff0f3c0" class="t t">CellRenderer</a> <span id="r30 rd" class="r30 r">renderer</span> = <a href="#c9d52ef6167f7888" class="i method">GetRenderer</a>(<span class="r29 r">cell</span>);
+			<b>if</b> (<span class="r30 r">renderer</span> == <b>null</b>)
+			{
+				<span class="r29 r">cell</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#cc63f43466f92098" class="i field">PropertyChangedHandler</a>;
+				<b>return</b>;
+			}
+ 
+			<span class="r30 r">renderer</span>.<a href="#e05f6c3c3bffc78a" class="i method">OnCellPropertyChanged</a>(<span class="r27 r">sender</span>, <span class="r28 r">e</span>);
+		}
+ 
+		<b>class</b> <a id="693fdcda9a0adac4" href="../R/693fdcda9a0adac4.html" target="n" data-glyph="4,1" class="t t">RendererHolder</a> : <span class="i">Object</span>
+		{
+			<b>readonly</b> <span class="i">WeakReference</span>&lt;<a href="#993cdcc67ff0f3c0" class="t t">CellRenderer</a>&gt; <a id="93406e3489c307a6" href="../R/93406e3489c307a6.html" target="n" data-glyph="46,2" class="i field">_rendererRef</a>;
+ 
+			<b>public</b> <a id="f05f734b1069e7ef" href="../R/f05f734b1069e7ef.html" target="n" data-glyph="72,2" class="i constructor">RendererHolder</a>(<a href="#993cdcc67ff0f3c0" class="t t">CellRenderer</a> <span id="r31 rd" class="r31 r">renderer</span>)
+			{
+				<a href="#93406e3489c307a6" class="i field">_rendererRef</a> = <b>new</b> <span class="i">WeakReference</span>&lt;<a href="#993cdcc67ff0f3c0" class="t t">CellRenderer</a>&gt;(<span class="r31 r">renderer</span>);
+			}
+ 
+			<b>public</b> <a href="#993cdcc67ff0f3c0" class="t t">CellRenderer</a> <a id="7fb73c6cad12f21a" href="../R/7fb73c6cad12f21a.html" target="n" data-glyph="102,2" class="i property">Renderer</a>
+			{
+				<b>get</b>
+				{
+					<a href="#993cdcc67ff0f3c0" class="t t">CellRenderer</a> <span id="r32 rd" class="r32 r">renderer</span>;
+					<b>return</b> <a href="#93406e3489c307a6" class="i field">_rendererRef</a>.<span class="i">TryGetTarget</span>(<b>out</b> <span class="r32 r">renderer</span>) ? <span class="r32 r">renderer</span> : <b>null</b>;
+				}
+				<b>set</b> { <a href="#93406e3489c307a6" class="i field">_rendererRef</a>.<span class="i">SetTarget</span>(<b>value</b>); }
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>

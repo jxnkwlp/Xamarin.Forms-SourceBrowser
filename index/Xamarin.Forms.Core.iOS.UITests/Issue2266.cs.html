@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html><head><title>Issue2266.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(164);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Core.iOS.UITests/Issue2266.cs" target="_top">Issue2266.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Core.iOS.UITests" target="_top">Xamarin.Forms.Core.iOS.UITests\Xamarin.Forms.Core.iOS.UITests.csproj</a> (Xamarin.Forms.Core.iOS.UITests)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">CustomAttributes</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Controls</span>
+{
+<span class="k preprocess">#</span><span class="k preprocess">if</span> <span class="i">APP</span>
+<span class="e">	[Preserve (AllMembers = true)]
+	[Issue (IssueTracker.Github, 2266, &quot;Setting a different Detail page from a MasterDetailPage after 2nd time on MainPage&quot;, PlatformAffected.iOS, NavigationBehavior.SetApplicationRoot)]
+	public class Issue2266 : ContentPage
+	{
+		public Issue2266 ()
+		{
+			InitPageContent ();
+		}
+ 
+		void InitPageContent ()
+		{
+			var labelHeader = new Label {
+				Text = &quot;Select a test&quot;,
+				FontSize = 30,
+				FontAttributes = FontAttributes.Bold,
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.CenterAndExpand
+			};
+ 
+			string[] listItems = {
+				&quot;MasterDetail Navigation&quot;,
+				&quot;MasterDetail Navigation -&gt;&gt; Page 1&quot;,
+				&quot;MasterDetail Navigation -&gt;&gt; Page 2&quot;,
+				&quot;MasterDetail Navigation -&gt;&gt; Page 3&quot;
+			};
+ 
+			var listView = new ListView {
+				ItemsSource = listItems
+			};
+ 
+			Content = new StackLayout {
+				Padding = new Thickness (0, 20, 0, 0),
+				Children = {
+					labelHeader,
+					listView
+				}
+			};
+ 
+			listView.ItemSelected += delegate(object sender, SelectedItemChangedEventArgs e) {
+				if (e.SelectedItem == null)
+					return;
+				if (e.SelectedItem.Equals (listItems [0])) {
+					Application.Current.MainPage = MasterDetailHost;
+				} else if (e.SelectedItem.Equals (listItems [1]) || e.SelectedItem.Equals (listItems [2]) || e.SelectedItem.Equals (listItems [3])) {
+					// MasterDetail Navigation - direct page open
+					var item = e.SelectedItem.ToString ();
+					var index = int.Parse (item.Substring (item.Length - 1)) - 1;
+					Application.Current.MainPage = MasterDetailHost;
+					MasterDetailHost.OpenPage (index);
+				}
+ 
+				listView.SelectedItem = null;
+			};
+		}
+ 
+		static MasterDetailNavigation s_masterDetailHost;
+ 
+		public static MasterDetailNavigation MasterDetailHost {
+			get {
+				if (s_masterDetailHost == null)
+					s_masterDetailHost = new MasterDetailNavigation ();
+				return s_masterDetailHost;
+			}
+		}
+ 
+	}
+ 
+	public class MasterDetailNavigation : MasterDetailPage
+	{
+		List&lt;NavigationPage&gt; _pages;
+ 
+		public MasterDetailNavigation ()
+		{
+			InitPages ();
+ 
+			var menuList = new ListView {
+				BackgroundColor = Color.Transparent,
+				ItemsSource = _pages,
+				ItemTemplate = new DataTemplate (typeof(TextCell))
+			};
+			menuList.ItemTemplate.SetBinding (TextCell.TextProperty, &quot;Title&quot;);
+ 
+			Master = new ContentPage {
+				BackgroundColor = Color.FromHex (&quot;363636&quot;),
+				Title = &quot;Menu&quot;,
+				Content = menuList
+			};
+ 
+			Detail = new NavigationPage (new ContentPage { 
+				Padding = new Thickness (20, 20),
+				Content = new StackLayout { 
+					Children = {
+						new Label { Text = &quot;Select a menu item&quot; }
+					}
+				}
+			});
+ 
+			menuList.ItemSelected += (sender, e) =&gt; {
+				var page = e.SelectedItem as NavigationPage;
+				if (page != null) {
+					Detail = page;
+					IsPresented = false;
+				}
+			};
+		}
+ 
+		void InitPages ()
+		{
+			_pages = new List&lt;NavigationPage&gt; ();
+ 
+			for (int i = 1; i &lt;= 10; i++) {
+				var btnSubPage = new Button { 
+					Text = string.Format (&quot;Open sub-page&quot;), 
+				};
+				btnSubPage.Clicked += delegate {
+					OpenSubPage (string.Format (&quot;Sub for page: {0}&quot;, i));
+				};
+				var page = new ContentPage {
+					Padding = new Thickness (20, 20),
+					Title = string.Format (&quot;Page {0}&quot;, i),
+					Content = new StackLayout {
+						Children = {
+							new Label { Text = string.Format (&quot;Page {0}&quot;, i) },
+							btnSubPage
+						}
+					}
+				};
+				page.ToolbarItems.Add (new ToolbarItem (&quot;START&quot;, null, delegate {
+					Application.Current.MainPage = App.MenuPage;
+				}));
+				_pages.Add (new NavigationPage (page) { Title = page.Title });
+			}
+		}
+ 
+		public void OpenPage (int index)
+		{
+			if (index &gt;= _pages.Count) {
+				// Index out of range
+				return;
+			}
+			Detail = _pages [index];
+		}
+ 
+		async void OpenSubPage (string text)
+		{
+			await Detail.Navigation.PushAsync (new ContentPage {
+				Content = new Label { Text = text }
+			});
+		}
+	}
+</span><span class="k preprocess">#</span><span class="k preprocess">endif</span>
+}
+ 
+ 
+</pre></td></tr></table></div></body></html>

@@ -1,0 +1,467 @@
+﻿<!DOCTYPE html>
+<html><head><title>NativeToolbarTracker.cs</title><link rel="stylesheet" href="../styles.css"><script src="../scripts.js"></script></head>
+<body class="cB" onload="i(458);"><div class="dH">
+<table style="width: 100%">
+<tr><td>File: <a id="filePath" class="blueLink" href="Xamarin.Forms.Platform.macOS/NativeToolbarTracker.cs" target="_top">NativeToolbarTracker.cs</a><br/></td><td></td></tr>
+<tr><td>Project: <a id="projectPath" class="blueLink" href="/#Xamarin.Forms.Platform.macOS" target="_top">Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj</a> (Xamarin.Forms.Platform.macOS)</td><td></td></tr>
+</table>
+</div>
+<div class="cz"><table class="tb" cellpadding="0" cellspacing="0"><tr><td valign="top" align="right"><pre id="ln"></pre></td><td valign="top" align="left"><pre id="code">
+<b>using</b> <span class="i n">System</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Collections</span>.<span class="i n">Generic</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Linq</span>;
+<b>using</b> <span class="i n">System</span>.<span class="i n">Threading</span>.<span class="i n">Tasks</span>;
+<b>using</b> <span class="i n">AppKit</span>;
+<b>using</b> <span class="i n">CoreGraphics</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Internals</span>;
+<b>using</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">PlatformConfiguration</span>.<span class="i n">macOSSpecific</span>;
+ 
+<b>namespace</b> <span class="i n">Xamarin</span>.<span class="i n">Forms</span>.<span class="i n">Platform</span>.<span class="i n">MacOS</span>
+{
+	<b>class</b> <a id="c11f6c238dc89076" href="R/c11f6c238dc89076.html" target="n" data-glyph="2,0" class="t t">NativeToolbarGroup</a>
+	{
+		<b>public class</b> <a id="efb723a37768e253" href="R/efb723a37768e253.html" target="n" data-glyph="0,1" class="t t"><span id="0a569be53642fbb7">Item</span></a>
+		{
+			<b>public</b> <span class="t t">NSToolbarItem</span> <a id="2d9c2decaddbb81c" href="R/2d9c2decaddbb81c.html" target="n" data-glyph="42,2" class="i field">ToolbarItem</a>;
+			<b>public</b> <span class="t t">NSButton</span> <a id="b708c2ceb6064655" href="R/b708c2ceb6064655.html" target="n" data-glyph="42,2" class="i field">Button</a>;
+			<b>public</b> <a href="/Xamarin.Forms.Core/A.html#40969ab465b00442" class="t t">ToolbarItem</a> <a id="fccc7d2a865871f7" href="R/fccc7d2a865871f7.html" target="n" data-glyph="42,2" class="i field">Element</a>;
+		}
+ 
+		<b>public</b> <a id="d548c6aa00728ff1" href="R/d548c6aa00728ff1.html" target="n" data-glyph="72,1" class="i constructor">NativeToolbarGroup</a>(<span class="t t">NSToolbarItemGroup</span> <span id="r0 rd" class="r0 r">itemGroup</span>)
+		{
+			<a href="#57f9257fa3dfdfa5" class="i property">Group</a> = <span class="r0 r">itemGroup</span>;
+			<a href="#149014c354aa8bbc" class="i property">Items</a> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="#efb723a37768e253" class="t t">Item</a>&gt;();
+		}
+ 
+		<b>public</b> <span class="t t">NSToolbarItemGroup</span> <a id="57f9257fa3dfdfa5" href="R/57f9257fa3dfdfa5.html" target="n" data-glyph="102,1" class="i property">Group</a> { <b>get</b>; }
+ 
+		<b>public</b> <a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="#efb723a37768e253" class="t t">Item</a>&gt; <a id="149014c354aa8bbc" href="R/149014c354aa8bbc.html" target="n" data-glyph="102,1" class="i property">Items</a> { <b>get</b>; }
+	}
+ 
+	<b>internal class</b> <a id="07fa171c0bf66080" href="R/07fa171c0bf66080.html" target="n" data-glyph="2,0" class="t t">NativeToolbarTracker</a> : <span class="t t">NSToolbarDelegate</span>
+	{
+		<b>const string</b> <a id="e2ec6526bab82c16" href="R/e2ec6526bab82c16.html" target="n" data-glyph="10,1" class="i field">ToolBarId</a> = <span class="s">&quot;AwesomeBarToolbar&quot;</span>;
+ 
+		<b>readonly string</b> <a id="4cc0d84913c6f520" href="R/4cc0d84913c6f520.html" target="n" data-glyph="46,1" class="i field">_defaultBackButtonTitle</a> = <span class="s">&quot;Back&quot;</span>;
+		<b>readonly</b> <a href="/Xamarin.Forms.Core/A.html#05aae3e95105f7c5" class="t t">ToolbarTracker</a> <a id="9f0004c805643ddb" href="R/9f0004c805643ddb.html" target="n" data-glyph="46,1" class="i field">_toolbarTracker</a>;
+ 
+		<span class="t t">NSToolbar</span> <a id="a40daa9524a93e2c" href="R/a40daa9524a93e2c.html" target="n" data-glyph="46,1" class="i field">_toolbar</a>;
+		<a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a> <a id="102cee1d9b521a92" href="R/102cee1d9b521a92.html" target="n" data-glyph="46,1" class="i field">_navigation</a>;
+ 
+		<b>bool</b> <a id="629d76f12dd3d1f7" href="R/629d76f12dd3d1f7.html" target="n" data-glyph="46,1" class="i field">_hasTabs</a>;
+ 
+		<b>const double</b> <a id="362c5ef3391fe93b" href="R/362c5ef3391fe93b.html" target="n" data-glyph="10,1" class="i field">BackButtonItemWidth</a> = 36;
+		<b>const double</b> <a id="910d41f30599607e" href="R/910d41f30599607e.html" target="n" data-glyph="10,1" class="i field">ToolbarItemWidth</a> = 44;
+		<b>const double</b> <a id="38cecf0820feac65" href="R/38cecf0820feac65.html" target="n" data-glyph="10,1" class="i field">ToolbarItemHeight</a> = 25;
+		<b>const double</b> <a id="67a9388694ae8a6c" href="R/67a9388694ae8a6c.html" target="n" data-glyph="10,1" class="i field">ToolbarItemSpacing</a> = 6;
+		<b>const double</b> <a id="d34f6f6846aa8b4d" href="R/d34f6f6846aa8b4d.html" target="n" data-glyph="10,1" class="i field">ToolbarHeight</a> = 30;
+		<b>const double</b> <a id="c1e95913da58d19e" href="R/c1e95913da58d19e.html" target="n" data-glyph="10,1" class="i field">NavigationTitleMinSize</a> = 300;
+ 
+		<b>const string</b> <a id="5247c03caed65cc3" href="R/5247c03caed65cc3.html" target="n" data-glyph="10,1" class="i field">NavigationGroupIdentifier</a> = <span class="s">&quot;NavigationGroup&quot;</span>;
+		<b>const string</b> <a id="d3480291b08d726a" href="R/d3480291b08d726a.html" target="n" data-glyph="10,1" class="i field">TabbedGroupIdentifier</a> = <span class="s">&quot;TabbedGroup&quot;</span>;
+		<b>const string</b> <a id="e1cab774534c366e" href="R/e1cab774534c366e.html" target="n" data-glyph="10,1" class="i field">ToolbarItemsGroupIdentifier</a> = <span class="s">&quot;ToolbarGroup&quot;</span>;
+		<b>const string</b> <a id="67ee3218c216fb4d" href="R/67ee3218c216fb4d.html" target="n" data-glyph="10,1" class="i field">TitleGroupIdentifier</a> = <span class="s">&quot;TitleGroup&quot;</span>;
+ 
+		<a href="#c11f6c238dc89076" class="t t">NativeToolbarGroup</a> <a id="91abc1b7f90c7b68" href="R/91abc1b7f90c7b68.html" target="n" data-glyph="46,1" class="i field">_navigationGroup</a>;
+		<a href="#c11f6c238dc89076" class="t t">NativeToolbarGroup</a> <a id="9c269b6cb4a6562f" href="R/9c269b6cb4a6562f.html" target="n" data-glyph="46,1" class="i field">_tabbedGroup</a>;
+		<a href="#c11f6c238dc89076" class="t t">NativeToolbarGroup</a> <a id="3a297aa5a8f75000" href="R/3a297aa5a8f75000.html" target="n" data-glyph="46,1" class="i field">_toolbarGroup</a>;
+		<a href="#c11f6c238dc89076" class="t t">NativeToolbarGroup</a> <a id="b32823ce31c5348e" href="R/b32823ce31c5348e.html" target="n" data-glyph="46,1" class="i field">_titleGroup</a>;
+ 
+		<span class="t t">NSView</span> <a id="848e52c5f0f8ffbf" href="R/848e52c5f0f8ffbf.html" target="n" data-glyph="46,1" class="i field">_nsToolbarItemViewer</a>;
+ 
+		<b>public</b> <a id="6dc4868cb78f4f10" href="R/6dc4868cb78f4f10.html" target="n" data-glyph="72,1" class="i constructor">NativeToolbarTracker</a>()
+		{
+			<a href="#9f0004c805643ddb" class="i field">_toolbarTracker</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#05aae3e95105f7c5" class="t constructor">ToolbarTracker</a>();
+			<a href="#9f0004c805643ddb" class="i field">_toolbarTracker</a>.<a href="/Xamarin.Forms.Core/A.html#519a12d50b29339c" class="i">CollectionChanged</a> += <a href="#95502a939b62edae" class="i method">ToolbarTrackerOnCollectionChanged</a>;
+		}
+ 
+		<b>public</b> <a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a> <a id="107614d5d6430847" href="R/107614d5d6430847.html" target="n" data-glyph="102,1" class="i property">Navigation</a>
+		{
+			<b>get</b> { <b>return</b> <a href="#102cee1d9b521a92" class="i field">_navigation</a>; }
+			<b>set</b>
+			{
+				<b>if</b> (<a href="#102cee1d9b521a92" class="i field">_navigation</a> == <b>value</b>)
+					<b>return</b>;
+ 
+				<b>if</b> (<a href="#102cee1d9b521a92" class="i field">_navigation</a> != <b>null</b>)
+					<a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#ec434533a6c61be0" class="i method">NavigationPagePropertyChanged</a>;
+ 
+				<a href="#102cee1d9b521a92" class="i field">_navigation</a> = <b>value</b>;
+ 
+				<b>if</b> (<a href="#102cee1d9b521a92" class="i field">_navigation</a> != <b>null</b>)
+				{
+					<a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="k">var</a> <span id="r1 rd" class="r1 r">parentTabbedPage</span> = <a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#c4bf3d030cd32fe9" class="i property">Parent</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>;
+					<b>if</b> (<span class="r1 r">parentTabbedPage</span> != <b>null</b>)
+					{
+						<a href="#629d76f12dd3d1f7" class="i field">_hasTabs</a> = <span class="r1 r">parentTabbedPage</span>.<a href="Extensions/PlatformConfigurationExtensions.cs.html#a6ae085af5eb0904" class="i method">OnThisPlatform</a>().<a href="/Xamarin.Forms.Core/A.html#f26ec7868839c2b8" class="i method">GetTabsStyle</a>() == <a href="/Xamarin.Forms.Core/A.html#66292dc66e221c88" class="t t">TabsStyle</a>.<a href="/Xamarin.Forms.Core/A.html#335cabe1cf27978d" class="i field">OnNavigation</a>;
+					}
+					<a href="#9f0004c805643ddb" class="i field">_toolbarTracker</a>.<a href="/Xamarin.Forms.Core/A.html#8488e5527229368f" class="i property">Target</a> = <a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#41cd57564e4c80f2" class="i property">CurrentPage</a>;
+					<a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#ec434533a6c61be0" class="i method">NavigationPagePropertyChanged</a>;
+				}
+ 
+				<a href="#fa77f79584ab3481" class="i method">UpdateToolBar</a>();
+			}
+		}
+ 
+		<b>public void</b> <a id="b2b326ee5c7e2013" href="R/b2b326ee5c7e2013.html" target="n" data-glyph="72,1" class="i method">TryHide</a>(<a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a> <span id="r2 rd" class="r2 r">navPage</span> = <b>null</b>)
+		{
+			<b>if</b> (<span class="r2 r">navPage</span> == <b>null</b> || <span class="r2 r">navPage</span> == <a href="#102cee1d9b521a92" class="i field">_navigation</a>)
+			{
+				<a href="#107614d5d6430847" class="i property">Navigation</a> = <b>null</b>;
+			}
+		}
+ 
+		<b>public override string</b>[] <a id="947fb660cc5701c7" href="R/947fb660cc5701c7.html" target="n" data-glyph="72,1" class="i method">AllowedItemIdentifiers</a>(<span class="t t">NSToolbar</span> <span id="r3 rd" class="r3 r">toolbar</span>)
+		{
+			<b>return</b> <b>new</b> <b>string</b>[] { };
+		}
+ 
+		<b>public override string</b>[] <a id="13ee6d51a0d044c3" href="R/13ee6d51a0d044c3.html" target="n" data-glyph="72,1" class="i method">DefaultItemIdentifiers</a>(<span class="t t">NSToolbar</span> <span id="r4 rd" class="r4 r">toolbar</span>)
+		{
+			<b>return</b> <b>new</b> <b>string</b>[] { };
+		}
+ 
+		<b>public override</b> <span class="t t">NSToolbarItem</span> <a id="c5146afe2f30a753" href="R/c5146afe2f30a753.html" target="n" data-glyph="72,1" class="i method">WillInsertItem</a>(<span class="t t">NSToolbar</span> <span id="r5 rd" class="r5 r">toolbar</span>, <b>string</b> <span id="r6 rd" class="r6 r">itemIdentifier</span>, <b>bool</b> <span id="r7 rd" class="r7 r">willBeInserted</span>)
+		{
+			<b>var</b> <span id="r8 rd" class="r8 r">group</span> = <b>new</b> <span class="t constructor">NSToolbarItemGroup</span>(<span class="r6 r">itemIdentifier</span>);
+			<b>var</b> <span id="r9 rd" class="r9 r">view</span> = <b>new</b> <span class="t constructor">NSView</span>();
+			<span class="r8 r">group</span>.<span class="i property">View</span> = <span class="r9 r">view</span>;
+ 
+			<b>if</b> (<span class="r6 r">itemIdentifier</span> == <a href="#5247c03caed65cc3" class="i field">NavigationGroupIdentifier</a>)
+				<a href="#91abc1b7f90c7b68" class="i field">_navigationGroup</a> = <b>new</b> <a href="#d548c6aa00728ff1" class="t constructor">NativeToolbarGroup</a>(<span class="r8 r">group</span>);
+			<b>else if</b> (<span class="r6 r">itemIdentifier</span> == <a href="#67ee3218c216fb4d" class="i field">TitleGroupIdentifier</a>)
+				<a href="#b32823ce31c5348e" class="i field">_titleGroup</a> = <b>new</b> <a href="#d548c6aa00728ff1" class="t constructor">NativeToolbarGroup</a>(<span class="r8 r">group</span>);
+			<b>else if</b> (<span class="r6 r">itemIdentifier</span> == <a href="#d3480291b08d726a" class="i field">TabbedGroupIdentifier</a>)
+				<a href="#9c269b6cb4a6562f" class="i field">_tabbedGroup</a> = <b>new</b> <a href="#d548c6aa00728ff1" class="t constructor">NativeToolbarGroup</a>(<span class="r8 r">group</span>);
+			<b>else if</b> (<span class="r6 r">itemIdentifier</span> == <a href="#e1cab774534c366e" class="i field">ToolbarItemsGroupIdentifier</a>)
+				<a href="#3a297aa5a8f75000" class="i field">_toolbarGroup</a> = <b>new</b> <a href="#d548c6aa00728ff1" class="t constructor">NativeToolbarGroup</a>(<span class="r8 r">group</span>);
+ 
+			<b>return</b> <span class="r8 r">group</span>;
+		}
+ 
+		<b>protected virtual bool</b> <a id="9cb8191a6a92d5e5" href="R/9cb8191a6a92d5e5.html" target="n" data-glyph="105,1" class="i property">HasTabs</a> =&gt; <a href="#629d76f12dd3d1f7" class="i field">_hasTabs</a>;
+ 
+		<b>protected virtual</b> <span class="t t">NSToolbar</span> <a id="5769a480690ec317" href="R/5769a480690ec317.html" target="n" data-glyph="75,1" class="i method">ConfigureToolbar</a>()
+		{
+			<b>var</b> <span id="r10 rd" class="r10 r">toolbar</span> = <b>new</b> <span class="t constructor">NSToolbar</span>(<a href="#e2ec6526bab82c16" class="i field">ToolBarId</a>)
+			{
+				<span class="i property">DisplayMode</span> = <span class="t t">NSToolbarDisplayMode</span>.<span class="i field">Icon</span>,
+				<span class="i property">AllowsUserCustomization</span> = <b>false</b>,
+				<span class="i property">ShowsBaselineSeparator</span> = <b>true</b>,
+				<span class="i property">SizeMode</span> = <span class="t t">NSToolbarSizeMode</span>.<span class="i field">Regular</span>,
+				<span class="i property">Delegate</span> = <a href="#07fa171c0bf66080" class="k">this</a>
+			};
+ 
+			<b>return</b> <span class="r10 r">toolbar</span>;
+		}
+ 
+		<b>internal void</b> <a id="fa77f79584ab3481" href="R/fa77f79584ab3481.html" target="n" data-glyph="74,1" class="i method">UpdateToolBar</a>()
+		{
+			<b>if</b> (<span class="t t">NSApplication</span>.<span class="i property">SharedApplication</span>.<span class="i property">MainWindow</span> == <b>null</b>)
+				<b>return</b>;
+ 
+			<b>if</b> (<a href="#102cee1d9b521a92" class="i field">_navigation</a> == <b>null</b>)
+			{
+				<b>if</b> (<a href="#a40daa9524a93e2c" class="i field">_toolbar</a> != <b>null</b>)
+					<a href="#a40daa9524a93e2c" class="i field">_toolbar</a>.<span class="i property">Visible</span> = <b>false</b>;
+				<a href="#a40daa9524a93e2c" class="i field">_toolbar</a> = <b>null</b>;
+				<b>return</b>;
+			}
+ 
+			<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="k">var</a> <span id="r11 rd" class="r11 r">currentPage</span> = <a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#bd54584666f981a4" class="i method">Peek</a>(0);
+ 
+			<b>if</b> (<a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>.<a href="/Xamarin.Forms.Core/A.html#02fec1b392358a81" class="i method">GetHasNavigationBar</a>(<span class="r11 r">currentPage</span>))
+			{
+				<b>if</b> (<a href="#a40daa9524a93e2c" class="i field">_toolbar</a> == <b>null</b>)
+				{
+					<a href="#a40daa9524a93e2c" class="i field">_toolbar</a> = <a href="#5769a480690ec317" class="i method">ConfigureToolbar</a>();
+					<span class="t t">NSApplication</span>.<span class="i property">SharedApplication</span>.<span class="i property">MainWindow</span>.<span class="i property">Toolbar</span> = <a href="#a40daa9524a93e2c" class="i field">_toolbar</a>;
+ 
+					<a href="#a40daa9524a93e2c" class="i field">_toolbar</a>.<span class="i method">InsertItem</span>(<a href="#5247c03caed65cc3" class="i field">NavigationGroupIdentifier</a>, 0);
+					<a href="#a40daa9524a93e2c" class="i field">_toolbar</a>.<span class="i method">InsertItem</span>(
+						<a href="#9cb8191a6a92d5e5" class="i property">HasTabs</a> ? <span class="t t">NSToolbar</span>.<span class="i property">NSToolbarSpaceItemIdentifier</span> : <span class="t t">NSToolbar</span>.<span class="i property">NSToolbarFlexibleSpaceItemIdentifier</span>, 1);
+					<a href="#a40daa9524a93e2c" class="i field">_toolbar</a>.<span class="i method">InsertItem</span>(<a href="#9cb8191a6a92d5e5" class="i property">HasTabs</a> ? <a href="#d3480291b08d726a" class="i field">TabbedGroupIdentifier</a> : <a href="#67ee3218c216fb4d" class="i field">TitleGroupIdentifier</a>, 2);
+					<a href="#a40daa9524a93e2c" class="i field">_toolbar</a>.<span class="i method">InsertItem</span>(<span class="t t">NSToolbar</span>.<span class="i property">NSToolbarFlexibleSpaceItemIdentifier</span>, 3);
+					<a href="#a40daa9524a93e2c" class="i field">_toolbar</a>.<span class="i method">InsertItem</span>(<a href="#e1cab774534c366e" class="i field">ToolbarItemsGroupIdentifier</a>, 4);
+				}
+ 
+				<a href="#a40daa9524a93e2c" class="i field">_toolbar</a>.<span class="i property">Visible</span> = <b>true</b>;
+				<a href="#2e687dd8a38bb0c3" class="i method">UpdateToolbarItems</a>();
+				<a href="#241b78d25a1facae" class="i method">UpdateTitle</a>();
+				<a href="#a65873307efa8c37" class="i method">UpdateNavigationItems</a>();
+				<b>if</b> (<a href="#9cb8191a6a92d5e5" class="i property">HasTabs</a>)
+					<a href="#c510afb56ad6dbc3" class="i method">UpdateTabbedItems</a>();
+				<a href="#815fcdcb52c8e119" class="i method">UpdateBarBackgroundColor</a>();
+			}
+			<b>else</b>
+			{
+				<b>if</b> (<a href="#a40daa9524a93e2c" class="i field">_toolbar</a> != <b>null</b>)
+				{
+					<a href="#a40daa9524a93e2c" class="i field">_toolbar</a>.<span class="i property">Visible</span> = <b>false</b>;
+				}
+			}
+		}
+ 
+		<b>void</b> <a id="815fcdcb52c8e119" href="R/815fcdcb52c8e119.html" target="n" data-glyph="76,1" class="i method">UpdateBarBackgroundColor</a>()
+		{
+			<b>var</b> <span id="r12 rd" class="r12 r">bgColor</span> = <a href="#6dddbdeb9465ab1a" class="i method">GetBackgroundColor</a>().<span class="i property">CGColor</span>;
+ 
+			<b>if</b> (<a href="#848e52c5f0f8ffbf" class="i field">_nsToolbarItemViewer</a>?.<span class="i property">Superview</span>?.<span class="i property">Superview</span> == <b>null</b> ||
+				<a href="#848e52c5f0f8ffbf" class="i field">_nsToolbarItemViewer</a>.<span class="i property">Superview</span>.<span class="i property">Superview</span>.<span class="i property">Superview</span> == <b>null</b>) <b>return</b>;
+			<span class="c">// NSTitlebarView</span>
+			<a href="#848e52c5f0f8ffbf" class="i field">_nsToolbarItemViewer</a>.<span class="i property">Superview</span>.<span class="i property">Superview</span>.<span class="i property">Superview</span>.<span class="i property">WantsLayer</span> = <b>true</b>;
+			<a href="#848e52c5f0f8ffbf" class="i field">_nsToolbarItemViewer</a>.<span class="i property">Superview</span>.<span class="i property">Superview</span>.<span class="i property">Superview</span>.<span class="i property">Layer</span>.<span class="i property">BackgroundColor</span> = <span class="r12 r">bgColor</span>;
+		}
+ 
+		<b>void</b> <a id="ec434533a6c61be0" href="R/ec434533a6c61be0.html" target="n" data-glyph="76,1" class="i method">NavigationPagePropertyChanged</a>(<b>object</b> <span id="r13 rd" class="r13 r">sender</span>, <span class="i n">System</span>.<span class="i n">ComponentModel</span>.<a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r14 rd" class="r14 r">e</span>)
+		{
+			<b>if</b> (<span class="r14 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a>.<a href="@0@mscorlib/A.html#31b307b02a3bd6b9" class="i method">Equals</a>(<a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>.<a href="/Xamarin.Forms.Core/A.html#a0df817621e01af8" class="i field">BarTextColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>) ||
+				<span class="r14 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a>.<a href="@0@mscorlib/A.html#31b307b02a3bd6b9" class="i method">Equals</a>(<a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>.<a href="/Xamarin.Forms.Core/A.html#8a28d396e966251b" class="i field">BarBackgroundColorProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>))
+				<a href="#fa77f79584ab3481" class="i method">UpdateToolBar</a>();
+		}
+ 
+		<b>void</b> <a id="95502a939b62edae" href="R/95502a939b62edae.html" target="n" data-glyph="76,1" class="i method">ToolbarTrackerOnCollectionChanged</a>(<b>object</b> <span id="r15 rd" class="r15 r">sender</span>, <a href="@0@mscorlib/A.html#9a1496aa60befd10" class="t t">EventArgs</a> <span id="r16 rd" class="r16 r">eventArgs</span>)
+		{
+			<a href="#2e687dd8a38bb0c3" class="i method">UpdateToolbarItems</a>();
+		}
+ 
+		<b>async</b> <a href="@0@mscorlib/A.html#045a746eb48cbaa9" class="t t">Task</a> <a id="222dea05d1a098f0" href="R/222dea05d1a098f0.html" target="n" data-glyph="76,1" class="i method">NavigateBackFrombackButton</a>()
+		{
+			<a href="@0@mscorlib/A.html#5ca7b77f3df89fc6" class="k">var</a> <span id="r17 rd" class="r17 r">popAsyncInner</span> = <a href="#102cee1d9b521a92" class="i field">_navigation</a>?.<a href="/Xamarin.Forms.Core/A.html#52bd3241723fc83c" class="i method">PopAsyncInner</a>(<b>true</b>, <b>true</b>);
+			<b>if</b> (<span class="r17 r">popAsyncInner</span> != <b>null</b>)
+				<b>await</b> <span class="r17 r">popAsyncInner</span>;
+		}
+ 
+		<b>bool</b> <a id="06510ada91bf69df" href="R/06510ada91bf69df.html" target="n" data-glyph="76,1" class="i method">ShowBackButton</a>()
+		{
+			<b>if</b> (<a href="#102cee1d9b521a92" class="i field">_navigation</a> == <b>null</b>)
+				<b>return false</b>;
+ 
+			<b>return</b> <a href="/Xamarin.Forms.Core/A.html#055bf34ca2fc9b1a" class="t t">NavigationPage</a>.<a href="/Xamarin.Forms.Core/A.html#c98ca079d6da6f0f" class="i method">GetHasBackButton</a>(<a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#41cd57564e4c80f2" class="i property">CurrentPage</a>) &amp;&amp; !<a href="#8839daf30acfd098" class="i method">IsRootPage</a>();
+		}
+ 
+		<b>bool</b> <a id="8839daf30acfd098" href="R/8839daf30acfd098.html" target="n" data-glyph="76,1" class="i method">IsRootPage</a>()
+		{
+			<b>if</b> (<a href="#102cee1d9b521a92" class="i field">_navigation</a> == <b>null</b>)
+				<b>return true</b>;
+			<b>return</b> <a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#5417448c8e95152a" class="i property">StackDepth</a> &lt;= 1;
+		}
+ 
+		<span class="t t">NSColor</span> <a id="6dddbdeb9465ab1a" href="R/6dddbdeb9465ab1a.html" target="n" data-glyph="76,1" class="i method">GetBackgroundColor</a>()
+		{
+			<b>var</b> <span id="r18 rd" class="r18 r">backgroundNSColor</span> = <span class="t t">NSColor</span>.<span class="i property">Clear</span>;
+			<b>if</b> (<a href="#107614d5d6430847" class="i property">Navigation</a> != <b>null</b> &amp;&amp; <a href="#107614d5d6430847" class="i property">Navigation</a>.<a href="/Xamarin.Forms.Core/A.html#26d7f33d727e3892" class="i property">BarBackgroundColor</a> != <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#78f150ac7d83a2c8" class="i property">Default</a>)
+				<span class="r18 r">backgroundNSColor</span> = <a href="#107614d5d6430847" class="i property">Navigation</a>.<a href="/Xamarin.Forms.Core/A.html#26d7f33d727e3892" class="i property">BarBackgroundColor</a>.<a href="Extensions/ColorExtensions.cs.html#315625aceeb93f91" class="i method">ToNSColor</a>();
+			<b>return</b> <span class="r18 r">backgroundNSColor</span>;
+		}
+ 
+		<span class="t t">NSColor</span> <a id="089555da8b5692dc" href="R/089555da8b5692dc.html" target="n" data-glyph="76,1" class="i method">GetTitleColor</a>()
+		{
+			<b>var</b> <span id="r19 rd" class="r19 r">titleNSColor</span> = <span class="t t">NSColor</span>.<span class="i property">Black</span>;
+			<b>if</b> (<a href="#107614d5d6430847" class="i property">Navigation</a> != <b>null</b> &amp;&amp; <a href="#107614d5d6430847" class="i property">Navigation</a>?.<a href="/Xamarin.Forms.Core/A.html#3f896d8b0da33504" class="i property">BarTextColor</a> != <a href="/Xamarin.Forms.Core/A.html#8a6a061540451ec4" class="t t">Color</a>.<a href="/Xamarin.Forms.Core/A.html#78f150ac7d83a2c8" class="i property">Default</a>)
+				<span class="r19 r">titleNSColor</span> = <a href="#107614d5d6430847" class="i property">Navigation</a>.<a href="/Xamarin.Forms.Core/A.html#3f896d8b0da33504" class="i property">BarTextColor</a>.<a href="Extensions/ColorExtensions.cs.html#315625aceeb93f91" class="i method">ToNSColor</a>();
+ 
+			<b>return</b> <span class="r19 r">titleNSColor</span>;
+		}
+ 
+		<b>string</b> <a id="f1b5b24e3cf66a98" href="R/f1b5b24e3cf66a98.html" target="n" data-glyph="76,1" class="i method">GetCurrentPageTitle</a>()
+		{
+			<b>if</b> (<a href="#102cee1d9b521a92" class="i field">_navigation</a> == <b>null</b>)
+				<b>return string</b>.<a href="@0@mscorlib/A.html#c9f70a27facb27cf" class="i field">Empty</a>;
+			<b>return</b> <a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#bd54584666f981a4" class="i method">Peek</a>(0).<a href="/Xamarin.Forms.Core/A.html#25a9b5c9e8eb0d28" class="i property">Title</a> ?? <span class="s">&quot;&quot;</span>;
+		}
+ 
+		<b>string</b> <a id="96cc63cc21c5f824" href="R/96cc63cc21c5f824.html" target="n" data-glyph="76,1" class="i method">GetPreviousPageTitle</a>()
+		{
+			<b>if</b> (<a href="#102cee1d9b521a92" class="i field">_navigation</a> == <b>null</b> || <a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#5417448c8e95152a" class="i property">StackDepth</a> &lt;= 1)
+				<b>return string</b>.<a href="@0@mscorlib/A.html#c9f70a27facb27cf" class="i field">Empty</a>;
+ 
+			<b>return</b> <a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#bd54584666f981a4" class="i method">Peek</a>(1).<a href="/Xamarin.Forms.Core/A.html#25a9b5c9e8eb0d28" class="i property">Title</a> ?? <a href="#4cc0d84913c6f520" class="i field">_defaultBackButtonTitle</a>;
+		}
+ 
+		<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="t t">List</a>&lt;<a href="/Xamarin.Forms.Core/A.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt; <a id="f6259689f4c36ef0" href="R/../../0000000000.html" target="n" data-glyph="76,1" class="i method">GetToolbarItems</a>()
+		{
+			<b>return</b> <a href="#9f0004c805643ddb" class="i field">_toolbarTracker</a>.<a href="/Xamarin.Forms.Core/A.html#ce0e28ad1e0711be" class="i property">ToolbarItems</a>.<a href="@0@System.Core/A.html#e276d6892241255b" class="i method">ToList</a>();
+		}
+ 
+		<b>void</b> <a id="241b78d25a1facae" href="R/241b78d25a1facae.html" target="n" data-glyph="76,1" class="i method">UpdateTitle</a>()
+		{
+			<b>if</b> (<a href="#a40daa9524a93e2c" class="i field">_toolbar</a> == <b>null</b> || <a href="#102cee1d9b521a92" class="i field">_navigation</a> == <b>null</b> || <a href="#b32823ce31c5348e" class="i field">_titleGroup</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="@0@mscorlib/A.html#8281103e6f23cb5c" class="k">var</a> <span id="r20 rd" class="r20 r">title</span> = <a href="#f1b5b24e3cf66a98" class="i method">GetCurrentPageTitle</a>();
+			<b>var</b> <span id="r21 rd" class="r21 r">item</span> = <b>new</b> <span class="t constructor">NSToolbarItem</span>(<span class="r20 r">title</span>);
+			<b>var</b> <span id="r22 rd" class="r22 r">view</span> = <b>new</b> <span class="t constructor">NSView</span>();
+			<b>var</b> <span id="r23 rd" class="r23 r">titleField</span> = <b>new</b> <span class="t constructor">NSTextField</span>
+			{
+				<span class="i property">AllowsEditingTextAttributes</span> = <b>true</b>,
+				<span class="i property">Bordered</span> = <b>false</b>,
+				<span class="i property">DrawsBackground</span> = <b>false</b>,
+				<span class="i property">Bezeled</span> = <b>false</b>,
+				<span class="i property">Editable</span> = <b>false</b>,
+				<span class="i property">Selectable</span> = <b>false</b>,
+				<span class="i property">Cell</span> = <b>new</b> <a href="Controls/VerticallyCenteredTextFieldCell.cs.html#fc0db6660556a039" class="t constructor">VerticallyCenteredTextFieldCell</a>(0f, <span class="t t">NSFont</span>.<span class="i method">TitleBarFontOfSize</span>(18)),
+				<span class="i property">StringValue</span> = <span class="r20 r">title</span>
+			};
+			<span class="r23 r">titleField</span>.<span class="i property">Cell</span>.<span class="i property">TextColor</span> = <a href="#089555da8b5692dc" class="i method">GetTitleColor</a>();
+			<span class="r23 r">titleField</span>.<span class="i method">SizeToFit</span>();
+			<a href="#b32823ce31c5348e" class="i field">_titleGroup</a>.<a href="#57f9257fa3dfdfa5" class="i property">Group</a>.<span class="i property">MinSize</span> = <b>new</b> <span class="t constructor">CGSize</span>(<a href="#c1e95913da58d19e" class="i field">NavigationTitleMinSize</a>, <a href="#d34f6f6846aa8b4d" class="i field">ToolbarHeight</a>);
+			<a href="#b32823ce31c5348e" class="i field">_titleGroup</a>.<a href="#57f9257fa3dfdfa5" class="i property">Group</a>.<span class="i property">Subitems</span> = <b>new</b> <span class="t t">NSToolbarItem</span>[] { <span class="r21 r">item</span> };
+			<span class="r22 r">view</span>.<span class="i method">AddSubview</span>(<span class="r23 r">titleField</span>);
+			<a href="#b32823ce31c5348e" class="i field">_titleGroup</a>.<a href="#57f9257fa3dfdfa5" class="i property">Group</a>.<span class="i property">View</span> = <span class="r22 r">view</span>;
+			<span class="c">//save a reference so we can paint this for the background</span>
+			<a href="#848e52c5f0f8ffbf" class="i field">_nsToolbarItemViewer</a> = <a href="#b32823ce31c5348e" class="i field">_titleGroup</a>.<a href="#57f9257fa3dfdfa5" class="i property">Group</a>.<span class="i property">View</span>.<span class="i property">Superview</span>;
+			<span class="c">//position is hard .. we manually set the title to be centered </span>
+			<b>var</b> <span id="r24 rd" class="r24 r">totalWidth</span> = <a href="#b32823ce31c5348e" class="i field">_titleGroup</a>.<a href="#57f9257fa3dfdfa5" class="i property">Group</a>.<span class="i property">View</span>.<span class="i property">Superview</span>.<span class="i property">Superview</span>.<span class="i property">Frame</span>.<span class="i property">Width</span>;
+			<b>var</b> <span id="r25 rd" class="r25 r">fieldWidth</span> = <span class="r23 r">titleField</span>.<span class="i property">Frame</span>.<span class="i property">Width</span>;
+			<b>var</b> <span id="r26 rd" class="r26 r">x</span> = ((<span class="r24 r">totalWidth</span> - <span class="r25 r">fieldWidth</span>) / 2) - <a href="#848e52c5f0f8ffbf" class="i field">_nsToolbarItemViewer</a>.<span class="i property">Frame</span>.<span class="i property">X</span>;
+			<span class="r23 r">titleField</span>.<span class="i property">Frame</span> = <b>new</b> <span class="t constructor">CGRect</span>(<span class="r26 r">x</span>, 0, <span class="r25 r">fieldWidth</span>, <a href="#d34f6f6846aa8b4d" class="i field">ToolbarHeight</a>);
+		}
+ 
+		<b>void</b> <a id="2e687dd8a38bb0c3" href="R/2e687dd8a38bb0c3.html" target="n" data-glyph="76,1" class="i method">UpdateToolbarItems</a>()
+		{
+			<b>if</b> (<a href="#a40daa9524a93e2c" class="i field">_toolbar</a> == <b>null</b> || <a href="#102cee1d9b521a92" class="i field">_navigation</a> == <b>null</b> || <a href="#3a297aa5a8f75000" class="i field">_toolbarGroup</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="k">var</a> <span id="r27 rd" class="r27 r">currentPage</span> = <a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#bd54584666f981a4" class="i method">Peek</a>(0);
+			<a href="#48f01c6c75533f53" class="i method">UpdateGroup</a>(<a href="#3a297aa5a8f75000" class="i field">_toolbarGroup</a>, <span class="r27 r">currentPage</span>.<a href="/Xamarin.Forms.Core/A.html#d2ac1f7009750d5f" class="i property">ToolbarItems</a>, <a href="#910d41f30599607e" class="i field">ToolbarItemWidth</a>, <a href="#67a9388694ae8a6c" class="i field">ToolbarItemSpacing</a>);
+		}
+ 
+		<b>void</b> <a id="a65873307efa8c37" href="R/a65873307efa8c37.html" target="n" data-glyph="76,1" class="i method">UpdateNavigationItems</a>()
+		{
+			<b>if</b> (<a href="#a40daa9524a93e2c" class="i field">_toolbar</a> == <b>null</b> || <a href="#102cee1d9b521a92" class="i field">_navigation</a> == <b>null</b> || <a href="#91abc1b7f90c7b68" class="i field">_navigationGroup</a> == <b>null</b>)
+				<b>return</b>;
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r28 rd" class="r28 r">items</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="/Xamarin.Forms.Core/A.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt;();
+			<b>if</b> (<a href="#06510ada91bf69df" class="i method">ShowBackButton</a>())
+			{
+				<a href="/Xamarin.Forms.Core/A.html#40969ab465b00442" class="k">var</a> <span id="r29 rd" class="r29 r">backButtonItem</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#0fad0c83927719a9" class="t constructor">ToolbarItem</a>
+				{
+					<a href="/Xamarin.Forms.Core/A.html#2e0c5c546b8a8b5b" class="i property">Text</a> = <a href="#96cc63cc21c5f824" class="i method">GetPreviousPageTitle</a>(),
+					<a href="/Xamarin.Forms.Core/A.html#979dff5c213ee332" class="i property">Command</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#d3d443b93c84bcc3" class="t constructor">Command</a>(<b>async</b> () =&gt; <b>await</b> <a href="#222dea05d1a098f0" class="i method">NavigateBackFrombackButton</a>())
+				};
+				<span class="r28 r">items</span>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r29 r">backButtonItem</span>);
+			}
+ 
+			<a href="#48f01c6c75533f53" class="i method">UpdateGroup</a>(<a href="#91abc1b7f90c7b68" class="i field">_navigationGroup</a>, <span class="r28 r">items</span>, <a href="#362c5ef3391fe93b" class="i field">BackButtonItemWidth</a>, -1);
+ 
+			<a href="#efb723a37768e253" class="k">var</a> <span id="r30 rd" class="r30 r">navItemBack</span> = <a href="#91abc1b7f90c7b68" class="i field">_navigationGroup</a>.<a href="#149014c354aa8bbc" class="i property">Items</a>.<a href="@0@System.Core/A.html#8087366974af11d2" class="i method">FirstOrDefault</a>();
+			<b>if</b> (<span class="r30 r">navItemBack</span> != <b>null</b>)
+			{
+				<span class="r30 r">navItemBack</span>.<a href="#b708c2ceb6064655" class="i field">Button</a>.<span class="i property">Image</span> = <span class="t t">NSImage</span>.<span class="i method">ImageNamed</span>(<span class="t t">NSImageName</span>.<span class="i field">GoLeftTemplate</span>);
+				<span class="r30 r">navItemBack</span>.<a href="#b708c2ceb6064655" class="i field">Button</a>.<span class="i method">SizeToFit</span>();
+				<span class="r30 r">navItemBack</span>.<a href="#b708c2ceb6064655" class="i field">Button</a>.<span class="i property">AccessibilityTitle</span> = <span class="s">&quot;NSBackButton&quot;</span>;
+			}
+		}
+ 
+		<b>void</b> <a id="c510afb56ad6dbc3" href="R/c510afb56ad6dbc3.html" target="n" data-glyph="76,1" class="i method">UpdateTabbedItems</a>()
+		{
+			<b>if</b> (<a href="#a40daa9524a93e2c" class="i field">_toolbar</a> == <b>null</b> || <a href="#102cee1d9b521a92" class="i field">_navigation</a> == <b>null</b> || <a href="#9c269b6cb4a6562f" class="i field">_tabbedGroup</a> == <b>null</b>)
+				<b>return</b>;
+ 
+			<a href="@0@mscorlib/A.html#cf7f4095e4de7646" class="k">var</a> <span id="r31 rd" class="r31 r">items</span> = <b>new</b> <a href="@0@mscorlib/A.html#9e5352b2b304ceba" class="t constructor">List</a>&lt;<a href="/Xamarin.Forms.Core/A.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt;();
+ 
+			<a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="k">var</a> <span id="r32 rd" class="r32 r">tabbedPage</span> = <a href="#102cee1d9b521a92" class="i field">_navigation</a>.<a href="/Xamarin.Forms.Core/A.html#c4bf3d030cd32fe9" class="i property">Parent</a> <b>as</b> <a href="/Xamarin.Forms.Core/A.html#47b02f0e5c9f794c" class="t t">TabbedPage</a>;
+			<b>if</b> (<span class="r32 r">tabbedPage</span> != <b>null</b>)
+			{
+				<b>foreach</b> (<a href="/Xamarin.Forms.Core/A.html#d2450da355a1c8f2" class="k">var</a> <span id="r33 rd" class="r33 r">item</span> <b>in</b> <span class="r32 r">tabbedPage</span>.<a href="/Xamarin.Forms.Core/A.html#a42e2d50a9c517c2" class="i property">Children</a>)
+				{
+					<a href="/Xamarin.Forms.Core/A.html#40969ab465b00442" class="k">var</a> <span id="r34 rd" class="r34 r">tbI</span> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#0fad0c83927719a9" class="t constructor">ToolbarItem</a>
+					{
+						<a href="/Xamarin.Forms.Core/A.html#2e0c5c546b8a8b5b" class="i property">Text</a> = <span class="r33 r">item</span>.<a href="/Xamarin.Forms.Core/A.html#25a9b5c9e8eb0d28" class="i property">Title</a>,
+						<a href="/Xamarin.Forms.Core/A.html#17e918f3f7180401" class="i property">Icon</a> = <span class="r33 r">item</span>.<a href="/Xamarin.Forms.Core/A.html#27bdee04ff62bec2" class="i property">Icon</a>,
+						<a href="/Xamarin.Forms.Core/A.html#979dff5c213ee332" class="i property">Command</a> = <b>new</b> <a href="/Xamarin.Forms.Core/A.html#d3d443b93c84bcc3" class="t constructor">Command</a>(() =&gt; <span class="r32 r">tabbedPage</span>.<a href="/Xamarin.Forms.Core/A.html#54d6662aac6dc78b" class="i property">SelectedItem</a> = <span class="r33 r">item</span>)
+					};
+					<span class="r31 r">items</span>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<span class="r34 r">tbI</span>);
+				}
+			}
+ 
+			<a href="#48f01c6c75533f53" class="i method">UpdateGroup</a>(<a href="#9c269b6cb4a6562f" class="i field">_tabbedGroup</a>, <span class="r31 r">items</span>, <a href="#910d41f30599607e" class="i field">ToolbarItemWidth</a>, <a href="#67a9388694ae8a6c" class="i field">ToolbarItemSpacing</a>);
+		}
+ 
+		<b>void</b> <a id="48f01c6c75533f53" href="R/48f01c6c75533f53.html" target="n" data-glyph="76,1" class="i method">UpdateGroup</a>(<a href="#c11f6c238dc89076" class="t t">NativeToolbarGroup</a> <span id="r35 rd" class="r35 r">group</span>, <a href="@0@mscorlib/A.html#b19f71a84062554b" class="t t">IList</a>&lt;<a href="/Xamarin.Forms.Core/A.html#40969ab465b00442" class="t t">ToolbarItem</a>&gt; <span id="r36 rd" class="r36 r">toolbarItems</span>, <b>double</b> <span id="r37 rd" class="r37 r">itemWidth</span>,
+		   <b>double</b> <span id="r38 rd" class="r38 r">itemSpacing</span>)
+		{
+			<b>int</b> <span id="r39 rd" class="r39 r">count</span> = <span class="r36 r">toolbarItems</span>.<a href="@0@mscorlib/A.html#3d6c21c4e9bd5f63" class="i property">Count</a>;
+			<span class="r35 r">group</span>.<a href="#149014c354aa8bbc" class="i property">Items</a>.<a href="@0@mscorlib/A.html#ca7bce81a50b0aeb" class="i method">Clear</a>();
+			<b>if</b> (<span class="r39 r">count</span> &gt; 0)
+			{
+				<b>var</b> <span id="r40 rd" class="r40 r">subItems</span> = <b>new</b> <span class="t t">NSToolbarItem</span>[<span class="r39 r">count</span>];
+				<b>var</b> <span id="r41 rd" class="r41 r">view</span> = <b>new</b> <span class="t constructor">NSView</span>();
+				<span class="t t">nfloat</span> <span id="r42 rd" class="r42 r">totalWidth</span> = 0;
+				<a href="@0@mscorlib/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r43 rd" class="r43 r">currentX</span> = 0.0;
+				<b>for</b> (<b>int</b> <span id="r44 rd" class="r44 r">i</span> = 0; <span class="r44 r">i</span> &lt; <span class="r36 r">toolbarItems</span>.<a href="@0@mscorlib/A.html#3d6c21c4e9bd5f63" class="i property">Count</a>; <span class="r44 r">i</span>++)
+				{
+					<a href="/Xamarin.Forms.Core/A.html#40969ab465b00442" class="k">var</a> <span id="r45 rd" class="r45 r">element</span> = <span class="r36 r">toolbarItems</span><a href="@0@mscorlib/A.html#396bb785d31f5979">[</a><span class="r44 r">i</span>];
+ 
+					<b>var</b> <span id="r46 rd" class="r46 r">item</span> = <b>new</b> <span class="t constructor">NSToolbarItem</span>(<span class="r45 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#2e0c5c546b8a8b5b" class="i property">Text</a> ?? <span class="s">&quot;&quot;</span>);
+					<span class="r46 r">item</span>.<span class="i">Activated</span> += (<span id="r47 rd" class="r47 r">sender</span>, <span id="r48 rd" class="r48 r">e</span>) =&gt; <span class="r45 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#acfa69a60a16cf67" class="i method">Activate</a>();
+ 
+					<b>var</b> <span id="r49 rd" class="r49 r">button</span> = <b>new</b> <span class="t constructor">NSButton</span>();
+					<span class="r49 r">button</span>.<span class="i property">Title</span> = <span class="r45 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#2e0c5c546b8a8b5b" class="i property">Text</a> ?? <span class="s">&quot;&quot;</span>;
+ 
+					<span class="r49 r">button</span>.<span class="i method">SizeToFit</span>();
+					<a href="@0@mscorlib/A.html#1a65cbdb09544ba1" class="k">var</a> <span id="r50 rd" class="r50 r">buttonWidth</span> = <span class="r37 r">itemWidth</span>;
+					<b>if</b> (<span class="r49 r">button</span>.<span class="i property">FittingSize</span>.<span class="i property">Width</span> &gt; <span class="r37 r">itemWidth</span>)
+					{
+						<span class="r50 r">buttonWidth</span> = <span class="r49 r">button</span>.<span class="i property">FittingSize</span>.<span class="i property">Width</span> + 10;
+					}
+					<span class="r49 r">button</span>.<span class="i property">Frame</span> = <b>new</b> <span class="t constructor">CGRect</span>(<span class="r43 r">currentX</span> + <span class="r44 r">i</span> * <span class="r38 r">itemSpacing</span>, 0, <span class="r50 r">buttonWidth</span>, <a href="#38cecf0820feac65" class="i field">ToolbarItemHeight</a>);
+					<span class="r43 r">currentX</span> += <span class="r50 r">buttonWidth</span>;
+					<span class="r42 r">totalWidth</span> += <span class="r49 r">button</span>.<span class="i property">Frame</span>.<span class="i property">Width</span>;
+					<span class="r49 r">button</span>.<span class="i">Activated</span> += (<span id="r51 rd" class="r51 r">sender</span>, <span id="r52 rd" class="r52 r">e</span>) =&gt; <span class="r45 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#acfa69a60a16cf67" class="i method">Activate</a>();
+ 
+					<span class="r49 r">button</span>.<span class="i property">BezelStyle</span> = <span class="t t">NSBezelStyle</span>.<span class="i field">TexturedRounded</span>;
+					<b>if</b> (!<b>string</b>.<a href="@0@mscorlib/A.html#23a8597f842071f4" class="i method">IsNullOrEmpty</a>(<span class="r45 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#17e918f3f7180401" class="i property">Icon</a>))
+						<span class="r49 r">button</span>.<span class="i property">Image</span> = <b>new</b> <span class="t constructor">NSImage</span>(<span class="r45 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#17e918f3f7180401" class="i property">Icon</a>);
+ 
+					<span class="r49 r">button</span>.<span class="i method">SizeToFit</span>();
+ 
+					<span class="r49 r">button</span>.<span class="i property">Enabled</span> = <span class="r46 r">item</span>.<span class="i property">Enabled</span> = <span class="r45 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#7a81b789dd2233fb" class="i property">IsEnabled</a>;
+					<span class="r45 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> -= <a href="#6a51ae4938932135" class="i method">ToolBarItemPropertyChanged</a>;
+					<span class="r45 r">element</span>.<a href="/Xamarin.Forms.Core/A.html#72c3e722cf6fa9ba" class="i">PropertyChanged</a> += <a href="#6a51ae4938932135" class="i method">ToolBarItemPropertyChanged</a>;
+ 
+					<span class="r41 r">view</span>.<span class="i method">AddSubview</span>(<span class="r49 r">button</span>);
+					<span class="c">//item.Label = item.PaletteLabel = item.ToolTip = element.Text ?? &quot;&quot;;</span>
+ 
+					<span class="r40 r">subItems</span>[<span class="r44 r">i</span>] = <span class="r46 r">item</span>;
+ 
+					<span class="r35 r">group</span>.<a href="#149014c354aa8bbc" class="i property">Items</a>.<a href="@0@mscorlib/A.html#9cc11588bffd57c1" class="i method">Add</a>(<b>new</b> <a href="#c11f6c238dc89076" class="t t">NativeToolbarGroup</a>.<a href="#efb723a37768e253" class="t constructor">Item</a> { <a href="#2d9c2decaddbb81c" class="i field">ToolbarItem</a> = <span class="r46 r">item</span>, <a href="#b708c2ceb6064655" class="i field">Button</a> = <span class="r49 r">button</span>, <a href="#fccc7d2a865871f7" class="i field">Element</a> = <span class="r45 r">element</span> });
+				}
+				<span class="r41 r">view</span>.<span class="i property">Frame</span> = <b>new</b> <span class="t constructor">CGRect</span>(0, 0, <span class="r42 r">totalWidth</span> + (<span class="r38 r">itemSpacing</span> * (<span class="r39 r">count</span> - 1)), <a href="#38cecf0820feac65" class="i field">ToolbarItemHeight</a>);
+ 
+				<span class="r35 r">group</span>.<a href="#57f9257fa3dfdfa5" class="i property">Group</a>.<span class="i property">Subitems</span> = <span class="r40 r">subItems</span>;
+				<span class="r35 r">group</span>.<a href="#57f9257fa3dfdfa5" class="i property">Group</a>.<span class="i property">View</span> = <span class="r41 r">view</span>;
+			}
+			<b>else</b>
+			{
+				<span class="r35 r">group</span>.<a href="#57f9257fa3dfdfa5" class="i property">Group</a>.<span class="i property">Subitems</span> = <b>new</b> <span class="t t">NSToolbarItem</span>[] { };
+				<span class="r35 r">group</span>.<a href="#57f9257fa3dfdfa5" class="i property">Group</a>.<span class="i property">View</span> = <b>new</b> <span class="t constructor">NSView</span>();
+			}
+		}
+ 
+		<b>void</b> <a id="6a51ae4938932135" href="R/6a51ae4938932135.html" target="n" data-glyph="76,1" class="i method">ToolBarItemPropertyChanged</a>(<b>object</b> <span id="r53 rd" class="r53 r">sender</span>, <span class="i n">System</span>.<span class="i n">ComponentModel</span>.<a href="@0@System/A.html#f613cfcc9d2b2a4b" class="t t">PropertyChangedEventArgs</a> <span id="r54 rd" class="r54 r">e</span>)
+		{
+			<a href="#efb723a37768e253" class="k">var</a> <span id="r55 rd" class="r55 r">nativeToolbarItem</span> = <a href="#3a297aa5a8f75000" class="i field">_toolbarGroup</a>.<a href="#149014c354aa8bbc" class="i property">Items</a>.<a href="@0@System.Core/A.html#b7e5965cab68b1cf" class="i method">FirstOrDefault</a>((<a href="#c11f6c238dc89076" class="t t">NativeToolbarGroup</a>.<a href="#efb723a37768e253" class="t t">Item</a> <span id="r56 rd" class="r56 r">arg1</span>) =&gt; <span class="r56 r">arg1</span>.<a href="#fccc7d2a865871f7" class="i field">Element</a> == <span class="r53 r">sender</span>);
+			<b>if</b> (<span class="r55 r">nativeToolbarItem</span> != <b>null</b>)
+			{
+				<b>if</b> (<span class="r54 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a>.<a href="@0@mscorlib/A.html#31b307b02a3bd6b9" class="i method">Equals</a>(<a href="/Xamarin.Forms.Core/A.html#daf307b67182d7d7" class="t t">VisualElement</a>.<a href="/Xamarin.Forms.Core/A.html#d798cc16e0e87f98" class="i field">IsEnabledProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>))
+				{
+					<span class="r55 r">nativeToolbarItem</span>.<a href="#b708c2ceb6064655" class="i field">Button</a>.<span class="i property">Enabled</span> = <span class="r55 r">nativeToolbarItem</span>.<a href="#2d9c2decaddbb81c" class="i field">ToolbarItem</a>.<span class="i property">Enabled</span> = <span class="r55 r">nativeToolbarItem</span>.<a href="#fccc7d2a865871f7" class="i field">Element</a>.<a href="/Xamarin.Forms.Core/A.html#7a81b789dd2233fb" class="i property">IsEnabled</a>;
+				}
+ 
+				<b>if</b> (<span class="r54 r">e</span>.<a href="@0@System/A.html#edc039b147e83726" class="i property">PropertyName</a>.<a href="@0@mscorlib/A.html#31b307b02a3bd6b9" class="i method">Equals</a>(<a href="/Xamarin.Forms.Core/A.html#40969ab465b00442" class="t t">ToolbarItem</a>.<a href="/Xamarin.Forms.Core/A.html#1630cc6630b9b4a8" class="i field">TextProperty</a>.<a href="/Xamarin.Forms.Core/A.html#3e8a9f30dd5c9578" class="i property">PropertyName</a>))
+				{
+					<span class="r55 r">nativeToolbarItem</span>.<a href="#b708c2ceb6064655" class="i field">Button</a>.<span class="i property">Title</span> = <span class="r55 r">nativeToolbarItem</span>.<a href="#2d9c2decaddbb81c" class="i field">ToolbarItem</a>.<span class="i property">Label</span> = <span class="r55 r">nativeToolbarItem</span>.<a href="#fccc7d2a865871f7" class="i field">Element</a>.<a href="/Xamarin.Forms.Core/A.html#2e0c5c546b8a8b5b" class="i property">Text</a>;
+				}
+			}
+		}
+ 
+		<b>class</b> <a id="a90891501b7e5607" href="R/../../0000000000.html" target="n" data-glyph="4,1" class="t t">ToolBarItemNSButton</a> : <span class="t t">NSView</span>
+		{
+			<b>public</b> <a id="d690daaf2055973c" href="R/../../0000000000.html" target="n" data-glyph="72,2" class="i constructor">ToolBarItemNSButton</a>(<b>string</b> <span id="r57 rd" class="r57 r">automationID</span>)
+			{
+				<span class="i property">AccessibilityIdentifier</span> = <span class="r57 r">automationID</span>;
+			}
+		}
+	}
+}</pre></td></tr></table></div></body></html>
